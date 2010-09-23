@@ -67,7 +67,8 @@
     else if ($acount == 3) {
       $pid = $atmp[0];
       $brow = sqlQuery("SELECT encounter FROM billing WHERE " .
-        "pid = '$pid' AND id = '" . $atmp[1] . "' AND activity = 1");
+        "pid = '$pid' AND encounter = '" . $atmp[1] . "' AND activity = 1");
+		
       $encounter = $brow['encounter'];
     }
     else if ($acount == 1) {
@@ -222,7 +223,29 @@
     slAddTransaction($trans_id, $chart_id_cash, 0 - $thispay, $thisdate, $thissrc, $code, $thisins, $debug);
     slUpdateAR($trans_id, 0, $thispay, $thisdate, $debug);
   }
-
+  //writing the check details to Session Table on ERA proxcessing
+function arPostSession($payer_id,$check_number,$check_date,$pay_total,$post_to_date,$deposit_date,$debug) {
+	  $query = "INSERT INTO ar_session( " .
+      "payer_id,user_id,closed,reference,check_date,pay_total,post_to_date,deposit_date,patient_id,payment_type,adjustment_code,payment_method " .
+      ") VALUES ( " .
+      "'$payer_id'," .
+	  $_SESSION['authUserID']."," .
+      "0," .
+      "'ePay - $check_number'," .
+      "'$check_date', " .
+      "$pay_total, " .
+      "'$post_to_date','$deposit_date', " .
+      "0,'Insurance','Insurance_Payment','Electronic'" .
+        ")";
+    if ($debug) {
+      echo $query . "<br>\n";
+    } else {
+	 $sessionId=sqlInsert($query);
+	 $GLOBALS['lastidado']=0;
+	return $sessionId;
+    }
+  }
+  
   // Post a payment, new style.
   //
   function arPostPayment($patient_id, $encounter_id, $session_id, $amount, $code, $payer_type, $memo, $debug, $time='') {

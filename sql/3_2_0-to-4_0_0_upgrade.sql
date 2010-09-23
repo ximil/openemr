@@ -785,3 +785,55 @@ ALTER TABLE lists
   ADD injury_grade varchar(31) NOT NULL DEFAULT '';
 #EndIf
 
+#IfMissingColumn ar_session created_time(New Payment screen)
+ALTER TABLE  `ar_session` ADD  `created_time` DATETIME NOT NULL ,
+ADD  `modified_time` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ADD  `global_amount` DECIMAL( 12, 2 ) NOT NULL ,
+ADD  `payment_type` VARCHAR( 50 ) NOT NULL ,
+ADD  `description` TEXT NOT NULL ,
+ADD  `adjustment_code` VARCHAR( 50 ) NOT NULL ;
+ALTER TABLE  `ar_session` ADD  `post_to_date` DATE NOT NULL ;
+ALTER TABLE  `ar_session` ADD  `patient_id` INT( 11 ) NOT NULL ;
+ALTER TABLE  `ar_session` CHANGE  `modified_time`  `modified_time` DATETIME NOT NULL;
+ALTER TABLE  `ar_session` CHANGE  `created_time`  `created_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `ar_session` ADD `payment_method` VARCHAR( 25 ) NOT NULL ;
+#EndIf
+
+#IfMissingColumn ar_activity modified_time(New Payment screen)
+ALTER TABLE `ar_activity` ADD `modified_time` DATETIME NOT NULL ,
+ADD `follow_up` CHAR( 1 ) NOT NULL ,
+ADD `follow_up_reason` TEXT NOT NULL ;
+ALTER TABLE `ar_activity` CHANGE `follow_up_reason` `follow_up_note` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ; 
+ALTER TABLE `ar_activity` ADD `account_code` VARCHAR( 15 ) NOT NULL ;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id Payment_Sort_By(New Payment screen)
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES
+('Payment_Sort_By', 'reference', 'Check Number', 60, 0, 0, '', ''),
+('Payment_Status', 'Fully_Paid', 'Fully Paid', 10, 0, 0, '', ''),
+('Payment_Status', 'Unapplied', 'Unapplied', 20, 0, 0, '', ''),
+('Payment_Sort_By', 'payer_id', 'Ins Code', 40, 0, 0, '', ''),
+('Payment_Sort_By', 'payment_type', 'Paying Entity', 30, 0, 0, '', ''),
+('Payment_Method', 'Bank Draft', 'Bank Draft', 50, 0, 0, '', ''),
+('Payment_Adjustment_Code', 'Pre_Payment', 'Pre Payment', 60, 0, 0, '', ''),
+('Payment_Adjustment_Code', 'Group_Payment', 'Group Payment', 30, 0, 0, '', ''),
+('Payment_Adjustment_Code', 'Insurance_Payment', 'Insurance Payment', 40, 0, 0, '', ''),
+('Payment_Adjustment_Code', 'Patient_Payment', 'Patient Payment', 50, 0, 0, '', ''),
+('Payment_Method', 'Check_Payment', 'Check Payment', 10, 0, 0, '', ''),
+('Payment_Method', 'Electronic', 'Electronic', 40, 0, 0, '', ''),
+('Payment_Method', 'Credit_Card', 'Credit Card', 30, 0, 0, '', ''),
+('Payment_Method', 'Cash', 'Cash', 20, 0, 0, '', ''),
+('Payment_Type', 'Insurance', 'Insurance', 10, 0, 0, '', ''),
+('Payment_Type', 'Patient', 'Patient', 20, 0, 0, '', ''),
+('Payment_Sort_By', 'payment_method', 'Payment Method', 50, 0, 0, '', ''),
+('Payment_Sort_By', 'check_date', 'Check Date', 20, 0, 0, '', ''),
+('Payment_Sort_By', 'session_id', 'Id', 10, 0, 0, '', ''),
+('Payment_Sort_By', 'pay_total', 'Amount', 70, 0, 0, '', ''),
+('Payment_Adjustment_Code', 'Family_Payment', 'Family Payment', 20, 0, 0, '', '');
+
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES
+('Payment_Ins', '2', 'Ins2', 20, 0, 0, '', ''),
+('Payment_Ins', '1', 'Ins1', 10, 0, 0, '', ''),
+('Payment_Ins', '0', 'Pat', 40, 0, 0, '', ''),
+('Payment_Ins', '3', 'Ins3', 30, 0, 0, '', '');
+#EndIf
