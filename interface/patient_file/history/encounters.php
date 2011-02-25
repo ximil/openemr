@@ -120,7 +120,7 @@ function toencounter(rawdata) {
 <?php if ($GLOBALS['concurrent_layout']) { ?>
     parent.left_nav.setEncounter(datestr, enc, window.name);
     parent.left_nav.setRadio(window.name, 'enc');
-    location.href  = '../encounter/encounter_top.php?set_encounter=' + enc;
+    parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + enc);
 <?php } else { ?>
     top.Title.location.href = '../encounter/encounter_title.php?set_encounter='   + enc;
     top.Main.location.href  = '../encounter/patient_encounter.php?set_encounter=' + enc;
@@ -359,7 +359,10 @@ if ($result = getEncounters($pid)) {
                 // However athletic teams want it.
                 //
                 if ($GLOBALS['athletic_team']) {
-                  if ($enc['formdir'] != 'physical_exam' && substr($enc['formdir'],0,3) != 'LBF') {
+                  if ($enc['formdir'] != 'physical_exam' &&
+                    $enc['formdir'] != 'procedure_order' &&
+                    substr($enc['formdir'],0,3) != 'LBF')
+                  {
                     $frow = sqlQuery("select * from form_" . add_escape_custom($enc['formdir']) .
                                     " where id = ?", array($enc['form_id']) );
                     foreach ($frow as $fkey => $fvalue) {

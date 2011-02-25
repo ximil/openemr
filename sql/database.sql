@@ -113,15 +113,16 @@ CREATE TABLE `categories` (
 -- Dumping data for table `categories`
 -- 
 
-INSERT INTO `categories` VALUES (1, 'Categories', '', 0, 0, 17);
+INSERT INTO `categories` VALUES (1, 'Categories', '', 0, 0, 19);
 INSERT INTO `categories` VALUES (2, 'Lab Report', '', 1, 1, 2);
 INSERT INTO `categories` VALUES (3, 'Medical Record', '', 1, 3, 4);
-INSERT INTO `categories` VALUES (4, 'Patient Information', '', 1, 5, 8);
+INSERT INTO `categories` VALUES (4, 'Patient Information', '', 1, 5, 10);
 INSERT INTO `categories` VALUES (5, 'Patient ID card', '', 4, 6, 7);
-INSERT INTO `categories` VALUES (6, 'Advance Directive', '', 1, 9, 16);
-INSERT INTO `categories` VALUES (7, 'Do Not Resuscitate Order', '', 6, 10, 11);
-INSERT INTO `categories` VALUES (8, 'Durable Power of Attorney', '', 6, 12, 13);
-INSERT INTO `categories` VALUES (9, 'Living Will', '', 6, 14, 15);
+INSERT INTO `categories` VALUES (6, 'Advance Directive', '', 1, 11, 18);
+INSERT INTO `categories` VALUES (7, 'Do Not Resuscitate Order', '', 6, 12, 13);
+INSERT INTO `categories` VALUES (8, 'Durable Power of Attorney', '', 6, 14, 15);
+INSERT INTO `categories` VALUES (9, 'Living Will', '', 6, 16, 17);
+INSERT INTO `categories` VALUES (10, 'Patient Photograph', '', 4, 8, 9);
 
 -- --------------------------------------------------------
 
@@ -139,7 +140,7 @@ CREATE TABLE `categories_seq` (
 -- Dumping data for table `categories_seq`
 -- 
 
-INSERT INTO `categories_seq` VALUES (9);
+INSERT INTO `categories_seq` VALUES (10);
 
 -- --------------------------------------------------------
 
@@ -325,6 +326,7 @@ CREATE TABLE `drug_sales` (
   `fee` decimal(12,2) NOT NULL default '0.00',
   `billed` tinyint(1) NOT NULL default '0' COMMENT 'indicates if the sale is posted to accounting',
   `xfer_inventory_id` int(11) NOT NULL DEFAULT 0,
+  `distributor_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'references users.id',
   `notes` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY  (`sale_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -377,6 +379,43 @@ CREATE TABLE `drugs` (
 
 -- --------------------------------------------------------
 
+--
+-- Table structure for table `eligibility_response`
+--
+
+DROP TABLE IF EXISTS `eligibility_response`;
+CREATE TABLE `eligibility_response` (
+  `response_id` bigint(20) NOT NULL auto_increment,
+  `response_description` varchar(255) default NULL,
+  `response_status` enum('A','D') NOT NULL default 'A',
+  `response_vendor_id` bigint(20) default NULL,
+  `response_create_date` date default NULL,
+  `response_modify_date` date default NULL,
+  PRIMARY KEY  (`response_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `eligibility_verification`
+--
+
+DROP TABLE IF EXISTS `eligibility_verification`;
+CREATE TABLE `eligibility_verification` (
+  `verification_id` bigint(20) NOT NULL auto_increment,
+  `response_id` bigint(20) default NULL,
+  `insurance_id` bigint(20) default NULL,
+  `eligibility_check_date` datetime default NULL,
+  `copay` int(11) default NULL,
+  `deductible` int(11) default NULL,
+  `deductiblemet` enum('Y','N') default 'Y',
+  `create_date` date default NULL,
+  PRIMARY KEY  (`verification_id`),
+  KEY `insurance_id` (`insurance_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+
+-- --------------------------------------------------------
+
 -- 
 -- Table structure for table `employer_data`
 -- 
@@ -422,6 +461,7 @@ CREATE TABLE `facility` (
   `attn` varchar(65) default NULL,
   `domain_identifier` varchar(60) default NULL,
   `facility_npi` varchar(15) default NULL,
+  `tax_id_type` VARCHAR(31) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=4 ;
 
@@ -429,7 +469,7 @@ CREATE TABLE `facility` (
 -- Dumping data for table `facility`
 -- 
 
-INSERT INTO `facility` VALUES (3, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', 1, 0, 0, NULL, '', '', '', '');
+INSERT INTO `facility` VALUES (3, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', 1, 0, 0, NULL, '', '', '', '', '');
 
 -- --------------------------------------------------------
 
@@ -505,6 +545,7 @@ CREATE TABLE `form_encounter` (
   `provider_id` INT(11) DEFAULT '0' COMMENT 'default and main provider for this visit',
   `supervisor_id` INT(11) DEFAULT '0' COMMENT 'supervising provider, if any, for this visit',
   `invoice_refno` varchar(31) NOT NULL DEFAULT '',
+  `referral_source` varchar(31) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -1590,7 +1631,7 @@ CREATE TABLE `layout_options` (
   `datacols` tinyint(3) NOT NULL default '1',
   `default_value` varchar(255) NOT NULL default '',
   `edit_options` varchar(36) NOT NULL default '',
-  `description` varchar(255) NOT NULL default '',
+  `description` text,
   PRIMARY KEY  (`form_id`,`field_id`,`seq`)
 ) ENGINE=MyISAM;
 
@@ -1625,7 +1666,7 @@ INSERT INTO `layout_options` VALUES ('DEM', 'phone_contact', '2Contact', 'Emerge
 INSERT INTO `layout_options` VALUES ('DEM', 'phone_home', '2Contact', 'Home Phone', 10, 2, 1, 20, 63, '', 1, 1, '', 'P', 'Home Phone Number');
 INSERT INTO `layout_options` VALUES ('DEM', 'phone_biz', '2Contact', 'Work Phone', 11, 2, 1, 20, 63, '', 1, 1, '', 'P', 'Work Phone Number');
 INSERT INTO `layout_options` VALUES ('DEM', 'phone_cell', '2Contact', 'Mobile Phone', 12, 2, 1, 20, 63, '', 1, 1, '', 'P', 'Cell Phone Number');
-INSERT INTO `layout_options` VALUES ('DEM', 'email', '2Contact', 'Contact Email', 13, 2, 1, 30, 9, '', 1, 1, '', '', 'Contact Email Address');
+INSERT INTO `layout_options` VALUES ('DEM', 'email', '2Contact', 'Contact Email', 13, 2, 1, 30, 95, '', 1, 1, '', '', 'Contact Email Address');
 INSERT INTO `layout_options` VALUES ('DEM', 'providerID', '3Choices', 'Provider', 1, 11, 1, 0, 0, '', 1, 3, '', '', 'Referring Provider');
 INSERT INTO `layout_options` VALUES ('DEM', 'pharmacy_id', '3Choices', 'Pharmacy', 2, 12, 1, 0, 0, '', 1, 3, '', '', 'Preferred Pharmacy');
 INSERT INTO `layout_options` VALUES ('DEM', 'hipaa_notice', '3Choices', 'HIPAA Notice Received', 3, 1, 1, 0, 0, 'yesno', 1, 1, '', '', 'Did you receive a copy of the HIPAA Notice?');
@@ -1646,8 +1687,9 @@ INSERT INTO `layout_options` VALUES ('DEM', 'em_state', '4Employer', 'State', 5,
 INSERT INTO `layout_options` VALUES ('DEM', 'em_postal_code', '4Employer', 'Postal Code', 6, 2, 1, 6, 63, '', 1, 1, '', '', 'Postal Code');
 INSERT INTO `layout_options` VALUES ('DEM', 'em_country', '4Employer', 'Country', 7, 26, 1, 0, 0, 'country', 1, 1, '', '', 'Country');
 INSERT INTO `layout_options` VALUES ('DEM', 'language', '5Stats', 'Language', 1, 26, 1, 0, 0, 'language', 1, 1, '', '', 'Preferred Language');
-INSERT INTO `layout_options` VALUES ('DEM', 'ethnoracial', '5Stats', 'Race/Ethnicity', 2, 26, 1, 0, 0, 'ethrace', 1, 1, '', '', 'Ethnicity or Race');
-INSERT INTO `layout_options` VALUES ('DEM', 'financial_review', '5Stats', 'Financial Review Date', 3, 2, 1, 10, 10, '', 1, 1, '', 'D', 'Financial Review Date');
+INSERT INTO `layout_options` VALUES ('DEM', 'ethnicity', '5Stats', 'Ethnicity', 2, 33, 1, 0, 0, 'ethnicity', 1, 1, '', '', 'Ethnicity');
+INSERT INTO `layout_options` VALUES ('DEM', 'race', '5Stats', 'Race', 3, 33, 1, 0, 0, 'race', 1, 1, '', '', 'Race');
+INSERT INTO `layout_options` VALUES ('DEM', 'financial_review', '5Stats', 'Financial Review Date', 4, 2, 1, 10, 10, '', 1, 1, '', 'D', 'Financial Review Date');
 INSERT INTO `layout_options` VALUES ('DEM', 'family_size', '5Stats', 'Family Size', 4, 2, 1, 20, 63, '', 1, 1, '', '', 'Family Size');
 INSERT INTO `layout_options` VALUES ('DEM', 'monthly_income', '5Stats', 'Monthly Income', 5, 2, 1, 20, 63, '', 1, 1, '', '', 'Monthly Income');
 INSERT INTO `layout_options` VALUES ('DEM', 'homeless', '5Stats', 'Homeless, etc.', 6, 2, 1, 20, 63, '', 1, 1, '', '', 'Homeless or similar?');
@@ -1709,8 +1751,8 @@ INSERT INTO layout_options VALUES ('HIS','relatives_stroke'             ,'3Relat
 INSERT INTO layout_options VALUES ('HIS','relatives_epilepsy'           ,'3Relatives','Epilepsy'           ,7, 2,1,20,255,'',1,1,'','' ,'');
 INSERT INTO layout_options VALUES ('HIS','relatives_mental_illness'     ,'3Relatives','Mental Illness'     ,8, 2,1,20,255,'',1,1,'','' ,'');
 INSERT INTO layout_options VALUES ('HIS','relatives_suicide'            ,'3Relatives','Suicide'            ,9, 2,1,20,255,'',1,3,'','' ,'');
-INSERT INTO layout_options VALUES ('HIS','coffee'              ,'4Lifestyle','Coffee'              ,1,28,1,20,255,'',1,3,'','' ,'Caffeine consumption');
-INSERT INTO layout_options VALUES ('HIS','tobacco'             ,'4Lifestyle','Tobacco'             ,2,28,1,20,255,'',1,3,'','' ,'Tobacco use');
+INSERT INTO layout_options VALUES ('HIS','coffee'              ,'4Lifestyle','Coffee'              ,2,28,1,20,255,'',1,3,'','' ,'Caffeine consumption');
+INSERT INTO layout_options VALUES ('HIS','tobacco'             ,'4Lifestyle','Tobacco'             ,1,32,1,0,255,'smoking_status',1,3,'','' ,'Tobacco use');
 INSERT INTO layout_options VALUES ('HIS','alcohol'             ,'4Lifestyle','Alcohol'             ,3,28,1,20,255,'',1,3,'','' ,'Alcohol consumption');
 INSERT INTO layout_options VALUES ('HIS','recreational_drugs'  ,'4Lifestyle','Recreational Drugs'  ,4,28,1,20,255,'',1,3,'','' ,'Recreational drug use');
 INSERT INTO layout_options VALUES ('HIS','counseling'          ,'4Lifestyle','Counseling'          ,5,28,1,20,255,'',1,3,'','' ,'Counseling activities');
@@ -2029,24 +2071,24 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists' ,'userlist7'    ,'User Defined List 7',28,0);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'    ,'adjreason'      ,'Adjustment Reasons',1,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Adm adjust'     ,'Adm adjust'     , 5,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','After hrs calls','After hrs calls',10,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Bad check'      ,'Bad check'      ,15,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Bad debt'       ,'Bad debt'       ,20,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Coll w/o'       ,'Coll w/o'       ,25,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Discount'       ,'Discount'       ,30,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Hardship w/o'   ,'Hardship w/o'   ,35,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Ins adjust'     ,'Ins adjust'     ,40,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Ins bundling'   ,'Ins bundling'   ,45,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Ins overpaid'   ,'Ins overpaid'   ,50,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Ins refund'     ,'Ins refund'     ,55,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Pt overpaid'    ,'Pt overpaid'    ,60,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Pt refund'      ,'Pt refund'      ,65,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Pt released'    ,'Pt released'    ,70,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Sm debt w/o'    ,'Sm debt w/o'    ,75,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','To copay'       ,'To copay'       ,80,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','To ded\'ble'    ,'To ded\'ble'    ,85,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('adjreason','Untimely filing','Untimely filing',90,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Adm adjust'     ,'Adm adjust'     , 5,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','After hrs calls','After hrs calls',10,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Bad check'      ,'Bad check'      ,15,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Bad debt'       ,'Bad debt'       ,20,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Coll w/o'       ,'Coll w/o'       ,25,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Discount'       ,'Discount'       ,30,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Hardship w/o'   ,'Hardship w/o'   ,35,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Ins adjust'     ,'Ins adjust'     ,40,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Ins bundling'   ,'Ins bundling'   ,45,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Ins overpaid'   ,'Ins overpaid'   ,50,5);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Ins refund'     ,'Ins refund'     ,55,5);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Pt overpaid'    ,'Pt overpaid'    ,60,5);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Pt refund'      ,'Pt refund'      ,65,5);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Pt released'    ,'Pt released'    ,70,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Sm debt w/o'    ,'Sm debt w/o'    ,75,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','To copay'       ,'To copay'       ,80,2);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','To ded\'ble'    ,'To ded\'ble'    ,85,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('adjreason','Untimely filing','Untimely filing',90,1);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'       ,'sub_relation','Subscriber Relationship',18,0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('sub_relation','self'        ,'Self'                   , 1,0);
@@ -2139,12 +2181,13 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('warehouse','onsite'   ,'On Site'   , 5,0);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','abook_type'  ,'Address Book Types'  , 1,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','ord_img','Imaging Service'     , 5,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','ord_imm','Immunization Service',10,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','ord_lab','Lab Service'         ,15,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','spe'    ,'Specialist'          ,20,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','vendor' ,'Vendor'              ,25,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('abook_type','oth'    ,'Other'               ,95,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','ord_img','Imaging Service'     , 5,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','ord_imm','Immunization Service',10,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','ord_lab','Lab Service'         ,15,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','spe'    ,'Specialist'          ,20,2);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','vendor' ,'Vendor'              ,25,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','dist'   ,'Distributor'         ,30,3);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','oth'    ,'Other'               ,95,1);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','proc_type','Procedure Types', 1,0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('proc_type','grp','Group'          ,10,0);
@@ -2255,6 +2298,54 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('transactions', 'Legal', 'Legal', 40, 0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('transactions', 'Billing', 'Billing', 50, 0);
 
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_adjustment_code','Payment Adjustment Code', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'family_payment', 'Family Payment', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'group_payment', 'Group Payment', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'insurance_payment', 'Insurance Payment', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'patient_payment', 'Patient Payment', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'pre_payment', 'Pre Payment', 60, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_ins','Payment Ins', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '0', 'Pat', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '1', 'Ins1', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '2', 'Ins2', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '3', 'Ins3', 30, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_method','Payment Method', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'bank_draft', 'Bank Draft', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'cash', 'Cash', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'check_payment', 'Check Payment', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'credit_card', 'Credit Card', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'electronic', 'Electronic', 40, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_sort_by','Payment Sort By', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'check_date', 'Check Date', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payer_id', 'Ins Code', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payment_method', 'Payment Method', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payment_type', 'Paying Entity', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'pay_total', 'Amount', 70, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'reference', 'Check Number', 60, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'session_id', 'Id', 10, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_status','Payment Status', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_status', 'fully_paid', 'Fully Paid', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_status', 'unapplied', 'Unapplied', 20, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_type','Payment Type', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_type', 'insurance', 'Insurance', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_type', 'patient', 'Patient', 20, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists', 'date_master_criteria', 'Date Master Criteria', 33, 1);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'all', 'All', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'today', 'Today', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_month_to_date', 'This Month to Date', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_month', 'Last Month', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_week_to_date', 'This Week to Date', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_calendar_year', 'This Calendar Year', 60, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_calendar_year', 'Last Calendar Year', 70, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'custom', 'Custom', 80, 0);
+
 -- --------------------------------------------------------
 
 -- 
@@ -2282,6 +2373,11 @@ CREATE TABLE `lists` (
   `groupname` varchar(255) default NULL,
   `outcome` int(11) NOT NULL default '0',
   `destination` varchar(255) default NULL,
+  `reinjury_id` bigint(20)  NOT NULL DEFAULT 0,
+  `injury_part` varchar(31) NOT NULL DEFAULT '',
+  `injury_type` varchar(31) NOT NULL DEFAULT '',
+  `injury_grade` varchar(31) NOT NULL DEFAULT '',
+  `reaction` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
@@ -2601,6 +2697,8 @@ CREATE TABLE `patient_data` (
   `providerID` int(11) default NULL,
   `email` varchar(255) NOT NULL default '',
   `ethnoracial` varchar(255) NOT NULL default '',
+  `race` varchar(255) NOT NULL default '',
+  `ethnicity` varchar(255) NOT NULL default '',
   `interpretter` varchar(255) NOT NULL default '',
   `migrantseasonal` varchar(255) NOT NULL default '',
   `family_size` varchar(255) NOT NULL default '',
@@ -2984,6 +3082,7 @@ CREATE TABLE `transactions` (
   `refer_vitals`            tinyint(1)   NOT NULL DEFAULT 0,
   `refer_external`          tinyint(1)   NOT NULL DEFAULT 0,
   `refer_related_code`      varchar(255) NOT NULL DEFAULT '',
+  `refer_reply_date`        date         DEFAULT NULL,
   `reply_date`              date         DEFAULT NULL,
   `reply_from`              varchar(255) NOT NULL DEFAULT '',
   `reply_init_diag`         varchar(255) NOT NULL DEFAULT '',
@@ -2993,6 +3092,7 @@ CREATE TABLE `transactions` (
   `reply_services`          text         NOT NULL DEFAULT '',
   `reply_recommend`         text         NOT NULL DEFAULT '',
   `reply_rx_refer`          text         NOT NULL DEFAULT '',
+  `reply_related_code`      varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
@@ -3057,6 +3157,41 @@ CREATE TABLE `users` (
   `irnpool` varchar(31) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_settings`
+--
+
+CREATE TABLE `user_settings` (
+  `setting_user`  bigint(20)   NOT NULL DEFAULT 0,
+  `setting_label` varchar(63)  NOT NULL,
+  `setting_value` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`setting_user`, `setting_label`)
+) ENGINE=MyISAM;
+
+--
+-- Dumping data for table `user_settings`
+--
+
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'allergy_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'appointments_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'billing_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'demographics_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'dental_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'directives_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'disclosures_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'immunizations_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'insurance_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'medical_problem_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'medication_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'pnotes_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'prescriptions_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'surgery_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'vitals_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'gacl_protect', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (1, 'gacl_protect', '1');
 
 -- --------------------------------------------------------
 
@@ -3177,6 +3312,15 @@ CREATE TABLE ar_session (
   check_date     date          DEFAULT NULL,
   deposit_date   date          DEFAULT NULL,
   pay_total      decimal(12,2) NOT NULL DEFAULT 0,
+  created_time timestamp NOT NULL default CURRENT_TIMESTAMP,
+  modified_time datetime NOT NULL,
+  global_amount decimal( 12, 2 ) NOT NULL ,
+  payment_type varchar( 50 ) NOT NULL ,
+  description text NOT NULL ,
+  adjustment_code varchar( 50 ) NOT NULL ,
+  post_to_date date NOT NULL ,
+  patient_id int( 11 ) NOT NULL ,
+  payment_method varchar( 25 ) NOT NULL,
   PRIMARY KEY (session_id),
   KEY user_closed (user_id, closed),
   KEY deposit_date (deposit_date)
@@ -3195,6 +3339,10 @@ CREATE TABLE ar_activity (
   memo           varchar(255)  NOT NULL DEFAULT '' COMMENT 'adjustment reasons go here',
   pay_amount     decimal(12,2) NOT NULL DEFAULT 0  COMMENT 'either pay or adj will always be 0',
   adj_amount     decimal(12,2) NOT NULL DEFAULT 0,
+  modified_time datetime NOT NULL,
+  follow_up char(1) NOT NULL,
+  follow_up_note text NOT NULL,
+  account_code varchar(15) NOT NULL,
   PRIMARY KEY (pid, encounter, sequence_no),
   KEY session_id (session_id)
 ) ENGINE=MyISAM;
@@ -3316,3 +3464,57 @@ INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, 
 
 INSERT INTO list_options ( list_id, option_id, title, seq ) VALUES ('lists', 'code_types', 'Code Types', 1);
 
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'disclosure_type','Disclosure Type', 3,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-treatment', 'Treatment', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-payment', 'Payment', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-healthcareoperations', 'Health Care Operations', 30, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'smoking_status','Smoking Status', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '1', 'Current every day smoker', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '2', 'Current some day smoker', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '3', 'Former smoker', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '4', 'Never smoker', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '5', 'Smoker, current status unknown', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '9', 'Unknown if ever smoked', 60, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'race','Race', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'amer_ind_or_alaska_native', 'American Indian or Alaska Native', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'Asian', 'Asian',20,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'black_or_afri_amer', 'Black or African American',30,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'native_hawai_or_pac_island', 'Native Hawaiian or Other Pacific Islander',40,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'white', 'White',50,0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'ethnicity','Ethnicity', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('ethnicity', 'hisp_or_latin', 'Hispanic or Latino', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('ethnicity', 'not_hisp_or_latin', 'Not Hispanic or Latino', 10, 0);
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_date','Payment Date', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'date_val', 'Date', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'post_to_date', 'Post To Date', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'deposit_date', 'Deposit Date', 30, 0);
+-- --------------------------------------------------------
+
+-- 
+-- Table structure for table `extended_log`
+--
+
+DROP TABLE IF EXISTS `extended_log`;
+CREATE TABLE `extended_log` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `date` datetime default NULL,
+  `event` varchar(255) default NULL,
+  `user` varchar(255) default NULL,
+  `recipient` varchar(255) default NULL,
+  `description` longtext,
+  `patient_id` bigint(20) default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 ;
+
+CREATE TABLE version (
+  v_major    int(11)     NOT NULL DEFAULT 0,
+  v_minor    int(11)     NOT NULL DEFAULT 0,
+  v_patch    int(11)     NOT NULL DEFAULT 0,
+  v_tag      varchar(31) NOT NULL DEFAULT '',
+  v_database int(11)     NOT NULL DEFAULT 0
+) ENGINE=MyISAM;
+INSERT INTO version (v_major, v_minor, v_patch, v_tag, v_database) VALUES (0, 0, 0, '', 0);

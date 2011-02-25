@@ -67,7 +67,8 @@
     else if ($acount == 3) {
       $pid = $atmp[0];
       $brow = sqlQuery("SELECT encounter FROM billing WHERE " .
-        "pid = '$pid' AND id = '" . $atmp[1] . "' AND activity = 1");
+        "pid = '$pid' AND encounter = '" . $atmp[1] . "' AND activity = 1");
+        
       $encounter = $brow['encounter'];
     }
     else if ($acount == 1) {
@@ -222,7 +223,28 @@
     slAddTransaction($trans_id, $chart_id_cash, 0 - $thispay, $thisdate, $thissrc, $code, $thisins, $debug);
     slUpdateAR($trans_id, 0, $thispay, $thisdate, $debug);
   }
-
+  //writing the check details to Session Table on ERA proxcessing
+function arPostSession($payer_id,$check_number,$check_date,$pay_total,$post_to_date,$deposit_date,$debug) {
+      $query = "INSERT INTO ar_session( " .
+      "payer_id,user_id,closed,reference,check_date,pay_total,post_to_date,deposit_date,patient_id,payment_type,adjustment_code,payment_method " .
+      ") VALUES ( " .
+      "'$payer_id'," .
+      $_SESSION['authUserID']."," .
+      "0," .
+      "'ePay - $check_number'," .
+      "'$check_date', " .
+      "$pay_total, " .
+      "'$post_to_date','$deposit_date', " .
+      "0,'insurance','insurance_payment','electronic'" .
+        ")";
+    if ($debug) {
+      echo $query . "<br>\n";
+    } else {
+     $sessionId=sqlInsert($query);
+    return $sessionId;
+    }
+  }
+  
   // Post a payment, new style.
   //
   function arPostPayment($patient_id, $encounter_id, $session_id, $amount, $code, $payer_type, $memo, $debug, $time='') {
@@ -366,15 +388,22 @@
       "pid = ? AND type = ? AND date <= ? " .
       "ORDER BY date DESC LIMIT 1";
     $nprow = sqlQuery($query, array($patient_id,$value,$date_of_service) );
-    // echo "<!-- $query => '" . $nprow['provider'] . "' -->\n"; // debugging
     if (empty($nprow)) return 0;
     return $nprow['provider'];
   }
 
   // Make this invoice re-billable, new style.
   //
-  function arSetupSecondary($patient_id, $encounter_id, $debug) {
-
+  function arSetupSecondary($patient_id, $encounter_id, $debug,$crossover=0) {
+    if ($crossover==1) {
+    //if claim forwarded setting a new status 
+    $status=6;
+    
+    } else {
+    
+    $status=1;
+    
+    }
     // Determine the next insurance level to be billed.
     $ferow = sqlQuery("SELECT date, last_level_billed " .
       "FROM form_encounter WHERE " .
@@ -389,12 +418,12 @@
     if ($new_payer_id) {
       // Queue up the claim.
       if (!$debug)
-        updateClaim(true, $patient_id, $encounter_id, $new_payer_id, $new_payer_type, 1, 5, '', 'hcfa');
+        updateClaim(true, $patient_id, $encounter_id, $new_payer_id, $new_payer_type,$status, 5, '', 'hcfa','',$crossover);
     }
     else {
       // Just reopen the claim.
       if (!$debug)
-        updateClaim(true, $patient_id, $encounter_id, -1, -1, 1, 0, '');
+        updateClaim(true, $patient_id, $encounter_id, -1, -1, $status, 0, '','','',$crossover);
     }
 
     return xl("Encounter ") . $encounter . xl(" is ready for re-billing.");
@@ -536,7 +565,6 @@
 
     for ($irow = 0; $irow < SLRowCount($inres); ++$irow) {
       $row = SLGetRow($inres, $irow);
-      // $amount = $row['sellprice'];
       $amount = sprintf('%01.2f', $row['sellprice'] * $row['qty']);
 
       // Extract the billing code.

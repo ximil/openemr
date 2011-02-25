@@ -28,9 +28,13 @@ $pc_catid    = $_POST['pc_catid'];
 $facility_id = $_POST['facility_id'];
 $reason      = $_POST['reason'];
 $mode        = $_POST['mode'];
+$referral_source = $_POST['form_referral_source'];
+
+$facilityresult = sqlQuery("select name FROM facility WHERE id = $facility_id");
+$facility = $facilityresult['name'];
 
 if ($GLOBALS['concurrent_layout'])
-  $normalurl = "$rootdir/patient_file/encounter/encounter_top.php";
+  $normalurl = "patient_file/encounter/encounter_top.php";
 else
   $normalurl = "$rootdir/patient_file/encounter/patient_encounter.php";
 
@@ -45,9 +49,11 @@ if ($mode == 'new')
       "date = '$date', " .
       "onset_date = '$onset_date', " .
       "reason = '$reason', " .
+      "facility = '$facility', " .
       "pc_catid = '$pc_catid', " .
       "facility_id = '$facility_id', " .
       "sensitivity = '$sensitivity', " .
+      "referral_source = '$referral_source', " .
       "pid = '$pid', " .
       "encounter = '$encounter', " .
       "provider_id = '$provider_id'"),
@@ -68,9 +74,11 @@ else if ($mode == 'update')
     $datepart .
     "onset_date = '$onset_date', " .
     "reason = '$reason', " .
+    "facility = '$facility', " .
     "pc_catid = '$pc_catid', " .
     "facility_id = '$facility_id', " .
-    "sensitivity = '$sensitivity' " .
+    "sensitivity = '$sensitivity', " .
+    "referral_source = '$referral_source' " .
     "WHERE id = '$id'");
 }
 else {
@@ -110,7 +118,7 @@ if ($mode == 'new' && $GLOBALS['default_new_encounter_form'] == 'football_injury
     "lists.title NOT LIKE '%Illness%'");
 
   if (mysql_num_rows($lres)) {
-    $nexturl = "$rootdir/patient_file/encounter/load_form.php?formname=" .
+    $nexturl = "patient_file/encounter/load_form.php?formname=" .
       $GLOBALS['default_new_encounter_form'];
     while ($lrow = sqlFetchArray($lres)) {
       $frow = sqlQuery("SELECT count(*) AS count " .
@@ -123,16 +131,43 @@ if ($mode == 'new' && $GLOBALS['default_new_encounter_form'] == 'football_injury
     }
   }
 }
+$result4 = sqlStatement("SELECT fe.encounter,fe.date,openemr_postcalendar_categories.pc_catname FROM form_encounter AS fe ".
+	" left join openemr_postcalendar_categories on fe.pc_catid=openemr_postcalendar_categories.pc_catid  WHERE fe.pid = '$pid' order by fe.date desc");
 ?>
 <html>
 <body>
-<script language="Javascript">
-<?php if ($GLOBALS['concurrent_layout'] && $mode == 'new') { ?>
- parent.left_nav.setEncounter(<?php echo "'" . oeFormatShortDate($date) . "', $encounter, window.name"; ?>);
- parent.left_nav.setRadio(window.name, 'enc');
+<script language='JavaScript'>
+<?php if ($GLOBALS['concurrent_layout'])
+ {//Encounter details are stored to javacript as array.
+?>
+	EncounterDateArray=new Array;
+	CalendarCategoryArray=new Array;
+	EncounterIdArray=new Array;
+	Count=0;
+	 <?php
+			   if(sqlNumRows($result4)>0)
+				while($rowresult4 = sqlFetchArray($result4))
+				 {
+	?>
+					EncounterIdArray[Count]='<?php echo htmlspecialchars($rowresult4['encounter'], ENT_QUOTES); ?>';
+					EncounterDateArray[Count]='<?php echo htmlspecialchars(oeFormatShortDate(date("Y-m-d", strtotime($rowresult4['date']))), ENT_QUOTES); ?>';
+					CalendarCategoryArray[Count]='<?php echo htmlspecialchars( xl_appt_category($rowresult4['pc_catname']), ENT_QUOTES); ?>';
+					Count++;
+	 <?php
+				 }
+	 ?>
+	 top.window.parent.left_nav.setPatientEncounter(EncounterIdArray,EncounterDateArray,CalendarCategoryArray);
 <?php } ?>
  top.restoreSession();
+<?php if ($GLOBALS['concurrent_layout']) { ?>
+<?php if ($mode == 'new') { ?>
+ parent.left_nav.setEncounter(<?php echo "'" . oeFormatShortDate($date) . "', $encounter, window.name"; ?>);
+ parent.left_nav.setRadio(window.name, 'enc');
+<?php } // end if new encounter ?>
+ parent.left_nav.loadFrame('enc2', window.name, '<?php echo $nexturl; ?>');
+<?php } else { // end if concurrent layout ?>
  window.location="<?php echo $nexturl; ?>";
+<?php } // end not concurrent layout ?>
 </script>
 
 </body>

@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2008-2009 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2008-2010 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -17,6 +17,9 @@ $ignoreAuth = true; // no login required
 
 require_once('interface/globals.php');
 require_once('library/sql.inc');
+
+// Force logging off
+$GLOBALS["enable_auditlog"]=0;
 
 function tableExists($tblname) {
   $row = sqlQuery("SHOW TABLES LIKE '$tblname'");
@@ -214,6 +217,10 @@ if (!empty($_POST['form_submit'])) {
       }
     }
   }
+
+  echo "<font color='green'>Updating version indicators...</font><br />\n";
+  sqlStatement("UPDATE version SET v_major = '$v_major', v_minor = '$v_minor', " .
+    "v_patch = '$v_patch', v_tag = '$v_tag', v_database = '$v_database'");
 
   echo "<p><font color='green'>Database upgrade finished.</font></p>\n";
   echo "</body></html>\n";

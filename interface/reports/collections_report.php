@@ -26,14 +26,14 @@ $today = date("Y-m-d");
 
 $form_date      = fixDate($_POST['form_date'], "");
 $form_to_date   = fixDate($_POST['form_to_date'], "");
-$is_ins_summary = $_POST['form_category'] == xl('Ins Summary');
-$is_due_ins     = ($_POST['form_category'] == xl('Due Ins')) || $is_ins_summary;
-$is_due_pt      = $_POST['form_category'] == xl('Due Pt');
-$is_all         = $_POST['form_category'] == xl('All');
+$is_ins_summary = $_POST['form_category'] == 'Ins Summary';
+$is_due_ins     = ($_POST['form_category'] == 'Due Ins') || $is_ins_summary;
+$is_due_pt      = $_POST['form_category'] == 'Due Pt';
+$is_all         = $_POST['form_category'] == 'All';
 $is_ageby_lad   = strpos($_POST['form_ageby'], 'Last') !== false;
 $form_facility  = $_POST['form_facility'];
 
-if ($_POST['form_search'] || $_POST['form_export'] || $_POST['form_csvexport']) {
+if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport']) {
   if ($is_ins_summary) {
     $form_cb_ssn      = false;
     $form_cb_dob      = false;
@@ -153,9 +153,14 @@ function endPatient($ptrow) {
   else {
     if ($ptrow['count'] > 1) {
       echo " <tr bgcolor='$bgcolor'>\n";
+      /***************************************************************
       echo "  <td class='detail' colspan='$initial_colspan'>";
       echo "&nbsp;</td>\n";
       echo "  <td class='detotal' colspan='$final_colspan'>&nbsp;Total Patient Balance:</td>\n";
+      ***************************************************************/
+      echo "  <td class='detotal' colspan='" . ($initial_colspan + $final_colspan) .
+        "'>&nbsp;" . xl('Total Patient Balance') . ":</td>\n";
+      /**************************************************************/
       if ($form_age_cols) {
         for ($c = 0; $c < $form_age_cols; ++$c) {
           echo "  <td class='detotal' align='right'>&nbsp;" .
@@ -367,7 +372,7 @@ function checkAll(checked) {
 						   <?php xl('Service Date','e'); ?>:
 						</td>
 						<td>
-						   <input type='text' name='form_from_date' id="form_from_date" size='10' value='<?php echo $form_from_date ?>'
+						   <input type='text' name='form_date' id="form_date" size='10' value='<?php echo $form_date ?>'
 							onkeyup='datekeyup(this,mypcc)' onblur='dateblur(this,mypcc)' title='yyyy-mm-dd'>
 						   <img src='../pic/show_calendar.gif' align='absbottom' width='24' height='22'
 							id='img_from_date' border='0' alt='[?]' style='cursor:pointer'
@@ -386,9 +391,9 @@ function checkAll(checked) {
 						<td>
 						   <select name='form_category'>
 						<?php
-						 foreach (array(xl('Open'),xl('Due Pt'),xl('Due Ins'),xl('Ins Summary'),xl('Credits'),xl('All')) as $value) {
-						  echo "    <option value='$value'";
-						  if ($_POST['form_category'] == $value) echo " selected";
+						 foreach (array('Open' => xl('Open'),'Due Pt' => xl('Due Pt'),'Due Ins' => xl('Due Ins'),'Ins Summary' => xl('Ins Summary'),'Credits' => xl('Credits'),'All' => xl('All')) as $key => $value) {
+						  echo "    <option value='$key'";
+						  if ($_POST['form_category'] == $key) echo " selected";
 						  echo ">$value</option>\n";
 						 }
 						?>
@@ -537,7 +542,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       $pt_balance = 0 + sprintf("%.2f", $pt_balance); // yes this seems to be necessary
       $svcdate = substr($erow['date'], 0, 10);
 
-      if ($_POST['form_search'] && ! $is_all) {
+      if ($_POST['form_refresh'] && ! $is_all) {
         if ($pt_balance == 0) continue;
       }
       if ($_POST['form_category'] == 'Credits') {
@@ -724,7 +729,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       // "invoice.trans_id = ar.id AND invoice.fxsellprice < 0) AS adjustments " .
       "FROM ar JOIN customer ON customer.id = ar.customer_id " .
       "WHERE ( $where ) ";
-    if ($_POST['form_search'] && ! $is_all) {
+    if ($_POST['form_refresh'] && ! $is_all) {
       $query .= "AND ar.amount != ar.paid ";
     }
     $query .= "ORDER BY ar.invnumber";
@@ -1217,7 +1222,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
     echo "</table>\n";
 	echo "</div>\n";
   }
-} // end if form_search
+} // end if form_refresh
 
 if (!$INTEGRATED_AR) SLClose();
 
@@ -1261,8 +1266,8 @@ if (!$_POST['form_csvexport']) {
 <script type="text/javascript" src="../../library/dynarch_calendar_setup.js"></script>
 <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
 <script language="Javascript">
- Calendar.setup({inputField:"form_date", ifFormat:"%m/%d/%Y", button:"img_from_date"});
- Calendar.setup({inputField:"form_to_date", ifFormat:"%m/%d/%Y", button:"img_to_date"});
+ Calendar.setup({inputField:"form_date", ifFormat:"%Y-%m-%d", button:"img_from_date"});
+ Calendar.setup({inputField:"form_to_date", ifFormat:"%Y-%m-%d", button:"img_to_date"});
 </script>
 </html>
 <?php

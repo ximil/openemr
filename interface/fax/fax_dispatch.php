@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2006-2009 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2006-2010 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,7 +29,7 @@ else {
 
 $ext = substr($filename, strrpos($filename, '.'));
 $filebase = basename("/$filename", $ext);
-$faxcache = "$webserver_root/faxcache/$mode/$filebase";
+$faxcache = $GLOBALS['OE_SITE_DIR'] . "/faxcache/$mode/$filebase";
 
 $info_msg = "";
 
@@ -80,7 +80,7 @@ if ($_POST['form_save']) {
     $patient_id = (int) $_POST['form_pid'];
     if (!$patient_id) die(xl('Internal error - patient ID was not provided!'));
     // Compute the name of the target directory and make sure it exists.
-    $docdir = "$webserver_root/documents/$patient_id";
+    $docdir = $GLOBALS['OE_SITE_DIR'] . "/documents/$patient_id";
     exec("mkdir -p '$docdir'");
 
     // If copying to patient documents...
@@ -185,7 +185,7 @@ if ($_POST['form_save']) {
         addForm($encounter_id, "Scanned Notes", $formid, "scanned_notes",
           $patient_id, $userauthorized);
         //
-        $imagedir = "$webserver_root/documents/$patient_id/encounters";
+        $imagedir = $GLOBALS['OE_SITE_DIR'] . "/documents/$patient_id/encounters";
         $imagepath = "$imagedir/${encounter_id}_$formid.jpg";
         //
         if (! is_dir($imagedir)) {
@@ -239,7 +239,7 @@ if ($_POST['form_save']) {
     $tmpfn2 = tempnam("/tmp", "fax2");
     $tmph = fopen($tmpfn1, "w");
     $cpstring = '';
-    $fh = fopen("$webserver_root/custom/faxcover.txt", 'r');
+    $fh = fopen($GLOBALS['OE_SITE_DIR'] . "/faxcover.txt", 'r');
     while (!feof($fh)) $cpstring .= fread($fh, 8192);
     fclose($fh);
     $cpstring = str_replace('{CURRENT_DATE}'  , date('F j, Y'), $cpstring);
@@ -720,23 +720,29 @@ while ($urow = sqlFetchArray($ures)) {
 <?php
 $dh = opendir($faxcache);
 if (! $dh) die("Cannot read $faxcache");
-$page = 0;
+$jpgarray = array();
 while (false !== ($jfname = readdir($dh))) {
   if (preg_match("/^(.*)\.jpg/", $jfname, $matches)) {
-    ++$page;
-    $jfnamebase = $matches[1];
-    echo " <tr>\n";
-    echo "  <td valign='top'>\n";
-    echo "   <img src='../../faxcache/$mode/$filebase/$jfname' />\n";
-    echo "  </td>\n";
-    echo "  <td align='center' valign='top'>\n";
-    echo "   <input type='checkbox' name='form_images[]' value='$jfnamebase' checked />\n";
-    echo "   <br />$page\n";
-    echo "  </td>\n";
-    echo " </tr>\n";
+    $jpgarray[$matches[1]] = $jfname;
   }
 }
 closedir($dh);
+// readdir does not read in any particular order, we must therefore sort
+// by filename so the display order matches the original document.
+ksort($jpgarray);
+$page = 0;
+foreach ($jpgarray as $jfnamebase => $jfname) {
+  ++$page;
+  echo " <tr>\n";
+  echo "  <td valign='top'>\n";
+  echo "   <img src='../../sites/" . $_SESSION['site_id'] . "/faxcache/$mode/$filebase/$jfname' />\n";
+  echo "  </td>\n";
+  echo "  <td align='center' valign='top'>\n";
+  echo "   <input type='checkbox' name='form_images[]' value='$jfnamebase' checked />\n";
+  echo "   <br />$page\n";
+  echo "  </td>\n";
+  echo " </tr>\n";
+}
 ?>
 
 </table>

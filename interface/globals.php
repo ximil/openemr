@@ -77,8 +77,6 @@ if ($sanitize_all_escapes) {
   }
 }
 
-require_once(dirname(__FILE__) . "/../includes/config.php");
-
 //
 // The webserver_root and web_root are now automatically collected.
 // If not working, can set manually below.
@@ -101,6 +99,44 @@ if (preg_match("/^[^\/]/",$web_root)) {
 //   $webserver_root = "/var/www/openemr"
 //   $web_root =  "/openemr"
 //
+
+// This is the directory that contains site-specific data.  Change this
+// only if you have some reason to.
+$GLOBALS['OE_SITES_BASE'] = "$webserver_root/sites";
+
+// The session name names a cookie stored in the browser.
+// If you modify session_name, then need to place the identical name in
+// the phpmyadmin file here: openemr/phpmyadmin/libraries/session.inc.php
+// at line 71. This was required after embedded new phpmyadmin version on
+// 05-12-2009 by Brady. Hopefully will figure out a more appropriate fix.
+// Now that restore_session() is implemented in javaScript, session IDs are
+// effectively saved in the top level browser window and there is no longer
+// any need to change the session name for different OpenEMR instances.
+session_name("OpenEMR");
+
+session_start();
+
+// Set the site ID if required.  This must be done before any database
+// access is attempted.
+if (empty($_SESSION['site_id']) || !empty($_GET['site'])) {
+  if (!empty($_GET['site'])) {
+    $tmp = $_GET['site'];
+  }
+  else {
+    if (!$ignoreAuth) die("Site ID is missing from session data!");
+    $tmp = $_SERVER['HTTP_HOST'];
+    if (!is_dir($GLOBALS['OE_SITES_BASE'] . "/$tmp")) $tmp = "default";
+  }
+  if (!isset($_SESSION['site_id']) || $_SESSION['site_id'] != $tmp) {
+    $_SESSION['site_id'] = $tmp;
+    error_log("Session site ID has been set to '$tmp'"); // debugging
+  }
+}
+
+// Set the site-specific directory path.
+$GLOBALS['OE_SITE_DIR'] = $GLOBALS['OE_SITES_BASE'] . "/" . $_SESSION['site_id'];
+
+require_once($GLOBALS['OE_SITE_DIR'] . "/config.php");
 
 // Collecting the utf8 disable flag from the sqlconf.php file in order
 // to set the correct html encoding. utf8 vs iso-8859-1. If flag is set
@@ -132,6 +168,9 @@ $GLOBALS['incdir'] = $include_root;
 // Location of the login screen file
 $GLOBALS['login_screen'] = $GLOBALS['rootdir'] . "/login_screen.php";
 
+// Variable set for Eligibility Verification [EDI-271] path 
+$GLOBALS['edi_271_file_path'] = $GLOBALS['OE_SITE_DIR'] . "/edi/";
+
 // Include the translation engine. This will also call sql.inc to
 //  open the openemr mysql connection.
 include_once (dirname(__FILE__) . "/../library/translation.inc.php");
@@ -151,6 +190,20 @@ $GLOBALS['sell_non_drug_products'] = 0;
 
 $glrow = sqlQuery("SHOW TABLES LIKE 'globals'");
 if (!empty($glrow)) {
+  // Collect user specific settings from user_settings table.
+  //
+  $gl_user = array();
+  if (!empty($_SESSION['authUserID'])) {
+    $glres_user = sqlStatement("SELECT `setting_label`, `setting_value` " .
+      "FROM `user_settings` " .
+      "WHERE `setting_user` = ? " .
+      "AND `setting_label` LIKE 'global:%'", array($_SESSION['authUserID']) );
+    for($iter=0; $row=sqlFetchArray($glres_user); $iter++) {
+      //remove global_ prefix from label
+      $row['setting_label'] = substr($row['setting_label'],7);
+      $gl_user[$iter]=$row;
+    }
+  }
   // Set global parameters from the database globals table.
   // Some parameters require custom handling.
   //
@@ -160,6 +213,14 @@ if (!empty($glrow)) {
   while ($glrow = sqlFetchArray($glres)) {
     $gl_name  = $glrow['gl_name'];
     $gl_value = $glrow['gl_value'];
+    // Adjust for user specific settings
+    if (!empty($gl_user)) {
+      foreach ($gl_user as $setting) {
+        if ($gl_name == $setting['setting_label']) {
+          $gl_value = $setting['setting_value'];
+        }
+      }
+    }
     if ($gl_name == 'language_menu_other') {
       $GLOBALS['language_menu_show'][] = $gl_value;
     }
@@ -177,7 +238,7 @@ if (!empty($glrow)) {
       else if ($gl_value == '3') $GLOBALS['sell_non_drug_products'] = 2;
     }
     else {
-      $GLOBALS[$gl_name] = $glrow['gl_value'];
+      $GLOBALS[$gl_name] = $gl_value;
     }
   }
   // Language cleanup stuff.
@@ -205,7 +266,7 @@ else {
   $GLOBALS['concurrent_layout'] = 2;
   $timeout = 7200;
   $openemr_name = 'OpenEMR';
-  $css_header = "$rootdir/themes/style_sky_blue.css";
+  $css_header = "$rootdir/themes/style_default.css";
   $GLOBALS['css_header'] = $css_header;
   $GLOBALS['schedule_start'] = 8;
   $GLOBALS['schedule_end'] = 17;
@@ -214,40 +275,6 @@ else {
   $GLOBALS['disable_non_default_groups'] = true;
   $GLOBALS['ippf_specific'] = false;
 }
-
-//
-// Lists and Layouts Control Section
-//
-//
-// 'state_custom_addlist_widget'
-//  - If true, then will display a customized addlist widget for
-//    state list entries (will ask for title and abbreviation)
-$GLOBALS['state_custom_addlist_widget'] = true;
-$GLOBALS['state_list'] = "state";
-$GLOBALS['country_list'] = "country";
-
-// Option to set the top default window. By default, it is set
-// to the calendar screen. The starting directory is
-// interface/main/ , hence:
-//    The calendar screen is 'main_info.php' .
-//    The patient search/add screen is '../new/new.php' .
-$GLOBALS['default_top_pane'] = 'main_info.php';
-
-// Default category for find_patient screen
-$GLOBALS['default_category'] = 5;
-$GLOBALS['default_event_title'] = 'Office Visit';
-
-// The session name appears in cookies stored in the browser.  If you have
-// multiple OpenEMR installations running on the same server, you should
-// customize this name so they cannot interfere with each other.
-//
-// Also, if modify session_name, then need to place the identical name in
-// the phpmyadmin file here: openemr/phpmyadmin/libraries/session.inc.php
-// at line 71. This was required after embedded new phpmyadmin version on
-// 05-12-2009 by Brady. Hopefully will figure out a more appropriate fix.
-session_name("OpenEMR");
-
-session_start();
 
 // If >0 this will enforce a separate PHP session for each top-level
 // browser window.  You must log in separately for each.  This is not
@@ -273,7 +300,7 @@ if ($GLOBALS['concurrent_layout']) {
 }
 $login_filler_line = ' bgcolor="#f7f0d5" ';
 $login_body_line = ' background="'.$rootdir.'/pic/aquabg.gif" ';
-$logocode="<img src='$rootdir/pic/logo_sky.gif'>";
+$logocode = "<img src='$web_root/sites/" . $_SESSION['site_id'] . "/images/login_logo.gif'>";
 $linepic = "$rootdir/pic/repeat_vline9.gif";
 $table_bg = ' bgcolor="#cccccc" ';
 $GLOBALS['style']['BGCOLOR1'] = "#cccccc";
@@ -285,7 +312,7 @@ $GLOBALS['logoBarHeight'] = 110;
 // The height in pixels of the Navigation bar:
 $GLOBALS['navBarHeight'] = 22;
 // The height in pixels of the Title bar:
-$GLOBALS['titleBarHeight'] = 20;
+$GLOBALS['titleBarHeight'] = 40;
 
 // The assistant word, MORE printed next to titles that can be clicked:
 //   Note this label gets translated here via the xl function
@@ -304,13 +331,8 @@ if (!empty($special_timeout)) {
 }
 
 //Version tags
-
-$v_major = '4';
-$v_minor = '0';
-$v_patch = '0';
-$tag = '-dev'; // minor revision number, should be empty for production releases
-
-$openemr_version = "$v_major.$v_minor.$v_patch".$tag;	// Version tag used by program
+require_once(dirname(__FILE__) . "/../version.php");
+$openemr_version = "$v_major.$v_minor.$v_patch".$v_tag;	// Version tag used by program
 
 $srcdir = $GLOBALS['srcdir'];
 $login_screen = $GLOBALS['login_screen'];
@@ -347,32 +369,6 @@ $GLOBALS['layout_search_color'] = '#ffff55';
 //EMAIL SETTINGS
 $SMTP_Auth = !empty($GLOBALS['SMTP_USER']);
 
-// The following credentials are provided by OpenEMR Support LLC for testing.
-// When you sign up with their Lab Exchange service, they will provide you with your own credentials.
-
-/* use this for testing
-$LAB_EXCHANGE_SITEID   = "3";
-$LAB_EXCHANGE_TOKEN    = "12345";
-$LAB_EXCHANGE_ENDPOINT = "https://openemrsupport.com:29443/len/api";
-*/
-
-$LAB_EXCHANGE_SITEID   = "";
-$LAB_EXCHANGE_TOKEN    = "";
-$LAB_EXCHANGE_ENDPOINT = "";
-
-// If you want Hylafax support then uncomment and customize the following
-// statements, and also customize custom/faxcover.txt:
-//
-// $GLOBALS['hylafax_server']   = 'localhost';
-// $GLOBALS['hylafax_basedir']  = '/var/spool/fax';
-// $GLOBALS['hylafax_enscript'] = 'enscript -M Letter -B -e^ --margins=36:36:36:36';
-
-// For scanner support, uncomment and customize the following.  This is
-// the directory in which scanned-in documents may be found, and may for
-// example be a smbfs-mounted share from the PC supporting the scanner:
-//
-// $GLOBALS['scanner_output_directory'] = '/mnt/scan_docs';
-
 // Customize these if you are using SQL-Ledger with OpenEMR, or if you are
 // going to run sl_convert.php to convert from SQL-Ledger.
 //
@@ -383,37 +379,6 @@ $sl_services_id = 'MS';         // sql-ledger parts table id for medical service
 $sl_dbname      = 'sql-ledger'; // sql-ledger database name
 $sl_dbuser      = 'sql-ledger'; // sql-ledger database login name
 $sl_dbpass      = 'secret';     // sql-ledger database login password
-
-///////////////////////// AUDIT LOGGING CONFIG ////////////////
-//$GLOBALS["enable_auditlog"]=0 is to off the logging feature in openemr
-//$GLOBALS["enable_auditlog"]=1 is to on the logging feature in openemr
-//patient-record:- set 1 (0 to off) to log the patient related activites like creation of new patient, encounters, history//etc.
-//scheduling:- set 1 (0 to off) to log the patient related scheduling like Appointments.
-//query:- set 1 (0 to off) to log all SQL SELECT queries.
-//order:- set 1 (0 to off) to log an orders like medical service or medical item (like a prescription).
-//security-administration:- set 1 to (0 to off) to log events such as creating/updating users/facility etc.
-//backup:- set 1 (0 to off) to log backup related activites.
-
-//Turning off Auditing. It is currently broken due to the conflicts with LAST_INSERT_ID
-$GLOBALS["enable_auditlog"]=1;
-$GLOBALS["audit_events"]=array("patient-record"=>1,
-                                "scheduling"=>1,
-                                "query"=>0,
-                                "order"=>1,
-                                "security-administration"=>1,
-                                "backup"=>1,
-                                );
-
-// Configure the settings below to enable Audit Trail and Node Authentication (ATNA).
-// See RFC 3881, RFC 5424, RFC 5425 for details.
-// atna_audit_host = The hostname of the audit repository machine
-// atna_audit_port = Listening port of the RFC 5425 TLS syslog server
-// atna_audit_localcert - Certificate to send to RFC 5425 TLS syslog server
-// atna_audit_cacert - CA Certificate for verifying the RFC 5425 TLS syslog server
-$GLOBALS['atna_audit_host'] = '';
-$GLOBALS['atna_audit_port'] = 6514;
-$GLOBALS['atna_audit_localcert'] = '';
-$GLOBALS['atna_audit_cacert'] = '';
 //////////////////////////////////////////////////////////////////
 
 // Don't change anything below this line. ////////////////////////////

@@ -115,7 +115,7 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
   if (empty($units)) $units = 1;
   $units = max(1, intval($units));
   // We put unit price on the screen, not the total line item fee.
-  $price = sprintf('%01.2f', $fee / $units);
+  $price = $fee / $units;
   $strike1 = ($id && $del) ? "<strike>" : "";
   $strike2 = ($id && $del) ? "</strike>" : "";
   echo " <tr>\n";
@@ -263,7 +263,7 @@ function echoProdLine($lino, $drug_id, $del = FALSE, $units = NULL,
   if (empty($units)) $units = 1;
   $units = max(1, intval($units));
   // We put unit price on the screen, not the total line item fee.
-  $price = sprintf('%01.2f', $fee / $units);
+  $price = $fee / $units;
   $strike1 = ($sale_id && $del) ? "<strike>" : "";
   $strike2 = ($sale_id && $del) ? "</strike>" : "";
   echo " <tr>\n";
@@ -364,6 +364,7 @@ $visit_row = sqlQuery("SELECT fe.date, opc.pc_catname " .
   "FROM form_encounter AS fe " .
   "LEFT JOIN openemr_postcalendar_categories AS opc ON opc.pc_catid = fe.pc_catid " .
   "WHERE fe.pid = '$pid' AND fe.encounter = '$encounter' LIMIT 1");
+$visit_date = substr($visit_row['date'], 0, 10);
 
 // If Save was clicked, save the new and modified billing lines;
 // then if no error, redirect to $returnurl.
@@ -465,7 +466,8 @@ if ($_POST['bn_save']) {
         $query = "UPDATE drug_sales AS dsr, drug_sales AS ds, " .
           "drug_inventory AS di " .
           "SET di.on_hand = di.on_hand + dsr.quantity - $units, " .
-          "ds.quantity = '$units', ds.fee = '$fee' WHERE " .
+          "ds.quantity = '$units', ds.fee = '$fee', " .
+          "ds.sale_date = '$visit_date' WHERE " .
           "dsr.sale_id = '$sale_id' AND ds.sale_id = dsr.sale_id AND " .
           "di.inventory_id = ds.inventory_id";
         sqlStatement($query);
@@ -474,8 +476,8 @@ if ($_POST['bn_save']) {
 
     // Otherwise it's a new item...
     else if (! $del) {
-      $sale_id = sellDrug($drug_id, $units, $fee, $pid, $encounter, 0, '', '',
-        $default_warehouse);
+      $sale_id = sellDrug($drug_id, $units, $fee, $pid, $encounter, 0,
+        $visit_date, '', $default_warehouse);
       if (!$sale_id) die("Insufficient inventory for product ID \"$drug_id\".");
     }
   } // end for
@@ -686,6 +688,7 @@ endFSCategory();
 $pres = sqlStatement("SELECT option_id, title FROM list_options " .
   "WHERE list_id = 'superbill' ORDER BY seq");
 while ($prow = sqlFetchArray($pres)) {
+  global $code_types;
   ++$i;
   echo ($i <= 1) ? " <tr>\n" : "";
   echo "  <td width='50%' align='center' nowrap>\n";
@@ -695,7 +698,9 @@ while ($prow = sqlFetchArray($pres)) {
     "WHERE superbill = '" . $prow['option_id'] . "' AND active = 1 " .
     "ORDER BY code_text");
   while ($row = sqlFetchArray($res)) {
-    echo "    <option value='" . alphaCodeType($row['code_type']) . '|' .
+    $ctkey = alphaCodeType($row['code_type']);
+    if ($code_types[$ctkey]['nofs']) continue;
+    echo "    <option value='$ctkey|" .
       $row['code'] . ':'. $row['modifier']. "|'>" . $row['code_text'] . "</option>\n";
   }
   echo "   </select>\n";

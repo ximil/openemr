@@ -293,6 +293,12 @@ ALTER TABlE patient_data
   UPDATE categories_seq SET id = (select MAX(id) from categories);
 #EndIf
 
+#IfNotRow categories name Patient Photograph
+ INSERT INTO categories select (select MAX(id) from categories) + 1, 'Patient Photograph', '', 1, rght, rght + 1 from categories where name = 'Categories';
+ UPDATE categories SET rght = rght + 2 WHERE name = 'Categories';
+ UPDATE categories_seq SET id = (select MAX(id) from categories);
+#Endif
+
 #IfMissingColumn patient_data completed_ad
 ALTER TABLE patient_data
   ADD completed_ad VARCHAR(3) NOT NULL DEFAULT 'NO',
@@ -695,8 +701,7 @@ INSERT INTO list_options ( list_id, option_id, title, seq ) VALUES ('lists', 'co
 
 #IfMissingColumn codes reportable
 ALTER TABLE `codes` 
-  ADD `reportable` TINYINT(1) DEFAULT 0 COMMENT '0 = non-reportable, 1 = reportable',
---UPDATE codes SET reportable = 0 ;
+  ADD `reportable` TINYINT(1) DEFAULT 0 COMMENT '0 = non-reportable, 1 = reportable';
 #EndIf
 
 #IfNotTable syndromic_surveillance
@@ -710,3 +715,286 @@ CREATE TABLE `syndromic_surveillance` (
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 #EndIf
 
+#IfMissingColumn lists reinjury_id
+ALTER TABLE lists
+  ADD reinjury_id bigint(20)  NOT NULL DEFAULT 0,
+  ADD injury_part varchar(31) NOT NULL DEFAULT '',
+  ADD injury_type varchar(31) NOT NULL DEFAULT '';
+#EndIf
+
+ALTER TABLE layout_options CHANGE description description text;
+
+#IfMissingColumn transactions refer_reply_date
+ALTER TABLE transactions ADD refer_reply_date date DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn transactions reply_related_code
+ALTER TABLE transactions ADD reply_related_code varchar(255) NOT NULL DEFAULT '';
+#EndIf
+
+#IfNotTable extended_log
+CREATE TABLE `extended_log` (
+  `id`          bigint(20)   NOT NULL AUTO_INCREMENT,
+  `date`        datetime     DEFAULT NULL,
+  `event`       varchar(255) DEFAULT NULL,
+  `user`        varchar(255) DEFAULT NULL,
+  `recipient`   varchar(255) DEFAULT NULL,
+  `description` longtext,
+  `patient_id`  bigint(20)   DEFAULT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id disclosure_type
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'disclosure_type','Disclosure Type', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-treatment', 'Treatment', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-payment', 'Payment', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-healthcareoperations', 'Health Care Operations', 30, 0);
+#EndIf
+
+#IfNotTable user_settings
+CREATE TABLE `user_settings` (
+  `setting_user`  bigint(20)   NOT NULL DEFAULT 0,
+  `setting_label` varchar(63)  NOT NULL,
+  `setting_value` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`setting_user`, `setting_label`)
+) ENGINE=MyISAM;
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'allergy_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'appointments_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'demographics_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'dental_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'directives_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'disclosures_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'immunizations_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'insurance_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'medical_problem_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'medication_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'pnotes_ps_expand', '0');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'prescriptions_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'surgery_ps_expand', '1');
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'vitals_ps_expand', '1');
+#EndIf
+
+#IfNotRow user_settings setting_label gacl_protect
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'gacl_protect', '0');
+#EndIf
+
+#IfNotTable version
+CREATE TABLE version (
+  v_major    int(11)     NOT NULL DEFAULT 0,
+  v_minor    int(11)     NOT NULL DEFAULT 0,
+  v_patch    int(11)     NOT NULL DEFAULT 0,
+  v_tag      varchar(31) NOT NULL DEFAULT '',
+  v_database int(11)     NOT NULL DEFAULT 0
+) ENGINE=MyISAM;
+INSERT INTO version (v_major, v_minor, v_patch, v_tag, v_database) VALUES (0, 0, 0, '', 0);
+#EndIf
+
+#IfMissingColumn lists injury_grade
+ALTER TABLE lists
+  ADD injury_grade varchar(31) NOT NULL DEFAULT '';
+#EndIf
+
+#IfMissingColumn form_encounter referral_source
+ALTER TABLE form_encounter ADD referral_source varchar(31) NOT NULL DEFAULT '';
+#EndIf
+
+#IfMissingColumn facility tax_id_type
+ALTER TABLE facility ADD COLUMN tax_id_type VARCHAR(31) NOT NULL DEFAULT '' AFTER facility_npi;
+#EndIf
+
+#IfMissingColumn ar_session created_time
+ALTER TABLE  `ar_session` ADD  `created_time` timestamp NOT NULL default CURRENT_TIMESTAMP,
+ADD  `modified_time` datetime NOT NULL,
+ADD  `global_amount` decimal( 12, 2 ) NOT NULL ,
+ADD  `payment_type` varchar( 50 ) NOT NULL ,
+ADD  `description` text NOT NULL ,
+ADD  `adjustment_code` varchar( 50 ) NOT NULL ,
+ADD  `post_to_date` date NOT NULL ,
+ADD  `patient_id` int( 11 ) NOT NULL ,
+ADD `payment_method` varchar( 25 ) NOT NULL ;
+#EndIf
+
+#IfMissingColumn ar_activity modified_time
+ALTER TABLE `ar_activity` ADD `modified_time` datetime NOT NULL,
+ADD `follow_up` char(1) NOT NULL,
+ADD `follow_up_note` text NOT NULL,
+ADD `account_code` varchar(15) NOT NULL;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_adjustment_code
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_adjustment_code','Payment Adjustment Code', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'family_payment', 'Family Payment', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'group_payment', 'Group Payment', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'insurance_payment', 'Insurance Payment', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'patient_payment', 'Patient Payment', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_adjustment_code', 'pre_payment', 'Pre Payment', 60, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_ins
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_ins','Payment Ins', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '0', 'Pat', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '1', 'Ins1', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '2', 'Ins2', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_ins', '3', 'Ins3', 30, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_method
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_method','Payment Method', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'bank_draft', 'Bank Draft', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'cash', 'Cash', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'check_payment', 'Check Payment', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'credit_card', 'Credit Card', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_method', 'electronic', 'Electronic', 40, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_sort_by
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_sort_by','Payment Sort By', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'check_date', 'Check Date', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payer_id', 'Ins Code', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payment_method', 'Payment Method', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'payment_type', 'Paying Entity', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'pay_total', 'Amount', 70, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'reference', 'Check Number', 60, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_sort_by', 'session_id', 'Id', 10, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_status
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_status','Payment Status', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_status', 'fully_paid', 'Fully Paid', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_status', 'unapplied', 'Unapplied', 20, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id payment_type
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_type','Payment Type', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_type', 'insurance', 'Insurance', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_type', 'patient', 'Patient', 20, 0);
+#EndIf
+
+#IfNotTable eligibility_response
+CREATE TABLE `eligibility_response` (
+  `response_id` bigint(20) NOT NULL auto_increment,
+  `response_description` varchar(255) default NULL,
+  `response_status` enum('A','D') NOT NULL default 'A',
+  `response_vendor_id` bigint(20) default NULL,
+  `response_create_date` date default NULL,
+  `response_modify_date` date default NULL,
+  PRIMARY KEY  (`response_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+#EndIf
+
+#IfNotTable eligibility_verification
+CREATE TABLE `eligibility_verification` (
+  `verification_id` bigint(20) NOT NULL auto_increment,
+  `response_id` bigint(20) default NULL,
+  `insurance_id` bigint(20) default NULL,
+  `eligibility_check_date` datetime default NULL,
+  `copay` int(11) default NULL,
+  `deductible` int(11) default NULL,
+  `deductiblemet` enum('Y','N') default 'Y',
+  `create_date` date default NULL,
+  PRIMARY KEY  (`verification_id`),
+  KEY `insurance_id` (`insurance_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id smoking_status
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'smoking_status','Smoking Status', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '1', 'Current every day smoker', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '2', 'Current some day smoker', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '3', 'Former smoker', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '4', 'Never smoker', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '5', 'Smoker, current status unknown', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '9', 'Unknown if ever smoked', 60, 0);
+#EndIf
+
+UPDATE layout_options SET seq=2 WHERE form_id = 'HIS' AND field_id='coffee';
+UPDATE layout_options SET data_type=32,seq=1,fld_length=0,list_id='smoking_status' WHERE form_id = 'HIS' AND field_id='tobacco';
+
+#IfMissingColumn drug_sales distributor_id
+ALTER TABLE drug_sales ADD distributor_id bigint(20) NOT NULL DEFAULT 0;
+#EndIf
+
+#IfNotRow2D list_options list_id abook_type option_id dist
+INSERT INTO list_options (list_id,option_id,title,seq,is_default) VALUES ('abook_type','dist','Distributor',30,0);
+#EndIf
+
+#IfNotRow2D list_options list_id adjreason option_value 1
+UPDATE list_options SET option_value = 2 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'To co%';
+UPDATE list_options SET option_value = 3 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'To ded%';
+UPDATE list_options SET option_value = 4 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'Ins termed';
+UPDATE list_options SET option_value = 4 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'No coverage';
+UPDATE list_options SET option_value = 4 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'Pre-existing';
+UPDATE list_options SET option_value = 5 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'Ins info%';
+UPDATE list_options SET option_value = 5 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE 'Ins recoup';
+UPDATE list_options SET option_value = 5 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE '%refund';
+UPDATE list_options SET option_value = 5 WHERE list_id = 'adjreason' AND option_value = 0 AND option_id LIKE '%overpaid';
+UPDATE list_options SET option_value = 1 WHERE list_id = 'adjreason' AND option_value = 0;
+#EndIf
+
+#IfNotRow2D user_settings setting_label billing_ps_expand setting_user 0
+INSERT INTO user_settings ( setting_user, setting_label, setting_value ) VALUES (0, 'billing_ps_expand', '0');
+#EndIf
+
+#IfMissingColumn lists reaction
+ALTER TABLE lists ADD reaction varchar(255) NOT NULL DEFAULT '';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id race
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'race','Race', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'amer_ind_or_alaska_native', 'American Indian or Alaska Native', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'Asian', 'Asian',20,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'black_or_afri_amer', 'Black or African American',30,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'native_hawai_or_pac_island', 'Native Hawaiian or Other Pacific Islander',40,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'white', 'White',50,0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id ethnicity
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'ethnicity','Ethnicity', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('ethnicity', 'hisp_or_latin', 'Hispanic or Latino', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('ethnicity', 'not_hisp_or_latin', 'Not Hispanic or Latino', 10, 0);
+#EndIf
+
+#IfMissingColumn patient_data race
+ALTER TABLE `patient_data` ADD `race` varchar(255) NOT NULL default '';
+#EndIf
+
+#IfMissingColumn patient_data ethnicity
+ALTER TABLE `patient_data` ADD `ethnicity` varchar(255) NOT NULL default '';
+#EndIf
+
+#IfNotRow2D layout_options field_id race form_id DEM
+INSERT INTO `layout_options` VALUES ('DEM', 'race', '5Stats', 'Race', 3, 33, 1, 0, 0, 'race', 1, 1, '', '', 'Race');
+#EndIf
+
+UPDATE layout_options SET data_type=33,list_id='ethnicity',field_id='ethnicity',title='Ethnicity',description='Ethnicity' WHERE form_id = 'DEM' AND field_id = 'ethnoracial';
+UPDATE layout_options SET seq=4 WHERE form_id = 'DEM' and field_id='financial_review';
+
+UPDATE patient_data SET ethnicity= case WHEN ethnoracial IN ('Hispanic','othr_us','othr_non_us') THEN ethnoracial ELSE '' END, race = case WHEN ethnoracial NOT IN ('Hispanic','othr_us','othr_non_us') THEN ethnoracial ELSE '' END;
+
+UPDATE list_options SET option_value = 3 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'ord_img';
+UPDATE list_options SET option_value = 3 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'ord_imm';
+UPDATE list_options SET option_value = 3 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'ord_lab';
+UPDATE list_options SET option_value = 2 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'spe';
+UPDATE list_options SET option_value = 3 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'vendor';
+UPDATE list_options SET option_value = 3 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'dist';
+UPDATE list_options SET option_value = 1 WHERE list_id = 'abook_type' AND option_value = 0 AND option_id = 'oth';
+
+#IfNotRow2D list_options list_id lists option_id payment_date
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'payment_date','Payment Date', 1,0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'date_val', 'Date', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'post_to_date', 'Post To Date', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'deposit_date', 'Deposit Date', 30, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id date_master_criteria
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists', 'date_master_criteria', 'Date Master Criteria', 33, 1);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'all', 'All', 10, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'today', 'Today', 20, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_month_to_date', 'This Month to Date', 30, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_month', 'Last Month', 40, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_week_to_date', 'This Week to Date', 50, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'this_calendar_year', 'This Calendar Year', 60, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_calendar_year', 'Last Calendar Year', 70, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'custom', 'Custom', 80, 0);
+#EndIf

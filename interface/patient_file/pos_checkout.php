@@ -36,7 +36,6 @@
 //   on receipt display
 //     show invoice number
 
-
 require_once("../globals.php");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/patient.inc");
@@ -54,8 +53,10 @@ $INTEGRATED_AR = $GLOBALS['oer_config']['ws_accounting']['enabled'] === 2;
 
 $details = empty($_GET['details']) ? 0 : 1;
 
+$patient_id = empty($_GET['ptid']) ? $pid : 0 + $_GET['ptid'];
+
 // Get the patient's name and chart number.
-$patdata = getPatientData($pid, 'fname,mname,lname,pubpid,street,city,state,postal_code');
+$patdata = getPatientData($patient_id, 'fname,mname,lname,pubpid,street,city,state,postal_code');
 
 // Get the "next invoice reference number" from this user's pool.
 //
@@ -399,7 +400,8 @@ function generate_receipt($patient_id, $encounter=0) {
     $inres = sqlStatement("SELECT s.sale_id, s.sale_date, s.fee, " .
       "s.quantity, s.drug_id, d.name " .
       "FROM drug_sales AS s LEFT JOIN drugs AS d ON d.drug_id = s.drug_id " .
-      "WHERE s.pid = '$patient_id' AND s.encounter = '$encounter' AND s.fee != 0 " .
+      // "WHERE s.pid = '$patient_id' AND s.encounter = '$encounter' AND s.fee != 0 " .
+      "WHERE s.pid = '$patient_id' AND s.encounter = '$encounter' " .
       "ORDER BY s.sale_id");
     while ($inrow = sqlFetchArray($inres)) {
       $charges += sprintf('%01.2f', $inrow['fee']);
@@ -409,7 +411,8 @@ function generate_receipt($patient_id, $encounter=0) {
     // Service and tax items
     $inres = sqlStatement("SELECT * FROM billing WHERE " .
       "pid = '$patient_id' AND encounter = '$encounter' AND " .
-      "code_type != 'COPAY' AND activity = 1 AND fee != 0 " .
+      // "code_type != 'COPAY' AND activity = 1 AND fee != 0 " .
+      "code_type != 'COPAY' AND activity = 1 " .
       "ORDER BY id");
     while ($inrow = sqlFetchArray($inres)) {
       $charges += sprintf('%01.2f', $inrow['fee']);
@@ -529,9 +532,9 @@ function generate_receipt($patient_id, $encounter=0) {
 <?php } ?>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <?php if ($details) { ?>
-<a href='pos_checkout.php?details=0&enc=<?php echo $encounter; ?>'><?php xl('Hide Details','e'); ?></a>
+<a href='pos_checkout.php?details=0&ptid=<?php echo $patient_id; ?>&enc=<?php echo $encounter; ?>'><?php xl('Hide Details','e'); ?></a>
 <?php } else { ?>
-<a href='pos_checkout.php?details=1&enc=<?php echo $encounter; ?>'><?php xl('Show Details','e'); ?></a>
+<a href='pos_checkout.php?details=1&ptid=<?php echo $patient_id; ?>&enc=<?php echo $encounter; ?>'><?php xl('Show Details','e'); ?></a>
 <?php } ?>
 </p>
 </div>
@@ -749,8 +752,9 @@ if ($_POST['form_save']) {
       // Post the payment as a billed copay into the billing table.
       // Maybe this should even be done for the SL case.
       if (!empty($form_source)) $paydesc .= " $form_source";
+      # jason forced auth line to 1 here
       addBilling($form_encounter, 'COPAY', $amount, $paydesc, $form_pid,
-        0, 0, '', '', 0 - $amount, '', '', 1);
+        1, 0, '', '', 0 - $amount, '', '', 1);
     }
     else {
       $msg = invoice_add_line_item($invoice_info, 'COPAY',
@@ -785,7 +789,7 @@ if ($_POST['form_save']) {
 // If an encounter ID was given, then we must generate a receipt.
 //
 if (!empty($_GET['enc'])) {
-  generate_receipt($pid, $_GET['enc']);
+  generate_receipt($patient_id, $_GET['enc']);
   exit();
 }
 
@@ -794,7 +798,7 @@ if (!empty($_GET['enc'])) {
 
 $query = "SELECT id, date, code_type, code, modifier, code_text, " .
   "provider_id, payer_id, units, fee, encounter " .
-  "FROM billing WHERE pid = '$pid' AND activity = 1 AND " .
+  "FROM billing WHERE pid = '$patient_id' AND activity = 1 AND " .
   "billed = 0 AND code_type != 'TAX' " .
   "ORDER BY encounter DESC, id ASC";
 $bres = sqlStatement($query);
@@ -804,14 +808,14 @@ $query = "SELECT s.sale_id, s.sale_date, s.prescription_id, s.fee, " .
   "FROM drug_sales AS s " .
   "LEFT JOIN drugs AS d ON d.drug_id = s.drug_id " .
   "LEFT OUTER JOIN prescriptions AS r ON r.id = s.prescription_id " .
-  "WHERE s.pid = '$pid' AND s.billed = 0 " .
+  "WHERE s.pid = '$patient_id' AND s.billed = 0 " .
   "ORDER BY s.encounter DESC, s.sale_id ASC";
 $dres = sqlStatement($query);
 
 // If there are none, just redisplay the last receipt and exit.
 //
 if (mysql_num_rows($bres) == 0 && mysql_num_rows($dres) == 0) {
-  generate_receipt($pid);
+  generate_receipt($patient_id);
   exit();
 }
 
@@ -934,7 +938,7 @@ while ($urow = sqlFetchArray($ures)) {
 <body class="body_top">
 
 <form method='post' action='pos_checkout.php'>
-<input type='hidden' name='form_pid' value='<?php echo $pid ?>' />
+<input type='hidden' name='form_pid' value='<?php echo $patient_id ?>' />
 
 <center>
 
@@ -958,6 +962,7 @@ $inv_date      = '';
 $inv_provider  = 0;
 $inv_payer     = 0;
 $gcac_related_visit = false;
+$gcac_service_provided = false;
 
 // Process billing table items.  Note this includes co-pays.
 // Items that are not allowed to have a fee are skipped.
@@ -1002,7 +1007,11 @@ while ($brow = sqlFetchArray($bres)) {
       if ($codestring === '') continue;
       list($codetype, $code) = explode(':', $codestring);
       if ($codetype !== 'IPPF') continue;
-      if (preg_match('/^25222/', $code)) $gcac_related_visit = true;
+      if (preg_match('/^25222/', $code)) {
+        $gcac_related_visit = true;
+        if (preg_match('/^25222[34]/', $code))
+          $gcac_service_provided = true;
+      }
     }
   }
 }
@@ -1043,7 +1052,7 @@ foreach ($taxes as $key => $value) {
 
 if ($inv_encounter) {
   $erow = sqlQuery("SELECT provider_id FROM form_encounter WHERE " .
-    "pid = '$pid' AND encounter = '$inv_encounter' " .
+    "pid = '$patient_id' AND encounter = '$inv_encounter' " .
     "ORDER BY id DESC LIMIT 1");
   $inv_provider = $erow['provider_id'] + 0;
 }
@@ -1200,12 +1209,24 @@ if ($gcac_related_visit) {
   }
 } // end if ($gcac_related_visit)
 *********************************************************************/
-if ($gcac_related_visit) {
-  $grow = sqlQuery("SELECT COUNT(*) AS count FROM forms " .
-    "WHERE pid = '$pid' AND encounter = '$inv_encounter' AND " .
-    "deleted = 0 AND formdir = 'LBFgcac'");
-  if (empty($grow['count'])) { // if there is no gcac form
-    echo " alert('" . xl('A GCAC visit form should be added to this visit.') . "');\n";
+
+if ($gcac_related_visit && !$gcac_service_provided) {
+  // Skip this warning if the GCAC visit form is not allowed.
+  $grow = sqlQuery("SELECT COUNT(*) AS count FROM list_options " .
+    "WHERE list_id = 'lbfnames' AND option_id = 'LBFgcac'");
+  if (!empty($grow['count'])) { // if gcac is used
+    // Skip this warning if referral or abortion in TS.
+    $grow = sqlQuery("SELECT COUNT(*) AS count FROM transactions " .
+      "WHERE title = 'Referral' AND refer_date IS NOT NULL AND " .
+      "refer_date = '$inv_date' AND pid = '$patient_id'");
+    if (empty($grow['count'])) { // if there is no referral
+      $grow = sqlQuery("SELECT COUNT(*) AS count FROM forms " .
+        "WHERE pid = '$patient_id' AND encounter = '$inv_encounter' AND " .
+        "deleted = 0 AND formdir = 'LBFgcac'");
+      if (empty($grow['count'])) { // if there is no gcac form
+        echo " alert('" . xl('This visit will need a GCAC form, referral or procedure service.') . "');\n";
+      }
+    }
   }
 } // end if ($gcac_related_visit)
 ?>

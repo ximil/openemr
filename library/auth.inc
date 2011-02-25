@@ -1,4 +1,9 @@
 <?php
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+
 //----------THINGS WE ALWAYS DO
 
 require_once("{$GLOBALS['srcdir']}/log.inc");
@@ -6,6 +11,8 @@ require_once("{$GLOBALS['srcdir']}/sql.inc");
 // added for the phpGACL group check -- JRM
 require_once("{$GLOBALS['srcdir']}/acl.inc");
 require_once("$srcdir/formdata.inc.php");
+
+$incoming_site_id = '';
 
 if (isset($_GET['auth']) && ($_GET['auth'] == "login") && isset($_POST['authUser']) &&
     isset($_POST['authPass']) && isset($_POST['authProvider']))
@@ -24,11 +31,9 @@ if (isset($_GET['auth']) && ($_GET['auth'] == "login") && isset($_POST['authUser
     $ip=$_SERVER['REMOTE_ADDR'];
     if (!authNewSession($_POST['authUser'], $_POST['authPass'], $_POST['authProvider']))
     {
-        newEvent("login",$_POST['authUser'], $_POST['authProvider'], 0, "failure: $ip");
         $_SESSION['loginfailure'] = 1;
         authLoginScreen();
     }
-    newEvent("login", $_POST['authUser'], $_POST['authProvider'], 1, "success: $ip");
     $_SESSION['loginfailure'] = null;
     unset($_SESSION['loginfailure']);
     //store the very first initial timestamp for timeout errors
@@ -80,10 +85,14 @@ if (!isset($_SESSION["last_update"])) {
 
 function authNewSession ($user, $pass, $provider)
 {
+    $ip = $_SERVER['REMOTE_ADDR'];
     // check to see if the user belongs to *any* OpenEMR groups in phpGACL -- JRM
     global $phpgacl_location;
     if (isset ($phpgacl_location)) {
-        if (acl_get_group_titles($user) == 0) return false;
+      if (acl_get_group_titles($user) == 0) {
+          newEvent( 'login', $user, $provider, 0, "failure: $ip. user not in any phpGACL groups. (bad username?)");
+	  return false;
+      }
     }
 
     // get details about the user
@@ -92,10 +101,10 @@ function authNewSession ($user, $pass, $provider)
                         " from users where username = '$user'");
 
     // if the user is NOT active, get out
-    if ($authDB['active'] != 1) { return false; }
-
-    // start the HTTP SESSION
-    if(!session_id()) { session_start(); }
+    if ($authDB['active'] != 1) {
+        newEvent( 'login', $user, $provider, 0, "failure: $ip. user not active or not found in users table");
+        return false;
+    }
 
     // compare the submitted password with the stored password
     if ($authDB['password'] == $pass)
@@ -113,13 +122,16 @@ function authNewSession ($user, $pass, $provider)
             $_SESSION['userauthorized'] = $authDB['authorized'];
             // Some users may be able to authorize without being providers:
             if ($authDB['see_auth'] > '2') $_SESSION['userauthorized'] = '1';
+            newEvent( 'login', $user, $provider, 1, "success: $ip");
             return true;
         } else {
-            return false;
+            newEvent( 'login', $user, $provider, 0, "failure: $ip. user not in group: $provider");
+	    return false;
         }
     }
-    else
-        return false;
+
+    newEvent( 'login', $user, $provider, 0, "failure: $ip. user password mismatch ($pass)");
+    return false;
 }
 
 function authCheckSession ()
@@ -143,24 +155,22 @@ function authCheckSession ()
 
 function authCloseSession ()
 {
-    ob_start();
-    session_unset();
-//    $_SESSION = array();
-    session_destroy();
-    //setcookie(session_name(),"","","/");
-    //the following does the same as the above line:
-    //if(isset($_COOKIE[session_name()])) {
-    // session_start();
-    // session_destroy();
-    unset($_COOKIE[session_name()]);
-    //}
+  // Before destroying the session, save its site_id so that the next
+  // login will default to that same site.
+  global $incoming_site_id;
+  $incoming_site_id = $_SESSION['site_id'];
+  ob_start();
+  session_unset();
+  session_destroy();
+  unset($_COOKIE[session_name()]);
 }
 
 function authLoginScreen()
 {
-    //header("Location: https://{$_SERVER['HTTP_HOST']}{$GLOBALS['login_screen']}");
-    header("Location: {$GLOBALS['login_screen']}?error=1");
-    exit;
+  // See comment in authCloseSession().
+  global $incoming_site_id;
+  header("Location: {$GLOBALS['login_screen']}?error=1&site=$incoming_site_id");
+  exit;
 }
 
 // Check if the user's password has expired beyond the grace limit.

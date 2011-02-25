@@ -9,6 +9,7 @@ require_once("$srcdir/forms.inc");
 require_once("$srcdir/calendar.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/formatting.inc.php");
+require_once("$srcdir/patient.inc");
 ?>
 <html>
 
@@ -44,9 +45,10 @@ require_once("$srcdir/formatting.inc.php");
  }
 
  // Called by the deleter.php window on a successful delete.
- function imdeleted() {
+ function imdeleted(EncounterId) {
 <?php if ($GLOBALS['concurrent_layout']) { ?>
-  parent.parent.left_nav.clearEncounter();
+  top.window.parent.left_nav.removeOptionSelected(EncounterId);
+  top.window.parent.left_nav.clearEncounter();
 <?php } else { ?>
   top.restoreSession();
   top.Title.location.href = '../patient_file/encounter/encounter_title.php';
@@ -106,7 +108,10 @@ function divtoggle(spanid, divid) {
 </style>
 
 </head>
-
+<?php
+$hide=1;
+require_once("$incdir/patient_file/encounter/new_form.php");
+?>
 <body class="body_top">
 
 <div id="encounter_forms">

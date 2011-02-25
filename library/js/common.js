@@ -25,3 +25,26 @@ function enable_modals() {
     });
 
 }
+
+function enable_big_modals() {
+  // Requires fancybox 1.3.4 or better.
+  $(".iframe").fancybox({
+    'width'         : '99%',
+    'height'        : '99%',
+    'autoScale'     : false,
+    'type'          : 'iframe'
+  });
+}
+
+//----------------------------------------
+function PreventIt(evt)//Specially for the browser chrome.
+ {//When focus is on the text box and enter key is pressed the form gets submitted.TO prevent it this function is used.
+	evt = (evt) ? evt : window.event;
+	var charCode = (evt.which) ? evt.which : evt.keyCode;
+	if (charCode == 13)//tab key,enter key
+	 {
+		if (evt.preventDefault) evt.preventDefault();
+		if (evt.stopPropagation) evt.stopPropagation();
+	 }
+}
+
