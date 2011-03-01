@@ -8,6 +8,12 @@ $alertmsg = '';
 
 /*		Inserting New facility					*/
 if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] != "admin_facility") {
+  $result=sqlStatement("SELECT * FROM facility WHERE ".
+		       "name ='"         . trim(formData('facility'    )) . "'  " .
+		       "OR ".
+		       "color = '"  . trim(formData('ncolor' )) . "'");
+  $cnt = sqlNumRows($result);
+  if($cnt < 1){
   sqlStatement("INSERT INTO facility SET " .
   "name = '"         . trim(formData('facility'    )) . "', " .
   "phone = '"        . trim(formData('phone'       )) . "', " .
@@ -18,6 +24,7 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "postal_code = '"  . trim(formData('postal_code' )) . "', " .
   "country_code = '" . trim(formData('country_code')) . "', " .
   "federal_ein = '"  . trim(formData('federal_ein' )) . "', " .
+  "color = '"  . trim(formData('ncolor' )) . "', " .
   "service_location = '"  . trim(formData('service_location' )) . "', " .
   "billing_location = '"  . trim(formData('billing_location' )) . "', " .
   "accepts_assignment = '"  . trim(formData('accepts_assignment' )) . "', " .
@@ -26,11 +33,26 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "attn = '"  . trim(formData('attn' )) . "', " .
   "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
   "facility_npi = '" . trim(formData('facility_npi')) . "'");
+  $res=sqlQuery("SELECT MAX(id) as ID FROM facility"); /* sqlInsert function returning the insert id of log table */
+  $insert_id=$res['ID'];
+  if(trim(formData('billing_location' ))=='1'){
+  sqlInsert("UPDATE facility SET billing_location='".$insert_id."' WHERE id='".$insert_id."' ");
+  }
+}
 }
 
 /*		Editing existing facility					*/
 if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 {
+      $result=sqlStatement("SELECT * FROM facility WHERE ".
+		       "name ='"         . trim(formData('facility'    )) . "'  " .
+		       "OR ".
+		       "color = '"  . trim(formData('ncolor' )) . "'");
+  $cnt = sqlNumRows($result);
+    $billing_location= trim(formData('billing_location'));
+	if($_REQUEST['billing_location']=='1'){
+	$billing_location= trim(formData('fid')) ;
+	}
 	sqlStatement("update facility set
 		name='" . trim(formData('facility')) . "',
 		phone='" . trim(formData('phone')) . "',
@@ -41,8 +63,9 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		postal_code='" . trim(formData('postal_code')) . "',
 		country_code='" . trim(formData('country_code')) . "',
 		federal_ein='" . trim(formData('federal_ein')) . "',
+		color='" . trim(formData('ncolor')) . "',
 		service_location='" . trim(formData('service_location')) . "',
-		billing_location='" . trim(formData('billing_location')) . "',
+		billing_location='" .$billing_location. "',
 		accepts_assignment='" . trim(formData('accepts_assignment')) . "',
 		pos_code='" . trim(formData('pos_code')) . "',
 		domain_identifier='" . trim(formData('domain_identifier')) . "',
@@ -88,12 +111,21 @@ $(document).ready(function(){
 	});
 
 });
+function OnloadFunction()
+ {
+	if(parent.$)
+	 {
+		parent.$.fn.fancybox.close();
+		parent.location.reload();
+	 }
+
+ }
 
 </script>
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 </head>
 
-<body class="body_top">
+<body class="body_top" onLoad="OnloadFunction()">
 
 <div>
     <div>
@@ -119,6 +151,9 @@ $(document).ready(function(){
           for ($iter3 = 0;$frow = sqlFetchArray($fres);$iter3++)
             $result2[$iter3] = $frow;
           foreach($result2 as $iter3) {
+			$varstreet="";
+			$varcity="";
+			$varstate="";
           $varstreet=$iter3{street };
           if ($iter3{street }!="")$varstreet=$iter3{street }.",";
           if ($iter3{city}!="")$varcity=$iter3{city}.",";

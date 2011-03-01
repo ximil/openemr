@@ -80,18 +80,18 @@ function getUsername($uID) {
 function getUserFacilities($uID) {
   if (!$GLOBALS['restrict_user_facility']) {
   	$rez = sqlStatement("
-		select id, name
+		select id, name, color
 		from facility
 		where service_location != 0
 	");
   } else {
 	  $rez = sqlStatement("
-		  select uf.facility_id as id, f.name
+		  select uf.facility_id as id, f.name, f.color
 		  from users_facility uf
 		  left join facility f on (uf.facility_id = f.id)
 		  where uf.tablename='users' 
-		  and uf.table_id = ? 
-	    ", array($uID) );
+		  and uf.table_id = '$uID' 
+	    ");
   }
   $returnVal = array();
   while ($row = sqlFetchArray($rez)) 

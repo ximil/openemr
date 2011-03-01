@@ -193,9 +193,9 @@ class Claim {
     $provider_id = $this->encounter['provider_id'];
     $sql = "SELECT * FROM users WHERE id = '$provider_id'";
     $this->provider = sqlQuery($sql);
-
+// Selecting the billing facility assigned  to the service facility
     $sql = "SELECT * FROM facility " .
-      "ORDER BY billing_location DESC, id ASC LIMIT 1";
+      " where billing_location =(select id from facility where billing_location=".addslashes($this->encounter['billing_facility']).")";
     $this->billing_facility = sqlQuery($sql);
 
     $sql = "SELECT * FROM insurance_numbers WHERE " .
@@ -546,8 +546,15 @@ class Claim {
     return x12clean(trim($this->facility['domain_identifier']));
   }
 
-  function billingFacilityName() {
+  function billingFacilityName() {//Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+	if(strlen(trim($this->billing_facility['name']))<36)
+	{
     return x12clean(trim($this->billing_facility['name']));
+	}
+	else
+	{
+	return x12clean(substr(trim($this->billing_facility['name']),0,35));
+	}
   }
 
   function billingFacilityStreet() {
@@ -604,8 +611,15 @@ class Claim {
     return '';
   }
 
-  function facilityName() {
-    return x12clean(trim($this->facility['name']));
+  function facilityName() {//Field length is limited to 35. See nucc dataset page 77 www.nucc.org
+    if(strlen(trim($this->facility['name']))<36)
+	{
+	return x12clean(trim($this->facility['name']));
+	}
+	else
+	{
+	return x12clean(substr(trim($this->facility['name']),0,35));
+	}
   }
 
   function facilityStreet() {
@@ -785,8 +799,15 @@ class Claim {
     return strtoupper(substr($this->payers[$ins]['data']['subscriber_sex'], 0, 1));
   }
 
-  function payerName($ins=0) {
-    return x12clean(trim($this->payers[$ins]['company']['name']));
+  function payerName($ins=0) {//Field length is limited to 35. See nucc dataset page 81 www.nucc.org
+    if(strlen(trim($this->facility['name']))<36)
+	{
+	return x12clean(trim($this->payers[$ins]['company']['name']));
+	}
+	else
+	{
+	return x12clean(substr(trim($this->payers[$ins]['company']['name']),0,35));
+	}   
   }
 
   function payerAttn($ins=0) {
@@ -938,8 +959,15 @@ class Claim {
     return '';
   }
 
-  function onsetDate() {
-    return str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
+  function onsetDate() {//Without the else clause in the claim zero value is coming.
+    if(str_replace('-', '', substr($this->encounter['onset_date'], 0, 10))*1<>0)
+  {
+	return str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
+	}
+	else{
+	return '';
+	
+	}
   }
 
   function serviceDate() {

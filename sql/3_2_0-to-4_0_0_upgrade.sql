@@ -998,3 +998,25 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_calendar_year', 'Last Calendar Year', 70, 0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'custom', 'Custom', 80, 0);
 #EndIf
+
+#IfMissingColumn form_encounter billing_facility
+ALTER TABLE form_encounter ADD COLUMN billing_facility INTEGER;
+#EndIf
+
+#IfMissingColumn facility color
+ALTER TABLE facility ADD COLUMN color VARCHAR(7);
+#EndIf
+
+#IfMissingColumn openemr_postcalendar_events pc_billing_location
+ALTER TABLE openemr_postcalendar_events ADD COLUMN pc_billing_location smallint(6);
+#EndIf
+
+#IfMissingColumn openemr_postcalendar_events pc_cattype
+ALTER TABLE `openemr_postcalendar_categories` ADD `pc_cattype` INT( 11 ) NOT NULL COMMENT 'Used in grouping categories';
+#EndIf
+
+UPDATE `openemr_postcalendar_categories` SET `pc_cattype`='1' WHERE `pc_catid`='4';
+UPDATE `openemr_postcalendar_categories` SET `pc_cattype`='1' WHERE `pc_catid`='2';
+UPDATE `openemr_postcalendar_categories` SET `pc_cattype`='1' WHERE `pc_catid`='3';
+UPDATE `openemr_postcalendar_categories` SET `pc_cattype`='1' WHERE `pc_catid`='8';
+UPDATE `openemr_postcalendar_categories` SET `pc_cattype`='1' WHERE `pc_catid`='11';

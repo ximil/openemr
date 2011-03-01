@@ -55,7 +55,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
 <script type="text/javascript" src="<?php echo $GLOBALS['webroot'] ?>/library/dynarch_calendar.js"></script>
 <?php include_once("{$GLOBALS['srcdir']}/dynarch_calendar_en.inc.php"); ?>
 <script type="text/javascript" src="<?php echo $GLOBALS['webroot'] ?>/library/dynarch_calendar_setup.js"></script>
-
+<?php include_once("{$GLOBALS['srcdir']}/ajax/facility_ajax_jav.inc.php"); ?>
 <script language="JavaScript">
 
  var mypcc = '<?php echo $GLOBALS['phone_country_code'] ?>';
@@ -100,7 +100,12 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
 $(document).ready(function(){
   enable_big_modals();
 });
-
+function bill_loc(){
+pid=<?php echo $pid;?>;
+dte=document.getElementById('form_date').value;
+facility=document.getElementById('facility_id').value;
+ajax_bill_loc(pid,dte,facility);
+}
 </script>
 </head>
 
@@ -178,7 +183,7 @@ $(document).ready(function(){
     <tr>
      <td class='bold' nowrap><?php xl('Facility:','e'); ?></td>
      <td class='text'>
-      <select name='facility_id'>
+      <select name='facility_id' id="facility_id" onchange="bill_loc()">
 <?php
 
 if ($viewmode) {
@@ -203,7 +208,16 @@ if ($fres) {
       </select>
      </td>
     </tr>
-
+	<tr>
+		<td class='bold' nowrap><?php echo htmlspecialchars( xl('Billing Facility:'), ENT_NOQUOTES); ?></td>
+		<td class='text'>
+			<div id="ajaxdiv">
+			<?php
+			billing_facility('billing_facility',$result['pc_billing_location']);
+			?>
+			</div>
+		</td>
+     </tr>
     <tr>
 <?php
  $sensitivities = acl_get_sensitivities();
@@ -263,7 +277,7 @@ if ($fres) {
      <td class='bold' nowrap><?php xl('Onset/hosp. date:','e'); ?></td>
      <td class='text' nowrap>
       <input type='text' size='10' name='form_onset_date' id='form_onset_date'
-       value='<?php echo $viewmode ? substr($result['onset_date'], 0, 10) : date('Y-m-d'); ?>'
+       value='<?php echo $viewmode ? substr($result['onset_date'], 0, 10) : ''; ?>'
        title='<?php xl('yyyy-mm-dd Date of onset or hospitalization','e'); ?>'
        onkeyup='datekeyup(this,mypcc)' onblur='dateblur(this,mypcc)' />
         <img src='../../pic/show_calendar.gif' align='absbottom' width='24' height='22'

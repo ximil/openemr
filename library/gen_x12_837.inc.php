@@ -419,6 +419,14 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   }
 
   // Note: This would be the place to implement the NTE segment for loop 2300.
+  if ($claim->additionalNotes()) {
+    // Claim note.
+    ++$edicount;
+    $out .= "NTE" .     // comments box 19
+      "*" .
+      "*" . $claim->additionalNotes() .
+      "~\n";
+  }
 
   // Diagnoses, up to 8 per HI segment.
   $da = $claim->diagArray();
