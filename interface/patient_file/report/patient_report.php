@@ -266,6 +266,27 @@ while($result = sqlFetchArray($res)) {
                                                 " value='" . $result{"encounter"} . "'" .
                                                 " class='encounter_form' ".
                                                 ">" . xl_form_title($result{"form_name"}) . "<br>\n");
+
+			
+			if($result{"formdir"}=='scanned_notes')
+			 {
+				$resdoc = sqlStatement("SELECT documents.id,documents.url FROM documents,form_scanned_notes,forms WHERE " .
+					" form_scanned_notes.document_id=documents.id and forms.form_id=form_scanned_notes.id and 
+						forms.formdir='scanned_notes' and form_scanned_notes.id='".$result{"form_id"}."' ".
+									"and foreign_id = '$pid' AND encounter='" . $result{"encounter"} . "'");
+				if(sqlNumRows($resdoc)>0)
+					$DocumentEncounter= "<ul>";
+				while($resultdoc = sqlFetchArray($resdoc)) {
+				$DocumentEncounter.=  "<li class='bold'>";
+					$DocumentEncounter.=  '&nbsp;&nbsp;<i>' .  basename($resultdoc{"url"}) . "</i>";
+					$DocumentEncounter.=  '</li>';
+				}
+				$DocumentEncounter.=  "</ul>";
+			 }
+			 array_push($html_strings[$form_name],$DocumentEncounter);
+			 $DocumentEncounter='';
+
+
     }
 }
 foreach($registry_form_name as $var) {
@@ -289,10 +310,17 @@ foreach($registry_form_name as $var) {
 <ul>
 <?php
 // show available documents
+$dres = sqlQuery("SELECT * from forms where formdir='scanned_notes' and pid= '$pid'");//checks for documents and the table 'form_scanned_notes'; 
+if($dres['formdir']!='')
+ {
+  $DocumentString=" d.id not in (SELECT documents.id FROM documents,form_scanned_notes,forms WHERE " .
+					" form_scanned_notes.document_id=documents.id and forms.form_id=form_scanned_notes.id and 
+						forms.formdir='scanned_notes' and foreign_id = '$pid' and forms.pid= '$pid') and ";
+ }
 $db = $GLOBALS['adodb']['db'];
 $sql = "SELECT d.id, d.url, c.name FROM documents AS d " .
         "LEFT JOIN categories_to_documents AS ctd ON d.id=ctd.document_id " .
-        "LEFT JOIN categories AS c ON c.id = ctd.category_id WHERE " .
+        "LEFT JOIN categories AS c ON c.id = ctd.category_id WHERE $DocumentString " .
         "d.foreign_id = " . $db->qstr($pid);
 $result = $db->Execute($sql);
 if ($db->ErrorMsg()) echo $db->ErrorMsg();

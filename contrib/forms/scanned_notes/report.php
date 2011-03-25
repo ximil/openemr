@@ -8,7 +8,6 @@
 
 include_once("../../globals.php");
 include_once($GLOBALS["srcdir"] . "/api.inc");
-
 function scanned_notes_report($pid, $useless_encounter, $cols, $id) {
  global $webserver_root, $web_root, $encounter;
 
@@ -17,9 +16,14 @@ function scanned_notes_report($pid, $useless_encounter, $cols, $id) {
 
  $count = 0;
 
- $data = sqlQuery("SELECT * " .
-  "FROM form_scanned_notes WHERE " .
-  "id = '$id' AND activity = '1'");
+ $data = sqlQuery("SELECT * FROM form_scanned_notes fs left join documents on fs.document_id=documents.id WHERE " .
+  "fs.id = '$id' AND fs.activity = '1'");
+ $imagepath = $data['url'];
+ $mimetype=$data['mimetype'];
+
+$imagename = basename(preg_replace("|^(.*)://|","",$imagepath));
+$imagepath1=$web_root . "/sites/" . $_SESSION['site_id'] ."/documents/$pid/$thisenc/$imagename'";
+
 
  if ($data) {
   echo "<table cellpadding='0' cellspacing='0'>\n";
@@ -31,25 +35,28 @@ function scanned_notes_report($pid, $useless_encounter, $cols, $id) {
    echo " </tr>\n";
   }
 
-  for ($i = -1; true; ++$i) {
-    $suffix = ($i < 0) ? "" : "-$i";
-    $imagepath = $GLOBALS['OE_SITE_DIR'] .
-      "/documents/$pid/encounters/${thisenc}_$id$suffix.jpg";
-    $imageurl  = "$web_root/sites/" . $_SESSION['site_id'] .
-      "/documents/$pid/encounters/${thisenc}_$id$suffix.jpg";
-    if (is_file($imagepath)) {
+    if (is_file($imagepath)) 
+	 {
       echo " <tr>\n";
-      echo "  <td valign='top'>\n";
-      echo "   <img src='$imageurl' />\n";
-      echo "  </td>\n";
-      echo " </tr>\n";
-    }
-    else {
-      if ($i >= 0) break;
-    }
-  }
+      echo "  <td valign='top'><span class='bold'>Document: $imagename</span>\n";
+		if($mimetype=="image/tiff")
+		 {
+			echo "<embed frameborder='0' type='$mimetype' src='$imagepath1'></embed>";
+		 }
+		elseif($mimetype=="image/png" || $mimetype=="image/jpg" || $mimetype=="image/jpeg" || $mimetype=="image/gif")
+		 {
+			echo "<img src='$imagepath1' border='0' />";
+		 }
+		else
+		 {
+			echo "<iframe frameborder='0' type='application/octet-stream' width='75%' height='30%' src='" . $GLOBALS['webroot'] . 
+							"/controller.php?document&retrieve&patient_id=&document_id=" . $data['document_id'] . "&as_file=true'></iframe>";
+		 }
+      echo "  </td>";
+      echo " </tr>";
+     }
 
-  echo "</table>\n";
+  echo "</table>";
  }
 }
 ?>

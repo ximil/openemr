@@ -123,7 +123,7 @@ INSERT INTO `categories` VALUES (7, 'Do Not Resuscitate Order', '', 6, 12, 13);
 INSERT INTO `categories` VALUES (8, 'Durable Power of Attorney', '', 6, 14, 15);
 INSERT INTO `categories` VALUES (9, 'Living Will', '', 6, 16, 17);
 INSERT INTO `categories` VALUES (10, 'Patient Photograph', '', 4, 8, 9);
-
+INSERT INTO `categories` VALUES (11, 'Scanned Encounter Notes', '', 1, 8, 9);
 -- --------------------------------------------------------
 
 -- 
@@ -140,7 +140,7 @@ CREATE TABLE `categories_seq` (
 -- Dumping data for table `categories_seq`
 -- 
 
-INSERT INTO `categories_seq` VALUES (10);
+INSERT INTO `categories_seq` VALUES (11);
 
 -- --------------------------------------------------------
 

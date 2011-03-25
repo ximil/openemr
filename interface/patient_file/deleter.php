@@ -26,6 +26,30 @@
  // specified WHERE clause.
  //
  function row_delete($table, $where) {
+  if($table=='form_scanned_notes')
+   {
+    $row=sqlQuery("SELECT * FROM $table WHERE $where");
+	if($row['document_id']>0)
+	 {
+	  $row1=sqlQuery("SELECT * FROM documents where id='".$row['document_id']."'");
+	  $imagepath = $row1['url'];
+	  if(is_file($imagepath))
+	   {
+		unlink($imagepath);
+	   }
+	   //logging
+	   $logstring = "";
+	   foreach ($row1 as $key => $value) {
+		if (! $value || $value == '0000-00-00 00:00:00') continue;
+		if ($logstring) $logstring .= " ";
+		$logstring .= $key . "='" . addslashes($value) . "'";
+	   }
+	   newEvent("delete", $_SESSION['authUser'], $_SESSION['authProvider'], 1, "documents: $logstring");
+	   $query = "DELETE FROM documents WHERE id='".$row['document_id']."'";
+	   echo $query . "<br>\n";
+	   sqlStatement($query);
+	 }
+   }
   $tres = sqlStatement("SELECT * FROM $table WHERE $where");
   $count = 0;
   while ($trow = sqlFetchArray($tres)) {
