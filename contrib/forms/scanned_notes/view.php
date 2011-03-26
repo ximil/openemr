@@ -221,14 +221,22 @@ $imagepath1=$web_root . "/sites/" . $_SESSION['site_id'] ."/documents/$pid/$enco
 $string='Upload';
 if ($formid && is_file($imagepath)) 
  {
+  list($width, $height, $type, $attr) = getimagesize($imagepath);
+  if($mimetype=="application/pdf")
+   {
+	$width=1000;
+	$height=1000;
+   }
+  else
+   {
+	$width+=25;
+	$height+=25;
+   }
 	echo $imagename.'<br>';
-	if($mimetype=="image/tiff")
+	if($mimetype=="image/png" || $mimetype=="image/jpg" || $mimetype=="image/jpeg" || $mimetype=="image/gif" || $mimetype=="image/tiff" || $mimetype=="application/pdf")
 	 {
-		echo "<embed frameborder='0' type='$mimetype' src='$imagepath1'></embed>";
-	 }
-	elseif($mimetype=="image/png" || $mimetype=="image/jpg" || $mimetype=="image/jpeg" || $mimetype=="image/gif")
-	 {
-		echo "<img src='$imagepath1' border='0' />";
+		echo "<iframe frameborder='0' width='$width' height='$height' type='$mimetype' src='" . $GLOBALS['webroot'] . 
+						"/controller.php?document&retrieve&patient_id=&document_id=" . $row['document_id'] . "&as_file=false'></iframe>";
 	 }
 	else
 	 {
