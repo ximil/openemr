@@ -30,7 +30,10 @@
 ?>
 <script type="text/javascript">
 function ajax_bill_loc(pid,date,facility){
+<<<<<<< HEAD
 top.restoreSession();
+=======
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
 $.ajax({
 type: "POST",
 url: "../../../library/ajax/facility_ajax_code.php",

@@ -195,7 +195,11 @@ class Claim {
     $this->provider = sqlQuery($sql);
 // Selecting the billing facility assigned  to the service facility
     $sql = "SELECT * FROM facility " .
+<<<<<<< HEAD
     " where id ='" . addslashes($this->encounter['billing_facility']) . "' ";
+=======
+      " where billing_location =(select id from facility where billing_location=".addslashes($this->encounter['billing_facility']).")";
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
     $this->billing_facility = sqlQuery($sql);
 
     $sql = "SELECT * FROM insurance_numbers WHERE " .
@@ -939,6 +943,7 @@ class Claim {
   }
 
   function onsetDate() {//Without the else clause in the claim zero value is coming.
+<<<<<<< HEAD
     $replace_value=str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
 	if($replace_value*1<>0)
     {
@@ -946,6 +951,15 @@ class Claim {
 	}
 	else{
 	 return '';
+=======
+    if(str_replace('-', '', substr($this->encounter['onset_date'], 0, 10))*1<>0)
+  {
+	return str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
+	}
+	else{
+	return '';
+	
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
 	}
   }
 

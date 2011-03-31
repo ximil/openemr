@@ -279,7 +279,7 @@ if ($fres) {
       <input type='text' size='10' name='form_onset_date' id='form_onset_date'
        value='<?php echo $viewmode ? substr($result['onset_date'], 0, 10) : ''; ?>' 
        title='<?php xl('yyyy-mm-dd Date of onset or hospitalization','e'); ?>'
-       onkeyup='datekeyup(this,mypcc)' onblur='dateblur(this,mypcc)' />
+       onkeyup='datekeyup(this,mypcc)' onblur='dateblur(this,mypcc)' /><!-- default is blank so that while generating claim the date is blank. -->
         <img src='../../pic/show_calendar.gif' align='absbottom' width='24' height='22'
         id='img_form_onset_date' border='0' alt='[?]' style='cursor:pointer;cursor:hand'
         title='<?php xl('Click here to choose a date','e'); ?>'>

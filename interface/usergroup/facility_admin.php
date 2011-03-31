@@ -40,7 +40,10 @@ parent.$.fn.fancybox.close();
 <script type="text/javascript">
 function submitform() {
     if (document.forms[0].facility.value.length>0 && document.forms[0].ncolor.value != '') {
+<<<<<<< HEAD
         top.restoreSession();
+=======
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
         document.forms[0].submit();
     } else {
 	if(document.forms[0].facility.value.length<=0){
@@ -89,7 +92,7 @@ function pick(anchorname,target) {
   </tr>
 </table>
 
-<form name='facility' method='post' action="facilities.php" target="_parent">
+<form name='facility' method='post' action="facilities.php" >
     <input type=hidden name=mode value="facility">
     <input type=hidden name=newmode value="admin_facility">	<!--	Diffrentiate Admin and add post backs -->
     <input type=hidden name=fid value="<?php echo $my_fid;?>">

@@ -8,6 +8,15 @@ $alertmsg = '';
 
 /*		Inserting New facility					*/
 if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] != "admin_facility") {
+<<<<<<< HEAD
+=======
+  $result=sqlStatement("SELECT * FROM facility WHERE ".
+		       "name ='"         . trim(formData('facility'    )) . "'  " .
+		       "OR ".
+		       "color = '"  . trim(formData('ncolor' )) . "'");//this will ensure that the color is unique. 
+  $cnt = sqlNumRows($result);
+  if($cnt < 1){
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
   $insert_id=sqlInsert("INSERT INTO facility SET " .
   "name = '"         . trim(formData('facility'    )) . "', " .
   "phone = '"        . trim(formData('phone'       )) . "', " .
@@ -27,11 +36,24 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "attn = '"  . trim(formData('attn' )) . "', " .
   "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
   "facility_npi = '" . trim(formData('facility_npi')) . "'");
+  if(trim(formData('billing_location' ))=='1'){//insted on 1 its id is kept
+  sqlInsert("UPDATE facility SET billing_location='".$insert_id."' WHERE id='".$insert_id."' ");
+  }
+}
 }
 
 /*		Editing existing facility					*/
 if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 {
+      $result=sqlStatement("SELECT * FROM facility WHERE ".
+		       "name ='"         . trim(formData('facility'    )) . "'  " .
+		       "OR ".
+		       "color = '"  . trim(formData('ncolor' )) . "'");
+  $cnt = sqlNumRows($result);
+    $billing_location_string= "billing_location='" .trim(formData('billing_location'));
+	if($_REQUEST['billing_location']=='1'){
+	$billing_location_string= "billing_location='" .trim(formData('fid')) ;
+	}
 	sqlStatement("update facility set
 		name='" . trim(formData('facility')) . "',
 		phone='" . trim(formData('phone')) . "',
@@ -44,7 +66,7 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		federal_ein='" . trim(formData('federal_ein')) . "',
 		color='" . trim(formData('ncolor')) . "',
 		service_location='" . trim(formData('service_location')) . "',
-		billing_location='" . trim(formData('billing_location')) . "',
+		".$billing_location_string. "',
 		accepts_assignment='" . trim(formData('accepts_assignment')) . "',
 		pos_code='" . trim(formData('pos_code')) . "',
 		domain_identifier='" . trim(formData('domain_identifier')) . "',
@@ -90,12 +112,21 @@ $(document).ready(function(){
 	});
 
 });
+function OnloadFunction()
+ {
+	if(parent.$)
+	 {
+		parent.$.fn.fancybox.close();
+		parent.location.reload();
+	 }
+
+ }
 
 </script>
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 </head>
 
-<body class="body_top">
+<body class="body_top" onLoad="OnloadFunction()">
 
 <div>
     <div>
@@ -121,7 +152,11 @@ $(document).ready(function(){
           for ($iter3 = 0;$frow = sqlFetchArray($fres);$iter3++)
             $result2[$iter3] = $frow;
           foreach($result2 as $iter3) {
+<<<<<<< HEAD
 			$varstreet="";//these are assigned conditionally below,blank assignment is done so that old values doesn't get propagated to next level.
+=======
+			$varstreet="";
+>>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
 			$varcity="";
 			$varstate="";
           $varstreet=$iter3{street };

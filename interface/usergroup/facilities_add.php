@@ -131,7 +131,7 @@ function pick(anchorname,target) {
 
 <br>
 
-<form name='facility' method='post' action="facilities.php" target='_parent'>
+<form name='facility' method='post' action="facilities.php" onsubmit='return top.restoreSession()'>
     <input type=hidden name=mode value="facility">
     <table border=0 cellpadding=0 cellspacing=0>
         <tr>
