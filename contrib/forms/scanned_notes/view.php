@@ -22,25 +22,83 @@ include_once("../../globals.php");
 include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
 include_once("$srcdir/acl.inc");
+include_once("$srcdir/formdata.inc.php");
 
 $row = array();
 
 if (! $encounter) { // comes from globals.php
  die("Internal error: we do not seem to be in an encounter!");
 }
+function insert_to_document()
+ {
+  global $pid,$imagepath;
+  $newid = generate_id();
+  $mimetype = $_FILES['form_image']['type'];
+  $size = $_FILES['form_image']['size'];
+	$query = "INSERT INTO documents ( " .
+	  "id, type, size, date, url, mimetype, foreign_id, docdate" .
+	  " ) VALUES ( " .
+	  "'$newid', 'file_url', '$size', NOW(), 'file://$imagepath', " .
+	  "'$mimetype', $pid, NOW() " .
+	  ")";
+	sqlStatement($query);
+	
+	$catrow = sqlQuery("SELECT * FROM categories WHERE name = 'Scanned Encounter Notes'");
+	$catid = $catrow['id'];
+	
+	$query = "INSERT INTO categories_to_documents ( " .
+	  "category_id, document_id" .
+	  " ) VALUES ( " .
+	  "'$catid', '$newid' " .
+	  ")";
+	sqlStatement($query);
+	return $newid;
+ }
+function delete_document()
+ {
+   global $formid;
+   $row = sqlQuery("SELECT * FROM form_scanned_notes fs left join documents on fs.document_id=documents.id WHERE " .
+  "fs.id = '$formid' AND fs.activity = '1'");
+  $imagepath = $row['url'];
+//==================================================================================================
+	//change full path to current webroot.  this is for documents that may have
+	//been moved from a different filesystem and the full path in the database
+	//is not current.  this is also for documents that may of been moved to
+	//different patients
 
+	//strip url of protocol handler
+	$imagepath = preg_replace("|^(.*)://|","",$imagepath);
+	
+	$from_all = explode("/",$imagepath);
+	$from_filename = array_pop($from_all);
+	$second_level = array_pop($from_all);
+	$from_patientid = array_pop($from_all);
+	$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' . $from_filename;
+	if (file_exists($temp_url)) {
+		$imagepath = $temp_url;
+	}
+//==================================================================================================
+  if(is_file($imagepath))
+   {
+    unlink($imagepath);
+	return true;
+   }
+  else
+   {
+    return false;
+   }
+ }
 $formid = $_GET['id'];
-$imagedir = $GLOBALS['OE_SITE_DIR'] . "/documents/$pid/encounters";
-
+$imagedir = $GLOBALS['OE_SITE_DIR'] . "/documents/$pid/$encounter";
 // If Save was clicked, save the info.
 //
 if ($_POST['bn_save']) {
-
+//print_r($_FILES);die;
  // If updating an existing form...
  //
  if ($formid) {
   $query = "UPDATE form_scanned_notes SET " .
-   "notes = '" . $_POST['form_notes'] . "' " .
+   "notes = '" . formData('form_notes','P',true) . "' " .
    "WHERE id = '$formid'";
   sqlStatement($query);
  }
@@ -51,58 +109,90 @@ if ($_POST['bn_save']) {
   $query = "INSERT INTO form_scanned_notes ( " .
    "notes " .
    ") VALUES ( " .
-   "'" . $_POST['form_notes'] . "' " .
+   "'" . formData('form_notes','P',true) . "' " .
    ")";
   $formid = sqlInsert($query);
   addForm($encounter, "Scanned Notes", $formid, "scanned_notes", $pid, $userauthorized);
  }
 
- $imagepath = "$imagedir/${encounter}_$formid.jpg";
+ $name=basename( $_FILES['form_image']['name']);
+ $imagepath = "$imagedir/$name";
 
  // Upload new or replacement document.
- // Always convert it to jpeg.
- if ($_FILES['form_image']['size']) {
+ if ($_FILES['form_image']['size']) 
+  {
   // If the patient's encounter image directory does not yet exist, create it.
-  if (! is_dir($imagedir)) {
-   $tmp0 = exec("mkdir -p '$imagedir'", $tmp1, $tmp2);
-   if ($tmp2) die("mkdir returned $tmp2: $tmp0");
-   exec("touch '$imagedir/index.html'");
+	if(!is_dir($imagedir))
+	 {
+		if (!mkdir($imagedir, 0777, true)) 
+		 {
+			die('Failed to create folders...');
+		 }
+		chmod($imagedir, 0777);
+	 }
+//-------------------------------------------------------------------  
+  	 $file_deleted=delete_document();
+	 if (is_file($imagepath)) 
+	  { 
+	   $nameArray=split('.',$name);
+	   $imagepath=$imagedir.'/'.$nameArray[0].'_'.time().'.'.$nameArray[1];
+	  }
+	 move_uploaded_file($_FILES['form_image']['tmp_name'], $imagepath);
+	 chmod($imagepath, 0777);
+	 if($file_deleted)
+	  {
+		  $mimetype = $_FILES['form_image']['type'];
+		  $size = $_FILES['form_image']['size'];
+			$query = "update  form_scanned_notes,documents set size='$size', date=NOW(), url='file://$imagepath', mimetype='$mimetype' where 
+				form_scanned_notes.document_id=documents.id and form_scanned_notes.id='$formid'";
+			sqlStatement($query);
+	  }
+	 else
+	  {//first time entry
+		 $document_id=insert_to_document();
+		  $query = "UPDATE form_scanned_notes SET " .
+		   "document_id = '" . $document_id . "' " .
+		   "WHERE id = '$formid'";
+		  sqlStatement($query);
+	  }
   }
-  // Remove any previous image files for this encounter and form ID.
-  for ($i = -1; true; ++$i) {
-    $suffix = ($i < 0) ? "" : "-$i";
-    $path = "$imagedir/${encounter}_$formid$suffix.jpg";
-    if (is_file($path)) {
-      unlink($path);
-    }
-    else {
-      if ($i >= 0) break;
-    }
-  }
-  $tmp_name = $_FILES['form_image']['tmp_name'];
-  // default density is 72 dpi, we change to 96.  And -append was removed
-  // to create a separate image file for each page.
-  $cmd = "convert -density 96 '$tmp_name' '$imagepath'";
-  $tmp0 = exec($cmd, $tmp1, $tmp2);
-  if ($tmp2) die("\"$cmd\" returned $tmp2: $tmp0");
- }
 
- // formHeader("Redirecting....");
- // formJump();
- // formFooter();
- // exit;
+  formHeader("Redirecting....");
+  formJump();
+  formFooter();
+  exit;
 }
 
-$imagepath = "$imagedir/${encounter}_$formid.jpg";
-$imageurl = "$web_root/sites/" . $_SESSION['site_id'] .
-  "/documents/$pid/encounters/${encounter}_$formid.jpg";
 
 if ($formid) {
- $row = sqlQuery("SELECT * FROM form_scanned_notes WHERE " .
-  "id = '$formid' AND activity = '1'");
+ $row = sqlQuery("SELECT * FROM form_scanned_notes fs left join documents on fs.document_id=documents.id WHERE " .
+  "fs.id = '$formid' AND fs.activity = '1'");
+ $imagepath = $row['url'];
+ $mimetype=$row['mimetype'];
+
+$imagename = basename(preg_replace("|^(.*)://|","",$imagepath));
+
  $formrow = sqlQuery("SELECT id FROM forms WHERE " .
   "form_id = '$formid' AND formdir = 'scanned_notes'");
 }
+//==================================================================================================
+	//change full path to current webroot.  this is for documents that may have
+	//been moved from a different filesystem and the full path in the database
+	//is not current.  this is also for documents that may of been moved to
+	//different patients
+
+	//strip url of protocol handler
+	$imagepath = preg_replace("|^(.*)://|","",$imagepath);
+	
+	$from_all = explode("/",$imagepath);
+	$from_filename = array_pop($from_all);
+	$second_level = array_pop($from_all);
+	$from_patientid = array_pop($from_all);
+	$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' . $from_filename;
+	if (file_exists($temp_url)) {
+		$imagepath = $temp_url;
+	}
+//==================================================================================================
 ?>
 <html>
 <head>
@@ -164,12 +254,36 @@ if ($formid) {
   <td class='dehead' nowrap>&nbsp;Document&nbsp;</td>
   <td class='detail' nowrap>
 <?php
-if ($formid && is_file($imagepath)) {
- echo "   <img src='$imageurl' />\n";
-}
+$string=htmlspecialchars( xl('Upload'), ENT_QUOTES);
+if ($formid && is_file($imagepath)) 
+ {
+  list($width, $height, $type, $attr) = getimagesize($imagepath);
+  if($mimetype=="application/pdf")
+   {
+	$width=1000;
+	$height=1000;
+   }
+  else
+   {
+	$width+=25;
+	$height+=25;
+   }
+	echo $imagename.'<br>';
+	if($mimetype=="image/png" || $mimetype=="image/jpg" || $mimetype=="image/jpeg" || $mimetype=="image/gif" || $mimetype=="image/tiff" || $mimetype=="application/pdf")
+	 {
+		echo "<iframe frameborder='0' width='$width' height='$height' type='$mimetype' src='" . $GLOBALS['webroot'] . 
+						"/controller.php?document&retrieve&patient_id=&document_id=" . $row['document_id'] . "&as_file=false'></iframe>";
+	 }
+	else
+	 {
+		echo "<iframe frameborder='0' type='application/octet-stream' width='75%' height='30%' src='" . $GLOBALS['webroot'] . 
+						"/controller.php?document&retrieve&patient_id=&document_id=" . $row['document_id'] . "&as_file=true'></iframe>";
+	 }
+  $string=htmlspecialchars( xl('Change'), ENT_QUOTES);
+ }
 ?>
    <p>&nbsp;
-   <?php xl('Upload this file:','e') ?>
+   <?php echo $string.' '.htmlspecialchars( xl('this file'), ENT_QUOTES).':'; ?>
    <input type="hidden" name="MAX_FILE_SIZE" value="12000000" />
    <input name="form_image" type="file" />
    <br />&nbsp;</p>
@@ -181,13 +295,9 @@ if ($formid && is_file($imagepath)) {
 <p>
 <input type='submit' name='bn_save' value='Save' />
 &nbsp;
-<input type='button' value='Add Appointment' onclick='newEvt()' />
-&nbsp;
-<input type='button' value='Back' onclick="top.restoreSession();location='<?php echo $GLOBALS['form_exit_url']; ?>'" />
-<?php if ($formrow['id'] && acl_check('admin', 'super')) { ?>
-&nbsp;
-<input type='button' value='Delete' onclick='deleteme()' style='color:red' />
-<?php } ?>
+<!-- input type='button' value='Add Appointment' onclick='newEvt()' 
+&nbsp;-->
+<input type='button' value='Back' onClick="top.restoreSession();location='<?php echo $GLOBALS['form_exit_url']; ?>'" />
 </p>
 
 </center>

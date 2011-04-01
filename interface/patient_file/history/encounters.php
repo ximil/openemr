@@ -232,11 +232,23 @@ else {
 <?php
 $drow = false;
 if (!$billing_view && !$issue) {
+	$dres = sqlQuery("SELECT * from forms where formdir='scanned_notes' and pid=?", array($pid));//checks for documents and the table 'form_scanned_notes'; 
+	if($dres['formdir']!='')
+	 {
+	  $DocumentString=" d.id not in (SELECT documents.id FROM documents,form_scanned_notes,forms WHERE " .
+					" form_scanned_notes.document_id=documents.id and forms.form_id=form_scanned_notes.id and ".
+						"forms.formdir='scanned_notes' and foreign_id = ? and forms.pid= ?) and ";
+	  $DocumentStringArray=array($pid,$pid,$pid);
+	 }
+	else
+	 {
+	  $DocumentStringArray=array($pid);
+	 }
     // Query the documents for this patient.
     $dres = sqlStatement("SELECT d.id, d.type, d.url, d.docdate, d.list_id, c.name " .
-                    "FROM documents AS d, categories_to_documents AS cd, categories AS c WHERE " .
+                    "FROM documents AS d, categories_to_documents AS cd, categories AS c WHERE $DocumentString " .
                     "d.foreign_id = ? AND cd.document_id = d.id AND c.id = cd.category_id " .
-                    "ORDER BY d.docdate DESC, d.id DESC", array($pid) );
+                    "ORDER BY d.docdate DESC, d.id DESC", $DocumentStringArray );
     $drow = sqlFetchArray($dres);
 }
 
@@ -368,6 +380,22 @@ while ($result4 = sqlFetchArray($res4)) {
                     ($auth_relaxed && ($formdir == 'sports_fitness' || $formdir == 'podiatry'))) ;
                 else continue;
 
+				
+				//Pick the encounter level documents.
+				//--------------------------------------------------------------------------------------------------------------
+				$DocumentEncounter='';
+				if ($enc['formdir'] == 'scanned_notes')
+				 {
+					$resdoc = sqlStatement("SELECT documents.id,documents.url FROM documents,form_scanned_notes,forms WHERE " .
+						" form_scanned_notes.document_id=documents.id and forms.form_id=form_scanned_notes.id and 
+							forms.formdir='scanned_notes' and form_scanned_notes.id=? ".
+										"and foreign_id = ? AND encounter=?",array($enc['form_id'],$pid,$result4['encounter']));
+					while($resultdoc = sqlFetchArray($resdoc)) {
+						$DocumentEncounter=  '('.basename($resultdoc{"url"}).')';
+					}
+				 }
+				//--------------------------------------------------------------------------------------------------------------
+    
                 /*****************************************************    
                 // build the potentially HUGE tooltip used by ttshow
                 $title = xl('View encounter');
@@ -400,7 +428,14 @@ while ($result4 = sqlFetchArray($res4)) {
                 // but we did away with that).
                 //
                 echo htmlspecialchars(xl_form_title($enc['form_name']), ENT_NOQUOTES);
-                echo "<br>";
+				if ($enc['formdir'] == 'scanned_notes')
+				 {
+					echo $DocumentEncounter.'<br>';
+				 }
+				else
+				 {
+				  echo '<br>';
+				 }
                 if ($issue) {
                   echo "<div class='encreport' style='padding-left:10px;'>";
                   // Use the form's report.php for display.  Forms with names starting with LBF

@@ -50,4 +50,12 @@
 --  #EndIf
 --    all blocks are terminated with and #EndIf statement.
 
+#IfNotRow categories name Scanned Encounter Notes
+ INSERT INTO categories select (select MAX(id) from categories) + 1, 'Scanned Encounter Notes', '', 1, rght, rght + 1 from categories where name = 'Categories';
+ UPDATE categories SET rght = rght + 2 WHERE name = 'Categories';
+ UPDATE categories_seq SET id = (select MAX(id) from categories);
+#Endif
 
+#IfMissingColumn form_scanned_notes document_id
+ALTER TABLE form_scanned_notes ADD document_id BIGINT NOT NULL COMMENT 'Id of the documents table';
+#EndIf

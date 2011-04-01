@@ -300,6 +300,15 @@ class C_Document extends Controller {
 		if (file_exists($temp_url)) {
 			$url = $temp_url;
 		}
+	   else
+	    {
+	        $second_level = $from_patientid;
+	        $from_patientid = array_pop($from_all);
+			$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' . $from_filename;
+			if (file_exists($temp_url)) {
+				$url = $temp_url;
+			}
+	    }
 		if (!file_exists($url)) {
 			echo xl('The requested document is not present at the expected location on the filesystem or there are not sufficient permissions to access it.','','',' ') . $url;	
 		}
@@ -591,6 +600,15 @@ class C_Document extends Controller {
                 if (file_exists($temp_url)) {
                         $url = $temp_url;
                 }
+			   else
+				{
+					$second_level = $from_patientid;
+					$from_patientid = array_pop($from_all);
+					$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' . $from_filename;
+					if (file_exists($temp_url)) {
+						$url = $temp_url;
+					}
+				}
 
 	    if ($_POST['process'] != "true") {
 			die("process is '" . $_POST['process'] . "', expected 'true'");
@@ -638,7 +656,42 @@ class C_Document extends Controller {
 		        $path = $d->get_url_filepath();
 		        $path = str_replace( $file_name, "", $path );  
 		        $new_url = $this->_rename_file( $path.$docname );
-     		    if ( rename( $d->get_url(), $new_url ) ) {
+		//================================================================================
+				if (file_exists($d->get_url())) {
+					$old_url=$d->get_url();
+				}
+			   else
+				{
+					$old_url =  $d->get_url();
+					
+					//strip url of protocol handler
+					$old_url = preg_replace("|^(.*)://|","",$old_url);
+					
+					//change full path to current webroot.  this is for documents that may have
+					//been moved from a different filesystem and the full path in the database
+					//is not current.  this is also for documents that may of been moved to
+					//different patients
+					$from_all = explode("/",$old_url);
+					$from_filename = array_pop($from_all);
+					$from_patientid = array_pop($from_all);
+					$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $from_filename;
+					if (file_exists($temp_url)) {
+						$old_url = $temp_url;
+						$new_url=$GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' .$docname;
+					}
+				   else
+					{
+						$second_level = $from_patientid;
+						$from_patientid = array_pop($from_all);
+						$temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' . $from_filename;
+						if (file_exists($temp_url)) {
+							$old_url = $temp_url;
+							$new_url=$GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $second_level . '/' .$docname;
+						}
+					}
+				}
+		//================================================================================
+     		    if ( rename( $old_url, $new_url ) ) {
      		        // check the "converted" file, and delete it if it exists. It will be regenerated when report is run
      		        $url = preg_replace("|^(.*)://|","",$d->get_url());
      		        $convertedFile = substr(basename($url), 0, strrpos(basename($url), '.')) . '_converted.jpg';			    
