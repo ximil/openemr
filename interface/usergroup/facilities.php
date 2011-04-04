@@ -9,6 +9,7 @@ $alertmsg = '';
 /*		Inserting New facility					*/
 if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] != "admin_facility") {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   $result=sqlStatement("SELECT * FROM facility WHERE ".
 		       "name ='"         . trim(formData('facility'    )) . "'  " .
@@ -17,6 +18,8 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   $cnt = sqlNumRows($result);
   if($cnt < 1){
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+>>>>>>> 3450344... bradymiller's git hub comments for the commit calendar_and_billing_location_modifications_v4 is corrected here.
   $insert_id=sqlInsert("INSERT INTO facility SET " .
   "name = '"         . trim(formData('facility'    )) . "', " .
   "phone = '"        . trim(formData('phone'       )) . "', " .
@@ -36,23 +39,17 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "attn = '"  . trim(formData('attn' )) . "', " .
   "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
   "facility_npi = '" . trim(formData('facility_npi')) . "'");
-  if(trim(formData('billing_location' ))=='1'){//insted on 1 its id is kept
-  sqlInsert("UPDATE facility SET billing_location='".$insert_id."' WHERE id='".$insert_id."' ");
+  if(trim(formData('billing_location' ))=='1'){
+  sqlStatement("UPDATE facility SET billing_location='".$insert_id."' WHERE id='".$insert_id."' ");//If the facility is billing location its id is kept instead of value 1
   }
-}
 }
 
 /*		Editing existing facility					*/
 if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 {
-      $result=sqlStatement("SELECT * FROM facility WHERE ".
-		       "name ='"         . trim(formData('facility'    )) . "'  " .
-		       "OR ".
-		       "color = '"  . trim(formData('ncolor' )) . "'");
-  $cnt = sqlNumRows($result);
     $billing_location_string= "billing_location='" .trim(formData('billing_location'));
 	if($_REQUEST['billing_location']=='1'){
-	$billing_location_string= "billing_location='" .trim(formData('fid')) ;
+	$billing_location_string= "billing_location='" .trim(formData('fid')) ;//If the facility is billing location its id is kept instead of value 1
 	}
 	sqlStatement("update facility set
 		name='" . trim(formData('facility')) . "',
@@ -112,21 +109,12 @@ $(document).ready(function(){
 	});
 
 });
-function OnloadFunction()
- {
-	if(parent.$)
-	 {
-		parent.$.fn.fancybox.close();
-		parent.location.reload();
-	 }
-
- }
 
 </script>
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 </head>
 
-<body class="body_top" onLoad="OnloadFunction()">
+<body class="body_top">
 
 <div>
     <div>
@@ -153,10 +141,14 @@ function OnloadFunction()
             $result2[$iter3] = $frow;
           foreach($result2 as $iter3) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 			$varstreet="";//these are assigned conditionally below,blank assignment is done so that old values doesn't get propagated to next level.
 =======
 			$varstreet="";
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+			$varstreet="";//these are assigned conditionally below,blank assignment is done so that old values doesn't get propagated to next level.
+>>>>>>> 3450344... bradymiller's git hub comments for the commit calendar_and_billing_location_modifications_v4 is corrected here.
 			$varcity="";
 			$varstate="";
           $varstreet=$iter3{street };

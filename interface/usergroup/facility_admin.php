@@ -41,9 +41,13 @@ parent.$.fn.fancybox.close();
 function submitform() {
     if (document.forms[0].facility.value.length>0 && document.forms[0].ncolor.value != '') {
 <<<<<<< HEAD
+<<<<<<< HEAD
         top.restoreSession();
 =======
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+        top.restoreSession();
+>>>>>>> 3450344... bradymiller's git hub comments for the commit calendar_and_billing_location_modifications_v4 is corrected here.
         document.forms[0].submit();
     } else {
 	if(document.forms[0].facility.value.length<=0){
@@ -92,7 +96,7 @@ function pick(anchorname,target) {
   </tr>
 </table>
 
-<form name='facility' method='post' action="facilities.php" >
+<form name='facility' method='post' action="facilities.php" target="_parent">
     <input type=hidden name=mode value="facility">
     <input type=hidden name=newmode value="admin_facility">	<!--	Diffrentiate Admin and add post backs -->
     <input type=hidden name=fid value="<?php echo $my_fid;?>">
