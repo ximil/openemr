@@ -472,10 +472,14 @@ CREATE TABLE `facility` (
 -- 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 INSERT INTO `facility` VALUES (3, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', 1, 1, 0, NULL, '', '', '', '', '','#99FFFF');
 =======
 INSERT INTO `facility` VALUES (3, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', 1, 3, 0, NULL, '', '', '', '', '','#99FFFF');
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+INSERT INTO `facility` VALUES (3, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', 1, 1, 0, NULL, '', '', '', '', '','#99FFFF');
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
 
 -- --------------------------------------------------------
 

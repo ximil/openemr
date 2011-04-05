@@ -39,18 +39,11 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "attn = '"  . trim(formData('attn' )) . "', " .
   "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
   "facility_npi = '" . trim(formData('facility_npi')) . "'");
-  if(trim(formData('billing_location' ))=='1'){
-  sqlStatement("UPDATE facility SET billing_location='".$insert_id."' WHERE id='".$insert_id."' ");//If the facility is billing location its id is kept instead of value 1
-  }
 }
 
 /*		Editing existing facility					*/
 if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 {
-    $billing_location_string= "billing_location='" .trim(formData('billing_location'));
-	if($_REQUEST['billing_location']=='1'){
-	$billing_location_string= "billing_location='" .trim(formData('fid')) ;//If the facility is billing location its id is kept instead of value 1
-	}
 	sqlStatement("update facility set
 		name='" . trim(formData('facility')) . "',
 		phone='" . trim(formData('phone')) . "',
@@ -63,7 +56,7 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		federal_ein='" . trim(formData('federal_ein')) . "',
 		color='" . trim(formData('ncolor')) . "',
 		service_location='" . trim(formData('service_location')) . "',
-		".$billing_location_string. "',
+		billing_location='" . trim(formData('billing_location')) . "',
 		accepts_assignment='" . trim(formData('accepts_assignment')) . "',
 		pos_code='" . trim(formData('pos_code')) . "',
 		domain_identifier='" . trim(formData('domain_identifier')) . "',

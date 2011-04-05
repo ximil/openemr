@@ -75,6 +75,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
   ++$edicount;
 <<<<<<< HEAD
+<<<<<<< HEAD
   //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
   $billingFacilityName=substr($claim->billingFacilityName(),0,35);
 =======
@@ -87,6 +88,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$billingFacilityName=substr($billingFacilityName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
   $out .= "NM1" .       // Loop 1000A Submitter
     "*41" .
     "*2" .
@@ -141,6 +146,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
   ++$edicount;
 <<<<<<< HEAD
+<<<<<<< HEAD
   //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
   $billingFacilityName=substr($claim->billingFacilityName(),0,35);
 =======
@@ -153,6 +159,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$billingFacilityName=substr($billingFacilityName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
   $out .= "NM1" .       // Loop 2010AA Billing Provider
     "*85" .
     "*2" .
@@ -208,6 +218,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
   ++$edicount;
 <<<<<<< HEAD
+<<<<<<< HEAD
   //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
   $billingFacilityName=substr($claim->billingFacilityName(),0,35);
 =======
@@ -220,6 +231,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$billingFacilityName=substr($billingFacilityName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
   $out .= "NM1" .       // Loop 2010AB Pay-To Provider
     "*87" .
     "*2" .
@@ -316,6 +331,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
   ++$edicount;
 <<<<<<< HEAD
+<<<<<<< HEAD
   //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
   $payerName=substr($claim->payerName($ins),0,35);
 =======
@@ -328,6 +344,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$payerName=substr($payerName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+  //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
+  $payerName=substr($claim->payerName($ins),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
   $out .= "NM1" .       // Loop 2010BB Payer
     "*PR" .
     "*2" .
@@ -583,6 +603,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "*77" .
       "*2";
 <<<<<<< HEAD
+<<<<<<< HEAD
    //Field length is limited to 35. See nucc dataset page 77 www.nucc.org
 	$facilityName=substr($claim->facilityName(),0,35);
 =======
@@ -595,6 +616,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$facilityName=substr($facilityName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+   //Field length is limited to 35. See nucc dataset page 77 www.nucc.org
+	$facilityName=substr($claim->facilityName(),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
     if ($claim->facilityName() || $claim->facilityNPI() || $claim->facilityETIN()) { $out .=
       "*" . $facilityName;
     }
@@ -768,6 +793,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
     ++$edicount;
 <<<<<<< HEAD
+<<<<<<< HEAD
     //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
     $payerName=substr($claim->payerName($ins),0,35);
 =======
@@ -780,6 +806,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 	$payerName=substr($payerName,0,35);
    }
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+    //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
+    $payerName=substr($claim->payerName($ins),0,35);
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
     $out .= "NM1" . // Loop 2330B Payer info for other insco. Page 359.
       "*PR" .
       "*2" .

@@ -2142,10 +2142,14 @@ function expand_collapse_widget($title, $label, $buttonLabel, $buttonLink, $butt
 //billing_facility fuction will give the dropdown list which contain billing faciliies.
 function billing_facility($name,$select){
 <<<<<<< HEAD
+<<<<<<< HEAD
 	$qsql = sqlStatement("SELECT id, name FROM facility WHERE billing_location = 1");
 =======
 	$qsql = sqlStatement("SELECT id, name FROM facility WHERE billing_location = id");
 >>>>>>> 32e3084... We have removed redundant lines of code from 3 view files(day,week,month).
+=======
+	$qsql = sqlStatement("SELECT id, name FROM facility WHERE billing_location = 1");
+>>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
 		echo "   <select id='".htmlspecialchars($name, ENT_QUOTES)."' name='".htmlspecialchars($name, ENT_QUOTES)."'>";
 			while ($facrow = sqlFetchArray($qsql)) {
 				if ($_SESSION['authorizedUser'] || in_array($facrow, $facils)) {
