@@ -197,6 +197,7 @@ class Claim {
     $sql = "SELECT * FROM facility " .
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     " where id ='" . addslashes($this->encounter['billing_facility']) . "' ";
 =======
       " where billing_location =(select id from facility where billing_location=".addslashes($this->encounter['billing_facility']).")";
@@ -204,6 +205,9 @@ class Claim {
 =======
       "ORDER BY billing_location DESC, id ASC LIMIT 1";
 >>>>>>> 4fb8035... Rod Roark's git hub comments for the branch
+=======
+    " where id ='" . addslashes($this->encounter['billing_facility']) . "' ";
+>>>>>>> acd2e6c... Correction in the query
     $this->billing_facility = sqlQuery($sql);
 
     $sql = "SELECT * FROM insurance_numbers WHERE " .
