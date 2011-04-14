@@ -330,8 +330,7 @@ class C_Document extends Controller {
 			    } else {
 			        header("Content-Disposition: " . ($as_file ? "attachment" : "inline") . "; filename=\"" . basename($d->get_url()) . "\"");
 			        header("Content-Type: " . $d->get_mimetype());
-			        $size = filesize($d->get_url_filepath());
-			        header("Content-Length: " . $size );
+			        header("Content-Length: " . filesize($url));
 			        fpassthru($f);
 			    }
 			    exit;
@@ -573,13 +572,33 @@ class C_Document extends Controller {
 	}
 	
 	function validate_action_process($patient_id="", $document_id) {
+
+                $d = new Document($document_id);
+                $url =  $d->get_url();
+
+                //strip url of protocol handler
+                $url = preg_replace("|^(.*)://|","",$url);
+
+                //change full path to current webroot.  this is for documents that may have
+                //been moved from a different filesystem and the full path in the database
+                //is not current.  this is also for documents that may of been moved to
+                //different patients
+                // NOTE that $from_filename and basename($url) are the same thing
+                $from_all = explode("/",$url);
+                $from_filename = array_pop($from_all);
+                $from_patientid = array_pop($from_all);
+                $temp_url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $from_patientid . '/' . $from_filename;
+                if (file_exists($temp_url)) {
+                        $url = $temp_url;
+                }
+
 	    if ($_POST['process'] != "true") {
 			die("process is '" . $_POST['process'] . "', expected 'true'");
 			return;
 		}
 		
 		$d = new Document( $document_id );
-		$current_hash = sha1_file( $d->get_url_filepath() );
+		$current_hash = sha1_file( $url );
 		$messages = xl('Current Hash').": ".$current_hash."<br>";
 		$messages .= xl('Stored Hash').": ".$d->get_hash()."<br>";
 		if ( $d->get_hash() == '' ) {
@@ -620,7 +639,14 @@ class C_Document extends Controller {
 		        $path = str_replace( $file_name, "", $path );  
 		        $new_url = $this->_rename_file( $path.$docname );
      		    if ( rename( $d->get_url(), $new_url ) ) {
-     		        $d->url = $new_url;
+     		        // check the "converted" file, and delete it if it exists. It will be regenerated when report is run
+     		        $url = preg_replace("|^(.*)://|","",$d->get_url());
+     		        $convertedFile = substr(basename($url), 0, strrpos(basename($url), '.')) . '_converted.jpg';			    
+                    $url = $GLOBALS['OE_SITE_DIR'] . '/documents/' . $patient_id . '/' . $convertedFile;
+     				if ( file_exists( $url ) ) {
+     				    unlink( $url );
+     				}
+     				$d->url = $new_url;
      	            $d->persist();
      	            $d->populate();
      				$messages .= xl('Document successfully renamed.')."<br>";

@@ -31,6 +31,7 @@
 //   German                         // xl('German')
 //   Greek                          // xl('Greek')
 //   Hebrew                         // xl('Hebrew')
+//   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
 //   Polish                         // xl('Polish')
 //   Portuguese (Brazilian)         // xl('Portuguese (Brazilian)')
@@ -68,13 +69,15 @@ else {
 
 // List of user specific tabs and globals
 $USER_SPECIFIC_TABS = array('Appearance',
-                            'Locale');
+                            'Locale',
+                            'Calendar');
 $USER_SPECIFIC_GLOBALS = array('default_top_pane',
                                'concurrent_layout',
                                'css_header',
                                'units_of_measurement',
                                'date_display_format',
-                               'time_display_format');
+                               'time_display_format',
+                               'event_color');
 
 $GLOBALS_METADATA = array(
 
@@ -114,7 +117,7 @@ $GLOBALS_METADATA = array(
     'gbl_nav_area_width' => array(
       xl('Navigation Area Width'),
       'num',
-      '130',
+      '150',
       xl('Width in pixels of the left navigation frame.')
     ),
 
@@ -587,6 +590,16 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '1',                              // default
       xl('Automatically create a new encounter when appointment status is set to "@" (arrived).')
+    ),
+    
+    'event_color' => array(
+      xl('Appointment/Event Color'),
+      array(
+        '1' => 'Category Color Schema',
+        '2' => 'Facility Color Schema',
+      ),                           // data type
+      '1',                              // default
+      xl('This determines which color schema used for appointment')
     ),
 
   ),
