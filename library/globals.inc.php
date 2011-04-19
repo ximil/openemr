@@ -31,6 +31,7 @@
 //   German                         // xl('German')
 //   Greek                          // xl('Greek')
 //   Hebrew                         // xl('Hebrew')
+//   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
 //   Polish                         // xl('Polish')
 //   Portuguese (Brazilian)         // xl('Portuguese (Brazilian)')
@@ -68,13 +69,15 @@ else {
 
 // List of user specific tabs and globals
 $USER_SPECIFIC_TABS = array('Appearance',
-                            'Locale');
+                            'Locale',
+                            'Calendar');
 $USER_SPECIFIC_GLOBALS = array('default_top_pane',
                                'concurrent_layout',
                                'css_header',
                                'units_of_measurement',
                                'date_display_format',
-                               'time_display_format');
+                               'time_display_format',
+                               'event_color');
 
 $GLOBALS_METADATA = array(
 
@@ -100,21 +103,21 @@ $GLOBALS_METADATA = array(
         '2' => xl('Navigation menu is a tree view'),
         '3' => xl('Navigation uses a sliding menu'),
       ),
-      '2',                              // default = tree menu
+      '3',                              // default = tree menu
       xl('Type of screen layout')
     ),
 
     'css_header' => array(
       xl('Theme'),
       'css',
-      'style_default.css',
+      'style_oemr.css',
       xl('Pick a CSS theme.')
     ),
 
     'gbl_nav_area_width' => array(
       xl('Navigation Area Width'),
       'num',
-      '130',
+      '150',
       xl('Width in pixels of the left navigation frame.')
     ),
 
@@ -207,6 +210,13 @@ $GLOBALS_METADATA = array(
       'm_lang',                         // data type
       '',                               // default = none
       xl('Select which languages, if any, may be chosen at login. (only pertinent if above All Languages Allowed is turned off)')
+    ),
+
+    'allow_debug_language' => array(
+      xl('Allow Debugging Language'),
+      'bool',                           // data type
+      '1',                              // default = true during development and false for production releases
+      xl('This will allow selection of the debugging (\'dummy\') language.')
     ),
 
     'translate_layout' => array(
@@ -507,6 +517,13 @@ $GLOBALS_METADATA = array(
       '0',                              // default = false
       xl('This will activate the CCR(Continuity of Care Record) and CCD(Continuity of Care Document) reporting.')
     ),
+    
+    'hide_document_encryption' => array(
+      xl('Hide Encryption/Decryption Options In Document Management'),
+      'bool',                           // data type
+      '1',                              // default = true
+      xl('This will deactivate document the encryption and decryption features, and hide them in the UI.')
+    ),
 
   ),
 
@@ -573,6 +590,16 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '1',                              // default
       xl('Automatically create a new encounter when appointment status is set to "@" (arrived).')
+    ),
+    
+    'event_color' => array(
+      xl('Appointment/Event Color'),
+      array(
+        '1' => 'Category Color Schema',
+        '2' => 'Facility Color Schema',
+      ),                           // data type
+      '1',                              // default
+      xl('This determines which color schema used for appointment')
     ),
 
   ),
@@ -748,7 +775,7 @@ $GLOBALS_METADATA = array(
       xl('Enable Audit Logging'),
       'bool',                           // data type
       '1',                              // default
-      xl('Enable Audit Logging.')
+      xl('Enable Audit Logging')
     ),
 
     'audit_events_patient-record' => array(
@@ -990,7 +1017,7 @@ $GLOBALS_METADATA = array(
     ),
 
     'enable_scanner' => array(
-      xl('Enable Scanner support'),
+      xl('Enable Scanner Support'),
       'bool',                           // data type
       '0',                              // default
       xl('Enable Scanner Support')
