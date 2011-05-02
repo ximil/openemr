@@ -244,6 +244,7 @@ function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patien
       require_once(dirname(__FILE__) . "/classes/rulesets/ruleSet.class.php");
 
       // Run the class rule set
+      // $patientData contains pid's only
       $rule_results = new ruleSet($rowRule,$dateTarget,$patientData);
       
       // Collect/add the results to the results array
@@ -1331,20 +1332,22 @@ function exist_lists_item($patient_id,$type,$value,$dateTarget) {
   // Set date to current if not set
   $dateTarget = ($dateTarget) ? $dateTarget : date('Y-m-d H:i:s');
 
-  if ($type == "medical_problem") {
-    // Specific search for diagnoses
-    // Explode the value into diagnosis code type and code
-    $temp_diag_array = explode("::",$value);
-    $code_type = $temp_diag_array[0];
-    $diagnosis = $temp_diag_array[1];
+  // Attempt to explode the value into a code type and code (if applicable)
+  $value_array = explode("::",$value);
+  if (count($value_array) == 2) {
+
+    // Collect the code type and code
+    $code_type = $value_array[0];
+    $code = $value_array[1];
+
     if ($code_type=='CUSTOM') {
-      // Deal with custom code first (title column in lists table)
+      // Deal with custom code type first (title column in lists table)
       $response = sqlQuery("SELECT * FROM `lists` " .
         "WHERE `type`=? " .
         "AND `pid`=? " .
         "AND `title`=? " .
         "AND ( (`begdate` IS NULL AND `date`<=?) OR (`begdate` IS NOT NULL AND `begdate`<=?) ) " .
-        "AND ( (`enddate` IS NULL) OR (`enddate` IS NOT NULL AND `enddate`>=?) )", array($type,$patient_id,$diagnosis,$dateTarget,$dateTarget,$dateTarget) );
+        "AND ( (`enddate` IS NULL) OR (`enddate` IS NOT NULL AND `enddate`>=?) )", array($type,$patient_id,$code,$dateTarget,$dateTarget,$dateTarget) );
       if (!empty($response)) return true;
     }
     else {
@@ -1354,11 +1357,13 @@ function exist_lists_item($patient_id,$type,$value,$dateTarget) {
         "AND `pid`=? " .
         "AND `diagnosis` LIKE ? " .
         "AND ( (`begdate` IS NULL AND `date`<=?) OR (`begdate` IS NOT NULL AND `begdate`<=?) ) " .
-        "AND ( (`enddate` IS NULL) OR (`enddate` IS NOT NULL AND `enddate`>=?) )", array($type,$patient_id,"%".$code_type.":".$diagnosis."%",$dateTarget,$dateTarget,$dateTarget) );
+        "AND ( (`enddate` IS NULL) OR (`enddate` IS NOT NULL AND `enddate`>=?) )", array($type,$patient_id,"%".$code_type.":".$code."%",$dateTarget,$dateTarget,$dateTarget) );
       if (!empty($response)) return true;
     }
   }
-  else { // generic lists item that requires no customization
+  else { // count($value_array) == 1
+    // Search the title column in lists table
+    //   Yes, this is essentially the same as the code type listed as CUSTOM above. This provides flexibility and will ensure compatibility.
     $response = sqlQuery("SELECT * FROM `lists` " .
       "WHERE `type`=? " .
       "AND `pid`=? " .
@@ -1707,7 +1712,7 @@ function convertCompSql($comp) {
 //   $target     - date to calculate age on
 // Return: decimal, years(decimal) from dob to target(date)
 function convertDobtoAgeYearDecimal($dob,$target) { 
-
+     
     // Grab year, month, and day from dob and dateTarget
     $dateDOB = explode(" ",$dob);
     $dateTarget = explode(" ",$target);
