@@ -9,7 +9,7 @@
 require_once(dirname(__FILE__) . "/../../clinical_rules.php");
 require_once(dirname(__FILE__) . "/../../forms.inc");
 require_once(dirname(__FILE__) . "/../../patient.inc");
-
+require_once( 'codes.php' );
 
 class ruleSet
 {
@@ -29,10 +29,12 @@ class ruleSet
 
   // Main processed results variable:
   // $results - holds the result array used in reports
-
+  
+  private $codes; // code lookup class
 
   // Construction function
   public function __construct( $rule, $dateTarget, $patientData ) {
+    $this->codes = new Code_Lookup();  
     $this->rule = $rule;
     $this->dateTarget = $dateTarget;
     $this->patientData = $patientData;
@@ -110,6 +112,18 @@ class ruleSet
         // NQF 0061
         // PQRI 3
         $this->rule_dm_bp_control_cqm();
+        break;
+      case "rule_dm_a1c_cqm":
+        // Diabetes: HbA1c Poor Control
+        // NQF 0059
+        // PQRI 1
+        $this->rule_dm_a1c_cqm();
+        break;
+      case "rule_dm_ldl_cqm":
+        // Diabetes: LDL Management & Control
+        // NQF 0064
+        // PQRI 2
+        $this->rule_dm_ldl_cqm();
         break;
       case "problem_list_amc":
         // Maintain an up-to-date problem list of current and active diagnoses.
@@ -246,7 +260,8 @@ class ruleSet
       return true;
     }
   }
-
+  
+  
   // Function to get patient dob
   // Parameter:
   //   $patient_id - patient id
@@ -285,7 +300,7 @@ class ruleSet
   private function rule_htn_bp_measure_cqm() {
     $rule_id=$this->rule['id'];
     $dateTarget = $this->dateTarget;
-    $patientData =$this->patientData;
+    $patientData = $this->patientData;
 
     // Calculate measurement period
     $tempDateArray = explode("-",$dateTarget);
@@ -299,7 +314,7 @@ class ruleSet
     $exclude_filt = 0;
     $pass_targ = 0;
     $perc = 0;
-    foreach ( $patientData as $rowPatient ) {
+    foreach ( $patientData as $rowPatient ) { 
       // increment total patients counter
       $total_pat++;
 
@@ -347,6 +362,7 @@ class ruleSet
       // make a function for this and wrap in the encounter titles
       if (!( ($this->exist_encounter($patient_id,'enc_outpatient',$begin_measurement,$end_measurement,2)) ||
              ($this->exist_encounter($patient_id,'enc_nurs_fac',$begin_measurement,$end_measurement,2)) )) {
+
         continue;
       }
 
@@ -383,28 +399,473 @@ class ruleSet
     $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ,$perc);
   }
 
-  // TODO
   // Tobacco Use Assessment (NQF 0028a)
   private function rule_tob_use_assess_cqm() {
+    $rule_id=$this->rule['id'];
+    $dateTarget = $this->dateTarget;
+    $patientData =$this->patientData;
 
+    // Calculate measurement period
+    $tempDateArray = explode("-",$dateTarget);
+    $tempYear = $tempDateArray[0];
+    $begin_measurement = $tempDateArray[0] . "-01-01 00:00:00";
+    $end_measurement = $tempDateArray[0] . "-12-31 23:59:59";
+
+    // Collect results
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = 0;
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id($rowPatient);
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for age greater than 18
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 18) continue;   
+
+      // filter for 2 specified encounters of some types, and 1 for others
+      // make a function for this and wrap in the encounter titles
+      if (!( ($this->exist_encounter($patient_id,'enc_off_vis',$begin_measurement,$end_measurement,2)) ||
+             ($this->exist_encounter($patient_id,'enc_hea_and_beh',$begin_measurement,$end_measurement,2)) ||
+             ($this->exist_encounter($patient_id,'enc_occ_ther',$begin_measurement,$end_measurement,2)) || 
+             ($this->exist_encounter($patient_id,'enc_psych_and_psych',$begin_measurement,$end_measurement,2)) ||
+             ($this->exist_encounter($patient_id,'enc_pre_med_ser_18_older',$begin_measurement,$end_measurement,1)) || 
+             ($this->exist_encounter($patient_id,'enc_pre_ind_counsel',$begin_measurement,$end_measurement,1)) ||
+             ($this->exist_encounter($patient_id,'enc_pre_med_group_counsel',$begin_measurement,$end_measurement,1)) ||
+             ($this->exist_encounter($patient_id,'enc_pre_med_other_serv',$begin_measurement,$end_measurement,1)) )) {
+        continue;
+      }
+      
+      // Filter has been passed
+      $pass_filt++;
+      
+      // See if user has been a tobacco user before or sumultaneosly to the encounter within two years (24 months)
+      $begin_24_months_before_time = strtotime( '-24 month' , strtotime ( $begin_measurement ) );
+      $begin_24_months_before = date( 'Y-m-d 00:00:00' , $begin_24_months_before_time );
+      $tobaccoHistory = getHistoryData( $patient_id, "tobacco", $begin_24_months_before, $end_measurement );
+      if ( !isset( $tobaccoHistory['tobacco'] ) ) {
+          continue;
+      }
+
+      // Target has been passed
+      $pass_targ++;
+    }
+    
+    // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+    $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ);
+
+    // Set results
+    $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ,$perc);
   }
 
   // TODO
   // Tobacco Cessation Intervention (NQF 0028b)
   private function rule_tob_cess_inter_cqm() {
-
+    
   }
 
-  // TODO
   // Adult Weight Screening and Follow-Up (NQF 0421) (PQRI 128)
   private function rule_adult_wt_screen_fu_cqm() {
+    $rule_id=$this->rule['id'];
+    $dateTarget = $this->dateTarget;
+    $patientData =$this->patientData;
 
+    // Calculate measurement period
+    $tempDateArray = explode("-",$dateTarget);
+    $tempYear = $tempDateArray[0];
+    $begin_measurement = $tempDateArray[0] . "-01-01 00:00:00";
+    $end_measurement = $tempDateArray[0] . "-12-31 23:59:59";
+
+    // Collect results
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = 0;
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for age greater than 65
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 65 ) continue;
+      
+      // filter for 1 specified encounters
+      // make a function for this and wrap in the encounter titles
+      // doesn't say anything about encounter date, so check for any encounter
+      if (!( ( $this->exist_encounter($patient_id,'enc_outpatient',$begin_measurement,$end_measurement,1)) )) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+      // Flow of control loop
+      $bContinue = true;
+      do {
+          // See if BMI has been recorded between >=22kg/m2 and <30kg/m2 6 months before, or simultanious to the encounter
+          $query = "SELECT form_vitals.BMI " .
+                     "FROM `form_vitals` " .
+                     "LEFT JOIN `form_encounter` " .
+                     "ON ( form_vitals.pid = form_encounter.pid ) " .
+                     "LEFT JOIN `enc_category_map` " .
+                     "ON (enc_category_map.main_cat_id = form_encounter.pc_catid) " .
+          			 "WHERE form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.pid = ? AND form_vitals.BMI >= 22 AND form_vitals.BMI < 30 " .
+                     "AND DATE( form_vitals.date ) >= DATE_ADD( form_encounter.date, INTERVAL -6 MONTH ) " .
+                     "AND DATE( form_vitals.date ) <= DATE( form_encounter.date ) " .
+                     "AND ( enc_category_map.rule_enc_id = 'enc_outpatient' )";
+          $res = sqlStatement( $query, array( $patient_id ) );
+          $number = sqlNumRows($res);
+          if ( $number >= 1 ) {
+              $bContinue = false;
+              break;
+          }
+          
+          // See if BMI has been recorded >=30kg/m2 6 months before, or simultanious to the encounter
+          // TODO AND “Care goal: follow-up plan BMI management” OR “Communication provider to provider: dietary consultation order”
+          $query = "SELECT form_vitals.BMI " .
+                     "FROM `form_vitals` " .
+                     "LEFT JOIN `form_encounter` " .
+                     "ON ( form_vitals.pid = form_encounter.pid ) " .
+                     "LEFT JOIN `enc_category_map` " .
+                     "ON (enc_category_map.main_cat_id = form_encounter.pc_catid) " .
+                     "WHERE form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.pid = ? AND form_vitals.BMI >= 30 " .
+                     "AND ( DATE( form_vitals.date ) >= DATE_ADD( form_encounter.date, INTERVAL -6 MONTH ) ) " .
+                     "AND ( DATE( form_vitals.date ) <= DATE( form_encounter.date ) ) " .
+                     "AND ( enc_category_map.rule_enc_id = 'enc_outpatient' )";
+          $res = sqlStatement( $query, array( $patient_id ) );
+          $number = sqlNumRows($res);
+          if ( $number >= 1 ) {
+              $bContinue = false;
+              break;
+          }
+          
+          // See if BMI has been recorded <22kg/m2 6 months before, or simultanious to the encounter
+          // TODO AND “Care goal: follow-up plan BMI management” OR “Communication provider to provider: dietary consultation order”
+          $query = "SELECT form_vitals.BMI " .
+                     "FROM `form_vitals` " .
+                     "LEFT JOIN `form_encounter` " .
+                     "ON ( form_vitals.pid = form_encounter.pid ) " .
+                     "LEFT JOIN `enc_category_map` " .
+                     "ON (enc_category_map.main_cat_id = form_encounter.pc_catid) " .
+                     "WHERE form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.pid = ? AND form_vitals.BMI < 22 " .
+                     "AND ( DATE( form_vitals.date ) >= DATE_ADD( form_encounter.date, INTERVAL -6 MONTH ) ) " .
+                     "AND ( DATE( form_vitals.date ) <= DATE( form_encounter.date ) ) " .
+                     "AND ( enc_category_map.rule_enc_id = 'enc_outpatient' )";
+          $res = sqlStatement( $query, array( $patient_id ) );
+          $number = sqlNumRows($res);
+          if ( $number >= 1 ) {
+              $bContinue = false;
+              break;
+          }
+      } while( false );
+      
+      if ( $bContinue ) {
+          continue;
+      }
+      
+      // TODO Exclusions
+      // OR:“Patient characteristic: Terminal illness”<=6 months before or simultaneously to “Encounter: encounter outpatient”;
+      // OR:“Physical exam not done: patient reason”; 
+      // OR:“Physical exam not done: medical reason”; 
+      // OR:“Physical rationale physical exam not done: system reason”;      
+      if ( $this->codes->check_for_pregnancy( $patient_id, $end_measurement ) ) {
+          $exclude_filt++;
+      }
+
+      $pass_targ++;
+    }
+    
+    // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+    $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ);
+
+    // Set results
+    $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ,$perc);
+    
+    // *** Population criteria 2 ***
+    // reset counters
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = 0;
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for >= 18 and <= 64
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 18 || $age > 65 ) continue;
+      
+      // Denominator=
+      // AND: “All patients in the initial patient population”;
+      // AND: >=1 count(s) of “Encounter: encounter outpatient”;
+      if (!( ( $this->exist_encounter($patient_id,'enc_outpatient',$begin_measurement,$end_measurement,1)) )) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+    // Flow of control loop
+      $bContinue = true;
+      do {
+          // See if BMI has been recorded between >=18.5kg/m2 and <25kg/m2 6 months before, or simultanious to the encounter
+          $query = "SELECT form_vitals.BMI " .
+                     "FROM `form_vitals` " .
+                     "LEFT JOIN `form_encounter` " .
+                     "ON ( form_vitals.pid = form_encounter.pid ) " .
+                     "LEFT JOIN `enc_category_map` " .
+                     "ON (enc_category_map.main_cat_id = form_encounter.pc_catid) " .
+          			 "WHERE form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.pid = ? AND form_vitals.BMI >= 18.5 AND form_vitals.BMI < 25 " .
+                     "AND DATE( form_vitals.date ) >= DATE_ADD( form_encounter.date, INTERVAL -6 MONTH ) " .
+                     "AND DATE( form_vitals.date ) <= DATE( form_encounter.date ) " .
+                     "AND ( enc_category_map.rule_enc_id = 'enc_outpatient' )";
+          $res = sqlStatement( $query, array( $patient_id ) );
+          $number = sqlNumRows($res);
+          if ( $number >= 1 ) {
+              $bContinue = false;
+              break;
+          }
+          
+          // See if BMI has been recorded >=25kg/m2 6 months before, or simultanious to the encounter
+          // TODO AND “Care goal: follow-up plan BMI management” OR “Communication provider to provider: dietary consultation order”
+          $query = "SELECT form_vitals.BMI " .
+                     "FROM `form_vitals` " .
+                     "LEFT JOIN `form_encounter` " .
+                     "ON ( form_vitals.pid = form_encounter.pid ) " .
+                     "LEFT JOIN `enc_category_map` " .
+                     "ON (enc_category_map.main_cat_id = form_encounter.pc_catid) " .
+                     "WHERE form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.BMI IS NOT NULL " .
+                     "AND form_vitals.pid = ? AND form_vitals.BMI >= 25 " .
+                     "AND ( DATE( form_vitals.date ) >= DATE_ADD( form_encounter.date, INTERVAL -6 MONTH ) ) " .
+                     "AND ( DATE( form_vitals.date ) <= DATE( form_encounter.date ) ) " .
+                     "AND ( enc_category_map.rule_enc_id = 'enc_outpatient' )";
+          $res = sqlStatement( $query, array( $patient_id ) );
+          $number = sqlNumRows($res);
+          if ( $number >= 1 ) {
+              $bContinue = false;
+              break;
+          }
+
+      } while( false );
+      
+      if ( $bContinue ) {
+          continue;
+      }
+      
+      // TODO Exclusions
+      // OR:“Patient characteristic: Terminal illness”<=6 months before or simultaneously to “Encounter: encounter outpatient”;
+      // OR:“Physical exam not done: patient reason”; 
+      // OR:“Physical exam not done: medical reason”; 
+      // OR:“Physical rationale physical exam not done: system reason”;
+      if ( $this->codes->check_for_pregnancy( $patient_id, $end_measurement ) ) {
+          $exclude_filt++;
+      }
+      
+      $pass_targ++;
+    }
+    
+    // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+    $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ);
+
+    // Set results
+    $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ,$perc);
+    
   }
 
-  // TODO
   // Weight Assessment and Counseling for Children and Adolescents (NQF 0024)
   private function rule_wt_assess_couns_child_cqm() {
+    $rule_id=$this->rule['id'];
+    $dateTarget = $this->dateTarget;
+    $patientData =$this->patientData;
 
+    // Calculate measurement period
+    $tempDateArray = explode("-",$dateTarget);
+    $tempYear = $tempDateArray[0];
+    $begin_measurement = $tempDateArray[0] . "-01-01 00:00:00";
+    $end_measurement = $tempDateArray[0] . "-12-31 23:59:59";
+
+    // *** Patient Criteria 1 ***
+    // Collect results
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = array( 1 => 0, 2 => 0, 3 => 0 );
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for Patient characteristic: birth date” (age) >=2 and <=16 years
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 2 || $age > 17 ) continue;
+      
+      // filter for 1 specified encounters
+      // make a function for this and wrap in the encounter titles
+      if (  ( !( $this->exist_encounter($patient_id,'enc_out_pcp_obgyn',$begin_measurement,$end_measurement,1) ) ) ||
+               ( $this->codes->check_for_pregnancy( $patient_id, $end_measurement ) ||
+               ( $this->exist_encounter($patient_id,'enc_pregnancy',$begin_measurement,$end_measurement,1) ) ) ) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+      // numerator 1: Physical exam finding: BMI percentile
+      if ( ( (exist_lists_item($patient_id,'medical_problem','CUSTOM::BMI',$end_measurement)) || // TODO where should this come from?
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.5',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.51',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.52',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.53',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.54',$end_measurement)) )) {
+         $pass_targ[1]++;
+      }
+      
+      // numerator 2: Communication to patient: counseling for nutrition
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.3',$end_measurement )  ) { // TODO where should this come from?
+         $pass_targ[2]++;
+      }
+      
+      // numerator 3: Communication to patient: counseling for physical activity
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.41',$end_measurement ) ) { // TODO where should this come from?
+         $pass_targ[3]++;
+      } 
+    }
+    
+    foreach ( $pass_targ as $pass_targ_count ) {
+        // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+        $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ_count);
+        // Set results
+        $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ_count,$perc);
+    }
+    
+    // *** Patient Criteria 2 ***
+    // reset counters
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = array( 1 => 0, 2 => 0, 3 => 0 );
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for Patient characteristic: birth date” (age) >=2 and <=16 years
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 2 || $age > 11 ) continue;
+      
+      // filter for 1 specified encounters
+      // make a function for this and wrap in the encounter titles
+      if (  ( !( $this->exist_encounter($patient_id,'enc_out_pcp_obgyn',$begin_measurement,$end_measurement,1) ) ) ||
+               ( $this->codes->check_for_pregnancy( $patient_id, $end_measurement ) ||
+               ( $this->exist_encounter($patient_id,'enc_pregnancy',$begin_measurement,$end_measurement,1) ) ) ) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+      // numerator 1: Physical exam finding: BMI percentile
+      if ( ( (exist_lists_item($patient_id,'medical_problem','CUSTOM::BMI',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.5',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.51',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.52',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.53',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.54',$end_measurement)) )) {
+         $pass_targ[1]++;
+       }
+      
+      // numerator 2: Communication to patient: counseling for nutrition
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.3',$end_measurement )  ) {
+         $pass_targ[2]++;
+       }
+      
+      // numerator 3: Communication to patient: counseling for physical activity
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.41',$end_measurement ) ) {
+         $pass_targ[3]++;
+       } 
+    }
+    
+    foreach ( $pass_targ as $pass_targ_count ) {
+        // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+        $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ_count);
+        // Set results
+        $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ_count,$perc);
+    }
+    
+  // *** Patient Criteria 3 ***
+    // reset counters
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = array( 1 => 0, 2 => 0, 3 => 0 );
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for Patient characteristic: birth date” (age) >=2 and <=16 years
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age < 12 || $age > 17 ) continue;
+      
+      // filter for 1 specified encounters
+      // make a function for this and wrap in the encounter titles
+      if (  ( !( $this->exist_encounter($patient_id,'enc_out_pcp_obgyn',$begin_measurement,$end_measurement,1) ) ) ||
+               ( $this->codes->check_for_pregnancy( $patient_id, $end_measurement ) ||
+               ( $this->exist_encounter($patient_id,'enc_pregnancy',$begin_measurement,$end_measurement,1) ) ) ) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+      // numerator 1: Physical exam finding: BMI percentile
+      if ( ( (exist_lists_item($patient_id,'medical_problem','CUSTOM::BMI',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.5',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.51',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.52',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.53',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::V85.54',$end_measurement)) )) {
+         $pass_targ[1]++;
+       }
+      
+      // numerator 2: Communication to patient: counseling for nutrition
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.3',$end_measurement )  ) {
+         $pass_targ[2]++;
+       }
+      
+      // numerator 3: Communication to patient: counseling for physical activity
+      if ( exist_lists_item( $patient_id,'medical_problem','ICD9::V65.41',$end_measurement ) ) {
+         $pass_targ[3]++;
+       } 
+    }
+    
+    foreach ( $pass_targ as $pass_targ_count ) {
+        // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+        $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ_count);
+        // Set results
+        $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ_count,$perc);
+    }
+    
   }
 
   // TODO
@@ -416,7 +877,93 @@ class ruleSet
   // TODO
   // Childhood immunization Status (NQF 0038)
   private function rule_child_immun_stat_cqm() {
+    $rule_id=$this->rule['id'];
+    $dateTarget = $this->dateTarget;
+    $patientData =$this->patientData;
 
+    // Calculate measurement period
+    $tempDateArray = explode("-",$dateTarget);
+    $tempYear = $tempDateArray[0];
+    $begin_measurement = $tempDateArray[0] . "-01-01 00:00:00";
+    $end_measurement = $tempDateArray[0] . "-12-31 23:59:59";
+
+    // Collect results
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = array( 1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0, 9 => 0, 10 => 0, 11 => 0, 12 => 0 );
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      $patient_id = $this->get_patient_id( $rowPatient ); 
+      // increment total patients counter
+      $total_pat++;
+
+      // filter for “Patient characteristic: birth date” (age) >=1 year and <2 years
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      $age = convertDobtoAgeYearDecimal( $this->get_DOB( $patient_id ), $begin_measurement );
+      if ( $age >= 2 || $age < 1 ) continue;
+      
+      if (  ( !( $this->exist_encounter($patient_id,'enc_out_pcp_obgyn',$begin_measurement,$end_measurement,1) ) ) ) {
+          continue;
+      }
+      
+      $pass_filt++;
+      
+      // Numerator 1
+      $query = "SELECT immunizations.administered_date, immunizations.patient_id, immunizations.immunization_id, list_options.title, patient_data.pid, patient_data.DOB " .
+    	"FROM immunizations " .
+    	"LEFT JOIN list_options " .
+        "ON immunizations.immunization_id = list_options.option_id AND list_id = immunizations" .
+        "LEFT JOIN patient_data " .
+        "ON immunizations.patient_id = patient_data.pid " .
+    	"WHERE immunizations.patient_id = ? " .
+        "AND ( list_options.option_id = 1 ". // Check for DTap list option ids (1-5)
+        	"OR list_options.option_id = 2 ".
+        	"OR list_options.option_id = 3 ".
+        	"OR list_options.option_id = 4 ".
+        	"OR list_options.option_id = 5 ) " . 
+        "AND DATE( immunizations.administered_date ) >= DATE_ADD( patient_data.DOB, INTERVAL 42 DAY ) " .
+        "AND DATE( immunizations.administered_date ) < DATE_ADD( patient_data.DOB, INTERVAL 2 YEAR ) ";
+    
+      $result = sqlStatement( $query, array( $patient_id ) );
+      if ( count( $result ) >= 4 && 
+          !( $this->codes->check_for_dtap_allergy( $patient_id, $end_measurement ) ) &&
+          !( exist_lists_item( $patient_id, 'medical_problem', 'ICD9::323.51', $end_measurement ) ) &&
+          !( $this->codes->check_for_progressive_neurological_disorder( $patient_id, $end_measurement ) ) ) {
+         $pass_targ[1]++;
+      }
+      
+      // Numerator 2
+    $query = "SELECT immunizations.administered_date, immunizations.patient_id, immunizations.immunization_id, list_options.title, patient_data.pid, patient_data.DOB " .
+    	"FROM immunizations " .
+    	"LEFT JOIN list_options " .
+        "ON immunizations.immunization_id = list_options.option_id AND list_id = immunizations" .
+        "LEFT JOIN patient_data " .
+        "ON immunizations.patient_id = patient_data.pid " .
+    	"WHERE immunizations.patient_id = ? " .
+        "AND ( list_options.option_id = 13 ". // Check for IPV list option ids (11-14)
+        	"OR list_options.option_id = 11 ".
+        	"OR list_options.option_id = 12 ".
+        	"OR list_options.option_id = 14 ".
+        "AND DATE( immunizations.administered_date ) >= DATE_ADD( patient_data.DOB, INTERVAL 42 DAY ) " .
+        "AND DATE( immunizations.administered_date ) < DATE_ADD( patient_data.DOB, INTERVAL 2 YEAR ) ";
+    
+      $result = sqlStatement( $query, array( $patient_id ) );
+      if ( count( $result ) >= 3 && 
+          !( $this->codes->check_for_ipv_allergy( $patient_id, $end_measurement ) ) &&
+          !( $this->codes->check_for_neomycin_allergy( $patient_id, $end_measurement ) ) &&
+          !( $this->codes->check_for_streptomycin_allergy( $patient_id, $end_measurement ) ) &&
+          !( $this->codes->check_for_polymyxin_allergy( $patient_id, $end_measurement ) ) ) {
+         $pass_targ[2]++;
+      }  
+    }
+    
+    foreach ( $pass_targ as $pass_targ_count ) {
+        // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+        $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ_count);
+        // Set results
+        $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ_count,$perc);
+    }
   }
 
   // TODO
@@ -440,6 +987,140 @@ class ruleSet
   // TODO
   // Diabetes: Blood Pressure Management (NQF 0061) (PQRI 3)
   private function rule_dm_bp_control_cqm() {
+
+  }
+  
+  // Diabetes: HbA1c Poor Control (NQF 0059) (PQRI 1) 
+  private function rule_dm_a1c_cqm() {
+    $rule_id=$this->rule['id'];
+    $dateTarget = $this->dateTarget;
+    $patientData =$this->patientData;
+
+    // Calculate measurement period
+    $tempDateArray = explode("-",$dateTarget);
+    $tempYear = $tempDateArray[0];
+    $begin_measurement = $tempDateArray[0] . "-01-01 00:00:00";
+    $end_measurement = $tempDateArray[0] . "-12-31 23:59:59";
+
+    // Collect results
+    $total_pat = 0;
+    $pass_filt = 0;
+    $exclude_filt = 0;
+    $pass_targ = 0;
+    $perc = 0;
+    foreach ( $patientData as $rowPatient ) {
+      // increment total patients counter
+      $total_pat++;
+
+      // get patient id
+      $patient_id = $this->get_patient_id($rowPatient);
+
+      // filter for age less than 18 AND greater than 75
+      // utilize the convertDobtoAgeYearDecimal() function from library/clinical_rules.php
+      if ( (convertDobtoAgeYearDecimal( $this->get_DOB($patient_id), $begin_measurement ) < 18) ||
+            (convertDobtoAgeYearDecimal( $this->get_DOB($patient_id), $begin_measurement ) > 75) ) {
+            	continue;
+      }
+
+      // filter for diagnosis of Diabetes
+      // utlize the exist_lists_item() function from library/clinical_rules.php
+      if (!( (exist_lists_item($patient_id,'medical_problem','CUSTOM::diabetes',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.0',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.00',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.02',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.03',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.10',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.11',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.13',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.20',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.21',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.22',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.23',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.30',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.31',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.32',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.33',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.40',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.41',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.42',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.43',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.50',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.51',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.52',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.53',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.60',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.61',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.62',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.31',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.7',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.70',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.71',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.72',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.73',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.80',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.81',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.82',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.83',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.9',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.90',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.91',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.92',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::250.93',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::357.2',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.0',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.01',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.02',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.03',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.04',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.05',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::362.05',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::366.41',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.0',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.00',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.01',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.02',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.03',$end_measurement)) ||
+             (exist_lists_item($patient_id,'medical_problem','ICD9::648.04',$end_measurement)) )) {
+         continue;
+       }
+
+      // Filter has been passed
+      $pass_filt++;
+       
+	  // collect specific items that fulfill request(Hemoglobin A1C >9.0%)
+	  $proc_code = "CPT4:83036";// CPT Code for Hemoglobin A1C
+	  $sql = sqlStatement("SELECT procedure_result.result " .
+	         "FROM `procedure_type`, " .
+	         "`procedure_order`, " .
+	         "`procedure_report`, " .
+	         "`procedure_result` " .
+	         "WHERE procedure_type.procedure_type_id = procedure_order.procedure_type_id " .
+	         "AND procedure_order.procedure_order_id = procedure_report.procedure_order_id " .
+	  		 "AND procedure_report.procedure_report_id = procedure_result.procedure_report_id " .
+	         "AND procedure_type.standard_code = ? " .
+	         "AND procedure_result.result <= 9 " .
+	         "AND procedure_order.patient_id = ? ", array($proc_code,$patient_id) );
+      $number = sqlNumRows($sql);
+      if ($number < 1) continue;
+	  
+
+      error_log("passed target",0);
+
+      // Target has been passed
+      $pass_targ++;
+    }
+    
+    // Calculate Percentage (use calculate_percentage() function from library/clinical_rules.php
+    $perc = calculate_percentage($pass_filt,$exclude_filt,$pass_targ);
+
+    // Set results
+    $this->set_result($rule_id,$total_pat,$pass_filt,$exclude_filt,$pass_targ,$perc);
+  }
+
+  // TODO
+  // Diabetes: LDL Management & Control (NQF 0064) (PQRI 2)
+  private function rule_dm_ldl_cqm() {
 
   }
 
