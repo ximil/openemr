@@ -3,14 +3,19 @@ Address Book Types
 Adjustment Reasons
 Advance Directive
 Alcohol consumption
+ALEUT
 Allow Email
 Allow email messages?
 Allow Email?
+Allow Health Information Exchange
+Allow Immunization Info Sharing
+Allow Immunization Registry Use
 Allow Mail Message
 Allow SMS
 Allow SMS (text messages)?
 Allow telephone messages?
 Allow Voice Message
+American Indian
 Appointment Statuses
 Arm
 Asian
@@ -30,17 +35,20 @@ Breast Disease
 Burning With Urination
 Buttock
 Caffeine consumption
+Cambodian
 Canceled
 Caucasian
 Cell Phone Number
+Central/South American
 Change In Vision
 Chart Note
 Chart Storage Locations
-Check Number
+Check Date
 Child
 Choices
 Cirrhosis Of The Liver
 City Name
+Code Types
 Complete
 Contact Email Address
 Contact Lenses
@@ -52,14 +60,20 @@ Counter-Referral
 Coupon
 Crohns Disease
 CU.MM
+Cuban
+Current every day smoker
+Current some day smoker
 Date contraceptive services initially provided
+Date Master Criteria
 Date of referral
 Date of reply
 Date Of Signature
+Deaf
 delete
 Dictation
 Did you receive a copy of the HIPAA Notice?
 Direct Mail
+Disclosure Types
 Discount Level
 Discrete Result
 Divorced
@@ -83,6 +97,8 @@ DTaP 3
 DTaP 4
 DTaP 5
 Durable Power of Attorney
+Eligibility status for Vaccine for Children supplied vaccine
+Eligible
 Emergency Contact Person
 Emergency Contact Phone Number
 Emergency Phone
@@ -91,6 +107,7 @@ Employer Name
 Endo Abnormal Blood
 ENT Discharge
 ENT Pain
+Eskimo
 Established Patient
 Ethnicity or Race
 Exam and test results
@@ -103,14 +120,18 @@ External Referral
 External referral?
 Eye Irritation
 Eye Redness
+Family Payment
+Farsi
 Female Symptoms
 FH Blood Problems
 Fibroids
 File Room
+Filipino
 Final
 Final diagnosis by specialist
 Findings by specialist
 FL
+Former smoker
 Forwarded
 G/DL
 Gall Bladder Condition
@@ -118,8 +139,13 @@ Gastro Pain
 Glaucoma Family History
 GM/DL
 grams
+Group Payment
+Guamanian
+Guardian's Name
+Hawaiian
 Hazardous activities
 Head Circ
+Health Care Operations
 Heart Disease
 Heat Or Cold
 Hepatitis A 1
@@ -134,13 +160,18 @@ Hib 4
 HIPAA Notice Received
 Hirsutism/Striae
 Hispanic
+Hispanic - Other (Born in US)
+Hispanic - Other (Born outside US)
+Hispanic or Latino
 History Murmur
 HMOL/L
+Hmong
 Home Phone Number
 Homeless or similar?
 Homeless, etc.
 How did they hear about us
 Hypertension
+Id
 Imaging Service
 Immunization Service
 Improved
@@ -148,22 +179,30 @@ In Office
 Include Vitals
 Include vitals data?
 Incomplete
+Indian
+Ineligible
 Infertility
 Influenza 1
 Influenza 2
 Injection
+Insurance Payment
 Interpreter needed?
 Invoice Reference Number Pools
 IPV 1
 IPV 2
 IPV 3
 IPV 4
+Italian
 IU/L
+Japanese
 Joint Pain
+Korean
 Lab Report
-Lab Results
 Lab Service
+Laotian
 Last Activity Date
+Last Calendar Year
+Last Month
 Layout-Based Visit Forms
 Leave Message With
 Left Ear
@@ -180,10 +219,12 @@ Medium
 Menstrual Flow
 Menstrual Frequency
 Message Status
+Mexican/MexAmer/Chicano
 mg/2cc
 mg/3cc
 mg/4cc
 MG/DL
+Mien
 Migrant or seasonal worker?
 Mil/CU.MM
 Misc
@@ -193,9 +234,11 @@ MMR 1
 MMR 2
 Mobile Phone
 Months
+Mother's Name
 Mr.
 Mrs.
 Ms.
+Multiracial
 Musc Ache
 Musc Aches
 Musc Redness
@@ -208,6 +251,7 @@ Name/Value
 Negative
 Neuro Numbness
 Neuro Weakness
+Never smoker
 New Document
 New Orders
 Newspaper
@@ -215,19 +259,24 @@ No Show
 Noninsulin Dependent Diabetes
 Normal BL
 Normal Office Visit
-Obesity I
-Obesity II
-Obesity III
+Not Hispanic or Latino
 On Site
 Order Priorities
 Order Statuses
 Other (specify)
+Other - Specified
+Others
 Out Of Office
-Overweight
+Pacific Islander
 Patient ID card
 Patient Information
 Patient Note Types
 Patient Reminders
+Payment Adjustment Code
+Payment Ins
+Payment Sort By
+Payment Status
+Payment Type
 Pending followup
 Percent
 Percentile
@@ -238,7 +287,9 @@ Pneumococcal Conjugate 1
 Pneumococcal Conjugate 2
 Pneumococcal Conjugate 3
 Pneumococcal Conjugate 4
+Portuguese
 Positive
+Pre Payment
 Preferred Language
 Preferred Pharmacy
 Preliminary
@@ -261,6 +312,8 @@ Procedure Types
 Procedure Units
 Psych Diagnosis
 Psych Medication
+Puerto Rican
+Punjabi
 Radio
 Ratio
 Read
@@ -268,7 +321,6 @@ Reason for referral
 Recommendation
 Recommendations by specialist
 Recreational drug use
-Recreational Drugs
 Refer By
 Referral By
 Referral Card
@@ -277,6 +329,7 @@ Referral To
 Referrer Diagnosis
 Referrer diagnosis
 Referring Provider
+Refused To State
 Reply From
 Requested Service
 Reserved
@@ -292,6 +345,7 @@ Risk Factors
 Risk Level
 Routed
 Saliva
+Samoan
 Sample
 Seatbelt use
 See Growth-Chart
@@ -309,8 +363,10 @@ Skin Cancer
 Skin Disease
 Skin Other
 Sleep patterns
+Smoker, current status unknown
 Social Security Number
 Specialist
+Specified
 Squad Membership
 Standard
 Start Date at This Clinic
@@ -320,16 +376,22 @@ Status quo
 Street and Number
 Subscriber Relationship
 T.V.
+Tagalog
 Tax Rate
 Td
 Temp Method
 Test Scheduling
+Thai
+This Calendar Year
+This Month to Date
+This Week to Date
 Thous/CU.MM
 Thrombosis/Stroke
 Titles
 Tobacco use
-Underweight
+Treatment
 Units/L
+Unknown if ever smoked
 Urine
 Urine Dribbling
 Urine Frequency
@@ -361,19 +423,24 @@ Value 2
 Varicella 1
 Varicella 2
 Varicose Veins
+VFC
+Vietnamese
 view
 Waist Circ
 Walk-In
 Warehouses
 Weeks
 Where may related scanned or paper documents be found?
-Who
+White
 Who replied?
 Widowed
 With whom may we leave a message?
+Withheld
 Work Phone Number
 Worse
 x Canceled
 Yes/No
+Yiddish
+Zulu
 % Canceled < 24h
 - None

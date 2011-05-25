@@ -49,6 +49,11 @@ include_once("../../library/acl.inc");
 <?php xl('Password','e'); ?></a>&nbsp;
 </td>
 
+<td align="center" nowrap>
+&nbsp;<a href="../super/edit_globals.php?mode=user" target="Main" class="menu" onclick="top.restoreSession()">
+<?php xl('Settings','e'); ?></a>&nbsp;
+</td>
+
 <?php if (acl_check('admin', 'calendar') || acl_check('admin', 'database') ||
        acl_check('admin', 'forms')    || acl_check('admin', 'practice') ||
        acl_check('admin', 'users')    || acl_check('admin', 'acl')) { ?>
@@ -88,9 +93,9 @@ include_once("../../library/acl.inc");
 <?php } ?>
 
 <?php
- if ($GLOBALS['hylafax_server'] || $GLOBALS['scanner_output_directory']) {
+ if ($GLOBALS['enable_hylafax'] || $GLOBALS['enable_scanner']) {
   $faxcount = 0;
-  if ($GLOBALS['hylafax_server']) {
+  if ($GLOBALS['enable_hylafax']) {
    // Count the number of faxes in the recvq:
    $statlines = array();
    exec("faxstat -r -l -h " . $GLOBALS['hylafax_server'], $statlines);
@@ -139,7 +144,7 @@ include_once("../../library/acl.inc");
 </td>
 
 <td align="center" nowrap>
-&nbsp;<a href="../../Documentation/User_Guide/" target="_blank" class="menu" onclick="top.restoreSession()"> 
+&nbsp;<a href="../../Documentation/User_Guide/index.html" target="_blank" class="menu" onclick="top.restoreSession()"> 
 <?php xl('Help','e'); ?></a>&nbsp;&nbsp;
 </td>
 

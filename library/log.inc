@@ -30,7 +30,7 @@ function getEventByDate($date, $user="", $cols="DISTINCT date, event, user, grou
 }
 
 /******************
- * Get records from the LOG table
+ * Get records from the LOG and Extended_Log table
  * using the optional parameters:
  *   date : a specific date  (defaults to today)
  *   user : a specific user  (defaults to none)
@@ -54,6 +54,10 @@ function getEvents($params)
     $user = "";
     if (isset($params['user']) && $params['user'] != "") $user= $params['user'];
 
+    //VicarePlus :: For Generating log with patient id.
+    $patient = "";
+    if (isset($params['patient']) && $params['patient'] != "") $patient= $params['patient'];
+    
     $sortby = "";
     if (isset($params['sortby']) && $params['sortby'] != "") $sortby = $params['sortby'];
     
@@ -63,13 +67,32 @@ function getEvents($params)
      $tevent = "";
     if (isset($params['tevent']) && $params['tevent'] != "") $tevent = $params['tevent'];
     
+     $event = "";
+    if (isset($params['event']) && $params['event'] != "") $event = $params['event'];
+    if ($event!=""){
+    if ($sortby == "comments") $sortby = "description";
+    if ($sortby == "groupname") $sortby = ""; //VicarePlus :: since there is no groupname in extended_log
+    if ($sortby == "success") $sortby = "";   //VicarePlus :: since there is no success field in extended_log
+    if ($sortby == "checksum") $sortby = "";  //VicarePlus :: since there is no checksum field in extended_log
+    $columns = "DISTINCT date, event, user, recipient,patient_id,description";
+    $sql = "SELECT $columns FROM extended_log WHERE date >= '$date1 00:00:00' AND date <= '$date2 23:59:59'";
+    if ($user != "") $sql .= " AND user LIKE '$user'";
+    if ($patient != "") $sql .= " AND patient_id LIKE '$patient'";
+    if ($levent != "") $sql .= " AND event LIKE '$levent%'";
+    if ($sortby != "") $sql .= " ORDER BY ".$sortby." DESC "; // descending order
+    $sql .= " LIMIT 5000";
+    }
+    else
+    {
     // do the query
     $sql = "SELECT $cols FROM log WHERE date >= '$date1 00:00:00' AND date <= '$date2 23:59:59'";
     if ($user != "") $sql .= " AND user LIKE '$user'";
+    if ($patient != "") $sql .= " AND patient_id LIKE '$patient'";
     if ($levent != "") $sql .= " AND event LIKE '$levent%'";
     if ($tevent != "") $sql .= " AND event LIKE '%$tevent'";
     if ($sortby != "") $sql .= " ORDER BY ".$sortby." DESC "; // descending order
     $sql .= " LIMIT 5000";
+    }
     $res = sqlStatement($sql);
     for($iter=0; $row=sqlFetchArray($res); $iter++) {
         $all[$iter] = $row;
@@ -79,9 +102,9 @@ function getEvents($params)
 
 /* Given an SQL insert/update that was just performeds:
  * - Find the table and primary id of the row that was created/modified
- * - Calculate the MD5 checksum of that row (with all the
+ * - Calculate the SHA1 checksum of that row (with all the
  *   column values concatenated together).
- * - Return the MD5 checksum as a 32 char hex string.
+ * - Return the SHA1 checksum as a 40 char hex string.
  * If this is not an insert/update query, return "".
  * If multiple rows were modified, return "".
  * If we're unable to determine the row modified, return "".
@@ -237,7 +260,8 @@ function sql_checksum_of_modified_row($statement)
             $column_values .= $field;
         }
     }
-    return md5($column_values);
+    // ViCarePlus: As per NIST standard, the encryption algorithm SHA1 is used
+    return sha1($column_values);
 }
 
 /* Create an XML audit record corresponding to RFC 3881.
@@ -432,7 +456,7 @@ function create_tls_conn($host, $port, $localcert, $cafile) {
 function send_atna_audit_msg($user, $group, $event, $patient_id, $outcome, $comments)
 {
     /* If no ATNA repository server is configured, return */
-    if ($GLOBALS['atna_audit_host'] === null || $GLOBALS['atna_audit_host'] == "") {
+    if ($GLOBALS['atna_audit_host'] === null || $GLOBALS['atna_audit_host'] == "" || !($GLOBALS['enable_atna_audit'])) {
         return;
     }
     $host = $GLOBALS['atna_audit_host'];
@@ -458,11 +482,28 @@ function auditSQLEvent($statement, $outcome)
 {
     $user =  $_SESSION['authUser'];
 	/* Don't log anything if the audit logging is not enabled. Exception for "emergency" users */
-   if ($GLOBALS["enable_auditlog"] === 0)
+   if (!($GLOBALS['enable_auditlog']))
    {
    	    if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass")))
    	    return;
    }
+// ViCarePlus : Fix for Audit Issue :: Sep 24, 2010 
+
+// Issue:  When the audit logging is enabled and when SELECT QUERY (query=1 in globals.php) is enabled to log, 
+// the issue of LAST_INSERT_ID arises.  
+// This is because, the function sql_checksum_of_modified_row() is triggered more than 
+// once for SELECT Queries and thus the expected value (LAST_INSERT_ID) in the $GLOBALS['lastidado'] is getting altered. 
+// Since, the $GLOBALS['lastidado'] is manipulated by the other function calls(sql_checksum_of_modified_row), 
+// this issue is arised.
+
+// Fix:
+// The task of assigning LAST_INSERT_ID  to a global variable $GLOBALS['lastidado']  is moved from sql.inc to this file.
+// Following code will get executed, when (a) when audit is enabled (b) When break glass is invoked.
+// Retrieve LAST_INSERT_ID and assign it to a global variable and eventually it can be used by other functions.
+    $lastid=mysql_insert_id($GLOBALS['dbh']);
+    $GLOBALS['lastidado']=$lastid;
+// ViCarePlus : Audit fix - ends here :: Sep 24,2010 
+
    $statement = trim($statement);
 
     /* Don't audit SQL statements done to the audit log,
@@ -616,14 +657,14 @@ function auditSQLEvent($statement, $outcome)
         }
     }
 
-    /* If query events are not enabled in globals.php,don't log them */
-    if (($querytype == "select") && ($GLOBALS["audit_events"]["query"]) != 1)
+    /* If query events are not enabled, don't log them */
+    if (($querytype == "select") && !($GLOBALS['audit_events_query']))
     { 
        if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass")))
        return;
     }
- 
-    if (($GLOBALS["audit_events"][$event]) === 0) 
+
+    if (!($GLOBALS["audit_events_${event}"])) 
     {
     	if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass")))
     	return;
@@ -654,5 +695,52 @@ function auditSQLEvent($statement, $outcome)
     send_atna_audit_msg($user, $group, $event, $pid, $success, $comments);
     //return $ret;
 }
-
+/**
+ * Record the patient disclosures.
+ * @param $dates    - The date when the disclosures are sent to the thrid party.
+ * @param $event    - The type of the disclosure.
+ * @param $pid      - The id of the patient for whom the disclosures are recorded.
+ * @param $comment  - The recipient name and description of the disclosure.
+ * @uname           - The username who is recording the disclosure.
+ */
+function recordDisclosure($dates,$event,$pid,$recipient,$description,$user)
+{
+        $adodb = $GLOBALS['adodb']['db'];
+        $crt_user= $_SERVER['SSL_CLIENT_S_DN_CN'];
+        $groupname=$_SESSION['authProvider'];
+        $success=1;
+        $sql = "insert into extended_log ( date, event, user, recipient, patient_id, description) " .
+            "values (" . $adodb->qstr($dates) . "," . $adodb->qstr($event) . "," . $adodb->qstr($user) .
+            "," . $adodb->qstr($recipient) . ",".
+            $adodb->qstr($pid) ."," .
+            $adodb->qstr($description) .")";
+        $ret = sqlInsertClean_audit($sql);
+}
+/**
+ * Edit the disclosures that is recorded.
+ * @param $dates  - The date when the disclosures are sent to the thrid party.
+ * @param $event  - The type of the disclosure.
+ * param $comment - The recipient and the description of the disclosure are appended.
+ * $logeventid    - The id of the record which is to be edited.
+ */
+function updateRecordedDisclosure($dates,$event,$recipient,$description,$disclosure_id)
+{
+         $adodb = $GLOBALS['adodb']['db'];
+         $sql="update extended_log set
+                event=" . $adodb->qstr($event) . ",
+                date=" .  $adodb->qstr($dates) . ",
+                recipient=" . $adodb->qstr($recipient) . ",
+                description=" . $adodb->qstr($description) . "
+                where id=" . $adodb->qstr($disclosure_id) . "";
+          $ret = sqlInsertClean_audit($sql);
+}
+/**
+ * Delete the disclosures that is recorded.
+ * $deleteid - The id of the record which is to be deleted.
+ */
+function deleteDisclosure($deletelid)
+{
+        $sql="delete from extended_log where id='$deletelid'";
+        $ret = sqlInsertClean_audit($sql);
+}
 ?>

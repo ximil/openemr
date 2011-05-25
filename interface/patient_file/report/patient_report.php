@@ -1,4 +1,5 @@
 <?php
+
 include_once("../../globals.php");
 include_once("$srcdir/lists.inc");
 include_once("$srcdir/acl.inc");
@@ -26,7 +27,7 @@ $auth_demo     = acl_check('patients'  , 'demo');
 <script language='JavaScript'>
 
 function checkAll(check) {
- var f = document.forms[0];
+ var f = document.forms['report_form'];
  for (var i = 0; i < f.elements.length; ++i) {
   if (f.elements[i].type == 'checkbox') f.elements[i].checked = check;
  }
@@ -40,6 +41,40 @@ function checkAll(check) {
 <body class="body_top">
 <div id="patient_reports"> <!-- large outer DIV -->
 
+<?php if ( $GLOBALS['activate_ccr_ccd_report'] ) { // show CCR/CCD reporting options ?>
+<div id="ccr_report">
+
+<form name='ccr_form' id='ccr_form' method='post' action='../../../ccr/createCCR.php'>
+<span class='title'><?php xl('Continuity of Care Record (CCR)','e'); ?></span>&nbsp;&nbsp;
+<br/>
+<span class='text'>(<?php xl('Pop ups need to be enabled to see these reports','e'); ?>)</span>
+<br/>
+<br/>
+<input type='hidden' name='ccrAction'>
+<input type='hidden' name='raw'>
+<input type="button" class="generateCCR" value="<?php xl('View/Print','e'); ?>" />
+<!-- <input type="button" class="generateCCR_download_h" value="<?php echo xl('Download')." (Hybrid)"; ?>" /> -->
+<input type="button" class="generateCCR_download_p" value="<?php echo xl('Download'); ?>" />
+<!-- <input type="button" class="generateCCR_raw" value="<?php xl('Raw Report','e'); ?>" /> -->
+<hr/>
+<span class='title'><?php xl('Continuity of Care Document (CCD)','e'); ?></span>&nbsp;&nbsp;
+<br/>
+<span class='text'>(<?php xl('Pop ups need to be enabled to see these reports','e'); ?>)</span>
+<br/>
+<br/>
+<input type="button" class="viewCCD" value="<?php xl('View/Print','e'); ?>" />
+<!-- <input type="button" class="viewCCD_raw" value="<?php xl('Raw Report','e'); ?>" /> -->
+
+</form>
+<hr/>
+<hr/>
+
+</div>
+<?php } // end CCR/CCD reporting options ?>
+
+<form name='report_form' id="report_form" method='post' action='custom_report.php'>
+
+
 <span class='title'><?php xl('Patient Report','e'); ?></span>&nbsp;&nbsp;
 
 <!--
@@ -50,8 +85,6 @@ function checkAll(check) {
 |
 <a class="link_submit" href="#" onclick="return checkAll(false)"><?php xl('Clear All','e'); ?></a>
 <p>
-
-<form name='report_form' id="report_form" method='post' action='custom_report.php'>
 
 <table class="includes">
  <tr>
@@ -85,6 +118,9 @@ function checkAll(check) {
 
 <br>
 <input type="button" class="genreport" value="<?php xl('Generate Report','e'); ?>" />
+<br>
+
+<!-- old ccr button position -->
 <hr/>
 
 <table class="issues_encounters_forms">
@@ -300,6 +336,71 @@ $(document).ready(function(){
     $(".encounter").click(function() { SelectForms($(this)); });
 });
 
+$(document).ready(
+function(){
+	$(".generateCCR").click(
+	function() { 
+		var ccrAction = document.getElementsByName('ccrAction');
+		ccrAction[0].value = 'generate';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'no';
+		top.restoreSession();
+		ccr_form.setAttribute("target", "_blank");
+		$("#ccr_form").submit();
+                ccr_form.setAttribute("target", "");
+	});
+        $(".generateCCR_raw").click(
+        function() {
+                var ccrAction = document.getElementsByName('ccrAction');
+                ccrAction[0].value = 'generate';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'yes';
+                top.restoreSession();
+                ccr_form.setAttribute("target", "_blank");
+                $("#ccr_form").submit();
+                ccr_form.setAttribute("target", "");
+        });
+        $(".generateCCR_download_h").click(
+        function() {
+                var ccrAction = document.getElementsByName('ccrAction');
+                ccrAction[0].value = 'generate';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'hybrid';
+                top.restoreSession();
+                $("#ccr_form").submit();
+        });
+        $(".generateCCR_download_p").click(
+        function() {
+                var ccrAction = document.getElementsByName('ccrAction');
+                ccrAction[0].value = 'generate';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'pure';
+                top.restoreSession();
+                $("#ccr_form").submit();
+        });
+	$(".viewCCD").click(
+	function() { 
+		var ccrAction = document.getElementsByName('ccrAction');
+		ccrAction[0].value = 'viewccd';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'no';
+		top.restoreSession();
+                ccr_form.setAttribute("target", "_blank"); 
+		$("#ccr_form").submit();
+                ccr_form.setAttribute("target", "");
+	});
+        $(".viewCCD_raw").click(
+        function() {
+                var ccrAction = document.getElementsByName('ccrAction');
+                ccrAction[0].value = 'viewccd';
+                var raw = document.getElementsByName('raw');
+                raw[0].value = 'yes';
+                top.restoreSession();
+                ccr_form.setAttribute("target", "_blank");
+                $("#ccr_form").submit();
+                ccr_form.setAttribute("target", "");
+        });
+});
 
 // select/deselect the Forms related to the selected Encounter
 // (it ain't pretty code folks)

@@ -753,13 +753,14 @@ function &postcalendar_userapi_pcQueryEventsFA($args)	{
     "b.pc_catcolor, b.pc_catname, b.pc_catdesc, a.pc_pid, a.pc_aid, " .
     "concat(u.fname,' ',u.lname) as provider_name, " .
     "concat(pd.fname,' ',pd.lname) as patient_name, " .
-    "concat(u2.fname, ' ', u2.lname) as owner_name, pd.DOB as patient_dob " .
-    "FROM  ( $table AS a, $cattable AS b ) " .
+    "concat(u2.fname, ' ', u2.lname) as owner_name, pd.DOB as patient_dob, " .
+    "a.pc_facility" .
+    "FROM  ( $table AS a ) " . 
+    "LEFT JOIN $cattable AS b ON b.pc_catid = a.pc_catid " .
     "LEFT JOIN users as u ON a.pc_aid = u.id " .
     "LEFT JOIN users as u2 ON a.pc_aid = u2.id " .
     "LEFT JOIN patient_data as pd ON a.pc_pid=pd.pid " .
-    "WHERE  b.pc_catid = a.pc_catid " .
-    "AND a.pc_eventstatus = $eventstatus " .
+    "WHERE a.pc_eventstatus = $eventstatus " .
     "AND (a.pc_endDate >= '$start' OR a.pc_endDate = '0000-00-00') " .
     "AND a.pc_eventDate <= '$end' " .
     "AND (a.pc_aid = '" . $provider_id . "' OR a.pc_aid = '')";
@@ -806,7 +807,7 @@ function &postcalendar_userapi_pcQueryEventsFA($args)	{
          $tmp['sharing'],      $tmp['prefcatid'],     $tmp['catcolor'],
          $tmp['catname'],      $tmp['catdesc'],       $tmp['pid'],
          $tmp['aid'],          $tmp['provider_name'], $tmp['patient_name'],
-         $tmp['owner_name'],   $tmp['patient_dob'])   = $result->fields;
+         $tmp['owner_name'],   $tmp['patient_dob'],   $tmp['facility'])   = $result->fields;
 
     // grab the name of the topic
     $topicname = pcGetTopicName($tmp['topic']);
@@ -864,6 +865,7 @@ function &postcalendar_userapi_pcQueryEventsFA($args)	{
     $events[$i]['owner_name']  = $tmp['owner_name'];
     $events[$i]['patient_dob'] = $tmp['patient_dob'];
     $events[$i]['patient_age'] = date("Y") - substr(($tmp['patient_dob']),0,4);
+    $events[$i]['facility']    = getfacility($tmp['facility']);
     $events[$i]['sharing']     = $tmp['sharing'];
     $events[$i]['prefcatid']   = $tmp['prefcatid'];
     $events[$i]['aid']         = $tmp['aid'];
@@ -983,13 +985,13 @@ function &postcalendar_userapi_pcQueryEvents($args)
     "concat(u.fname,' ',u.lname) as provider_name, " .
     "concat(pd.lname,', ',pd.fname) as patient_name, " .
     "concat(u2.fname, ' ', u2.lname) as owner_name, " .
-    "DOB as patient_dob, pd.pubpid " .
-    "FROM  ( $table AS a, $cattable AS b ) " .
+    "DOB as patient_dob, a.pc_facility, pd.pubpid " .
+    "FROM  ( $table AS a ) " .
+    "LEFT JOIN $cattable AS b ON b.pc_catid = a.pc_catid ".
     "LEFT JOIN users as u ON a.pc_aid = u.id " .
     "LEFT JOIN users as u2 ON a.pc_aid = u2.id " .
     "LEFT JOIN patient_data as pd ON a.pc_pid = pd.pid " .
-    "WHERE  b.pc_catid = a.pc_catid " .
-    "AND a.pc_eventstatus = $eventstatus " .
+    "WHERE  a.pc_eventstatus = $eventstatus " .
     "AND ((a.pc_endDate >= '$start' AND a.pc_eventDate <= '$end') OR " .
     "(a.pc_endDate = '0000-00-00' AND a.pc_eventDate >= '$start' AND " .
     "a.pc_eventDate <= '$end')) ";
@@ -1089,7 +1091,7 @@ function &postcalendar_userapi_pcQueryEvents($args)
          $tmp['catname'],      $tmp['catdesc'],     $tmp['pid'],
          $tmp['apptstatus'],   $tmp['aid'],         $tmp['provider_name'],
          $tmp['patient_name'], $tmp['owner_name'],  $tmp['patient_dob'],
-         $tmp['pubpid']) = $result->fields;
+         $tmp['facility'],     $tmp['pubpid']) = $result->fields;
 
     // grab the name of the topic
     $topicname = pcGetTopicName($tmp['topic']);
@@ -1146,6 +1148,7 @@ function &postcalendar_userapi_pcQueryEvents($args)
     $events[$i]['owner_name']  = $tmp['owner_name'];
     $events[$i]['patient_dob'] = $tmp['patient_dob'];
     $events[$i]['patient_age'] = getPatientAge($tmp['patient_dob']);
+    $events[$i]['facility']    = getFacility($tmp['facility']);
     $events[$i]['sharing']     = $tmp['sharing'];
     $events[$i]['prefcatid']   = $tmp['prefcatid'];
     $events[$i]['aid']         = $tmp['aid'];
@@ -1360,7 +1363,7 @@ function calculateEvents($days,$events,$viewtype) {
         array_push($days[$event['eventDate']],$event);
           if ($viewtype == "week") {
             //echo "non repeating date eventdate: $eventD  startime:$eventS block #: " . getBlockTime($eventS) ."<br />";
-            fillBlocks($eventD,&$days);
+            fillBlocks($eventD,$days);
             //echo "for $eventD loading " . getBlockTime($eventS) . "<br /><br />";
             $gbt = getBlockTime($eventS);
             $days[$eventD]['blocks'][$gbt][$eventD][] = $event;
@@ -1410,7 +1413,7 @@ function calculateEvents($days,$events,$viewtype) {
             if ($excluded == false) array_push($days[$occurance],$event);
 
             if ($viewtype == "week") {
-              fillBlocks($occurance, &$days);
+              fillBlocks($occurance, $days);
               //echo "for $occurance loading " . getBlockTime($eventS) . "<br /><br />";
               $gbt = getBlockTime($eventS);
               $days[$occurance]['blocks'][$gbt][$occurance][] = $event;
@@ -1471,7 +1474,7 @@ function calculateEvents($days,$events,$viewtype) {
             if ($excluded == false) array_push($days[$occurance],$event);
 
             if ($viewtype == "week") {
-              fillBlocks($occurance,&$days);
+              fillBlocks($occurance,$days);
               //echo "for $occurance loading " . getBlockTime($eventS) . "<br /><br />";
               $gbt = getBlockTime($eventS);
               $days[$occurance]['blocks'][$gbt][$occurance][] = $event;
@@ -1488,7 +1491,7 @@ function calculateEvents($days,$events,$viewtype) {
   return $days;
 }
 
-function fillBlocks($td,&$ar) {
+function fillBlocks($td,$ar) {
 	if (strlen ($td) > 0 && !isset($ar[$td]['blocks'])) {
 			$ar[$td]['blocks'] = array();
 			for ($j=0;$j<48;$j++)

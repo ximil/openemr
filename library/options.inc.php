@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2007-2009 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2007-2010 Rod Roark <rod@sunsetsystems.com>
 // Copyright © 2010 by Andrew Moore <amoore@cpan.org>
 // Copyright © 2010 by "Boyd Stephen Smith Jr." <bss@iguanasuicide.net>
 //
@@ -16,8 +16,23 @@
 //   $GLOBALS['translate_lists'] and $GLOBALS['translate_layout']
 //   flags in globals.php
 
+// Documentation for layout_options.edit_options:
+//
+// C = Capitalize first letter of each word (text fields)
+// D = Check for duplicates in New Patient form
+// G = Graphable (for numeric fields in forms supporting historical data)
+// H = Read-only field copied from static history
+// L = Lab Order ("ord_lab") types only (address book)
+// N = Show in New Patient form
+// O = Procedure Order ("ord_*") types only (address book)
+// R = Distributor types only (address book)
+// U = Capitalize all letters (text fields)
+// V = Vendor types only (address book)
+// 1 = Write Once (not editable when not empty) (text fields)
+
 require_once("formdata.inc.php");
 require_once("formatting.inc.php");
+require_once("user.inc");
 
 $date_init = "";
 
@@ -33,13 +48,25 @@ function get_pharmacies() {
 // Function to generate a drop-list.
 //
 function generate_select_list($tag_name, $list_id, $currvalue, $title,
-  $empty_name=' ', $class='', $onchange='')
+  $empty_name=' ', $class='', $onchange='', $tag_id = '', $custom_attributes = null )
 {
   $s = '';
   $tag_name_esc = htmlspecialchars( $tag_name, ENT_QUOTES);
-  $s .= "<select name='$tag_name_esc' id='$tag_name_esc'";
+  $s .= "<select name='$tag_name_esc'";
+  $tag_id_esc = $tag_name_esc;
+  if ( $tag_id != '' ) {
+      $tag_id_esc = htmlspecialchars( $tag_id, ENT_QUOTES);
+  }   
+  $s .=  " id='$tag_id_esc'";
   if ($class) $s .= " class='$class'";
   if ($onchange) $s .= " onchange='$onchange'";
+  if ( $custom_attributes != null && is_array($custom_attributes) ) {
+      foreach ( $custom_attributes as $attr => $val ) {
+          if ( isset($custom_attributes[$attr] ) ) {
+              $s .= " ".htmlspecialchars( $attr, ENT_QUOTES)."='".htmlspecialchars( $val, ENT_QUOTES)."'";
+          }
+      }
+  }
   $selectTitle = htmlspecialchars( $title, ENT_QUOTES);
   $s .= " title='$selectTitle'>";
   $selectEmptyName = htmlspecialchars( xl($empty_name), ENT_NOQUOTES);
@@ -73,8 +100,9 @@ function generate_select_list($tag_name, $list_id, $currvalue, $title,
   return $s;
 }
 
-
-
+// $frow is a row from the layout_options table.
+// $currvalue is the current value, if any, of the associated item.
+//
 function generate_form_field($frow, $currvalue) {
   global $rootdir, $date_init;
 
@@ -129,11 +157,15 @@ function generate_form_field($frow, $currvalue) {
       " value='$currescaped'";
     if (strpos($frow['edit_options'], 'C') !== FALSE)
       echo " onchange='capitalizeMe(this)'";
+    else if (strpos($frow['edit_options'], 'U') !== FALSE)
+      echo " onchange='this.value = this.value.toUpperCase()'";
     $tmp = htmlspecialchars( $GLOBALS['gbl_mask_patient_id'], ENT_QUOTES);
     if ($field_id == 'pubpid' && strlen($tmp) > 0) {
       echo " onkeyup='maskkeyup(this,\"$tmp\")'";
       echo " onblur='maskblur(this,\"$tmp\")'";
     }
+    if (strpos($frow['edit_options'], '1') !== FALSE && strlen($currescaped) > 0)
+      echo " readonly";
     echo " />";
   }
 
@@ -236,16 +268,25 @@ function generate_form_field($frow, $currvalue) {
   // Address book, preferring organization name if it exists and is not in
   // parentheses, and excluding local users who are not providers.
   // Supports "referred to" practitioners and facilities.
+  // Alternatively the letter L in edit_options means that abook_type
+  // must be "ord_lab", indicating types used with the procedure
+  // lab ordering system.
   // Alternatively the letter O in edit_options means that abook_type
   // must begin with "ord_", indicating types used with the procedure
   // ordering system.
   // Alternatively the letter V in edit_options means that abook_type
   // must be "vendor", indicating the Vendor type.
+  // Alternatively the letter R in edit_options means that abook_type
+  // must be "dist", indicating the Distributor type.
   else if ($data_type == 14) {
-    if (strpos($frow['edit_options'], 'O') !== FALSE)
+    if (strpos($frow['edit_options'], 'L') !== FALSE)
+      $tmp = "abook_type = 'ord_lab'";
+    else if (strpos($frow['edit_options'], 'O') !== FALSE)
       $tmp = "abook_type LIKE 'ord\\_%'";
     else if (strpos($frow['edit_options'], 'V') !== FALSE)
       $tmp = "abook_type LIKE 'vendor%'";
+    else if (strpos($frow['edit_options'], 'R') !== FALSE)
+      $tmp = "abook_type LIKE 'dist'";
     else
       $tmp = "( username = '' OR authorized = 1 )";
     $ures = sqlStatement("SELECT id, fname, lname, organization, username FROM users " .
@@ -272,7 +313,7 @@ function generate_form_field($frow, $currvalue) {
     echo "</select>";
   }
 
-  // a billing code (only one of these allowed!)
+  // a billing code
   else if ($data_type == 15) {
     $fldlength = htmlspecialchars( $frow['fld_length'], ENT_QUOTES);
     $maxlength = htmlspecialchars( $frow['max_length'], ENT_QUOTES);
@@ -283,7 +324,7 @@ function generate_form_field($frow, $currvalue) {
       " maxlength='$maxlength'" .
       " title='$description'" .
       " value='$currescaped'" .
-      " onclick='sel_related()' readonly" .
+      " onclick='sel_related(this)' readonly" .
       " />";
   }
 
@@ -554,9 +595,16 @@ function generate_form_field($frow, $currvalue) {
   }
 
   // special case for history of lifestyle status; 3 radio buttons and a date text field:
-  else if ($data_type == 28) {
+  // VicarePlus :: A selection list box for smoking status:
+  else if ($data_type == 28 || $data_type == 32) {
     $tmp = explode('|', $currvalue);
     switch(count($tmp)) {
+      case "4": {
+        $resnote = $tmp[0]; 
+        $restype = $tmp[1];
+        $resdate = $tmp[2];
+        $reslist = $tmp[3];
+      } break;
       case "3": {
         $resnote = $tmp[0];
         $restype = $tmp[1];
@@ -584,6 +632,8 @@ function generate_form_field($frow, $currvalue) {
     $resdate = htmlspecialchars( $resdate, ENT_QUOTES);
     echo "<table cellpadding='0' cellspacing='0'>";
     echo "<tr>";
+    if ($data_type == 28)
+    {
 	// input text 
     echo "<td><input type='text'" .
       " name='form_$field_id_esc'" .
@@ -591,21 +641,40 @@ function generate_form_field($frow, $currvalue) {
       " size='$fldlength'" .
       " maxlength='$maxlength'" .
       " value='$resnote' />&nbsp;</td>";
-	echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars( xl('Status'), ENT_NOQUOTES).":&nbsp;</td>";
+   echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".
+      "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".
+      htmlspecialchars( xl('Status'), ENT_NOQUOTES).":&nbsp;&nbsp;</td>";
+    }
+    else if($data_type == 32)
+    {
+    // input text
+    echo "<tr><td><input type='text'" .
+      " name='form_text_$field_id_esc'" .
+      " id='form_text_$field_id_esc'" .
+      " size='$fldlength'" .
+      " maxlength='$maxlength'" .
+      " value='$resnote' />&nbsp;</td></tr>";
+    echo "<td>";
+    //Selection list for smoking status
+    $onchange = 'radioChange(this.options[this.selectedIndex].value)';//VicarePlus :: The javascript function for selection list.
+    echo generate_select_list("form_$field_id", $list_id, $reslist,
+      $description, $showEmpty ? $empty_title : '', '', $onchange)."</td>";
+    echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars( xl('Status'), ENT_NOQUOTES).":&nbsp;&nbsp;</td>";
+    }
     // current
     echo "<td><input type='radio'" .
       " name='radio_{$field_id_esc}'" .
       " id='radio_{$field_id_esc}[current]'" .
       " value='current".$field_id_esc."'";
     if ($restype == "current".$field_id) echo " checked";
-	echo "/>".htmlspecialchars( xl('Current'), ENT_NOQUOTES)."&nbsp;</td>";
+      echo " if($data_type == 32) { onClick='smoking_statusClicked(this)' } />".htmlspecialchars( xl('Current'), ENT_NOQUOTES)."&nbsp;</td>";
     // quit
     echo "<td><input type='radio'" .
       " name='radio_{$field_id_esc}'" .
       " id='radio_{$field_id_esc}[quit]'" .
       " value='quit".$field_id_esc."'";
     if ($restype == "quit".$field_id) echo " checked";
-    echo "/>".htmlspecialchars( xl('Quit'), ENT_NOQUOTES)."&nbsp;</td>";
+    echo " if($data_type == 32) { onClick='smoking_statusClicked(this)' } />".htmlspecialchars( xl('Quit'), ENT_NOQUOTES)."&nbsp;</td>";
     // quit date
     echo "<td><input type='text' size='6' name='date_$field_id_esc' id='date_$field_id_esc'" .
       " value='$resdate'" .
@@ -621,18 +690,67 @@ function generate_form_field($frow, $currvalue) {
       " id='radio_{$field_id_esc}[never]'" .
       " value='never".$field_id_esc."'";
     if ($restype == "never".$field_id) echo " checked";
-    echo " />".htmlspecialchars( xl('Never'), ENT_NOQUOTES)."&nbsp;</td>";
+    echo " if($data_type == 32) { onClick='smoking_statusClicked(this)' } />".htmlspecialchars( xl('Never'), ENT_NOQUOTES)."&nbsp;</td>";
 	// Not Applicable
     echo "<td><input type='radio'" .
       " name='radio_{$field_id}'" .
       " id='radio_{$field_id}[not_applicable]'" .
       " value='not_applicable".$field_id."'";
     if ($restype == "not_applicable".$field_id) echo " checked";
-    echo " />".htmlspecialchars( xl('N/A'), ENT_QUOTES)."&nbsp;</td>";
+    echo " if($data_type == 32) { onClick='smoking_statusClicked(this)' } />".htmlspecialchars( xl('N/A'), ENT_QUOTES)."&nbsp;</td>";
     echo "</tr>";
     echo "</table>";
   }
 
+  // static text.  read-only, of course.
+  else if ($data_type == 31) {
+    echo nl2br($frow['description']);
+  }
+
+  //VicarePlus :: A single selection list for Race and Ethnicity, which is specialized to check the 'ethrace' list if the entry does not exist in the list_id of the given list. At some point in the future (when able to input two lists via the layouts engine), this function could be expanded to allow using any list as a backup entry.
+  else if ($data_type == 33) {
+        echo "<select name='form_$field_id_esc' id='form_$field_id_esc' title='$description'>";
+        if ($showEmpty) echo "<option value=''>" . htmlspecialchars( xl($empty_title), ENT_QUOTES) . "</option>";
+        $lres = sqlStatement("SELECT * FROM list_options " .
+        "WHERE list_id = ? ORDER BY seq, title", array($list_id) );
+        $got_selected = FALSE;
+        while ($lrow = sqlFetchArray($lres)) {
+         $optionValue = htmlspecialchars( $lrow['option_id'], ENT_QUOTES);
+         echo "<option value='$optionValue'";
+         if ((strlen($currvalue) == 0 && $lrow['is_default']) ||
+          (strlen($currvalue)  > 0 && $lrow['option_id'] == $currvalue))
+          {
+          echo " selected";
+          $got_selected = TRUE;
+          }
+         
+         echo ">" . htmlspecialchars( xl_list_label($lrow['title']), ENT_NOQUOTES) . "</option>\n";
+         }
+        if (!$got_selected && strlen($currvalue) > 0)
+        {
+        //Check 'ethrace' list if the entry does not exist in the list_id of the given list(Race or Ethnicity).
+         $list_id='ethrace';
+         $lrow = sqlQuery("SELECT title FROM list_options " .
+         "WHERE list_id = ? AND option_id = ?", array($list_id,$currvalue) );
+         if ($lrow > 0)
+                {
+                $s = htmlspecialchars(xl_list_label($lrow['title']),ENT_NOQUOTES);
+                echo "<option value='$currvalue' selected> $s </option>";
+                echo "</select>";
+                }
+         else
+                {
+                echo "<option value='$currescaped' selected>* $currescaped *</option>";
+                echo "</select>";
+                $fontTitle = htmlspecialchars( xl('Please choose a valid selection from the list.'), ENT_NOQUOTES);
+                $fontText = htmlspecialchars( xl('Fix this'), ENT_NOQUOTES);
+                echo " <font color='red' title='$fontTitle'>$fontText!</font>";
+                }
+        }
+        else {
+        echo "</select>";
+        }
+  }
 }
 
 function generate_print_field($frow, $currvalue) {
@@ -666,7 +784,7 @@ function generate_print_field($frow, $currvalue) {
   }
 
   // generic single-selection list
-  if ($data_type == 1 || $data_type == 26) {
+  if ($data_type == 1 || $data_type == 26 || $data_type == 33) {
     if (empty($fld_length)) {
       if ($list_id == 'titles') {
         $fld_length = 3;
@@ -1014,9 +1132,15 @@ function generate_print_field($frow, $currvalue) {
   }
 
   // special case for history of lifestyle status; 3 radio buttons and a date text field:
-  else if ($data_type == 28) {
+  else if ($data_type == 28 || $data_type == 32) {
     $tmp = explode('|', $currvalue);
 	switch(count($tmp)) {
+      case "4": {
+        $resnote = $tmp[0];
+        $restype = $tmp[1];
+        $resdate = $tmp[2];
+        $reslist = $tmp[3];
+      } break;
       case "3": {
         $resnote = $tmp[0];
         $restype = $tmp[1];
@@ -1042,12 +1166,30 @@ function generate_print_field($frow, $currvalue) {
     $fldlength = htmlspecialchars( $fldlength, ENT_QUOTES);
     $resnote = htmlspecialchars( $resnote, ENT_QUOTES);
     $resdate = htmlspecialchars( $resdate, ENT_QUOTES);
+    if($data_type == 28)
+    {
     echo "<td><input type='text'" .
       " size='$fldlength'" .
       " class='under'" .
       " value='$resnote' /></td>";
-    echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;".
+    echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".
+      "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".
       htmlspecialchars( xl('Status'), ENT_NOQUOTES).":&nbsp;</td>";  
+    } 
+    else if($data_type == 32)
+    {
+    echo "<tr><td><input type='text'" .
+      " size='$fldlength'" .
+      " class='under'" .
+      " value='$resnote' /></td></tr>"; 
+    $fldlength = 30;
+    $smoking_status_title = generate_display_field(array('data_type'=>'1','list_id'=>$list_id),$reslist);
+    echo "<td><input type='text'" .
+      " size='$fldlength'" .
+      " class='under'" .
+      " value='$smoking_status_title' /></td>";
+    echo "<td class='bold'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".htmlspecialchars( xl('Status'), ENT_NOQUOTES).":&nbsp;&nbsp;</td>";
+    }
     echo "<td><input type='radio'";
     if ($restype == "current".$field_id) echo " checked";
     echo "/>".htmlspecialchars( xl('Current'), ENT_NOQUOTES)."&nbsp;</td>";
@@ -1072,6 +1214,11 @@ function generate_print_field($frow, $currvalue) {
     echo "</table>";
   }
 
+  // static text.  read-only, of course.
+  else if ($data_type == 31) {
+    echo nl2br($frow['description']);
+  }
+
 }
 
 function generate_display_field($frow, $currvalue) {
@@ -1082,10 +1229,18 @@ function generate_display_field($frow, $currvalue) {
 
   // generic selection list or the generic selection list with add on the fly
   // feature, or radio buttons
-  if ($data_type == 1 || $data_type == 26 || $data_type == 27) {
+  if ($data_type == 1 || $data_type == 26 || $data_type == 27 || $data_type == 33) {
     $lrow = sqlQuery("SELECT title FROM list_options " .
       "WHERE list_id = ? AND option_id = ?", array($list_id,$currvalue) );
       $s = htmlspecialchars(xl_list_label($lrow['title']),ENT_NOQUOTES);
+    //For lists Race and Ethnicity if there is no matching value in the corresponding lists check ethrace list
+    if ($lrow == 0 && $data_type == 33)
+    {
+    $list_id='ethrace';
+    $lrow_ethrace = sqlQuery("SELECT title FROM list_options " .
+      "WHERE list_id = ? AND option_id = ?", array($list_id,$currvalue) );
+    $s = htmlspecialchars(xl_list_label($lrow_ethrace['title']),ENT_NOQUOTES);
+    }
   }
 
   // simple text field
@@ -1267,9 +1422,16 @@ function generate_display_field($frow, $currvalue) {
   }
 
   // special case for history of lifestyle status; 3 radio buttons and a date text field:
-  else if ($data_type == 28) {
+  // VicarePlus :: A selection list for smoking status.
+  else if ($data_type == 28 || $data_type == 32) {
     $tmp = explode('|', $currvalue);
     switch(count($tmp)) {
+      case "4": {
+        $resnote = $tmp[0];
+        $restype = $tmp[1];
+        $resdate = $tmp[2];
+        $reslist = $tmp[3];
+      } break;
       case "3": {
         $resnote = $tmp[0];
         $restype = $tmp[1];
@@ -1298,11 +1460,26 @@ function generate_display_field($frow, $currvalue) {
 	if ($restype == "not_applicable".$field_id) $res = xl('N/A');
     // $s .= "<td class='text' valign='top'>$restype</td></tr>";
     // $s .= "<td class='text' valign='top'>$resnote</td></tr>";
+     if ($data_type == 28)
+    {
     if (!empty($resnote)) $s .= "<td class='text' valign='top'>" . htmlspecialchars($resnote,ENT_NOQUOTES) . "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>";
+    }
+     //VicarePlus :: Tobacco field has a listbox, text box, date field and 3 radio buttons.
+     else if ($data_type == 32)
+    {
+       if (!empty($reslist)) $s .= "<td class='text' valign='top'>" . generate_display_field(array('data_type'=>'1','list_id'=>$list_id),$reslist) . "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>";
+       if (!empty($resnote)) $s .= "<td class='text' valign='top'>" . htmlspecialchars($resnote,ENT_NOQUOTES) . "&nbsp;&nbsp;</td>";
+    }
+
 	if (!empty($res)) $s .= "<td class='text' valign='top'><b>" . htmlspecialchars(xl('Status'),ENT_NOQUOTES) . "</b>:&nbsp;" . htmlspecialchars($res,ENT_NOQUOTES) . "&nbsp;</td>";
     if ($restype == "quit".$field_id) $s .= "<td class='text' valign='top'>" . htmlspecialchars($resdate,ENT_NOQUOTES) . "&nbsp;</td>";
     $s .= "</tr>";
     $s .= "</table>";
+  }
+
+  // static text.  read-only, of course.
+  else if ($data_type == 31) {
+    $s .= nl2br($frow['description']);
   }
 
   return $s;
@@ -1557,6 +1734,8 @@ function display_layout_tabs_data($formtype, $result1, $result2='') {
 					++$item_count;
 					echo generate_display_field($group_fields, $currvalue);
 				  }
+
+        disp_end_row();
 			?>
 
 			</table>
@@ -1732,13 +1911,21 @@ function get_layout_form_value($frow, $maxlength=255) {
         $value .= "$key:$restype:$val";
       }
     }
-    else if ($data_type == 28) {
+    else if ($data_type == 28 || $data_type == 32) {
       // $_POST["form_$field_id"] is an date text fields with companion
       // radio buttons to be imploded into "notes|type|date".
       $restype = $_POST["radio_{$field_id}"];
       if (empty($restype)) $restype = '0';
       $resdate = str_replace('|', ' ', $_POST["date_$field_id"]);
       $resnote = str_replace('|', ' ', $_POST["form_$field_id"]);
+      if ($data_type == 32)
+      {
+      //VicarePlus :: Smoking status data is imploded into "note|type|date|list".
+      $reslist = str_replace('|', ' ', $_POST["form_$field_id"]);
+      $res_text_note = str_replace('|', ' ', $_POST["form_text_$field_id"]);
+      $value = "$res_text_note|$restype|$resdate|$reslist";
+      }
+      else
       $value = "$resnote|$restype|$resdate";
     }
     else {
@@ -1784,6 +1971,7 @@ function generate_layout_validation($form_id) {
       case 13:
       case 14:
       case 26:
+      case 33:
         echo
         " if (f.$fldname.selectedIndex <= 0) {\n" .
         "  if (f.$fldname.focus) f.$fldname.focus();\n" .
@@ -1879,6 +2067,99 @@ function dropdown_facility($selected = '', $name = 'form_facility', $allow_unspe
     echo "    <option value='$option_value' label='$option_label' selected='selected'>$option_content</option>\n";
   }
   echo "   </select>\n";
+}
+
+// Expand Collapse Widget
+//  This forms the header and functionality component of the widget. The information that is displayed
+//  then follows this function followed by a closing div tag
+//
+// $title is the title of the section (already translated)
+// $label is identifier used in the tag id's and sql columns
+// $buttonLabel is the button label text (already translated)
+// $buttonLink is the button link information
+// $buttonClass is any additional needed class elements for the button tag
+// $linkMethod is the button link method ('javascript' vs 'html')
+// $bodyClass is to set class(es) of the body
+// $auth is a flag to decide whether to show the button
+// $fixedWidth is to flag whether width is fixed
+// $forceExpandAlways is a flag to force the widget to always be expanded
+//
+function expand_collapse_widget($title, $label, $buttonLabel, $buttonLink, $buttonClass, $linkMethod, $bodyClass, $auth, $fixedWidth, $forceExpandAlways=false) {
+  if ($fixedWidth) {
+    echo "<div class='section-header'>";
+  }
+  else {
+    echo "<div class='section-header-dynamic'>";
+  }
+  echo "<table><tr>";
+  if ($auth) {
+    // show button, since authorized
+    // first prepare class string
+    if ($buttonClass) {
+      $class_string = "css_button_small ".htmlspecialchars( $buttonClass, ENT_NOQUOTES);
+    }
+    else {
+      $class_string = "css_button_small";
+    }
+    // next, create the link
+    if ($linkMethod == "javascript") {
+      echo "<td><a class='" . $class_string . "' href='javascript:;' onclick='" . $buttonLink . "'";
+    }
+    else {
+      echo "<td><a class='" . $class_string . "' href='" . $buttonLink . "'" .
+        " onclick='top.restoreSession()'";
+    }
+    if (!$GLOBALS['concurrent_layout']) {
+      echo " target='Main'";
+    }
+    echo "><span>" .
+      htmlspecialchars( $buttonLabel, ENT_NOQUOTES) . "</span></a></td>";
+  }
+  if ($forceExpandAlways){
+    // Special case to force the widget to always be expanded
+    echo "<td><span class='text'><b>" . htmlspecialchars( $title, ENT_NOQUOTES) . "</b></span>";
+    $indicatorTag ="style='display:none'";
+  }
+  echo "<td><a " . $indicatorTag . " href='javascript:;' class='small' onclick='toggleIndicator(this,\"" .
+    htmlspecialchars( $label, ENT_QUOTES) . "_ps_expand\")'><span class='text'><b>";
+  echo htmlspecialchars( $title, ENT_NOQUOTES) . "</b></span>";
+  if (getUserSetting($label."_ps_expand")) {
+    $text = xl('collapse');
+  }
+  else {
+    $text = xl('expand');
+  }
+  echo " (<span class='indicator'>" . htmlspecialchars($text, ENT_QUOTES) .
+    "</span>)</a></td>";
+  echo "</tr></table>";
+  echo "</div>";
+  if ($forceExpandAlways) {
+    // Special case to force the widget to always be expanded
+    $styling = "";
+  }
+  else if (getUserSetting($label."_ps_expand")) {
+    $styling = "";
+  }
+  else {
+    $styling = "style='display:none'";
+  }
+  if ($bodyClass) {
+    $styling .= " class='" . $bodyClass . "'";
+  }
+  //next, create the first div tag to hold the information
+  // note the code that calls this function will then place the ending div tag after the data
+  echo "<div id='" . htmlspecialchars( $label, ENT_QUOTES) . "_ps_expand' " . $styling . ">";
+}
+
+//billing_facility fuction will give the dropdown list which contain billing faciliies.
+function billing_facility($name,$select){
+	$qsql = sqlStatement("SELECT id, name FROM facility WHERE billing_location = 1");
+		echo "   <select id='".htmlspecialchars($name, ENT_QUOTES)."' name='".htmlspecialchars($name, ENT_QUOTES)."'>";
+			while ($facrow = sqlFetchArray($qsql)) {
+				$selected = ( $facrow['id'] == $select ) ? 'selected="selected"' : '' ;
+				 echo "<option value=".htmlspecialchars($facrow['id'],ENT_QUOTES)." $selected>".htmlspecialchars($facrow['name'], ENT_QUOTES)."</option>";
+				}
+			  echo "</select>";
 }
 
 ?>

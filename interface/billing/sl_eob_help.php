@@ -10,7 +10,7 @@
 ?>
 <html>
 <head>
-<? html_header_show();?>
+<?php html_header_show();?>
 <link rel=stylesheet href="<?php echo $css_header;?>" type="text/css">
 <title><?php xl('EOB Posting - Instructions','e')?></title>
 </head>
@@ -70,7 +70,7 @@ in the "era" subdirectory of the main OpenEMR installation directory.  You will
 want to refer to these archives from time to time.  The URL is ','e') ?>
 <?php
 $url = ($_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-$url .= "://" . $_SERVER['HTTP_HOST'] . "$web_root/era/";
+$url .= "://" . $_SERVER['HTTP_HOST'] . "$web_root/sites/" . $_SESSION['site_id'] . "/era/";
 echo "<a href='$url'>$url</a>.\n";
 ?>
 

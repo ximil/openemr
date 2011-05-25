@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2008, 2009 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2008-2010 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -26,11 +26,16 @@ $indent = 0;
 function Add($tag, $text) {
   global $out, $indent;
   $text = trim(str_replace(array("\r", "\n", "\t"), " ", $text));
-  $text = htmlspecialchars($text, ENT_NOQUOTES);
+  $text = substr(htmlspecialchars($text, ENT_NOQUOTES), 0, 50);
   if (/* $text */ true) {
+    if ($text === 'NULL') $text = '';
     for ($i = 0; $i < $indent; ++$i) $out .= "\t";
     $out .= "<$tag>$text</$tag>\n";
   }
+}
+
+function AddIfPresent($tag, $text) {
+  if (isset($text) && $text !== '') Add($tag, $text);
 }
 
 function OpenTag($tag) {
@@ -98,8 +103,8 @@ function getTextListValue($string, $key) {
 // Return the mapped list item ID if there is one, else the option_id.
 // Or return 9 if the option_id is empty (unspecified).
 //
-function mappedOption($list_id, $option_id) {
-  if ($option_id === '') return '9';
+function mappedOption($list_id, $option_id, $default='9') {
+  if ($option_id === '') return $default;
   $row = sqlQuery("SELECT mapping FROM list_options WHERE " .
     "list_id = '$list_id' AND option_id = '$option_id' LIMIT 1");
   if (empty($row)) return $option_id; // should not happen
@@ -206,6 +211,15 @@ function exportEncounter($pid, $encounter, $date) {
     foreach ($relcodes as $codestring) {
       if ($codestring === '') continue;
       list($codetype, $code) = explode(':', $codestring);
+      if ($codetype == 'REF') {
+        // This is the expected case; a direct IPPF code is obsolete.
+        $rrow = sqlQuery("SELECT related_code FROM codes WHERE " .
+          "code_type = '16' AND code = '$code' AND active = 1 " .
+          "ORDER BY id LIMIT 1");
+        if (!empty($rrow['related_code'])) {
+          list($codetype, $code) = explode(':', $rrow['related_code']);
+        }
+      }
       if ($codetype !== 'IPPF') continue;
       OpenTag('IMS_eMRUpload_Service');
       Add('IppfServiceProductId', $code);
@@ -392,6 +406,11 @@ if (!empty($form_submit)) {
   $query = "SELECT DISTINCT " .
     "fe.pid, " .
     "p.regdate, p.date AS last_update, p.contrastart, p.DOB, p.sex, " .
+    "p.city, p.state, p.occupation, p.status, p.ethnoracial, " .
+    "p.interpretter, p.monthly_income, p.referral_source, p.pricelevel, " .
+    "p.userlist1, p.userlist3, p.userlist4, p.userlist5, " .
+    "p.usertext11, p.usertext12, p.usertext13, p.usertext14, p.usertext15, " .
+    "p.usertext16, p.usertext17, p.usertext18, p.usertext19, p.usertext20, " .
     "p.userlist2 AS education " .
     "FROM form_encounter AS fe " .
     "LEFT OUTER JOIN patient_data AS p ON p.pid = fe.pid WHERE " .
@@ -487,13 +506,45 @@ if (!empty($form_submit)) {
     Add('Education'  , $education);
     Add('Demo5'      , Sex($row['sex']));
 
-    // Dump all visits for this patient at this facility.
+    // Things included if they are present (July 2010)
+    AddIfPresent('City', $row['city']);
+    AddIfPresent('State', mappedOption('state', $row['state'], ''));
+    AddIfPresent('Occupation', mappedOption('occupations', $row['occupation'], ''));
+    AddIfPresent('MaritalStatus', mappedOption('marital', $row['status'], ''));
+    AddIfPresent('Ethnoracial', mappedOption('ethrace', $row['ethnoracial'], ''));
+    AddIfPresent('Interpreter', $row['interpretter']);
+    AddIfPresent('MonthlyIncome', $row['monthly_income']);
+    AddIfPresent('ReferralSource', mappedOption('refsource', $row['referral_source'], ''));
+    AddIfPresent('PriceLevel', mappedOption('pricelevel', $row['pricelevel'], ''));
+    AddIfPresent('UserList1', mappedOption('userlist1', $row['userlist1'], ''));
+    AddIfPresent('UserList3', mappedOption('userlist3', $row['userlist3'], ''));
+    AddIfPresent('UserList4', mappedOption('userlist4', $row['userlist4'], ''));
+    AddIfPresent('UserList5', mappedOption('userlist5', $row['userlist5'], ''));
+    AddIfPresent('UserText11', $row['usertext11']);
+    AddIfPresent('UserText12', $row['usertext12']);
+    AddIfPresent('UserText13', $row['usertext13']);
+    AddIfPresent('UserText14', $row['usertext14']);
+    AddIfPresent('UserText15', $row['usertext15']);
+    AddIfPresent('UserText16', $row['usertext16']);
+    AddIfPresent('UserText17', $row['usertext17']);
+    AddIfPresent('UserText18', $row['usertext18']);
+    AddIfPresent('UserText19', $row['usertext19']);
+    AddIfPresent('UserText20', $row['usertext20']);
+
+    // Dump the visits for this patient.
     $query = "SELECT " .
       "encounter, date " .
       "FROM form_encounter WHERE " .
       // "pid = '$last_pid' AND facility_id = '$last_facility' " .
-      "pid = '$last_pid' " .
-      "ORDER BY encounter";
+      "pid = '$last_pid' ";
+    if (true) {
+      // The new logic here is to restrict to the given date range.
+      // Set the above to false if all visits are wanted.
+      $query .= "AND " .
+      sprintf("date >= '%04u-%02u-01 00:00:00' AND ", $beg_year, $beg_month) .
+      sprintf("date < '%04u-%02u-01 00:00:00' ", $end_year, $end_month);
+    }
+    $query .= "ORDER BY encounter";
 
     // Add('Debug', $query); // debugging
 

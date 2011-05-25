@@ -193,9 +193,9 @@ class Claim {
     $provider_id = $this->encounter['provider_id'];
     $sql = "SELECT * FROM users WHERE id = '$provider_id'";
     $this->provider = sqlQuery($sql);
-
+// Selecting the billing facility assigned  to the service facility
     $sql = "SELECT * FROM facility " .
-      "ORDER BY billing_location DESC, id ASC LIMIT 1";
+    " where id ='" . addslashes($this->encounter['billing_facility']) . "' ";
     $this->billing_facility = sqlQuery($sql);
 
     $sql = "SELECT * FROM insurance_numbers WHERE " .
@@ -282,12 +282,28 @@ class Claim {
       // payments and "hard" adjustments up to this payer.
       $ptresp = $this->invoice[$code]['chg'] + $this->invoice[$code]['adj'];
       foreach ($this->invoice[$code]['dtl'] as $key => $value) {
-        if (preg_match("/^Ins(\d)/i", $value['src'], $tmp)) {
-          if ($tmp[1] <= $insnumber) $ptresp -= $value['pmt'];
+        if (isset($value['plv'])) {
+          // New method; plv (from ar_activity.payer_type) exists to
+          // indicate the payer level.
+          if (isset($value['pmt']) && $value['pmt'] != 0) {
+            if ($value['plv'] > 0 && $value['plv'] <= $insnumber)
+              $ptresp -= $value['pmt'];
+          }
+          else if (isset($value['chg']) && trim(substr($key, 0, 10))) {
+            // non-blank key indicates this is an adjustment and not a charge
+            if ($value['plv'] > 0 && $value['plv'] <= $insnumber)
+              $ptresp += $value['chg']; // adjustments are negative charges
+          }
         }
-        else if (trim(substr($key, 0, 10))) { // not an adjustment if no date
-          if (!preg_match("/Ins(\d)/i", $value['rsn'], $tmp) || $tmp[1] <= $insnumber)
-            $ptresp += $value['chg']; // adjustments are negative charges
+        else {
+          // Old method: With SQL-Ledger payer level was stored in the memo.
+          if (preg_match("/^Ins(\d)/i", $value['src'], $tmp)) {
+            if ($tmp[1] <= $insnumber) $ptresp -= $value['pmt'];
+          }
+          else if (trim(substr($key, 0, 10))) { // not an adjustment if no date
+            if (!preg_match("/Ins(\d)/i", $value['rsn'], $tmp) || $tmp[1] <= $insnumber)
+              $ptresp += $value['chg']; // adjustments are negative charges
+          }
         }
       }
       if ($ptresp < 0) $ptresp = 0; // we may be insane but try to hide it
@@ -390,10 +406,13 @@ class Claim {
       else
         $deductible = $ptresp - $coinsurance;
 
+      $deductible  = sprintf('%.2f', $deductible);
+      $coinsurance = sprintf('%.2f', $coinsurance);
+
       if ($date && $deductible != 0)
-        $aadj[] = array($date, 'PR', '1', sprintf('%.2f', $deductible));
+        $aadj[] = array($date, 'PR', '1', $deductible);
       if ($date && $coinsurance != 0)
-        $aadj[] = array($date, 'PR', '2', sprintf('%.2f', $coinsurance));
+        $aadj[] = array($date, 'PR', '2', $coinsurance);
 
     } // end if
 
@@ -411,15 +430,27 @@ class Claim {
     if ($tmp && !$this->using_modifiers) $code = substr($code, 0, $tmp);
 
     $inslabel = ($this->payerSequence($ins) == 'S') ? 'Ins2' : 'Ins1';
+    $insnumber = substr($inslabel, 3);
     $paytotal = 0;
     $adjtotal = 0;
     $date = '';
     foreach($this->invoice as $codekey => $codeval) {
       if ($code && strcmp($codekey,$code) != 0) continue;
       foreach ($codeval['dtl'] as $key => $value) {
-        if (preg_match("/$inslabel/i", $value['src'], $tmp)) {
-          if (!$date) $date = str_replace('-', '', trim(substr($key, 0, 10)));
-          $paytotal += $value['pmt'];
+        if (isset($value['plv'])) {
+          // New method; plv (from ar_activity.payer_type) exists to
+          // indicate the payer level.
+          if ($value['plv'] == $insnumber) {
+            if (!$date) $date = str_replace('-', '', trim(substr($key, 0, 10)));
+            $paytotal += $value['pmt'];
+          }
+        }
+        else {
+          // Old method: With SQL-Ledger payer level was stored in the memo.
+          if (preg_match("/$inslabel/i", $value['src'], $tmp)) {
+            if (!$date) $date = str_replace('-', '', trim(substr($key, 0, 10)));
+            $paytotal += $value['pmt'];
+          }
         }
       }
       $aarr = $this->payerAdjustments($ins, $codekey);
@@ -542,6 +573,16 @@ class Claim {
   function billingFacilityNPI() {
     return x12clean(trim($this->billing_facility['facility_npi']));
   }
+  
+  function federalIdType() {
+	if ($this->billing_facility['tax_id_type'])
+	{
+	return $this->billing_facility['tax_id_type'];
+	}
+	else{
+	return null;
+	}
+  }
 
   # The billing facility and the patient must both accept for this to return true.
   function billingFacilityAssignment($ins=0) {
@@ -592,7 +633,7 @@ class Claim {
   }
 
   function facilityPOS() {
-    return x12clean(trim($this->facility['pos_code']));
+    return sprintf('%02d', trim($this->facility['pos_code']));
   }
 
   function clearingHouseName() {
@@ -897,8 +938,15 @@ class Claim {
     return '';
   }
 
-  function onsetDate() {
-    return str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
+  function onsetDate() {//Without the else clause in the claim zero value is coming.
+    $replace_value=str_replace('-', '', substr($this->encounter['onset_date'], 0, 10));
+	if($replace_value*1<>0)
+    {
+	 return $replace_value;
+	}
+	else{
+	 return '';
+	}
   }
 
   function serviceDate() {

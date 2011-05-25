@@ -50,42 +50,6 @@ $fake_register_globals=false;
 
     <?php
 
-    // Get the billing note if there is one.
-    $billing_note = "";
-    $colorbeg = "";
-    $colorend = "";
-    $sql = "select genericname2, genericval2 " .
-        "from patient_data where pid = ? limit 1";
-    $resnote = sqlQuery($sql, array($pid) );
-    if ($resnote) {
-      if ($resnote['genericname2'] == 'Billing') {
-        $billing_note = $resnote['genericval2'];
-        $colorbeg = "<span style='color:red'>";
-        $colorend = "</span>";
-      }
-    }
-
-    //Display what the patient owes
-    $balance = get_patient_balance($pid);
-    if ($balance != "0") {
-      $has_note = 1;
-      $formatted = oeFormatMoney($balance);
-      echo " <tr class='text billing'>\n";
-      echo "  <td>".$colorbeg.
-        htmlspecialchars(xl('Balance Due'),ENT_NOQUOTES).$colorend."</td><td>".$colorbeg.
-	htmlspecialchars($formatted,ENT_NOQUOTES).$colorend."</td>\n";
-      echo " </tr>\n";
-    }
-
-    if ($billing_note) {
-      $has_note = 1;
-      echo " <tr class='text billing'>\n";
-      echo "  <td>".$colorbeg.
-        htmlspecialchars(xl('Billing Note'),ENT_NOQUOTES).$colorend."</td><td>".$colorbeg.
-	htmlspecialchars($billing_note,ENT_NOQUOTES).$colorend."</td>\n";
-      echo " </tr>\n";
-    }
-
     //retrieve all active notes
     $result = getPnotesByDate("", 1, "id,date,body,user,title,assigned_to",
       $pid, "$N", 0, '', $docid);
@@ -97,7 +61,7 @@ $fake_register_globals=false;
 
         $body = $iter['body'];
         if (preg_match('/^\d\d\d\d-\d\d-\d\d \d\d\:\d\d /', $body)) {
-          $body = nl2br(oeFormatPatientNote($body));
+          $body = nl2br(htmlspecialchars(oeFormatPatientNote($body),ENT_NOQUOTES));
         } else {
           $body = htmlspecialchars(oeFormatSDFT(strtotime($iter['date'])) . date(' H:i', strtotime($iter['date'])) .
             ' (' . $iter['user'] . ') ',ENT_NOQUOTES) .

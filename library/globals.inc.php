@@ -17,6 +17,7 @@
 // Otherwise configure it as needed (print /d:PRN) might be an option for Windows parallel printers
 
 //  Current supported languages:    // Allow capture of term for translation:
+//   Amharic                        // xl('Amharic')
 //   Arabic                         // xl('Arabic')
 //   Armenian                       // xl('Armenian')
 //   Bahasa Indonesia               // xl('Bahasa Indonesia')
@@ -30,13 +31,17 @@
 //   German                         // xl('German')
 //   Greek                          // xl('Greek')
 //   Hebrew                         // xl('Hebrew')
+//   Hindi                          // xl('Hindi')
+//   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
+//   Polish                         // xl('Polish')
 //   Portuguese (Brazilian)         // xl('Portuguese (Brazilian)')
 //   Portuguese (European)          // xl('Portuguese (European)')
 //   Russian                        // xl('Russian')
 //   Slovak                         // xl('Slovak')
 //   Spanish                        // xl('Spanish')
 //   Swedish                        // xl('Swedish')
+//   Turkish                        // xl('Turkish')
 
 // OS-dependent stuff.
 if (stristr(PHP_OS, 'WIN')) {
@@ -63,34 +68,57 @@ else {
 // xl('Notifications')
 // xl('Miscellaneous')
 
+// List of user specific tabs and globals
+$USER_SPECIFIC_TABS = array('Appearance',
+                            'Locale',
+                            'Calendar');
+$USER_SPECIFIC_GLOBALS = array('default_top_pane',
+                               'concurrent_layout',
+                               'css_header',
+                               'units_of_measurement',
+                               'date_display_format',
+                               'time_display_format',
+                               'event_color');
+
 $GLOBALS_METADATA = array(
 
   // Appearance Tab
   //
   'Appearance' => array(
 
+    'default_top_pane' => array(
+      xl('Main Top Pane Screen'),       // descriptive name
+      array(
+        'main_info.php' => xl('Calendar Screen'),
+        '../new/new.php' => xl('Patient Search/Add Screen'),
+      ),
+      'main_info.php',                  // default = calendar
+      xl('Type of screen layout')
+    ),
+
     'concurrent_layout' => array(
       xl('Layout Style'),               // descriptive name
       array(
-        '0' => 'Old style layout with no left menu',
-        '1' => 'Navigation menu consists of pairs of radio buttons',
-        '2' => 'Navigation menu is a tree view',
+        '0' => xl('Old style layout with no left menu'),
+        '1' => xl('Navigation menu consists of pairs of radio buttons'),
+        '2' => xl('Navigation menu is a tree view'),
+        '3' => xl('Navigation uses a sliding menu'),
       ),
-      '2',                              // default = tree menu
+      '3',                              // default = tree menu
       xl('Type of screen layout')
     ),
 
     'css_header' => array(
       xl('Theme'),
       'css',
-      'style_sky_blue.css',
+      'style_oemr.css',
       xl('Pick a CSS theme.')
     ),
 
     'gbl_nav_area_width' => array(
       xl('Navigation Area Width'),
       'num',
-      '130',
+      '150',
       xl('Width in pixels of the left navigation frame.')
     ),
 
@@ -121,6 +149,20 @@ $GLOBALS_METADATA = array(
       ),
       '0',                              // default
       xl('Type of columns displayed for patient search results')
+    ),
+
+    'gbl_tall_nav_area' => array(
+      xl('Tall Navigation Area'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('Navigation area uses full height of frameset')
+    ),
+
+    'gbl_nav_visit_forms' => array(
+      xl('Navigation Area Visit Forms'),
+      'bool',                           // data type
+      '1',                              // default = true
+      xl('Navigation area includes encounter forms')
     ),
 
     'simplified_demographics' => array(
@@ -157,6 +199,21 @@ $GLOBALS_METADATA = array(
       'http://sourceforge.net/projects/openemr/support',
       xl('URL for OpenEMR support.')
     ),
+      
+    'encounter_page_size' => array(
+      xl('Encounter Page Size'),
+      array(
+        '0' => xl('Show All'),
+        '5' => '5',
+        '10' => '10',
+        '15' => '15',
+        '20' => '20',
+        '25' => '25',
+        '50' => '50',
+      ),
+      '20',
+      xl('Number of encounters to display per page.')
+    )      
 
   ),
 
@@ -183,6 +240,13 @@ $GLOBALS_METADATA = array(
       'm_lang',                         // data type
       '',                               // default = none
       xl('Select which languages, if any, may be chosen at login. (only pertinent if above All Languages Allowed is turned off)')
+    ),
+
+    'allow_debug_language' => array(
+      xl('Allow Debugging Language'),
+      'bool',                           // data type
+      '1',                              // default = true during development and false for production releases
+      xl('This will allow selection of the debugging (\'dummy\') language.')
     ),
 
     'translate_layout' => array(
@@ -263,6 +327,16 @@ $GLOBALS_METADATA = array(
       '0',
       xl('Format used to display most dates.')
     ),
+    
+    'time_display_format' => array(
+      xl('Time Display Format'),
+      array(
+        '0' => xl('24 hr'),
+        '1' => xl('12 hr'),
+      ),
+      '0',
+      xl('Format used to display most times.')
+    ),
 
     'currency_decimals' => array(
       xl('Currency Decimal Places'),
@@ -301,8 +375,7 @@ $GLOBALS_METADATA = array(
       xl('Currency Designator'),
       'text',                           // data type
       '$',                              // default
-      xl('Code or symbol to indicate currency') . '. ' . xl('Examples') .
-        ': USD GBP EUR $ £ €'
+      xl('Code or symbol to indicate currency')
     ),
 
   ),
@@ -433,25 +506,53 @@ $GLOBALS_METADATA = array(
       xl('Discounts at checkout time are entered as money amounts, as opposed to percentage.')
     ),
 
+    'gbl_visit_referral_source' => array(
+      xl('Referral Source for Encounters'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('A referral source may be specified for each visit.')
+    ),
+
     'gbl_mask_patient_id' => array(
       xl('Mask for Patient IDs'),
       'text',                           // data type
       '',                               // default
-      xl('Specifies formatting for the external patient ID.  # = digit, * = any character.  Empty if not used.')
+      xl('Specifies formatting for the external patient ID.  # = digit, @ = alpha, * = any character.  Empty if not used.')
     ),
 
     'gbl_mask_invoice_number' => array(
       xl('Mask for Invoice Numbers'),
       'text',                           // data type
       '',                               // default
-      xl('Specifies formatting for invoice reference numbers.  # = digit, * = any character.  Empty if not used.')
+      xl('Specifies formatting for invoice reference numbers.  # = digit, @ = alpha, * = any character.  Empty if not used.')
     ),
 
     'gbl_mask_product_id' => array(
       xl('Mask for Product IDs'),
       'text',                           // data type
       '',                               // default
-      xl('Specifies formatting for product NDC fields.  # = digit, * = any character.  Empty if not used.')
+      xl('Specifies formatting for product NDC fields.  # = digit, @ = alpha, * = any character.  Empty if not used.')
+    ),
+
+    'force_billing_widget_open' => array(
+      xl('Force Billing Widget Open'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('This will force the Billing Widget in the Patient Summary screen to always be open.')
+    ),
+
+    'activate_ccr_ccd_report' => array(
+      xl('Activate CCR/CCD Reporting'),
+      'bool',                           // data type
+      '1',                              // default = true
+      xl('This will activate the CCR(Continuity of Care Record) and CCD(Continuity of Care Document) reporting.')
+    ),
+    
+    'hide_document_encryption' => array(
+      xl('Hide Encryption/Decryption Options In Document Management'),
+      'bool',                           // data type
+      '1',                              // default = true
+      xl('This will deactivate document the encryption and decryption features, and hide them in the UI.')
     ),
 
   ),
@@ -519,6 +620,16 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '1',                              // default
       xl('Automatically create a new encounter when appointment status is set to "@" (arrived).')
+    ),
+    
+    'event_color' => array(
+      xl('Appointment/Event Color'),
+      array(
+        '1' => 'Category Color Schema',
+        '2' => 'Facility Color Schema',
+      ),                           // data type
+      '1',                              // default
+      xl('This determines which color schema used for appointment')
     ),
 
   ),
@@ -603,6 +714,20 @@ $GLOBALS_METADATA = array(
   //
   'Notifications' => array(
 
+    'patient_reminder_sender_name' => array(
+      xl('Patient Reminder Sender Name'),
+      'text',                           // data type
+      '',                               // default
+      xl('Name of the sender for patient reminders.')
+    ),
+    
+    'patient_reminder_sender_email' => array(
+      xl('Patient Reminder Sender Email'),
+      'text',                           // data type
+      '',                               // default
+      xl('Email address of the sender for patient reminders. Replies to patient reminders will be directed to this address. It is important to use an address from your clinic\'s domain to avoid help prevent patient reminders from going to junk mail folders.')
+    ),
+    
     'practice_return_email_path' => array(
       xl('Notification Email Address'),
       'text',                           // data type
@@ -684,6 +809,172 @@ $GLOBALS_METADATA = array(
       xl('API key for SMS Gateway.')
     ),
 
+    'phone_notification_hour' => array(
+      xl('Phone Notification Hour'),
+      'num',                            // data type
+      '50',                             // default
+      xl('Number of hours in advance to send Phone notification.')
+    ),
+    
+    'phone_gateway_username' => array(
+      xl('Phone Gateway Username'),
+      'text',                           // data type
+      '',                               // default
+      xl('Username for Phone Gateway. Automated VOIP service provided by Maviq. Please visit http://signup.maviq.com for more information.')
+    ),
+    
+    'phone_gateway_password' => array(
+      xl('Phone Gateway Password'),
+      'text',                           // data type
+      '',                               // default
+      xl('Password for Phone Gateway. Automated VOIP service provided by Maviq. Please visit http://signup.maviq.com for more information.')
+    ),
+    
+    'phone_gateway_url' => array(
+      xl('Phone Gateway URL'),
+      'text',                           // data type
+      '',                               // default
+      xl('URL for Phone Gateway. Automated VOIP service provided by Maviq. Please visit http://signup.maviq.com for more information.')
+    ),
+
+  ),
+  
+  // CDR (Clinical Decision Rules)
+  //
+  'CDR' => array(
+
+    'enable_cdr' => array(
+      xl('Enable Clinical Decisions Rules (CDR)'),
+      'bool',                           // data type
+      '1',                               // default
+      xl('Enable Clinical Decisions Rules (CDR)')
+    ),
+    
+    'enable_cdr_crw' => array(
+      xl('Enable Clinical Reminder Widget'),
+      'bool',                           // data type
+      '1',                               // default
+      xl('Enable Clinical Reminder Widget')
+    ),
+
+    'enable_cdr_prw' => array(
+      xl('Enable Patient Reminder Widget'),
+      'bool',                           // data type
+      '1',                               // default
+      xl('Enable Patient Reminder Widget')
+    ),
+
+    'pqri_registry_name' => array(
+      xl('PQRI Registry Name'),
+      'text',                           // data type
+      'Model Registry',                               // default
+      xl('PQRI Registry Name')
+    ),
+
+    'pqri_registry_id' => array(
+      xl('PQRI Registry ID'),
+      'text',                           // data type
+      '125789123',                               // default
+      xl('PQRI Registry ID')
+    ),
+      
+  ),
+
+  // Logging
+  //
+  'Logging' => array(
+
+    'enable_auditlog' => array(
+      xl('Enable Audit Logging'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable Audit Logging')
+    ),
+
+    'audit_events_patient-record' => array(
+      xl('Audit Logging Patient Record'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of patient record modifications.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_scheduling' => array(
+      xl('Audit Logging Scheduling'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of scheduling activities.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_order' => array(
+      xl('Audit Logging Order'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of ordering activities.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_security-administration' => array(
+      xl('Audit Logging Security Administration'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of security and administration activities.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_backup' => array(
+      xl('Audit Logging Backups'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of backup related activities.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_other' => array(
+      xl('Audit Logging Miscellaneous'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Enable logging of miscellaneous activities.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_query' => array(
+      xl('Audit Logging SELECT Query'),
+      'bool',                           // data type
+      '0',                              // default
+      xl('Enable logging of all SQL SELECT queries.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'enable_atna_audit' => array(
+      xl('Enable ATNA Auditing'),
+      'bool',                           // data type
+      '0',                              // default
+      xl('Enable Audit Trail and Node Authentication (ATNA).')
+    ),
+
+    'atna_audit_host' => array(
+      xl('ATNA audit host'),
+      'text',                           // data type
+      '',                               // default
+      xl('The hostname of the ATNA audit repository machine.')
+    ),
+
+    'atna_audit_port' => array(
+      xl('ATNA audit port'),
+      'text',                           // data type
+      '6514',                           // default
+      xl('Listening port of the RFC 5425 TLS syslog server.')
+    ),
+
+    'atna_audit_localcert' => array(
+      xl('ATNA audit local certificate'),
+      'text',                           // data type
+      '',                               // default
+      xl('Certificate to send to RFC 5425 TLS syslog server.')
+    ),
+
+    'atna_audit_cacert' => array(
+      xl('ATNA audit CA certificate'),
+      'text',                           // data type
+      '',                               // default
+      xl('CA Certificate for verifying the RFC 5425 TLS syslog server.')
+    ),
+
   ),
 
   // Miscellaneous Tab
@@ -729,6 +1020,20 @@ $GLOBALS_METADATA = array(
       xl('Field type to use for employer or subscriber state in demographics.')
     ),
 
+    'state_list' => array(
+      xl('State list'),
+      'text',                           // data type
+      'state',                          // default
+      xl('List used by above State Data Type option.')
+    ),
+
+    'state_custom_addlist_widget' => array(
+      xl('State List Widget Custom Fields'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('Show the custom state form for the add list widget (will ask for title and abbreviation).')
+    ),
+
     'country_data_type' => array(
       xl('Country Data Type'),
       array(
@@ -738,6 +1043,13 @@ $GLOBALS_METADATA = array(
       ),
       '26',                             // default
       xl('Field type to use for employer or subscriber country in demographics.')
+    ),
+
+    'country_list' => array(
+      xl('Country list'),
+      'text',                           // data type
+      'country',                          // default
+      xl('List used by above Country Data Type option.')
     ),
 
     'print_command' => array(
@@ -765,7 +1077,14 @@ $GLOBALS_METADATA = array(
       xl('Patient ID Category Name'),
       'text',                           // data type
       'Patient ID card',                // default
-      xl('Optional category name of a document to link to from the patient summary page. Lets you click on a patient name to see their ID card.')
+      xl('Optional category name for an ID Card image that can be viewed from the patient summary page.')
+    ),
+
+    'patient_photo_category_name' => array(
+      xl('Patient Photo Category Name'),
+      'text',                  // data type
+      'Patient Photograph',    // default
+      xl('Optional category name for photo images that can be viewed from the patient summary page.')
     ),
 
     'MedicareReferrerIsRenderer' => array(
@@ -773,6 +1092,89 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '0',                              // default = true
       xl('For Medicare only, forces the referring provider to be the same as the rendering provider.')
+    ),
+
+    'post_to_date_benchmark' => array(
+      xl('Financial Close Date (yyyy-mm-dd)'),
+      'text',                           // data type
+      date('Y-m-d',time() - (10 * 24 * 60 * 60)),                // default
+      xl('The payments posted cannot go below this date.This ensures that after taking the final report nobody post for previous dates.')
+    ),
+
+    'enable_hylafax' => array(
+      xl('Enable Hylafax Support'),
+      'bool',                           // data type
+      '0',                              // default
+      xl('Enable Hylafax Support')
+    ),
+
+    'hylafax_server' => array(
+      xl('Hylafax Server'),
+      'text',                           // data type
+      'localhost',                      // default
+      xl('Hylafax server hostname.')
+    ),
+
+    'hylafax_basedir' => array(
+      xl('Hylafax Directory'),
+      'text',                           // data type
+      '/var/spool/fax',                 // default
+      xl('Location where Hylafax stores faxes.')
+    ),
+
+    'hylafax_enscript' => array(
+      xl('Hylafax Enscript Command'),
+      'text',                           // data type
+      'enscript -M Letter -B -e^ --margins=36:36:36:36', // default
+      xl('Enscript command used by Hylafax.')
+    ),
+
+    'enable_scanner' => array(
+      xl('Enable Scanner Support'),
+      'bool',                           // data type
+      '0',                              // default
+      xl('Enable Scanner Support')
+    ),
+
+    'scanner_output_directory' => array(
+      xl('Scanner Directory'),
+      'text',                           // data type
+      '/mnt/scan_docs',                 // default
+      xl('Location where scans are stored.')
+    ),
+
+  ),
+
+  // Connectors Tab
+  //
+  'Connectors' => array(
+
+    'lab_exchange_enable' => array(
+      xl('Enable Lab Exchange'),
+      'bool',                           // data type
+      '0',
+      xl('Enable the OpenEMR Support LLC Lab Exchange Service.')
+    ),
+
+    'lab_exchange_siteid' => array(
+      xl('Lab Exchange Site ID'),
+      'text',                           // data type
+      '3',
+      xl('Site ID for the OpenEMR Support LLC Lab Exchange Service.')
+    ),
+
+    'lab_exchange_token' => array(
+      xl('Lab Exchange Token ID'),
+      'text',                           // data type
+      '12345',
+      xl('Token ID for the OpenEMR Support LLC Lab Exchange Service.')
+    ),
+
+    'lab_exchange_endpoint' => array(
+      xl('Lab Exchange Site Address'),
+      'text',                           // data type
+      'https://openemrsupport.com:29443/len/api',
+      xl('Https link for the OpenEMR Support LLC Lab Exchange Service.')
     ),
 
   ),

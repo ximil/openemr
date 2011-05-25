@@ -3,6 +3,7 @@ include_once("../globals.php");
 include_once("$srcdir/md5.js");
 include_once("$srcdir/sql.inc");
 require_once("$srcdir/classes/POSRef.class.php");
+require_once("$srcdir/options.inc.php");
 
 if (isset($_GET["fid"])) {
 	$my_fid = $_GET["fid"];
@@ -28,21 +29,28 @@ parent.$.fn.fancybox.close();
 <head>
 
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
-<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 <link rel="stylesheet" type="text/css" href="../../library/js/fancybox/jquery.fancybox-1.2.6.css" media="screen" />
 <script type="text/javascript" src="../../library/dialog.js"></script>
 <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
 <script type="text/javascript" src="../../library/js/common.js"></script>
 <script type="text/javascript" src="../../library/js/fancybox/jquery.fancybox-1.2.6.js"></script>
+<script type="text/javascript" src="../main/calendar/modules/PostCalendar/pnincludes/AnchorPosition.js"></script>
+<script type="text/javascript" src="../main/calendar/modules/PostCalendar/pnincludes/PopupWindow.js"></script>
+<script type="text/javascript" src="../main/calendar/modules/PostCalendar/pnincludes/ColorPicker2.js"></script>
 <script type="text/javascript">
 function submitform() {
-    if (document.forms[0].facility.value.length>0) {
+    if (document.forms[0].facility.value.length>0 && document.forms[0].ncolor.value != '') {
+        top.restoreSession();
         document.forms[0].submit();
-        parent.$.fn.fancybox.close();
-		parent.location.reload();
     } else {
+	if(document.forms[0].facility.value.length<=0){
         document.forms[0].facility.style.backgroundColor="red";
         document.forms[0].facility.focus();
+	}
+	else if(document.forms[0].ncolor.value == ''){
+	document.forms[0].ncolor.style.backgroundColor="red";
+        document.forms[0].ncolor.focus();	
+	}
     }
 }
 
@@ -51,7 +59,17 @@ $(document).ready(function(){
 		  parent.$.fn.fancybox.close();
 	 });
 });
-
+var cp = new ColorPicker('window');
+  // Runs when a color is clicked
+function pickColor(color) {
+ 	document.getElementById('ncolor').value = color;
+}
+var field;
+function pick(anchorname,target) {
+	var cp = new ColorPicker('window');
+  	field=target;
+        cp.show(anchorname);
+}
 </script>
 
 </head>
@@ -71,7 +89,7 @@ $(document).ready(function(){
   </tr>
 </table>
 
-<form name='facility' method='post' action="facilities.php" >
+<form name='facility' method='post' action="facilities.php" target="_parent">
     <input type=hidden name=mode value="facility">
     <input type=hidden name=newmode value="admin_facility">	<!--	Diffrentiate Admin and add post backs -->
     <input type=hidden name=fid value="<?php echo $my_fid;?>">
@@ -95,9 +113,19 @@ $(document).ready(function(){
             <td><input type=entry size=20 name=city value="<?php echo htmlspecialchars($facility{"city"}, ENT_QUOTES) ?>"></td>
             <td><span class=text><?php xl('Zip Code','e'); ?>: </span></td><td><input type=entry size=20 name=postal_code value="<?php echo htmlspecialchars($facility{"postal_code"}, ENT_QUOTES) ?>"></td>
         </tr>
+	<?php 
+		$ssn='';
+		$ein='';
+		if($facility['tax_id_type']=='SY'){
+		$ssn='selected';
+		}
+		else{
+		$ein='selected';
+		}
+	?>
         <tr>
             <td><span class=text><?php xl('State','e'); ?>: </span></td><td><input type=entry size=20 name=state value="<?php echo htmlspecialchars($facility{"state"}, ENT_QUOTES) ?>"></td>
-            <td><span class=text><?php xl('Federal EIN','e'); ?>: </span></td><td><input type=entry size=20 name=federal_ein value="<?php echo htmlspecialchars($facility{"federal_ein"}, ENT_QUOTES) ?>"></td>
+            <td><span class=text><?php xl('Tax ID','e'); ?>: </span></td><td><select name=tax_id_type><option value="EI" <?php echo $ein;?>><?php xl('EIN','e'); ?></option><option value="SY" <?php echo $ssn;?>><?php xl('SSN','e'); ?></option></select><input type=entry size=11 name=federal_ein value="<?php echo htmlspecialchars($facility{"federal_ein"}, ENT_QUOTES) ?>"></td>
         </tr>
         <tr>
             <td><span class=text><?php xl('Country','e'); ?>: </span></td><td><input type=entry size=20 name=country_code value="<?php echo htmlspecialchars($facility{"country_code"}, ENT_QUOTES) ?>"></td>
@@ -106,7 +134,7 @@ $(document).ready(function(){
         </tr>
          <tr>
           <td><span class='text'><?php xl('Billing Location','e'); ?>: </span></td>
-          <td><input type='checkbox' name='billing_location' value='1' <?php if ($facility['billing_location'] == 1) echo 'checked'; ?>></td>
+          <td><input type='checkbox' name='billing_location' value='1' <?php if ($facility['billing_location'] != 0) echo 'checked'; ?>></td>
           <td rowspan='2'><span class='text'><?php xl('Accepts Assignment','e'); ?><br>(<?php xl('only if billing location','e'); ?>): </span></td>
           <td><input type='checkbox' name='accepts_assignment' value='1' <?php if ($facility['accepts_assignment'] == 1) echo 'checked'; ?>></td>
          </tr>
@@ -115,6 +143,9 @@ $(document).ready(function(){
           <td><input type='checkbox' name='service_location' value='1' <?php if ($facility['service_location'] == 1) echo 'checked'; ?>></td>
           <td>&nbsp;</td>
          </tr>
+	 <tr>
+	  <td><span class='text'><?php echo htmlspecialchars(xl('Color'),ENT_QUOTES); ?>: </span><span class="mandatory">&nbsp;*</span></td> <td><input type=entry name=ncolor id=ncolor size=20 value="<?php echo htmlspecialchars($facility{"color"}, ENT_QUOTES) ?>"></td>
+	  <td>[<a href="javascript:void(0);" onClick="pick('pick','newcolor');return false;" NAME="pick" ID="pick"><?php  echo htmlspecialchars(xl('Pick'),ENT_QUOTES); ?></a>]</td><td>&nbsp;</td>
 
         <tr>
             <td><span class=text><?php xl('POS Code','e'); ?>: </span></td>

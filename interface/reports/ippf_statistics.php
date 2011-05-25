@@ -25,7 +25,7 @@ $form_by       = $_POST['form_by'];     // this is a scalar
 $form_show     = $_POST['form_show'];   // this is an array
 $form_facility = isset($_POST['form_facility']) ? $_POST['form_facility'] : '';
 $form_sexes    = isset($_POST['form_sexes']) ? $_POST['form_sexes'] : '3';
-$form_cors     = isset($_POST['form_cors']) ? $_POST['form_cors'] : '1';
+$form_content  = isset($_POST['form_content']) ? $_POST['form_content'] : '1';
 $form_output   = isset($_POST['form_output']) ? 0 + $_POST['form_output'] : 1;
 
 if (empty($form_by))    $form_by = '1';
@@ -38,8 +38,8 @@ if ($report_type == 'm') {
   $arr_by = array(
     101 => xl('MA Category'),
     102 => xl('Specific Service'),
-    104 => xl('Method and Specific Product'),
-    105 => xl('Product Contraceptive Method'),
+    // 6   => xl('Contraceptive Method'),
+    // 104 => xl('Specific Contraceptive Service');
     17  => xl('Patient'),
     9   => xl('Internal Referrals'),
     10  => xl('External Referrals'),
@@ -47,9 +47,10 @@ if ($report_type == 'm') {
     2   => xl('Total'),
   );
   $arr_content = array(
-    1 => xl('Services/Products'),
+    1 => xl('Services'),
     2 => xl('Unique Clients'),
-    4 => xl('Unique New Clients')
+    4 => xl('Unique New Clients'),
+    // 5 => xl('Contraceptive Products'),
   );
   $arr_report = array(
     // Items are content|row|column|column|...
@@ -88,23 +89,18 @@ else {
   $arr_by = array(
     3  => xl('General Service Category'),
     4  => xl('Specific Service'),
-    104 => xl('Method and Specific Product'),
-    105 => xl('Product Contraceptive Method'),
+    104 => xl('Specific Contraceptive Service'),
     6  => xl('Contraceptive Method'),
     9   => xl('Internal Referrals'),
     10  => xl('External Referrals'),
   );
   $arr_content = array(
-    1 => xl('Services/Products'),
+    1 => xl('Services'),
     3 => xl('New Acceptors'),
+    5 => xl('Contraceptive Products'),
   );
   $arr_report = array(
   );
-}
-
-if ($report_type == 'm') {
-}
-else {
 }
 
 // This will become the array of reportable values.
@@ -115,7 +111,8 @@ $atotals = array();
 
 $arr_show   = array(
   '.total' => array('title' => 'Total'),
-  '.age'   => array('title' => 'Age Category'),
+  '.age2'  => array('title' => 'Age Category (2)'),
+  '.age9'  => array('title' => 'Age Category (9)'),
 ); // info about selectable columns
 
 $arr_titles = array(); // will contain column headers
@@ -189,7 +186,7 @@ function getListTitle($list, $option) {
 
 // Usually this generates one cell, but allows for two or more.
 //
-function genAnyCell($data, $right=false, $class='') {
+function genAnyCell($data, $right=false, $class='', $colspan=1) {
   global $cellcount, $form_output;
   if (!is_array($data)) {
     $data = array(0 => $data);
@@ -202,15 +199,16 @@ function genAnyCell($data, $right=false, $class='') {
     else {
       echo "  <td";
       if ($class) echo " class='$class'";
-      if ($right) echo " align='right'";
+      if ($colspan > 1) echo " colspan='$colspan' align='center'";
+      else if ($right) echo " align='right'";
       echo ">$datum</td>\n";
     }
     ++$cellcount;
   }
 }
 
-function genHeadCell($data, $right=false) {
-  genAnyCell($data, $right, 'dehead');
+function genHeadCell($data, $right=false, $colspan=1) {
+  genAnyCell($data, $right, 'dehead', $colspan);
 }
 
 // Create an HTML table cell containing a numeric value, and track totals.
@@ -270,6 +268,42 @@ function getContraceptiveMethod($code) {
     $key = xl('Awareness-Based');
   }
   return $key;
+}
+
+// Helper function to find a contraception-related IPPF code from
+// the related_code element of the given array.
+//
+function getRelatedContraceptiveCode($row) {
+  if (!empty($row['related_code'])) {
+    $relcodes = explode(';', $row['related_code']);
+    foreach ($relcodes as $codestring) {
+      if ($codestring === '') continue;
+      list($codetype, $code) = explode(':', $codestring);
+      if ($codetype !== 'IPPF') continue;
+      // Check if the related code concerns contraception.
+      $tmp = getContraceptiveMethod($code);
+      if (!empty($tmp)) return $code;
+    }
+  }
+  return '';
+}
+
+// Helper function to find an abortion-method IPPF code from
+// the related_code element of the given array.
+//
+function getRelatedAbortionMethod($row) {
+  if (!empty($row['related_code'])) {
+    $relcodes = explode(';', $row['related_code']);
+    foreach ($relcodes as $codestring) {
+      if ($codestring === '') continue;
+      list($codetype, $code) = explode(':', $codestring);
+      if ($codetype !== 'IPPF') continue;
+      // Check if the related code concerns contraception.
+      $tmp = getAbortionMethod($code);
+      if (!empty($tmp)) return $code;
+    }
+  }
+  return '';
 }
 
 // Translate an IPPF code to the corresponding descriptive name of its
@@ -339,14 +373,38 @@ function getGcacClientStatus($row) {
 }
 *********************************************************************/
 
+// Determine if a recent gcac service was performed.
+//
+function hadRecentAbService($pid, $encdate) {
+  $query = "SELECT COUNT(*) AS count " .
+    "FROM form_encounter AS fe, billing AS b, codes AS c WHERE " .
+    "fe.pid = '$pid' AND " .
+    "fe.date <= '$encdate' AND " .
+    "DATE_ADD(fe.date, INTERVAL 14 DAY) > '$encdate' AND " .
+    "b.pid = fe.pid AND " .
+    "b.encounter = fe.encounter AND " .
+    "b.activity = 1 AND " .
+    "b.code_type = 'MA' AND " .
+    "c.code_type = '12' AND " .
+    "c.code = b.code AND c.modifier = b.modifier AND " .
+    "( c.related_code LIKE '%IPPF:252223%' OR c.related_code LIKE '%IPPF:252224%' )";
+  $tmp = sqlQuery($query);
+  return !empty($tmp['count']);
+}
+
 // Get the "client status" as descriptive text.
-// This comes from the most recent GCAC visit form for visits within
-// the past 2 weeks, although there really should be such a form
-// attached to the visit associated with $row.
 //
 function getGcacClientStatus($row) {
   $pid = $row['pid'];
   $encdate = $row['encdate'];
+
+  if (hadRecentAbService($pid, $encdate))
+    return xl('MA Client Accepting Abortion');
+
+  // Check for a GCAC visit form.
+  // This will the most recent GCAC visit form for visits within
+  // the past 2 weeks, although there really should be such a form
+  // attached to the visit associated with $row.
   $query = "SELECT lo.title " .
     "FROM forms AS f, form_encounter AS fe, lbf_data AS d, list_options AS lo " .
     "WHERE f.pid = '$pid' AND " .
@@ -361,17 +419,47 @@ function getGcacClientStatus($row) {
     "lo.option_id = d.field_value " .
     "ORDER BY d.form_id DESC LIMIT 1";
   $irow = sqlQuery($query);
-  // echo "<!-- $query -->\n"; // debugging
-  return empty($irow['title']) ? xl('Indeterminate') : $irow['title'];
+  if (!empty($irow['title'])) return $irow['title'];
+
+  // Check for a referred abortion.
+  /*
+  $query = "SELECT COUNT(*) AS count " .
+    "FROM transactions AS t, codes AS c WHERE " .
+    "t.title = 'Referral' AND " .
+    "t.refer_date IS NOT NULL AND " .
+    "t.refer_date <= '$encdate' AND " .
+    "DATE_ADD(t.refer_date, INTERVAL 14 DAY) > '$encdate' AND " .
+    "t.refer_related_code LIKE 'REF:%' AND " .
+    "c.code_type = '16' AND " .
+    "c.code = SUBSTRING(t.refer_related_code, 5) AND " .
+    "( c.related_code LIKE '%IPPF:252223%' OR c.related_code LIKE '%IPPF:252224%' )";
+  */
+  $query = "SELECT COUNT(*) AS count " .
+    "FROM transactions AS t " .
+    "LEFT JOIN codes AS c ON t.refer_related_code LIKE 'REF:%' AND " .
+    "c.code_type = '16' AND " .
+    "c.code = SUBSTRING(t.refer_related_code, 5) " .
+    "WHERE " .
+    "t.title = 'Referral' AND " .
+    "t.refer_date IS NOT NULL AND " .
+    "t.refer_date <= '$encdate' AND " .
+    "DATE_ADD(t.refer_date, INTERVAL 14 DAY) > '$encdate' AND " .
+    "( t.refer_related_code LIKE '%IPPF:252223%' OR " .
+    "t.refer_related_code LIKE '%IPPF:252224%' OR " .
+    "( c.related_code IS NOT NULL AND " .
+    "( c.related_code LIKE '%IPPF:252223%' OR " .
+    "c.related_code LIKE '%IPPF:252224%' )))";
+
+  $tmp = sqlQuery($query);
+  if (!empty($tmp['count'])) return xl('Outbound Referral');
+
+  return xl('Indeterminate');
 }
 
 // Helper function called after the reporting key is determined for a row.
 //
 function loadColumnData($key, $row, $quantity=1) {
-  global $areport, $arr_titles, $form_cors, $from_date, $to_date, $arr_show;
-
-  // Quantity is not meaningful if we are counting clients.
-  if ($form_cors != 1) $quantity = 1;
+  global $areport, $arr_titles, $form_content, $from_date, $to_date, $arr_show;
 
   // If first instance of this key, initialize its arrays.
   if (empty($areport[$key])) {
@@ -379,7 +467,8 @@ function loadColumnData($key, $row, $quantity=1) {
     $areport[$key]['.prp'] = 0;       // previous pid
     $areport[$key]['.wom'] = 0;       // number of services for women
     $areport[$key]['.men'] = 0;       // number of services for men
-    $areport[$key]['.age'] = array(0,0,0,0,0,0,0,0,0); // age array
+    $areport[$key]['.age2'] = array(0,0);               // age array
+    $areport[$key]['.age9'] = array(0,0,0,0,0,0,0,0,0); // age array
     foreach ($arr_show as $askey => $dummy) {
       if (substr($askey, 0, 1) == '.') continue;
       $areport[$key][$askey] = array();
@@ -388,11 +477,11 @@ function loadColumnData($key, $row, $quantity=1) {
 
   // Skip this key if we are counting unique patients and the key
   // has already seen this patient.
-  if ($form_cors == '2' && $row['pid'] == $areport[$key]['.prp']) return;
+  if ($form_content == '2' && $row['pid'] == $areport[$key]['.prp']) return;
 
   // If we are counting new acceptors, then require a unique patient
   // whose contraceptive start date is within the reporting period.
-  if ($form_cors == '3') {
+  if ($form_content == '3') {
     // if ($row['pid'] == $areport[$key]['prp']) return;
     if ($row['pid'] == $areport[$key]['.prp']) return;
     // Check contraceptive start date.
@@ -402,7 +491,7 @@ function loadColumnData($key, $row, $quantity=1) {
 
   // If we are counting new clients, then require a unique patient
   // whose registration date is within the reporting period.
-  if ($form_cors == '4') {
+  if ($form_content == '4') {
     if ($row['pid'] == $areport[$key]['.prp']) return;
     // Check registration date.
     if (!$row['regdate'] || $row['regdate'] < $from_date ||
@@ -419,11 +508,13 @@ function loadColumnData($key, $row, $quantity=1) {
   else
     $areport[$key]['.wom'] += $quantity;
 
-  // Increment the correct age category.
+  // Increment the correct age categories.
   $age = getAge(fixDate($row['DOB']), $row['encdate']);
   $i = min(intval(($age - 5) / 5), 8);
   if ($age < 11) $i = 0;
-  $areport[$key]['.age'][$i] += $quantity;
+  $areport[$key]['.age9'][$i] += $quantity;
+  $i = $age < 25 ? 0 : 1;
+  $areport[$key]['.age2'][$i] += $quantity;
 
   foreach ($arr_show as $askey => $dummy) {
     if (substr($askey, 0, 1) == '.') continue;
@@ -435,8 +526,8 @@ function loadColumnData($key, $row, $quantity=1) {
 
 // This is called for each IPPF service code that is selected.
 //
-function process_ippf_code($row, $code) {
-  global $areport, $arr_titles, $form_by;
+function process_ippf_code($row, $code, $quantity=1) {
+  global $areport, $arr_titles, $form_by, $form_content;
 
   $key = 'Unspecified';
 
@@ -450,7 +541,7 @@ function process_ippf_code($row, $code) {
       $key = xl('SRH Non Family Planning');
     }
     else {
-      return;
+      if ($form_content != 5) return;
     }
   }
 
@@ -502,7 +593,7 @@ function process_ippf_code($row, $code) {
       $key = xl('Other/Generic Abortion-Related');
     }
     else {
-      return;
+      if ($form_content != 5) return;
     }
   }
 
@@ -512,18 +603,35 @@ function process_ippf_code($row, $code) {
     $key = $code;
   }
 
+  // Specific Contraceptive Services. One row for each IPPF code.
+  //
+  else if ($form_by === '104') {
+    if ($form_content != 5) {
+      // Skip codes not for contraceptive services.
+      $tmp = getContraceptiveMethod($code);
+      if (empty($tmp)) return;
+    }
+    $key = $code;
+  }
+
   // Abortion Method.
   //
   else if ($form_by === '5') {
     $key = getAbortionMethod($code);
-    if (empty($key)) return;
+    if (empty($key)) {
+      if ($form_content != 5) return;
+      $key = 'Unspecified';
+    }
   }
 
   // Contraceptive Method.
   //
   else if ($form_by === '6') {
     $key = getContraceptiveMethod($code);
-    if (empty($key)) return;
+    if (empty($key)) {
+      if ($form_content != 5) return;
+      $key = 'Unspecified';
+    }
   }
 
   /*******************************************************************
@@ -557,20 +665,22 @@ function process_ippf_code($row, $code) {
     if (empty($key)) return;
     $patient_id = $row['pid'];
     $encdate = $row['encdate'];
-    $query = "SELECT COUNT(*) AS count " .
-      "FROM forms AS f, form_encounter AS fe, lbf_data AS d " .
-      "WHERE f.pid = '$patient_id' AND " .
-      "f.formdir = 'LBFgcac' AND " .
-      "f.deleted = 0 AND " .
-      "fe.pid = f.pid AND fe.encounter = f.encounter AND " .
-      "fe.date <= '$encdate' AND " .
-      "DATE_ADD(fe.date, INTERVAL 14 DAY) > '$encdate' AND " .
-      "d.form_id = f.form_id AND " .
-      "d.field_id = 'client_status' AND " .
-      "( d.field_value = 'maaa' OR d.field_value = 'refout' )";
-    // echo "<!-- $key: $query -->\n"; // debugging
-    $irow = sqlQuery($query);
-    if (empty($irow['count'])) return;
+    // Skip this if no recent gcac service nor gcac form with acceptance.
+    if (!hadRecentAbService($patient_id, $encdate)) {
+      $query = "SELECT COUNT(*) AS count " .
+        "FROM forms AS f, form_encounter AS fe, lbf_data AS d " .
+        "WHERE f.pid = '$patient_id' AND " .
+        "f.formdir = 'LBFgcac' AND " .
+        "f.deleted = 0 AND " .
+        "fe.pid = f.pid AND fe.encounter = f.encounter AND " .
+        "fe.date <= '$encdate' AND " .
+        "DATE_ADD(fe.date, INTERVAL 14 DAY) > '$encdate' AND " .
+        "d.form_id = f.form_id AND " .
+        "d.field_id = 'client_status' AND " .
+        "( d.field_value = 'maaa' OR d.field_value = 'refout' )";
+      $irow = sqlQuery($query);
+      if (empty($irow['count'])) return;
+    }
   }
 
   // Post-Abortion Care and Followup by Source.
@@ -644,14 +754,14 @@ function process_ippf_code($row, $code) {
   }
 
   // OK we now have the reporting key for this issue.
-  loadColumnData($key, $row);
+  loadColumnData($key, $row, $quantity);
 
 } // end function process_ippf_code()
 
 // This is called for each MA service code that is selected.
 //
 function process_ma_code($row) {
-  global $form_by, $arr_content, $form_cors;
+  global $form_by, $arr_content, $form_content;
 
   $key = 'Unspecified';
 
@@ -676,7 +786,7 @@ function process_ma_code($row) {
   // Just one row.
   //
   else if ($form_by === '2') {
-    $key = $arr_content[$form_cors];
+    $key = $arr_content[$form_content];
   }
 
   else {
@@ -799,11 +909,26 @@ function process_referral($row) {
   global $form_by;
   $key = 'Unspecified';
 
-  if (!empty($row['refer_related_code'])) {
-    $relcodes = explode(';', $row['refer_related_code']);
+  // For followups we care about the actual service provided, otherwise
+  // the requested service.
+  $related_code = $form_by === '20' ?
+    $row['reply_related_code'] : $row['refer_related_code'];
+
+  if (!empty($related_code)) {
+    $relcodes = explode(';', $related_code);
     foreach ($relcodes as $codestring) {
       if ($codestring === '') continue;
       list($codetype, $code) = explode(':', $codestring);
+
+      if ($codetype == 'REF') {
+        // This is the expected case; a direct IPPF code is obsolete.
+        $rrow = sqlQuery("SELECT related_code FROM codes WHERE " .
+          "code_type = '16' AND code = '$code' AND active = 1 " .
+          "ORDER BY id LIMIT 1");
+        if (!empty($rrow['related_code'])) {
+          list($codetype, $code) = explode(':', $rrow['related_code']);
+        }
+      }
 
       if ($codetype !== 'IPPF') continue;
 
@@ -822,6 +947,11 @@ function process_referral($row) {
   }
 
   if ($form_by !== '1') loadColumnData($key, $row);
+}
+
+function uses_description($form_by) {
+  return ($form_by === '4'  || $form_by === '102' || $form_by === '9' ||
+    $form_by === '10' || $form_by === '20' || $form_by === '104');
 }
 
   // If we are doing the CSV export then generate the needed HTTP headers.
@@ -849,7 +979,7 @@ function process_referral($row) {
 </style>
 <script type="text/javascript" src="../../library/textformat.js"></script>
 <script type="text/javascript" src="../../library/dynarch_calendar.js"></script>
-<?php include_once("{$GLOBALS['srcdir']}/dynarch_calendar_en.inc.php"); ?>
+<script type="text/javascript" src="../../library/dynarch_calendar_en.js"></script>
 <script type="text/javascript" src="../../library/dynarch_calendar_setup.js"></script>
 <script language="JavaScript">
  var mypcc = '<?php echo $GLOBALS['phone_country_code'] ?>';
@@ -870,17 +1000,17 @@ function process_referral($row) {
   if (v.length > 0) {
    isdis = 'hidden';
    var a = v.split("|");
-   f.form_cors.selectedIndex = -1;
+   f.form_content.selectedIndex = -1;
    f.form_by.selectedIndex = -1;
    f['form_show[]'].selectedIndex = -1;
-   selectByValue(f.form_cors, a[0]);
+   selectByValue(f.form_content, a[0]);
    selectByValue(f.form_by, a[1]);
    for (var i = 2; i < a.length; ++i) {
     selectByValue(f['form_show[]'], a[i]);
    }
   }
   f.form_by.style.visibility = isdis;
-  f.form_cors.style.visibility = isdis;
+  f.form_content.style.visibility = isdis;
   f['form_show[]'].style.visibility = isdis;
  }
 
@@ -942,11 +1072,11 @@ function process_referral($row) {
    <?php xl('Content','e'); ?>:
   </td>
   <td valign='top' class='detail'>
-   <select name='form_cors' title='<?php xl('What is to be counted?','e'); ?>'>
+   <select name='form_content' title='<?php xl('What is to be counted?','e'); ?>'>
 <?php
   foreach ($arr_content as $key => $value) {
     echo "    <option value='$key'";
-    if ($key == $form_cors) echo " selected";
+    if ($key == $form_content) echo " selected";
     echo ">$value</option>\n";
   }
 ?>
@@ -1076,8 +1206,76 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
     if ($form_sexes == '1') $sexcond = "AND pd.sex NOT LIKE 'Male' ";
     else if ($form_sexes == '2') $sexcond = "AND pd.sex LIKE 'Male' ";
 
+    // In the case where content is contraceptive product sales, we
+    // scan product sales at the top level because it is important to
+    // account for each of them only once.  For each sale we determine
+    // the one and only IPPF code representing the primary related
+    // contraceptive service, and that might be either a service in
+    // the Tally Sheet or the IPPF code attached to the product.
+    //
+    if ($form_content == 5) { // sales of contraceptive products
+      $query = "SELECT " .
+        "ds.pid, ds.encounter, ds.sale_date, ds.quantity, " .
+        "d.cyp_factor, d.related_code, " . 
+        "pd.regdate, pd.sex, pd.DOB, pd.lname, pd.fname, pd.mname, " .
+        "pd.contrastart, pd.referral_source$pd_fields, " .
+        "fe.date AS encdate, fe.provider_id " .
+        "FROM drug_sales AS ds " .
+        "JOIN drugs AS d ON d.drug_id = ds.drug_id " .
+        "JOIN patient_data AS pd ON pd.pid = ds.pid $sexcond" .
+        "LEFT JOIN form_encounter AS fe ON fe.pid = ds.pid AND fe.encounter = ds.encounter " .
+        "WHERE ds.sale_date >= '$from_date' AND " .
+        "ds.sale_date <= '$to_date' AND " .
+        "ds.pid > 0 AND ds.quantity != 0";
+
+      if ($form_facility) {
+        $query .= " AND fe.facility_id = '$form_facility'";
+      }
+      $query .= " ORDER BY ds.pid, ds.encounter, ds.drug_id";
+      $res = sqlStatement($query);
+
+      while ($row = sqlFetchArray($res)) {
+        $desired = false;
+        $prodcode = '';
+        if ($row['cyp_factor'] > 0) {
+          $desired = true;
+        }
+        $tmp = getRelatedContraceptiveCode($row);
+        if (!empty($tmp)) {
+          $desired = true;
+          $prodcode = $tmp;
+        }
+        if (!$desired) continue; // skip if not a contraceptive product
+
+        // If there is a visit and it has a contraceptive service use that, else $prodcode.
+        if (!empty($row['encounter'])) {
+          $query = "SELECT " .
+            "b.code_type, b.code, c.related_code " .
+            "FROM billing AS b " .
+            "LEFT OUTER JOIN codes AS c ON c.code_type = '12' AND " .
+            "c.code = b.code AND c.modifier = b.modifier " .
+            "WHERE b.pid = " . (0 + $row['pid']) . " AND " .
+            "b.encounter = " . (0 + $row['encounter']) . " AND " .
+            "b.activity = 1 AND b.code_type = 'MA' " .
+            "ORDER BY b.code";
+          $bres = sqlStatement($query);
+          while ($brow = sqlFetchArray($bres)) {
+            $tmp = getRelatedContraceptiveCode($brow);
+            if (!empty($tmp)) {
+              $prodcode = $tmp;
+              break;
+            }
+          }
+        }
+
+        // At this point $prodcode is the desired IPPF code, or empty if none.
+        process_ippf_code($row, $prodcode, $row['quantity']);
+
+      }
+    }
+
     // Get referrals and related patient data.
-    if ($form_by === '9' || $form_by === '10' || $form_by === '20' || $form_by === '1') {
+    if ($form_content != 5 && ($form_by === '9' || $form_by === '10' || $form_by === '20' || $form_by === '1')) {
 
       $exttest = "t.refer_external = '1'";
       $datefld = "t.refer_date";
@@ -1090,7 +1288,8 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
       }
 
       $query = "SELECT " .
-        "t.refer_related_code, t.pid, pd.regdate, pd.referral_source, " .
+        "t.pid, t.refer_related_code, t.reply_related_code, " .
+        "pd.regdate, pd.referral_source, " .
         "pd.sex, pd.DOB, pd.lname, pd.fname, pd.mname, " .
         "pd.contrastart$pd_fields " .
         "FROM transactions AS t " .
@@ -1130,6 +1329,7 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
 
     // else {
 
+    /*****************************************************************
     if ($form_by === '104' || $form_by === '105') {
       $query = "SELECT " .
         "d.name, d.related_code, ds.pid, ds.quantity, " . 
@@ -1163,6 +1363,9 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
 
     if ($form_by !== '9' && $form_by !== '10' && $form_by !== '20' &&
       $form_by !== '104' && $form_by !== '105')
+    *****************************************************************/
+
+    if ($form_content != 5 && $form_by !== '9' && $form_by !== '10' && $form_by !== '20')
     {
       // This gets us all MA codes, with encounter and patient
       // info attached and grouped by patient and encounter.
@@ -1222,25 +1425,57 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
       echo "<table border='0' cellpadding='1' cellspacing='2' width='98%'>\n";
     } // end not csv export
 
+    // Generate first column headings line, with category titles.
+    //
     genStartRow("bgcolor='#dddddd'");
-
     // If the key is an MA or IPPF code, then add a column for its description.
-    if ($form_by === '4'  || $form_by === '102' || $form_by === '9' ||
-        $form_by === '10' || $form_by === '20')
-    {
+    if (uses_description($form_by)) {
+      genHeadCell(array('', ''));
+    } else {
+      genHeadCell('');
+    }
+    // Generate headings for values to be shown.
+    foreach ($form_show as $value) {
+      if ($value == '.total') { // Total Services
+        genHeadCell('');
+      }
+      else if ($value == '.age2') { // Age
+        genHeadCell($arr_show[$value]['title'], false, 2);
+      }
+      else if ($value == '.age9') { // Age
+        genHeadCell($arr_show[$value]['title'], false, 9);
+      }
+      else if ($arr_show[$value]['list_id']) {
+        genHeadCell($arr_show[$value]['title'], false, count($arr_titles[$value]));
+      }
+      else if (!empty($arr_titles[$value])) {
+        genHeadCell($arr_show[$value]['title'], false, count($arr_titles[$value]));
+      }
+    }
+    if ($form_output != 3) {
+      genHeadCell('');
+    }
+    genEndRow();
+
+    // Generate second column headings line, with individual titles.
+    //
+    genStartRow("bgcolor='#dddddd'");
+    // If the key is an MA or IPPF code, then add a column for its description.
+    if (uses_description($form_by)) {
       genHeadCell(array($arr_by[$form_by], xl('Description')));
     } else {
       genHeadCell($arr_by[$form_by]);
     }
-
     // Generate headings for values to be shown.
     foreach ($form_show as $value) {
-      // if ($value == '1') { // Total Services
       if ($value == '.total') { // Total Services
         genHeadCell(xl('Total'));
       }
-      // else if ($value == '2') { // Age
-      else if ($value == '.age') { // Age
+      else if ($value == '.age2') { // Age
+        genHeadCell(xl('0-24' ), true);
+        genHeadCell(xl('25+'  ), true);
+      }
+      else if ($value == '.age9') { // Age
         genHeadCell(xl('0-10' ), true);
         genHeadCell(xl('11-14'), true);
         genHeadCell(xl('15-19'), true);
@@ -1251,7 +1486,6 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
         genHeadCell(xl('40-44'), true);
         genHeadCell(xl('45+'  ), true);
       }
-
       else if ($arr_show[$value]['list_id']) {
         foreach ($arr_titles[$value] as $key => $dummy) {
           genHeadCell(getListTitle($arr_show[$value]['list_id'],$key), true);
@@ -1263,11 +1497,9 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
         }
       }
     }
-
     if ($form_output != 3) {
       genHeadCell(xl('Total'), true);
     }
-
     genEndRow();
 
     $encount = 0;
@@ -1278,9 +1510,7 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
       $dispkey = $key;
 
       // If the key is an MA or IPPF code, then add a column for its description.
-      if ($form_by === '4' || $form_by === '102' || $form_by === '9' ||
-          $form_by === '10' || $form_by === '20')
-      {
+      if (uses_description($form_by)) {
         $dispkey = array($key, '');
         $type = $form_by === '102' ? 12 : 11; // MA or IPPF
         $crow = sqlQuery("SELECT code_text FROM codes WHERE " .
@@ -1302,9 +1532,14 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
         if ($value == '.total') { // Total Services
           genNumCell($totalsvcs, $cnum++);
         }
-        else if ($value == '.age') { // Age
+        else if ($value == '.age2') { // Age
+          for ($i = 0; $i < 2; ++$i) {
+            genNumCell($areport[$key]['.age2'][$i], $cnum++);
+          }
+        }
+        else if ($value == '.age9') { // Age
           for ($i = 0; $i < 9; ++$i) {
-            genNumCell($areport[$key]['.age'][$i], $cnum++);
+            genNumCell($areport[$key]['.age9'][$i], $cnum++);
           }
         }
         else if (!empty($arr_titles[$value])) {
@@ -1328,9 +1563,7 @@ foreach (array(1 => 'Screen', 2 => 'Printer', 3 => 'Export File') as $key => $va
       genStartRow("bgcolor='#dddddd'");
 
       // If the key is an MA or IPPF code, then add a column for its description.
-      if ($form_by === '4' || $form_by === '102' || $form_by === '9' ||
-          $form_by === '10' || $form_by === '20')
-      {
+      if (uses_description($form_by)) {
         genHeadCell(array(xl('Totals'), ''));
       } else {
         genHeadCell(xl('Totals'));

@@ -8,7 +8,7 @@ $alertmsg = '';
 
 /*		Inserting New facility					*/
 if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] != "admin_facility") {
-  sqlStatement("INSERT INTO facility SET " .
+  $insert_id=sqlInsert("INSERT INTO facility SET " .
   "name = '"         . trim(formData('facility'    )) . "', " .
   "phone = '"        . trim(formData('phone'       )) . "', " .
   "fax = '"          . trim(formData('fax'         )) . "', " .
@@ -18,12 +18,14 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "postal_code = '"  . trim(formData('postal_code' )) . "', " .
   "country_code = '" . trim(formData('country_code')) . "', " .
   "federal_ein = '"  . trim(formData('federal_ein' )) . "', " .
+  "color = '"  . trim(formData('ncolor' )) . "', " .
   "service_location = '"  . trim(formData('service_location' )) . "', " .
   "billing_location = '"  . trim(formData('billing_location' )) . "', " .
   "accepts_assignment = '"  . trim(formData('accepts_assignment' )) . "', " .
   "pos_code = '"  . trim(formData('pos_code' )) . "', " .
   "domain_identifier = '"  . trim(formData('domain_identifier' )) . "', " .
   "attn = '"  . trim(formData('attn' )) . "', " .
+  "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
   "facility_npi = '" . trim(formData('facility_npi')) . "'");
 }
 
@@ -40,13 +42,15 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		postal_code='" . trim(formData('postal_code')) . "',
 		country_code='" . trim(formData('country_code')) . "',
 		federal_ein='" . trim(formData('federal_ein')) . "',
+		color='" . trim(formData('ncolor')) . "',
 		service_location='" . trim(formData('service_location')) . "',
 		billing_location='" . trim(formData('billing_location')) . "',
 		accepts_assignment='" . trim(formData('accepts_assignment')) . "',
 		pos_code='" . trim(formData('pos_code')) . "',
 		domain_identifier='" . trim(formData('domain_identifier')) . "',
 		facility_npi='" . trim(formData('facility_npi')) . "',
-		attn='" . trim(formData('attn')) . "' 
+		attn='" . trim(formData('attn')) . "' , 
+		tax_id_type='" . trim(formData('tax_id_type')) . "' 
 	where id='" . trim(formData('fid')) . "'" );
 }
 
@@ -117,6 +121,9 @@ $(document).ready(function(){
           for ($iter3 = 0;$frow = sqlFetchArray($fres);$iter3++)
             $result2[$iter3] = $frow;
           foreach($result2 as $iter3) {
+			$varstreet="";//these are assigned conditionally below,blank assignment is done so that old values doesn't get propagated to next level.
+			$varcity="";
+			$varstate="";
           $varstreet=$iter3{street };
           if ($iter3{street }!="")$varstreet=$iter3{street }.",";
           if ($iter3{city}!="")$varcity=$iter3{city}.",";
@@ -135,7 +142,7 @@ $(document).ready(function(){
   <tr height="25">
 		<td colspan="3"  style="text-align:center;font-weight:bold;"> <?php echo xl( "Currently there are no facilities." ); ?></td>
 	</tr>
-  <?}
+  <?php }
 ?>
 	</table>
         </div>

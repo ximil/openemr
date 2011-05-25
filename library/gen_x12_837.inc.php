@@ -74,17 +74,23 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     "~\n";
 
   ++$edicount;
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
   $out .= "NM1" .       // Loop 1000A Submitter
     "*41" .
     "*2" .
-    "*" . $claim->billingFacilityName() .
+    "*" . $billingFacilityName .
     "*" .
     "*" .
     "*" .
     "*" .
-    "*46" .
-    "*" . $claim->billingFacilityETIN() .
-    "~\n";
+    "*46";
+   if (trim($claim->x12gsreceiverid()) == '470819582') { // if ECLAIMS EDI
+    $out  .=  "*" . $claim->clearingHouseETIN();
+   } else {
+    $out  .=  "*" . $claim->billingFacilityETIN();
+   }
+    $out .= "~\n";
 
   ++$edicount;
   $out .= "PER" .
@@ -123,10 +129,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   $HLBillingPayToProvider = $HLcount++;
 
   ++$edicount;
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
   $out .= "NM1" .       // Loop 2010AA Billing Provider
     "*85" .
     "*2" .
-    "*" . $claim->billingFacilityName() .
+    "*" . $billingFacilityName .
     "*" .
     "*" .
     "*" .
@@ -154,9 +162,14 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   // Add a REF*EI*<ein> segment if NPI was specified in the NM1 above.
   if ($claim->billingFacilityNPI() && $claim->billingFacilityETIN()) {
     ++$edicount;
-    $out .= "REF" .
-      "*EI" .
-      "*" . $claim->billingFacilityETIN() .
+    $out .= "REF" ;
+	if($claim->federalIdType()){
+      $out .= "*" . $claim->federalIdType();
+	}
+	else{
+	  $out .= "*EI";//For dealing with the situation before adding selection for TaxId type In facility ie default to EIN.
+	}
+      $out .=  "*" . $claim->billingFacilityETIN() .
       "~\n";
   }
 
@@ -172,10 +185,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   }
 
   ++$edicount;
+  //Field length is limited to 35. See nucc dataset page 63 www.nucc.org
+  $billingFacilityName=substr($claim->billingFacilityName(),0,35);
   $out .= "NM1" .       // Loop 2010AB Pay-To Provider
     "*87" .
     "*2" .
-    "*" . $claim->billingFacilityName() .
+    "*" . $billingFacilityName .
     "*" .
     "*" .
     "*" .
@@ -267,10 +282,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     "~\n";
 
   ++$edicount;
+  //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
+  $payerName=substr($claim->payerName(),0,35);
   $out .= "NM1" .       // Loop 2010BB Payer
     "*PR" .
     "*2" .
-    "*" . $claim->payerName() .
+    "*" . $payerName .
     "*" .
     "*" .
     "*" .
@@ -352,20 +369,21 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     $log .= "*** This claim has no charges!\n";
   }
 
+
   ++$edicount;
   $out .= "CLM" .       // Loop 2300 Claim
     "*$pid-$encounter" .
     "*"  . sprintf("%.2f",$clm_total_charges) . // Zirmed computes and replaces this
     "*"  .
     "*"  .
-    "*"  . $claim->facilityPOS() . "::" . $claim->frequencyTypeCode() .
+    "*" . sprintf('%02d', $claim->facilityPOS()) . "::" . $claim->frequencyTypeCode() . // Changed to correct single digit output
     "*Y" .
     "*A" .
     "*"  . ($claim->billingFacilityAssignment() ? 'Y' : 'N') .
     "*Y" .
     "*C" .
-    "~\n";
-
+    "~\n"; 
+    
   ++$edicount;
   $out .= "DTP" .       // Date of Onset
     "*431" .
@@ -399,7 +417,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "~\n";
   }
 
-  if ($claim->cliaCode()) {
+  if ($claim->cliaCode() and $claim->claimType() === 'MB') {
     // Required by Medicare when in-house labs are done.
     ++$edicount;
     $out .= "REF" .     // Clinical Laboratory Improvement Amendment Number
@@ -409,6 +427,14 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   }
 
   // Note: This would be the place to implement the NTE segment for loop 2300.
+  if ($claim->additionalNotes()) {
+    // Claim note.
+    ++$edicount;
+    $out .= "NTE" .     // comments box 19
+      "*" .
+      "*" . $claim->additionalNotes() .
+      "~\n";
+  }
 
   // Diagnoses, up to 8 per HI segment.
   $da = $claim->diagArray();
@@ -494,13 +520,17 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
 
   // REF*1C is required here for the Medicare provider number if NPI was
   // specified in NM109.  Not sure if other payers require anything here.
-  if ($claim->providerNumber()) {
-    ++$edicount;
-    $out .= "REF" .
-      "*" . $claim->providerNumberType() .
-      "*" . $claim->providerNumber() .
-      "~\n";
-  }
+  // --- apparently ECLAIMS, INC wants the data in 2010 but NOT in 2310B - tony@mi-squared.com
+
+   if (trim($claim->x12gsreceiverid()) != '470819582') { // if NOT ECLAIMS EDI
+      if ($claim->providerNumber()) {
+        ++$edicount;
+        $out .= "REF" .
+          "*" . $claim->providerNumberType() .
+          "*" . $claim->providerNumber() .
+          "~\n";
+      }
+   }
 
   // Loop 2310D is omitted in the case of home visits (POS=12).
   if ($claim->facilityPOS() != 12) {
@@ -508,8 +538,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     $out .= "NM1" .       // Loop 2310D Service Location
       "*77" .
       "*2";
+   //Field length is limited to 35. See nucc dataset page 77 www.nucc.org
+	$facilityName=substr($claim->facilityName(),0,35);
     if ($claim->facilityName() || $claim->facilityNPI() || $claim->facilityETIN()) { $out .=
-      "*" . $claim->facilityName();
+      "*" . $facilityName;
     }
     if ($claim->facilityNPI() || $claim->facilityETIN()) { $out .=
       "*" .
@@ -680,10 +712,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "~\n";
 
     ++$edicount;
+    //Field length is limited to 35. See nucc dataset page 81 www.nucc.org
+    $payerName=substr($claim->payerName($ins),0,35);
     $out .= "NM1" . // Loop 2330B Payer info for other insco. Page 359.
       "*PR" .
       "*2" .
-      "*" . $claim->payerName($ins) .
+      "*" . $payerName .
       "*" .
       "*" .
       "*" .
