@@ -970,7 +970,6 @@ CREATE TABLE `lists_touch` (
   PRIMARY KEY  (`pid`,`type`)
 ) ENGINE=MyISAM ;
 #EndIf
-
 #IfNotTable amc_misc_data
 CREATE TABLE `amc_misc_data` (
   `amc_id` varchar(31) NOT NULL DEFAULT '' COMMENT 'Unique and maps to list_options list clinical_rules',
@@ -989,5 +988,218 @@ INSERT INTO `layout_options` VALUES ('DEM', 'allow_patient_portal', '3Choices', 
 
 #IfMissingColumn patient_data allow_patient_portal
 ALTER TABLE `patient_data` ADD COLUMN `allow_patient_portal` varchar(31) NOT NULL DEFAULT '';
+#EndIf
+
+#IfMissingColumn patient_data portal_username portal_pwd
+ ALTER TABLE `patient_data`     ADD COLUMN `portal_username` VARCHAR(100) NULL AFTER `deceased_reason`,     ADD COLUMN `portal_pwd` VARCHAR(100) NULL AFTER `portal_username`,     ADD COLUMN `portal_pwd_status` TINYINT DEFAULT '1' NULL COMMENT '0=>Password Created Throug Demo Patient Should Change it.1=>Pwd updated or created by patient itself' AFTER `portal_pwd`;
+#EndIf
+
+
+#IfNotTable documents_legal_detail
+CREATE TABLE IF NOT EXISTS `documents_legal_detail` (
+  `dld_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dld_pid` int(10) unsigned DEFAULT NULL,
+  `dld_facility` int(10) unsigned DEFAULT NULL,
+  `dld_provider` int(10) unsigned DEFAULT NULL,
+  `dld_encounter` int(10) unsigned DEFAULT NULL,
+  `dld_master_docid` int(10) unsigned NOT NULL,
+  `dld_signed` smallint(5) unsigned NOT NULL COMMENT '0-Not Signed or Cannot Sign(Layout),1-Signed,2-Ready to sign,3-Denied(Pat Regi),10-Save(Layout)',
+  `dld_signed_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `dld_filepath` varchar(75) DEFAULT NULL,
+  `dld_filename` varchar(45) NOT NULL,
+  `dld_signing_person` varchar(50) NOT NULL,
+  `dld_sign_level` int(11) NOT NULL COMMENT 'Sign flow level',
+  `dld_content` varchar(50) NOT NULL COMMENT 'Layout sign position',
+  `dld_file_for_pdf_generation` blob NOT NULL COMMENT 'The filled details in the fdf file is stored here.Patient Registration Screen',
+  `dld_denial_reason` longtext NOT NULL,
+  PRIMARY KEY (`dld_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+#EndIf
+
+#IfNotTable documents_legal_master
+CREATE TABLE IF NOT EXISTS `documents_legal_master` (
+  `dlm_category` int(10) unsigned DEFAULT NULL,
+  `dlm_subcategory` int(10) unsigned DEFAULT NULL,
+  `dlm_document_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dlm_document_name` varchar(75) NOT NULL,
+  `dlm_filepath` varchar(75) NOT NULL,
+  `dlm_facility` int(10) unsigned DEFAULT NULL,
+  `dlm_provider` int(10) unsigned DEFAULT NULL,
+  `dlm_paper_size` varchar(45) DEFAULT NULL,
+  `dlm_paper_width` double DEFAULT NULL,
+  `dlm_paper_height` double DEFAULT NULL,
+  `dlm_paper_orientation` varchar(15) DEFAULT NULL,
+  `dlm_sign_height` double NOT NULL,
+  `dlm_sign_width` double NOT NULL,
+  `dlm_filename` varchar(45) NOT NULL,
+  `dlm_effective_date` datetime NOT NULL,
+  `dlm_version` int(10) unsigned NOT NULL,
+  `content` varchar(255) NOT NULL,
+  `dlm_savedsign` varchar(255) DEFAULT NULL COMMENT '0-Yes 1-No',
+  `dlm_review` varchar(255) DEFAULT NULL COMMENT '0-Yes 1-No',
+  PRIMARY KEY (`dlm_document_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='List of Master Docs to be signed' AUTO_INCREMENT=1 ;
+#EndIf
+
+#IfNotTable employer_data_register
+CREATE TABLE IF NOT EXISTS `employer_data_register` (
+  `id` bigint(20) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `street` varchar(255) DEFAULT NULL,
+  `postal_code` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `state` varchar(255) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
+  `pid` bigint(20) NOT NULL DEFAULT '0',
+  `approval_status` tinyint(4) NOT NULL COMMENT '1-Pending,2-Approved,3-Denied'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+#EndIf
+
+#IfNotTable insurance_data_register
+CREATE TABLE IF NOT EXISTS `insurance_data_register` (
+  `id` bigint(20) NOT NULL,
+  `type` enum('primary','secondary','tertiary') DEFAULT NULL,
+  `provider` varchar(255) DEFAULT NULL,
+  `plan_name` varchar(255) DEFAULT NULL,
+  `policy_number` varchar(255) DEFAULT NULL,
+  `group_number` varchar(255) DEFAULT NULL,
+  `subscriber_lname` varchar(255) DEFAULT NULL,
+  `subscriber_mname` varchar(255) DEFAULT NULL,
+  `subscriber_fname` varchar(255) DEFAULT NULL,
+  `subscriber_relationship` varchar(255) DEFAULT NULL,
+  `subscriber_ss` varchar(255) DEFAULT NULL,
+  `subscriber_DOB` date DEFAULT NULL,
+  `subscriber_street` varchar(255) DEFAULT NULL,
+  `subscriber_postal_code` varchar(255) DEFAULT NULL,
+  `subscriber_city` varchar(255) DEFAULT NULL,
+  `subscriber_state` varchar(255) DEFAULT NULL,
+  `subscriber_country` varchar(255) DEFAULT NULL,
+  `subscriber_phone` varchar(255) DEFAULT NULL,
+  `subscriber_employer` varchar(255) DEFAULT NULL,
+  `subscriber_employer_street` varchar(255) DEFAULT NULL,
+  `subscriber_employer_postal_code` varchar(255) DEFAULT NULL,
+  `subscriber_employer_state` varchar(255) DEFAULT NULL,
+  `subscriber_employer_country` varchar(255) DEFAULT NULL,
+  `subscriber_employer_city` varchar(255) DEFAULT NULL,
+  `copay` varchar(255) DEFAULT NULL,
+  `date` date NOT NULL DEFAULT '0000-00-00',
+  `pid` bigint(20) NOT NULL DEFAULT '0',
+  `subscriber_sex` varchar(25) DEFAULT NULL,
+  `accept_assignment` varchar(5) NOT NULL DEFAULT 'TRUE',
+  `auth_required` tinyint(4) DEFAULT NULL,
+  `approval_status` tinyint(4) NOT NULL COMMENT '1-Pending,2-Approved,3-Denied'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+#EndIf
+
+#IfNotTable patient_data_register
+CREATE TABLE IF NOT EXISTS `patient_data_register` (
+  `id` bigint(20) NOT NULL,
+  `title` varchar(255) NOT NULL DEFAULT '',
+  `language` varchar(255) NOT NULL DEFAULT '',
+  `financial` varchar(255) NOT NULL DEFAULT '',
+  `fname` varchar(255) NOT NULL DEFAULT '',
+  `lname` varchar(255) NOT NULL DEFAULT '',
+  `mname` varchar(255) NOT NULL DEFAULT '',
+  `DOB` date DEFAULT NULL,
+  `street` varchar(255) NOT NULL DEFAULT '',
+  `postal_code` varchar(255) NOT NULL DEFAULT '',
+  `city` varchar(255) NOT NULL DEFAULT '',
+  `state` varchar(255) NOT NULL DEFAULT '',
+  `country_code` varchar(255) NOT NULL DEFAULT '',
+  `drivers_license` varchar(255) NOT NULL DEFAULT '',
+  `ss` varchar(255) NOT NULL DEFAULT '',
+  `occupation` longtext,
+  `phone_home` varchar(255) NOT NULL DEFAULT '',
+  `phone_biz` varchar(255) NOT NULL DEFAULT '',
+  `phone_contact` varchar(255) NOT NULL DEFAULT '',
+  `phone_cell` varchar(255) NOT NULL DEFAULT '',
+  `pharmacy_id` int(11) NOT NULL DEFAULT '0',
+  `status` varchar(255) NOT NULL DEFAULT '',
+  `contact_relationship` varchar(255) NOT NULL DEFAULT '',
+  `date` datetime DEFAULT NULL,
+  `sex` varchar(255) NOT NULL DEFAULT '',
+  `referrer` varchar(255) NOT NULL DEFAULT '',
+  `referrerID` varchar(255) NOT NULL DEFAULT '',
+  `providerID` int(11) DEFAULT NULL,
+  `email` varchar(255) NOT NULL DEFAULT '',
+  `ethnoracial` varchar(255) NOT NULL DEFAULT '',
+  `interpretter` varchar(255) NOT NULL DEFAULT '',
+  `migrantseasonal` varchar(255) NOT NULL DEFAULT '',
+  `family_size` varchar(255) NOT NULL DEFAULT '',
+  `monthly_income` varchar(255) NOT NULL DEFAULT '',
+  `homeless` varchar(255) NOT NULL DEFAULT '',
+  `financial_review` datetime DEFAULT NULL,
+  `pubpid` varchar(255) NOT NULL DEFAULT '',
+  `pid` bigint(20) NOT NULL DEFAULT '0',
+  `genericname1` varchar(255) NOT NULL DEFAULT '',
+  `genericval1` varchar(255) NOT NULL DEFAULT '',
+  `genericname2` varchar(255) NOT NULL DEFAULT '',
+  `genericval2` varchar(255) NOT NULL DEFAULT '',
+  `hipaa_mail` varchar(3) NOT NULL DEFAULT '',
+  `hipaa_voice` varchar(3) NOT NULL DEFAULT '',
+  `hipaa_notice` varchar(3) NOT NULL DEFAULT '',
+  `hipaa_message` varchar(20) NOT NULL DEFAULT '',
+  `hipaa_allowsms` varchar(3) NOT NULL DEFAULT 'NO',
+  `hipaa_allowemail` varchar(3) NOT NULL DEFAULT 'NO',
+  `squad` varchar(32) NOT NULL DEFAULT '',
+  `fitness` int(11) NOT NULL DEFAULT '0',
+  `referral_source` varchar(30) NOT NULL DEFAULT '',
+  `usertext1` varchar(255) NOT NULL DEFAULT '',
+  `usertext2` varchar(255) NOT NULL DEFAULT '',
+  `usertext3` varchar(255) NOT NULL DEFAULT '',
+  `usertext4` varchar(255) NOT NULL DEFAULT '',
+  `usertext5` varchar(255) NOT NULL DEFAULT '',
+  `usertext6` varchar(255) NOT NULL DEFAULT '',
+  `usertext7` varchar(255) NOT NULL DEFAULT '',
+  `usertext8` varchar(255) NOT NULL DEFAULT '',
+  `userlist1` varchar(255) NOT NULL DEFAULT '',
+  `userlist2` varchar(255) NOT NULL DEFAULT '',
+  `userlist3` varchar(255) NOT NULL DEFAULT '',
+  `userlist4` varchar(255) NOT NULL DEFAULT '',
+  `userlist5` varchar(255) NOT NULL DEFAULT '',
+  `userlist6` varchar(255) NOT NULL DEFAULT '',
+  `userlist7` varchar(255) NOT NULL DEFAULT '',
+  `pricelevel` varchar(255) NOT NULL DEFAULT 'standard',
+  `regdate` date DEFAULT NULL COMMENT 'Registration Date',
+  `contrastart` date DEFAULT NULL COMMENT 'Date contraceptives initially used',
+  `completed_ad` varchar(3) NOT NULL DEFAULT 'NO',
+  `ad_reviewed` date DEFAULT NULL,
+  `vfc` varchar(255) NOT NULL DEFAULT '',
+  `mothersname` varchar(255) NOT NULL DEFAULT '',
+  `guardiansname` varchar(255) NOT NULL DEFAULT '',
+  `allow_imm_reg_use` varchar(255) NOT NULL DEFAULT '',
+  `allow_imm_info_share` varchar(255) NOT NULL DEFAULT '',
+  `allow_health_info_ex` varchar(255) NOT NULL DEFAULT '',
+  `Diagnostic_Code3` varchar(255) NOT NULL,
+  `Diagnostic_Code1` varchar(255) NOT NULL,
+  `Diagnostic_Code2` varchar(255) NOT NULL,
+  `onset_hospitaliztion` varchar(255) NOT NULL,
+  `ins_authorization` varchar(255) NOT NULL,
+  `procedure_code1` varchar(255) NOT NULL,
+  `procedure_code2` varchar(255) NOT NULL,
+  `procedure_code3` varchar(255) NOT NULL,
+  `procedure_code4` varchar(255) NOT NULL,
+  `user_approved` bigint(20) NOT NULL,
+  `approval_status` tinyint(4) NOT NULL COMMENT '1-Pending,2-Approved,3-Denied',
+  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` datetime NOT NULL,
+  `new_patient` tinyint(4) NOT NULL COMMENT '1-new patient,2-existing patient'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+#EndIf
+
+#IfNotTable zh_categories
+CREATE TABLE IF NOT EXISTS `zh_categories` (
+  `zhc_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `zhc_category_type` int(10) unsigned NOT NULL COMMENT '1 category 2 subcategory',
+  `zhc_category_name` varchar(45) NOT NULL,
+  `zhc_category_parent` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`zhc_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
+INSERT INTO `zh_categories` (`zhc_id`, `zhc_category_type`, `zhc_category_name`, `zhc_category_parent`) VALUES
+(3, 1, 'Category', NULL),
+(4, 2, 'Sub Category', 1),
+(5, 1, 'Layout Form', 0),
+(6, 2, 'Layout Signed', 5);
 #EndIf
 

@@ -299,6 +299,14 @@ $(document).ready(function(){
     'centerOnScroll' : false,
     'autoscale' : true
   });
+// special size for patient portal
+  $(".small_modal").fancybox( {
+	'overlayOpacity' : 0.0,
+	'showCloseButton' : true,
+	'frameHeight' : 150,
+	'frameWidth' : 350,
+            'centerOnScroll' : false
+  });
 
 });
 
@@ -348,6 +356,14 @@ $(document).ready(function(){
     "<span>".htmlspecialchars(xl('Delete'),ENT_NOQUOTES).
     "</span></a></td>";
   }
+  //Patient Portal
+  if($GLOBALS['portal_activity_enable'] && $GLOBALS['portal_activity_endpoint']){
+	echo "<td style='padding-left:1em;'><a class='css_button iframe small_modal' href='create_portallogin.php?patient=" . 
+    htmlspecialchars($pid,ENT_QUOTES) . "'>" .
+    "<span>".htmlspecialchars(xl('Portal Login'),ENT_NOQUOTES).
+    "</span></a></td>";
+  }
+  //Patient Portal
 
   // If patient is deceased, then show this (along with the number of days patient has been deceased for)
   $days_deceased = is_patient_deceased($pid);

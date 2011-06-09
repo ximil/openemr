@@ -1204,6 +1204,34 @@ $GLOBALS_METADATA = array(
       'https://openemrsupport.com:29443/len/api',
       xl('Https link for the OpenEMR Support LLC Lab Exchange Service.')
     ),
+    
+    'portal_activity_enable' => array(
+      xl('Enable Patient Portal'),
+      'bool',                           // data type
+      '1',
+      xl('Enable Patient Portal.')
+    ),
+
+    'portal_activity_username' => array(
+      xl('Patient Portal Username'),
+      'text',                           // data type
+      '',
+      xl('Patient Portal Username(Put Blank If not Registered).')
+    ),
+
+    'portal_activity_password' => array(
+      xl('Patient Portaly Password'),
+      'pwd',                           // data type
+      '',
+      xl('Patient Portal Password(Put Blank If not Registered).')
+    ),
+
+    'portal_activity_endpoint' => array(
+      xl('Patient Portal Site Address'),
+      'text',                           // data type
+      'http://mydocsportal.com/provider.php',
+      xl('Https link for the Patient Portal.')
+    ),
 
   ),
 

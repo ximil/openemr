@@ -76,6 +76,8 @@ addObjectSectionAcl('sensitivities', 'Sensitivities');
 addObjectSectionAcl('lists', 'Lists');
 //Add 'Placeholder' object section (added in 3.0.2)
 addObjectSectionAcl('placeholder', 'Placeholder');
+//Add 'Patient Portal' object section 
+addObjectSectionAcl('patientportal', 'Patient Portal');
 
 //Add new Objects
 echo "<BR/><B>Adding new objects</B><BR/>";
@@ -103,6 +105,8 @@ addObjectAcl('lists', 'Lists', 'ethrace', 'Ethnicity-Race List (write,addonly op
 addObjectAcl('placeholder', 'Placeholder', 'filler', 'Placeholder (Maintains empty ACLs)');
 //Add 'Sign Lab Results (write,addonly optional)' object (added in 3.3.0)
 addObjectAcl('patients', 'Patients', 'sign', 'Sign Lab Results (write,addonly optional)');
+//Add '' object 
+addObjectAcl('patientportal', 'Patient Portal', 'app', 'Patient Portal Activity');
 
 //Update already existing Objects
 echo "<BR/><B>Upgrading objects</B><BR/>";
@@ -159,6 +163,8 @@ updateAcl($admin_write, 'Administrators', 'lists', 'Lists', 'country', 'Country 
 updateAcl($admin_write, 'Administrators', 'lists', 'Lists', 'language', 'Language List (write,addonly optional)', 'write');
 //Insert the 'race' object from the 'lists' section into the Administrators group write ACL (added in 3.0.2)
 updateAcl($admin_write, 'Administrators', 'lists', 'Lists', 'ethrace', 'Ethnicity-Race List (write,addonly optional)', 'write');
+//Insert the 'patientportal' object from the 'patientportal' section into the Administrators group write ACL 
+updateAcl($admin_write, 'Patient Portal','patientportal', 'PatientPortal', 'app', 'Patient Portal','write');
 //Update ACLs for Emergency Login
 //Insert the 'disc' object from the 'acct' section into the Emergency Login group write ACL (added in 3.3.0)
 updateAcl($emergency_write, 'Emergency Login', 'acct', 'Accounting', 'disc', 'Price Discounting', 'write');

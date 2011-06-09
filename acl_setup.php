@@ -59,7 +59,8 @@
      // xl('Sensitivities')
  $gacl->add_object_section('Placeholder'   , 'placeholder'  , 10, 0, 'ACO');
      // xl('Placeholder')
-
+ $gacl->add_object_section('Patient Portal','patientportal'  , 10, 0, 'ACO');
+     // xl('Patientportal')
  // Create Accounting ACOs.
  //
  $gacl->add_object('acct', 'Billing (write optional)'           , 'bill' , 10, 0, 'ACO');
@@ -129,7 +130,12 @@
      // xl('Language List (write,addonly optional)')
  $gacl->add_object('lists', 'Ethnicity-Race List (write,addonly optional)' , 'ethrace'  , 10, 0, 'ACO');
      // xl('Ethnicity-Race List (write,addonly optional)')
-
+ 
+ // Create ACOs for patientportal.
+ //
+ $gacl->add_object('patientportal', 'Patient Portal Activity' , 'app'  , 10, 0, 'ACO');
+     // xl('Patient Portal Activity')
+     
  // Create ACOs for patients.
  //
  $gacl->add_object('patients', 'Appointments (write optional)'            , 'appt' , 10, 0, 'ACO');
@@ -208,7 +214,8 @@ $breakglass  = $gacl->add_group('breakglass' , 'Emergency Login'    , $users, 'A
    'encounters'=>array('auth_a', 'coding_a', 'notes_a', 'date_a'),
    'lists'=>array('default','state','country','language','ethrace'),
    'patients'=>array('appt', 'demo', 'med', 'trans', 'docs', 'notes'),
-   'sensitivities'=>array('normal', 'high')
+   'sensitivities'=>array('normal', 'high'),
+   'patientportal'=>array('app')
   ),
   NULL, array($admin), NULL, NULL,
   1, 1, 'write', 'Administrators can do anything'
@@ -310,7 +317,8 @@ $breakglass  = $gacl->add_group('breakglass' , 'Emergency Login'    , $users, 'A
    'encounters'=>array('auth_a', 'coding_a', 'notes_a', 'date_a'),
    'lists'=>array('default','state','country','language','ethrace'),
    'patients'=>array('appt', 'demo', 'med', 'trans', 'docs', 'notes'),
-   'sensitivities'=>array('normal', 'high')
+   'sensitivities'=>array('normal', 'high'),
+   'patientportal'=>array('app')
   ),
   NULL, array($breakglass), NULL, NULL,
   1, 1, 'write', 'Emergency Login user can do anything'
