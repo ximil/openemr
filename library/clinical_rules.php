@@ -100,6 +100,7 @@ function clinical_summary_widget($patient_id,$mode,$dateTarget='',$organize_mode
 //                   inner and outer are only different if organize_mode is set to plans).
 //   $type       - rule filter (active_alert,passive_alert,cqm,amc,patient_reminder). If blank then will test all rules.
 //   $dateTarget - target date. If blank then will test with current date as target.
+//                              If an array, then is holding two dates ('dateBegin' and 'dateTarget')
 //   $mode       - choose either 'report' or 'reminders-all' or 'reminders-due' (required)
 //   $patient_id - pid of patient. If blank then will check all patients.
 //   $plan       - test for specific plan only
@@ -111,8 +112,15 @@ function clinical_summary_widget($patient_id,$mode,$dateTarget='',$organize_mode
 //         report mode    - returns an array of rows for the Clinical Quality Measures (CQM) report
 //     'plans':
 //       Returns similar to default, but organizes by the active plans
+//  $options - can hold various option (for now, used to hold the manual number of labs for the AMC report)
 //
-function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patient_id='',$plan='',$organize_mode='default') {
+function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patient_id='',$plan='',$organize_mode='default',$options=array()) {
+
+  // If dateTarget is an array, then organize them.
+  if (is_array($dateTarget)) {
+    $dateArray = $dateTarget;
+    $dateTarget = $dateTarget['dateTarget'];
+  }
 
   // Set date to current if not set
   $dateTarget = ($dateTarget) ? $dateTarget : date('Y-m-d H:i:s');
@@ -239,22 +247,22 @@ function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patien
     // Note these rules are only used in report mode.
     if ($rowRule['cqm_flag'] || $rowRule['amc_flag']) {
 
-      // Ensure the ruleSet class file has been included
-      // (will only require if needed, since it's gonna be large)
-      require_once(dirname(__FILE__) . "/classes/rulesets/ruleSet.class.php");
-
-      // Run the class rule set
-      // $patientData contains pid's only
-      $rule_results = new ruleSet($rowRule,$dateTarget,$patientData);
-      
-      // Collect/add the results to the results array
-      $tempResults = $rule_results->return_results();
+      require_once( dirname(__FILE__)."/classes/rulesets/ReportManager.php");
+      $manager = new ReportManager();
+      if ($rowRule['amc_flag']) {
+        // Send array of dates ('dateBegin' and 'dateTarget')
+        $tempResults = $manager->runReport( $rowRule, $patientData, $dateArray, $options );
+      }
+      else {
+        // Send target date
+        $tempResults = $manager->runReport( $rowRule, $patientData, $dateTarget );
+      }
       if (!empty($tempResults)) {
         foreach ($tempResults as $tempResult) {
           array_push($results,$tempResult);
         }
       }
-
+ 
       // Go on to the next rule
       continue;
     }
@@ -1500,7 +1508,7 @@ function collect_database_label($label,$table) {
       $returnedLabel = "procedure_order.patient_id";
     }
     else if ($label == "date") {
-      $returnedLabel = "procedure_result.date";
+      $returnedLabel = "procedure_report.date_collected";
     }
     else {
       // unknown label, so return the original label
