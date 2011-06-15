@@ -1741,9 +1741,12 @@ function convertCompSql($comp) {
 // Return: decimal, years(decimal) from dob to target(date)
 function convertDobtoAgeYearDecimal($dob,$target) { 
      
-    // Grab year, month, and day from dob and dateTarget
+    // Prepare dob (Y M D)
     $dateDOB = explode(" ",$dob);
-    $dateTarget = explode(" ",$target);
+
+    // Prepare target (Y-M-D H:M:S)
+    $dateTargetTemp = explode(" ",$target);
+    $dateTarget = explode("-",$dateTargetTemp[0]);
 
     // Collect differences 
     $iDiffYear  = $dateTarget[0] - $dateDOB[0]; 
@@ -1755,7 +1758,10 @@ function convertDobtoAgeYearDecimal($dob,$target) {
     { 
         $iDiffYear--; 
     } 
-         
+
+    // Ensure diffYear is not less than 0
+    if ($iDiffYear < 0) $iDiffYear = 0;
+     
     return $iDiffYear; 
 }  
 
@@ -1766,9 +1772,12 @@ function convertDobtoAgeYearDecimal($dob,$target) {
 // Return: decimal, months(decimal) from dob to target(date)
 function convertDobtoAgeMonthDecimal($dob,$target) {
 
-    // Grab year, month, and day from dob and dateTarget
+    // Prepare dob (Y M D)
     $dateDOB = explode(" ",$dob);
-    $dateTarget = explode(" ",$target);
+
+    // Prepare target (Y-M-D H:M:S)
+    $dateTargetTemp = explode(" ",$target);
+    $dateTarget = explode("-",$dateTargetTemp[0]);
 
     // Collect differences
     $iDiffYear  = $dateTarget[0] - $dateDOB[0];
@@ -1780,6 +1789,9 @@ function convertDobtoAgeMonthDecimal($dob,$target) {
     {
         $iDiffYear--;
     }
+
+    // Ensure diffYear is not less than 0
+    if ($iDiffYear < 0) $iDiffYear = 0;
 
     return (12 * $iDiffYear) + $iDiffMonth;
 }
