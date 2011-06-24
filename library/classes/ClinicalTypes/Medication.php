@@ -39,7 +39,10 @@ class Medication extends ClinicalType
     const DISP_DIABETES = 'med_disp_diabetes';
     const ORDER_DIABETES = 'med_order_diabetes';
     const ACTIVE_DIABETES = 'med_active_diabetes';
-        
+
+    const SMOKING_CESSATION = 'med_active_smoking_cessation';
+    const SMOKING_CESSATION_ORDER = 'med_order_smoking_cessation';
+    
     public function getListId() {
         return "Clinical_Rules_Med_Types";
     }   
@@ -47,30 +50,29 @@ class Medication extends ClinicalType
     public function doPatientCheck( RsPatient $patient, $beginDate = null, $endDate = null, $options = null ) 
     {
         $return = false;
-        $listOptions = Codes::lookup( $this->getOptionId(), 'OPTION_ID' );
+        $listOptions = Codes::lookup( $this->getOptionId(), 'CVX' );
         if ( count( $listOptions ) > 0 ) 
         {
+            $sqlQueryBind= array();
             $query = "SELECT * " .
         	"FROM immunizations " .
-        	"LEFT JOIN list_options " .
-            "ON immunization_id = list_options.option_id AND list_options.list_id = 'immunizations' " .
-            "LEFT JOIN patient_data " .
-            "ON patient_id = patient_data.pid " .
-        	"WHERE patient_id = ? " .
-            "AND administered_date >= ? " .
-            "AND administered_date < ? ";
+                "WHERE patient_id = ? " .
+                "AND administered_date >= ? " .
+                "AND administered_date < ? ";
             $query.= "AND ( ";
             $count = 0;
+            array_push($sqlQueryBind,$patient->id,$beginDate,$endDate);
             foreach( $listOptions as $option_id ) {
-            	$query.= "list_options.option_id = '".$option_id."' ";
+            	$query.= "cvx_code = ? ";
             	$count++;
             	if ( $count < count( $listOptions ) ) {
             	    $query.= "OR ";
             	}
+                array_push($sqlQueryBind,$option_id);
             }
             $query.= " ) "; 
 
-            $result = sqlStatement( $query, array( $patient->id, $beginDate, $endDate ) );
+            $result = sqlStatement( $query, $sqlQueryBind );
             $rows = array();
             for( $iter = 0; $row = sqlFetchArray( $result ); $iter++ ) {
                     $rows[$iter] = $row;
