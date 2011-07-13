@@ -1249,3 +1249,26 @@ INSERT INTO categories select (select MAX(id) from categories) + 1, 'CCD', '', 1
 UPDATE categories SET rght = rght + 2 WHERE name = 'Categories';
 UPDATE categories_seq SET id = (select MAX(id) from categories);
 #Endif
+
+#IfNotTable patient_access_onsite
+CREATE TABLE `patient_access_onsite`(
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `pid` INT(11),
+  `portal_username` VARCHAR(100) ,
+  `portal_pwd` VARCHAR(100) ,
+  `portal_pwd_status` TINYINT DEFAULT '1' COMMENT '0=>Password Created Through Demographics by The provider or staff. Patient Should Change it at first time it.1=>Pwd updated or created by patient itself',
+  PRIMARY KEY (`id`)
+)ENGINE=MyISAM AUTO_INCREMENT=1;
+#EndIf
+
+#IfNotTable standardized_tables_track
+CREATE TABLE `standardized_tables_track` (
+  `id` int(11) NOT NULL auto_increment,
+  `imported_date` datetime default NULL,
+  `name` varchar(255) NOT NULL default '' COMMENT 'name of standardized tables such as RXNORM',
+  `revision_version` varchar(255) NOT NULL default '' COMMENT 'revision of standardized tables that were imported',
+  `revision_date` datetime default NULL COMMENT 'revision of standardized tables that were imported',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 ;
+#EndIf
+
