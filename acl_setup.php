@@ -59,6 +59,8 @@
      // xl('Sensitivities')
  $gacl->add_object_section('Placeholder'   , 'placeholder'  , 10, 0, 'ACO');
      // xl('Placeholder')
+ $gacl->add_object_section('Document Writer'   , 'docwriter'  , 10, 0, 'ACO');
+     // xl('Document Writer')
 
  // Create Accounting ACOs.
  //
@@ -158,6 +160,11 @@
  //
  $gacl->add_object('placeholder', 'Placeholder (Maintains empty ACLs)', 'filler', 10, 0, 'ACO');
      // xl('Placeholder (Maintains empty ACLs)')
+     
+ // Create ACO for docwriter.
+ //
+ $gacl->add_object('docwriter', 'Document-Writer', 'dwr', 10, 0, 'ACO');
+     // xl('Document-Writer')
 
  // Create ARO groups.
  //
@@ -208,7 +215,8 @@ $breakglass  = $gacl->add_group('breakglass' , 'Emergency Login'    , $users, 'A
    'encounters'=>array('auth_a', 'coding_a', 'notes_a', 'date_a'),
    'lists'=>array('default','state','country','language','ethrace'),
    'patients'=>array('appt', 'demo', 'med', 'trans', 'docs', 'notes'),
-   'sensitivities'=>array('normal', 'high')
+   'sensitivities'=>array('normal', 'high'),
+   'docwriter'=>array('dwr')
   ),
   NULL, array($admin), NULL, NULL,
   1, 1, 'write', 'Administrators can do anything'
@@ -310,7 +318,8 @@ $breakglass  = $gacl->add_group('breakglass' , 'Emergency Login'    , $users, 'A
    'encounters'=>array('auth_a', 'coding_a', 'notes_a', 'date_a'),
    'lists'=>array('default','state','country','language','ethrace'),
    'patients'=>array('appt', 'demo', 'med', 'trans', 'docs', 'notes'),
-   'sensitivities'=>array('normal', 'high')
+   'sensitivities'=>array('normal', 'high'),
+   'docwriter'=>array('dwr')
   ),
   NULL, array($breakglass), NULL, NULL,
   1, 1, 'write', 'Emergency Login user can do anything'

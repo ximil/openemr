@@ -82,7 +82,8 @@
   //
   // Section "placeholder" (Placeholder):
   //   filler     Placeholder (Maintains empty ACLs)
-  
+  // Section "docwriter" (Document-Writer):
+  //   docwriter     Document Writer
 
   if (isset ($phpgacl_location)) {
     include_once("$phpgacl_location/gacl.class.php");
