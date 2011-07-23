@@ -82,6 +82,9 @@
   //
   // Section "placeholder" (Placeholder):
   //   filler     Placeholder (Maintains empty ACLs)
+  //
+  // Section "patientportal" (Patientportal):
+  //   portal     Patient Portal
   
 
   if (isset ($phpgacl_location)) {
