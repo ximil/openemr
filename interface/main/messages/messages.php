@@ -30,8 +30,13 @@ require_once("$srcdir/formatting.inc.php");
 <?php html_header_show();?>
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 <script type="text/javascript" src="../../../library/dialog.js"></script>
+<script type="text/javascript" src="../../../library/js/common.js"></script>
 <script type="text/javascript" src="../../../library/textformat.js"></script>
 <script type="text/javascript" src="<?php echo $GLOBALS['webroot']; ?>/library/js/jquery.js"></script>
+<?php include_once("{$GLOBALS['srcdir']}/ajax/payment_ajax_jav.inc.php"); ?>
+<script language="javascript" type="text/javascript">
+document.onclick=HideTheAjaxDivs;
+</script>
 </head>
 
 <body class="body_top">
@@ -154,7 +159,10 @@ $ures = sqlStatement("SELECT username, fname, lname FROM users " .
   if ($urow['fname']) echo ", " . htmlspecialchars( $urow['fname'], ENT_NOQUOTES);
   echo "</option>\n";
  }
-
+  echo "<option value='" . htmlspecialchars( '-patient-', ENT_QUOTES) . "'";
+  if ($assigned_to == '-patient-') echo " selected";
+  echo ">" . htmlspecialchars( '-Patient-', ENT_NOQUOTES);
+  echo "</option>\n";
 ?>
    </select>
   </td>
@@ -167,11 +175,11 @@ $ures = sqlStatement("SELECT username, fname, lname FROM users " .
    "FROM patient_data WHERE pid = ?", array($reply_to) );
   $patientname = $prow['lname'] . ", " . $prow['fname'];
  }
-   if ($patientname == "") {
-       $patientname = xl('Click to select');
-   } ?>
-   <input type='text' size='10' name='form_patient' style='width:150px;<?php echo ($task=="addnew"?"cursor:pointer;cursor:hand;":"") ?>' value='<?php echo htmlspecialchars($patientname, ENT_QUOTES); ?>' <?php echo ($task=="addnew"?"onclick='sel_patient()' readonly":"disabled") ?> title='<?php echo ($task=="addnew"?(htmlspecialchars( xl('Click to select patient'), ENT_QUOTES)):"") ?>'  />
-   <input type='hidden' name='reply_to' value='<?php echo htmlspecialchars( $reply_to, ENT_QUOTES) ?>' />
+?>
+   <input type='text' size='10' name='form_patient' id='form_patient' onKeyDown="PreventIt(event)" style='width:150px;'
+      value='<?php echo htmlspecialchars($patientname, ENT_QUOTES); ?>' <?php if($task!="addnew") echo "disabled"; ?>
+      title='<?php echo ($task=="addnew"?(htmlspecialchars( xl('Type to select patient'), ENT_QUOTES)):"") ?>' autocomplete="off" />
+   <input type='hidden' name='reply_to' id='reply_to' value='<?php echo htmlspecialchars( $reply_to, ENT_QUOTES) ?>' />
    &nbsp; &nbsp;
    <b><?php echo htmlspecialchars( xl('Status'), ENT_NOQUOTES); ?>:</b>
     <?php
@@ -180,13 +188,25 @@ $ures = sqlStatement("SELECT username, fname, lname FROM users " .
    }
     generate_form_field(array('data_type'=>1,'field_id'=>'message_status','list_id'=>'message_status','empty_title'=>'SKIP','order_by'=>'title'), $form_message_status); ?>
   </td>
+  <input type="hidden" name="ajax_mode" id="ajax_mode" >
+  <input type="hidden" name="hidden_ajax_patient_close_value" id="hidden_ajax_patient_close_value" >
  </tr>
+  <tr>
+    <td><div id='ajax_div_patient_section'>
+        <div id='ajax_div_patient_error'>
+        </div>
+        <div id="ajax_div_patient" style="display:none;"></div>
+        </div>
+       </div>
+    </td>
+  </tr>
  <tr>
   <td>
 
 <?php
 
 if ($noteid) {
+    $body = preg_replace('/(:\d{2}\s\()'.$result['pid'].'(\sto\s)/','${1}'.$patientname.'${2}',$body);
     $body = nl2br(htmlspecialchars( $body, ENT_NOQUOTES));
     echo "<div class='text' style='background-color:white; color: gray; border:1px solid #999; padding: 5px; width: 640px;'>".$body."</div>";
 }
@@ -252,17 +272,6 @@ $(document).ready(function(){
         $("#new_note").submit();
     }
 });
- // This is for callback by the find-patient popup.
- function setpatient(pid, lname, fname, dob) {
-  var f = document.forms[0];
-  f.form_patient.value = lname + ', ' + fname;
-  f.reply_to.value = pid;
- }
-
- // This invokes the find-patient popup.
- function sel_patient() {
-  dlgopen('../../main/calendar/find_patient_popup.php', '_blank', 500, 400);
- }
 </script><?php
 }
 else {
@@ -294,11 +303,11 @@ else {
     // Manage page numbering and display beneath the Messages table.
     $listnumber = 25;
     $show_all=='yes' ? $usrvar='_%' : $usrvar=$_SESSION['authUser'] ;
-    $sql = "select pnotes.id, pnotes.user, pnotes.pid, pnotes.title, pnotes.date, " .
-           "pnotes.message_status, users.fname, users.lname, patient_data.fname, " .
-           "patient_data.lname FROM ((pnotes JOIN users ON pnotes.user = users.username) " .
-           "JOIN patient_data ON pnotes.pid = patient_data.pid) where pnotes.message_status != 'Done' " .
-           "and pnotes.deleted != '1' and pnotes.assigned_to LIKE ?";
+    $sql = "SELECT pnotes.id, pnotes.user, pnotes.pid, pnotes.title, pnotes.date, pnotes.message_status, 
+      IF(pnotes.user != pnotes.pid,users.fname,patient_data.fname), IF(pnotes.user != pnotes.pid,users.lname,patient_data.lname), patient_data.fname, 
+      patient_data.lname FROM ((pnotes LEFT JOIN users ON pnotes.user = users.username) 
+      JOIN patient_data ON pnotes.pid = patient_data.pid) WHERE pnotes.message_status != 'Done' 
+      AND pnotes.deleted != '1' AND pnotes.assigned_to LIKE ?";
     $result = sqlStatement($sql, array($usrvar) );
     if(sqlNumRows($result) != 0) {
         $total = sqlNumRows($result);
@@ -353,16 +362,15 @@ else {
         // Display the Messages table body.
         $count = 0;
         $show_all=='yes' ? $usrvar='_%' : $usrvar=$_SESSION['authUser'] ;
-        $sql = "select pnotes.id, pnotes.user, pnotes.pid, pnotes.title, " .
-               "pnotes.date, pnotes.message_status, users.fname " .
-               "AS users_fname, users.lname AS users_lname, patient_data.fname " .
-               "AS patient_data_fname, patient_data.lname AS patient_data_lname " .
-               "FROM ((pnotes JOIN users ON pnotes.user = users.username) " .
-               "JOIN patient_data ON pnotes.pid = patient_data.pid) " .
-               "where pnotes.message_status != 'Done' and pnotes.deleted != '1' " .
-               "and pnotes.assigned_to LIKE ? " .
-               "order by ".add_escape_custom($sortby)." ".add_escape_custom($sortorder).
-               " limit ".add_escape_custom($begin).", ".add_escape_custom($listnumber);
+        $sql = "SELECT pnotes.id, pnotes.user, pnotes.pid, pnotes.title, pnotes.date, pnotes.message_status, 
+          IF(pnotes.user != pnotes.pid,users.fname,patient_data.fname) as users_fname,
+          IF(pnotes.user != pnotes.pid,users.lname,patient_data.lname) as users_lname,
+          patient_data.fname as patient_data_fname, patient_data.lname as patient_data_lname
+          FROM ((pnotes LEFT JOIN users ON pnotes.user = users.username) 
+          JOIN patient_data ON pnotes.pid = patient_data.pid) WHERE pnotes.message_status != 'Done' 
+          AND pnotes.deleted != '1' AND pnotes.assigned_to LIKE ?".
+          "order by ".add_escape_custom($sortby)." ".add_escape_custom($sortorder).
+          " limit ".add_escape_custom($begin).", ".add_escape_custom($listnumber);
         $result = sqlStatement($sql, array($usrvar) );
         while ($myrow = sqlFetchArray($result)) {
             $name = $myrow['user'];

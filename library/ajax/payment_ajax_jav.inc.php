@@ -73,8 +73,25 @@ $(document).ready(function(){
 		   ajaxFunction('encounter');
 		   return;
 		 }
+  });
+  $("#form_patient").keyup(function(e){
+	  if (e.which == 9 || e.which == 13)
+		 {//tab key,enter key.Prevent ajax activity.
+		  return false;
+		 }
+		else
+		 {
+		   ajaxFunction('patient_message','Simple',document.getElementById('form_patient'));
+		   return;
+		 }
   });	
   function ajaxFunction(Source,SubmitOrSimple,SourceObject) {
+    if(Source == "patient_message"){
+      Source = "patient";
+      path = "../";
+    }else{
+      path = "";
+    }
   if(Source=='encounter')
    {
 	  document.getElementById('ajax_mode').value='encounter';
@@ -101,7 +118,7 @@ $(document).ready(function(){
 //Send ajax request
    $.ajax({
     type: "POST",
-    url: "../../library/ajax/payment_ajax.php",
+    url: path+"../../library/ajax/payment_ajax.php",
     dataType: "html",
     data: {
      ajax_mode: document.getElementById('ajax_mode').value,
@@ -218,12 +235,20 @@ function PutTheValuesClickDistribute(Code,Name)
  }
 function PutTheValuesClickPatient(Code,Name)//Non submission patient ajax.
  {
-  document.getElementById('form_pt_name').value=Name;
-  document.getElementById('hidden_ajax_patient_close_value').value=Name;
-  document.getElementById('hidden_patient_code').value=Code;
-  document.getElementById('ajax_div_patient').style.display='none';
-  document.getElementById('form_pt_code').innerHTML=Code;
-  document.getElementById('form_pt_name').focus();
+  if(document.getElementById('form_pt_name')){
+    document.getElementById('form_pt_name').value=Name;
+    document.getElementById('hidden_ajax_patient_close_value').value=Name;
+    document.getElementById('hidden_patient_code').value=Code;
+    document.getElementById('ajax_div_patient').style.display='none';
+    document.getElementById('form_pt_code').innerHTML=Code;
+    document.getElementById('form_pt_name').focus();
+  }else if(document.getElementById('form_patient')){
+    document.getElementById('form_patient').value=Name;
+    document.getElementById('hidden_ajax_patient_close_value').value=Name;
+    document.getElementById('reply_to').value=Code;
+    document.getElementById('ajax_div_patient').style.display='none';
+    document.getElementById('form_patient').focus();
+  }
  }
 function PutTheValuesClickEncounter(Code,Name)
  {//Used while -->CLICK<-- over list in the encounter portion.
@@ -280,7 +305,11 @@ function PlaceValuesPatient(evt,Code,Name)
 	 }
 	else if(!((charCode == 38) || (charCode == 40)))
 	 {//if non arrow keys, focus on the parent text box(ie he again types and wants ajax to activate)
-	  document.getElementById('form_pt_name').focus();
+	  if(document.getElementById('form_pt_name')){
+      document.getElementById('form_pt_name').focus();
+    }else if(document.getElementById('form_patient')){
+      document.getElementById('form_patient').focus();
+    }
 	 }
  }
 function PlaceValuesEncounter(evt,Code,Name)
@@ -364,6 +393,8 @@ function HideTheAjaxDivs()
 		  	document.getElementById('patient_code').value=document.getElementById('hidden_ajax_patient_close_value').value;
 		  else if(document.getElementById('form_pt_name'))
 		  	document.getElementById('form_pt_name').value=document.getElementById('hidden_ajax_patient_close_value').value;
+      else if(document.getElementById('form_patient'))
+		  	document.getElementById('form_patient').value=document.getElementById('hidden_ajax_patient_close_value').value;
 		 $("#ajax_div_patient_error").empty();
 		 $("#ajax_div_patient").empty();
 		 $("#ajax_div_insurance_error").empty();
