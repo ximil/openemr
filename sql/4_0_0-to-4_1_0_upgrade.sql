@@ -40,6 +40,14 @@
 --    arguments: table_name colname value colname2 value2
 --    behavior:  If the table table_name does not have a row where colname = value AND colname2 = value2, the block will be executed.
 
+--  #IfNotRow3D
+--    arguments: table_name colname value colname2 value2 colname3 value3
+--    behavior:  If the table table_name does not have a row where colname = value AND colname2 = value2 AND colname3 = value3, the block will be executed.
+
+--  #IfNotRow4D
+--    arguments: table_name colname value colname2 value2 colname3 value3 colname4 value4
+--    behavior:  If the table table_name does not have a row where colname = value AND colname2 = value2 AND colname3 = value3 AND colname4 = value4, the block will be executed.
+
 --  #IfNotRow2Dx2
 --    desc:      This is a very specialized function to allow adding items to the list_options table to avoid both redundant option_id and title in each element.
 --    arguments: table_name colname value colname2 value2 colname3 value3
@@ -1261,3 +1269,147 @@ CREATE TABLE `patient_access_onsite`(
 )ENGINE=MyISAM AUTO_INCREMENT=1;
 #EndIf
 
+#IfNotTable standardized_tables_track
+CREATE TABLE `standardized_tables_track` (
+  `id` int(11) NOT NULL auto_increment,
+  `imported_date` datetime default NULL,
+  `name` varchar(255) NOT NULL default '' COMMENT 'name of standardized tables such as RXNORM',
+  `revision_version` varchar(255) NOT NULL default '' COMMENT 'revision of standardized tables that were imported',
+  `revision_date` datetime default NULL COMMENT 'revision of standardized tables that were imported',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 ;
+#EndIf
+
+#IfNotRow2D list_options list_id rule_action option_id act_bmi
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_action' ,'act_bmi', 'BMI', 43, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id rule_action option_id act_nutrition
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_action' ,'act_nutrition', 'Nutrition', 45, 0);
+#EndIf
+
+#IfNotRow2D list_options list_id rule_action option_id act_exercise
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_action' ,'act_exercise', 'Exercise', 47, 0);
+#EndIf
+
+#IfNotRow4D rule_action id rule_wt_assess_couns_child group_id 3 category act_cat_edu item act_nutrition
+INSERT INTO `rule_action` ( `id`, `group_id`, `category`, `item` ) VALUES ('rule_wt_assess_couns_child', '3', 'act_cat_edu', 'act_nutrition');
+#EndIf
+
+#IfNotRow4D rule_action id rule_wt_assess_couns_child group_id 4 category act_cat_edu item act_exercise
+INSERT INTO `rule_action` ( `id`, `group_id`, `category`, `item` ) VALUES ('rule_wt_assess_couns_child', '4', 'act_cat_edu', 'act_exercise');
+#EndIf
+
+#IfNotRow4D rule_action id rule_wt_assess_couns_child group_id 5 category act_cat_measure item act_bmi
+INSERT INTO `rule_action` ( `id`, `group_id`, `category`, `item` ) VALUES ('rule_wt_assess_couns_child', '5', 'act_cat_measure', 'act_bmi');
+#EndIf
+
+#IfNotRow2D rule_action_item category act_cat_measure item act_bmi
+INSERT INTO `rule_action_item` ( `category`, `item`, `clin_rem_link`, `reminder_message`, `custom_flag` ) VALUES ('act_cat_measure', 'act_bmi', '', '', 0);
+#EndIf
+
+#IfNotRow2D rule_action_item category act_cat_edu item act_nutrition
+INSERT INTO `rule_action_item` ( `category`, `item`, `clin_rem_link`, `reminder_message`, `custom_flag` ) VALUES ('act_cat_edu', 'act_nutrition', '', '', 1);
+#EndIf
+
+#IfNotRow2D rule_action_item category act_cat_edu item act_exercise
+INSERT INTO `rule_action_item` ( `category`, `item`, `clin_rem_link`, `reminder_message`, `custom_flag` ) VALUES ('act_cat_edu', 'act_exercise', '', '', 1);
+#EndIf
+
+#IfNotRow2D rule_filter id rule_wt_assess_couns_child method filt_age_min
+INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `method_detail`, `value` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 'filt_age_min', 'year', '2');
+#EndIf
+
+#IfNotRow3D rule_target id rule_wt_assess_couns_child group_id 1 method target_interval
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 1, 'target_interval', 'year', 3);
+#EndIf
+
+#IfNotRow3D rule_target id rule_wt_assess_couns_child group_id 2 method target_interval
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 2, 1, 1, 'target_interval', 'year', 3);
+#EndIf
+
+#IfNotRow4D rule_target id rule_wt_assess_couns_child group_id 3 method target_database value CUSTOM::act_cat_edu::act_nutrition::YES::ge::1
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 3, 1, 1, 'target_database', 'CUSTOM::act_cat_edu::act_nutrition::YES::ge::1', 0);
+#EndIf
+
+#IfNotRow3D rule_target id rule_wt_assess_couns_child group_id 3 method target_interval
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 3, 1, 1, 'target_interval', 'year', 3);
+#EndIf
+
+#IfNotRow4D rule_target id rule_wt_assess_couns_child group_id 4 method target_database value CUSTOM::act_cat_edu::act_exercise::YES::ge::1
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 4, 1, 1, 'target_database', 'CUSTOM::act_cat_edu::act_exercise::YES::ge::1', 0);
+#EndIf
+
+#IfNotRow3D rule_target id rule_wt_assess_couns_child group_id 4 method target_interval
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 4, 1, 1, 'target_interval', 'year', 3);
+#EndIf
+
+#IfNotRow4D rule_target id rule_wt_assess_couns_child group_id 5 method target_database value ::form_vitals::BMI::::::ge::1
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 5, 1, 1, 'target_database', '::form_vitals::BMI::::::ge::1', 0);
+#EndIf
+
+#IfNotRow3D rule_target id rule_wt_assess_couns_child group_id 5 method target_interval
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 5, 1, 1, 'target_interval', 'year', 3);
+#EndIf
+
+#IfMissingColumn prescriptions site
+ALTER TABLE `prescriptions` ADD COLUMN `site` VARCHAR(50) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn prescriptions prescriptionguid
+ALTER TABLE `prescriptions` ADD COLUMN `prescriptionguid` VARCHAR(50) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn prescriptions erx_source
+ALTER TABLE `prescriptions` ADD COLUMN `erx_source` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0-OpenEMR 1-External';
+#EndIf
+
+#IfMissingColumn prescriptions rxnorm_drugcode
+ALTER TABLE `prescriptions` ADD COLUMN `rxnorm_drugcode` INT(11) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn prescriptions datetime
+ALTER TABLE `prescriptions` ADD COLUMN `datetime` DATETIME DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn prescriptions user
+ALTER TABLE `prescriptions` ADD COLUMN `user` VARCHAR(50) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn prescriptions erx_uploaded
+ALTER TABLE `prescriptions` ADD COLUMN `erx_uploaded` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0-Pending NewCrop upload 1-Uploaded to NewCrop';
+#EndIf
+
+#IfMissingColumn lists external_allergyid
+ALTER TABLE `lists` ADD COLUMN `external_allergyid` INT(11) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn lists erx_source
+ALTER TABLE `lists` ADD COLUMN `erx_source` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-OpenEMR 1-External';
+#EndIf
+
+#IfMissingColumn patient_data soap_import_status
+ALTER TABLE `patient_data` ADD COLUMN `soap_import_status` TINYINT(4) DEFAULT NULL COMMENT '1-Prescription Press 2-Prescription Import 3-Allergy Press 4-Allergy Import';
+#EndIf
+
+#IfMissingColumn facility primary_business_entity
+ALTER TABLE `facility` ADD COLUMN `primary_business_entity` INT(10) NOT NULL DEFAULT '0' COMMENT '0-Not Set as business entity 1-Set as business entity';
+#EndIf
+
+#IfMissingColumn users state_license_number
+ALTER TABLE `users` ADD COLUMN `state_license_number` VARCHAR(25) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn users newcrop_user_role
+ALTER TABLE `users` ADD COLUMN `newcrop_user_role` VARCHAR(30) DEFAULT NULL;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id newcrop_erx_role
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('lists','newcrop_erx_role','NewCrop eRx Role','221','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxadmin','NewCrop Admin','5','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxdoctor','NewCrop Doctor','20','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxmanager','NewCrop Manager','15','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxmidlevelPrescriber','NewCrop Midlevel Prescriber','25','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxnurse','NewCrop Nurse','10','0','0','','');
+INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('newcrop_erx_role','erxsupervisingDoctor','NewCrop Supervising Doctor','30','0','0','','');
+#EndIf

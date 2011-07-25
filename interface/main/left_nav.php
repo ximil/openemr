@@ -134,6 +134,8 @@
   'tra' => array(xl('Transact')  , 1, 'patient_file/transaction/transactions.php'),
   'sum' => array(xl('Summary')   , 1, 'patient_file/summary/summary_bottom.php'),
   'enc' => array(xl('Encounter') , 2, 'patient_file/encounter/encounter_top.php'),
+  'erx' => array(xl('e-Rx') , 1, 'eRx.php'),
+  'err' => array(xl('e-Rx Renewal') , 1, 'eRx.php?page=status'),
  );
  $primary_docs['npa']=array(xl('Payments')   , 0, 'billing/new_payment.php');
  if ($GLOBALS['use_charges_panel'] || $GLOBALS['concurrent_layout'] == 2) {
@@ -1159,6 +1161,20 @@ if (!empty($reg)) {
       <?php genTreeLink('RTop','orb',xl('Batch Results')); ?>
     </ul>
   </li>
+  <?php
+  $newcrop_user_role=sqlQuery("select newcrop_user_role from users where username='".$_SESSION['authUser']."'");
+  if($newcrop_user_role['newcrop_user_role'] && $GLOBALS['erx_enable']) { ?>
+  <li><a class="collapsed" id="feeimg" ><span><?php xl('New Crop','e') ?></span></a>
+    <ul>
+      <li><a class="collapsed_lv2"><span><?php xl('Status','e') ?></span></a>
+        <ul>
+          <?php genTreeLink('RTop','erx',xl('e-Rx')); ?>
+          <?php genTreeLink('RTop','err',xl('e-Rx Renewal')); ?>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <?php } ?>
   <?php if (!$disallowed['adm']) { ?>
   <li><a class="collapsed" id="admimg" ><span><?php xl('Administration','e') ?></span></a>
     <ul>
@@ -1189,6 +1205,8 @@ if (!empty($reg)) {
           <?php if (acl_check('admin', 'users'   )) genMiscLink('RTop','adm','0',xl('Logs'),'logview/logview.php'); ?>
           <?php if ( (!$GLOBALS['disable_phpmyadmin_link']) && (acl_check('admin', 'database')) ) genMiscLink('RTop','adm','0',xl('Database'),'../phpmyadmin/index.php'); ?>
           <?php if (acl_check('admin', 'users'   )) genMiscLink('RTop','adm','0',xl('Certificates'),'usergroup/ssl_certificates_admin.php'); ?>
+          <?php if (acl_check('admin', 'super'   )) genMiscLink('RTop','adm','0',xl('RxNorm'),'../interface/code_systems/standard_tables_manage.php?mode=rxnorm'); ?>
+          <?php if (acl_check('admin', 'super'   )) genMiscLink('RTop','adm','0',xl('SNOMED'),'../interface/code_systems/standard_tables_manage.php?mode=snomed'); ?>
         </ul>
       </li>
     </ul>

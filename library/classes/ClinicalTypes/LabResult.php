@@ -42,9 +42,9 @@ class LabResult extends ClinicalType
                     "WHERE procedure_type.procedure_type_id = procedure_order.procedure_type_id " .
                     "AND procedure_order.procedure_order_id = procedure_report.procedure_order_id " .
                     "AND procedure_report.procedure_report_id = procedure_result.procedure_report_id " .
-                    "AND procedure_type.standard_code = ? " .
-                    "AND procedure_result.date >= ?  " .
-                	"AND procedure_result.date < ?  " .
+                    "AND ( procedure_type.standard_code = ? OR procedure_type.procedure_code = ? ) " .
+                    "AND procedure_report.date_collected >= ?  " .
+                	"AND procedure_report.date_collected <= ?  " .
                     "AND procedure_order.patient_id = ? ";
                 if ( $range->lowerBound != Range::NEG_INF ) {
                     $sql .= "AND procedure_result.result >= ? ";
@@ -53,8 +53,7 @@ class LabResult extends ClinicalType
                     $sql .= "AND procedure_result.result < ? ";
                 } 
                 
-                // TODO should this be ': or '::'
-                $bindings = array( $codeType.':'.$code, $beginDate, $endDate, $patient->id );
+                $bindings = array( $codeType.':'.$code, $code, $beginDate, $endDate, $patient->id );
                 if ( $range->lowerBound != Range::NEG_INF ) {
                     $bindings []= $range->lowerBound;
                 } 
