@@ -54,6 +54,38 @@ CREATE TABLE `array` (
 
 -- --------------------------------------------------------
 
+--
+-- Table structure for table `audit_master`
+--
+
+DROP TABLE IF EXISTS `audit_master`;
+CREATE TABLE `audit_master` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `pid` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL COMMENT 'The Id of the user who approves or denies',
+  `approval_status` tinyint(4) NOT NULL COMMENT '1-Pending,2-Approved,3-Denied,4-Appointment directly updated to calendar table,5-Cancelled appointment',
+  `comments` text NOT NULL,
+  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` datetime NOT NULL,
+  `ip_address` varchar(100) NOT NULL,
+  `type` tinyint(4) NOT NULL COMMENT '1-new patient,2-existing patient,3-change is only in the document,5-random key,10-Appointment',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+
+--
+-- Table structure for table `audit_details`
+--
+
+DROP TABLE IF EXISTS `audit_details`;
+CREATE TABLE `audit_details` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `table_name` VARCHAR(100) NOT NULL COMMENT 'openemr table name',
+  `field_name` VARCHAR(100) NOT NULL COMMENT 'openemr table''s field name',
+  `field_value` TEXT NOT NULL COMMENT 'openemr table''s field value',
+  `audit_master_id` BIGINT(20) NOT NULL COMMENT 'Id of the audit_master table',
+  `entry_identification` VARCHAR(255) NOT NULL DEFAULT '1' COMMENT 'Used when multiple entry occurs from the same table.1 means no multiple entry',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
 -- 
 -- Table structure for table `batchcom`
 -- 
@@ -550,6 +582,81 @@ CREATE TABLE `documents` (
 ) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `documents_legal_detail`
+--
+
+DROP TABLE IF EXISTS `documents_legal_detail`;
+CREATE TABLE `documents_legal_detail` (
+  `dld_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dld_pid` int(10) unsigned DEFAULT NULL,
+  `dld_facility` int(10) unsigned DEFAULT NULL,
+  `dld_provider` int(10) unsigned DEFAULT NULL,
+  `dld_encounter` int(10) unsigned DEFAULT NULL,
+  `dld_master_docid` int(10) unsigned NOT NULL,
+  `dld_signed` smallint(5) unsigned NOT NULL COMMENT '0-Not Signed or Cannot Sign(Layout),1-Signed,2-Ready to sign,3-Denied(Pat Regi),10-Save(Layout)',
+  `dld_signed_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `dld_filepath` varchar(75) DEFAULT NULL,
+  `dld_filename` varchar(45) NOT NULL,
+  `dld_signing_person` varchar(50) NOT NULL,
+  `dld_sign_level` int(11) NOT NULL COMMENT 'Sign flow level',
+  `dld_content` varchar(50) NOT NULL COMMENT 'Layout sign position',
+  `dld_file_for_pdf_generation` blob NOT NULL COMMENT 'The filled details in the fdf file is stored here.Patient Registration Screen',
+  `dld_denial_reason` longtext NOT NULL,
+  PRIMARY KEY (`dld_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `documents_legal_master`
+--
+
+DROP TABLE IF EXISTS `documents_legal_master`;
+CREATE TABLE `documents_legal_master` (
+  `dlm_category` int(10) unsigned DEFAULT NULL,
+  `dlm_subcategory` int(10) unsigned DEFAULT NULL,
+  `dlm_document_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dlm_document_name` varchar(75) NOT NULL,
+  `dlm_filepath` varchar(75) NOT NULL,
+  `dlm_facility` int(10) unsigned DEFAULT NULL,
+  `dlm_provider` int(10) unsigned DEFAULT NULL,
+  `dlm_sign_height` double NOT NULL,
+  `dlm_sign_width` double NOT NULL,
+  `dlm_filename` varchar(45) NOT NULL,
+  `dlm_effective_date` datetime NOT NULL,
+  `dlm_version` int(10) unsigned NOT NULL,
+  `content` varchar(255) NOT NULL,
+  `dlm_savedsign` varchar(255) DEFAULT NULL COMMENT '0-Yes 1-No',
+  `dlm_review` varchar(255) DEFAULT NULL COMMENT '0-Yes 1-No',
+  PRIMARY KEY (`dlm_document_id`)
+) ENGINE=MyISAM COMMENT='List of Master Docs to be signed' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `documents_legal_categories`
+--
+
+DROP TABLE IF EXISTS `documents_legal_categories`;
+CREATE TABLE `documents_legal_categories` (
+  `dlc_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `dlc_category_type` int(10) unsigned NOT NULL COMMENT '1 category 2 subcategory',
+  `dlc_category_name` varchar(45) NOT NULL,
+  `dlc_category_parent` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`dlc_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `documents_legal_categories`
+--
+
+INSERT INTO `documents_legal_categories` (`dlc_id`, `dlc_category_type`, `dlc_category_name`, `dlc_category_parent`) VALUES
+(3, 1, 'Category', NULL),
+(4, 2, 'Sub Category', 1),
+(5, 1, 'Layout Form', 0),
+(6, 2, 'Layout Signed', 5);
 
 -- 
 -- Table structure for table `drug_inventory`
@@ -2770,6 +2877,7 @@ INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_targets' ,'target_database', 'Database', 10, 0);
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_targets' ,'target_interval', 'Interval', 20, 0);
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_targets' ,'target_proc', 'Procedure', 20, 0);
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_targets' ,'target_appt', 'Appointment', 30, 0);
 
 -- Clinical Rule Target Intervals
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('lists' ,'rule_target_intervals', 'Clinical Rules Target Intervals', 3, 0);
@@ -2797,6 +2905,8 @@ INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_filters', 'filt_sex', 'Gender', 30, 0);
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_filters', 'filt_age_max', 'Maximum Age', 40, 0);
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_filters', 'filt_age_min', 'Minimum Age', 50, 0);
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_filters', 'filt_proc', 'Procedure', 60, 0);
+INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('rule_filters', 'filt_lists', 'Lists', 70, 0);
 
 -- Clinical Rule Age Intervals
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('lists' ,'rule_age_intervals', 'Clinical Rules Age Intervals', 3, 0);
@@ -3358,6 +3468,20 @@ CREATE TABLE `patient_reminders` (
 
 -- --------------------------------------------------------
 
+--
+-- Table structure for table `patient_access_offsite`
+--
+
+DROP TABLE IF EXISTS `patient_access_offsite`;
+CREATE TABLE `patient_access_offsite`(
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `pid` INT(11),
+  `portal_username` VARCHAR(100)  NOT NULL,,
+  `portal_pwd` VARCHAR(100)  NOT NULL,,
+  `portal_pwd_status` TINYINT DEFAULT '1' COMMENT '0=>Password Created Through Demographics by The provider or staff. Patient Should Change it at first time it.1=>Pwd updated or created by patient itself',
+  PRIMARY KEY (`id`)
+)ENGINE=MyISAM AUTO_INCREMENT=1;
+
 -- 
 -- Table structure for table `payments`
 -- 
@@ -3783,7 +3907,7 @@ INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `me
 -- Tobacco Cessation Intervention
 INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `method_detail`, `value` ) VALUES ('rule_tob_cess_inter', 1, 1, 'filt_database', '', 'LIFESTYLE::tobacco::current');
 -- Adult Weight Screening and Follow-Up
--- no filters
+INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `method_detail`, `value` ) VALUES ('rule_adult_wt_screen_fu', 1, 1, 'filt_age_min', 'year', '18');
 -- Weight Assessment and Counseling for Children and Adolescents
 INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `method_detail`, `value` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 'filt_age_max', 'year', '18');
 INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `method_detail`, `value` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 'filt_age_min', 'year', '2');
@@ -4204,7 +4328,7 @@ INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `
 INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_tob_cess_inter', 1, 1, 1, 'target_interval', 'year', 1);
 INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_tob_cess_inter', 1, 1, 1, 'target_database', 'CUSTOM::act_cat_inter::act_tobacco::YES::ge::1', 0);
 -- Adult Weight Screening and Follow-Up
-INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_adult_wt_screen_fu', 1, 1, 1, 'target_database', '::form_vitals::weight::::::ge::2', 0);
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_adult_wt_screen_fu', 1, 1, 1, 'target_database', '::form_vitals::weight::::::ge::1', 0);
 -- Weight Assessment and Counseling for Children and Adolescents
 INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 1, 'target_database', '::form_vitals::weight::::::ge::1', 0);
 INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_wt_assess_couns_child', 1, 1, 1, 'target_interval', 'year', 3);
@@ -4262,7 +4386,7 @@ INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `
 --
 -- Coumadin Management - INR Monitoring
 INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_inr_monitor', 1, 1, 1, 'target_interval', 'week', 3);
-INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_inr_monitor', 1, 1, 1, 'target_proc', 'INR::::::::ge::1', 0);
+INSERT INTO `rule_target` ( `id`, `group_id`, `include_flag`, `required_flag`, `method`, `value`, `interval` ) VALUES ('rule_inr_monitor', 1, 1, 1, 'target_proc', 'INR::CPT4:85610::::::ge::1', 0);
 
 -- --------------------------------------------------------
 
@@ -4784,6 +4908,4 @@ CREATE TABLE `template_users` (
   PRIMARY KEY (`tu_id`),
   UNIQUE KEY `templateuser` (`tu_user_id`,`tu_template_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
-
-
 
