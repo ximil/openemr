@@ -17,6 +17,14 @@ if ($_GET['mode'] != "user") {
   $thisauth = acl_check('admin', 'super');
   if (!$thisauth) die(xl('Not authorized'));
 }
+?>
+
+<html>
+
+<head>
+<?php
+
+html_header_show();
 
 // If we are saving user_specific globals.
 //
@@ -60,6 +68,10 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
   foreach ($GLOBALS_METADATA as $grpname => $grparr) {
     foreach ($grparr as $fldid => $fldarr) {
       list($fldname, $fldtype, $flddef, $flddesc) = $fldarr;
+	  if($fldtype == 'pwd'){
+	  $pass = sqlQuery("SELECT gl_value FROM globals WHERE gl_name = '$fldid'");
+	  $fldvalueold = $pass['gl_value'];
+	  }
       sqlStatement("DELETE FROM globals WHERE gl_name = '$fldid'");
 
       if (substr($fldtype, 0, 2) == 'm_') {
@@ -80,8 +92,12 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
         else {
           $fldvalue = "";
         }
-        sqlStatement("INSERT INTO globals ( gl_name, gl_index, gl_value ) " .
+        if($fldtype=='pwd')
+          $fldvalue = $fldvalue ? SHA1($fldvalue) : $fldvalueold;
+		  if(fldvalue){
+		  sqlStatement("INSERT INTO globals ( gl_name, gl_index, gl_value ) " .
           "VALUES ( '$fldid', '0', '$fldvalue' )");
+		  }
       }
 
       ++$i;
@@ -99,10 +115,6 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
   echo "}</script>";
 }
 ?>
-<html>
-
-<head>
-<?php html_header_show();?>
 
 <!-- supporting javascript code -->
 <script type="text/javascript" src="../../library/dialog.js"></script>
@@ -246,6 +258,21 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
         $globalTitle = $globalValue;
       }
       echo "  <input type='text' name='form_$i' id='form_$i' " .
+        "size='50' maxlength='255' value='$fldvalue' />\n";
+    }
+    else if ($fldtype == 'pwd') {
+	  if ($_GET['mode'] == "user") {
+        $globalTitle = $globalValue;
+      }
+      echo "  <input type='password' name='form_$i' " .
+        "size='50' maxlength='255' value='' />\n";
+    }
+
+    else if ($fldtype == 'pass') {
+	  if ($_GET['mode'] == "user") {
+        $globalTitle = $globalValue;
+      }
+      echo "  <input type='password' name='form_$i' " .
         "size='50' maxlength='255' value='$fldvalue' />\n";
     }
 

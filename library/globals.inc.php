@@ -1211,6 +1211,34 @@ $GLOBALS_METADATA = array(
       'https://your_web_site.com/openemr/patients',
       xl('Website link for the Onsite Patient Portal.')
     ),
+    
+    'portal_offsite_enable' => array(
+      xl('Enable Offsite Patient Portal'),
+      'bool',                           // data type
+      '0',
+      xl('Enable Offsite Patient Portal.')
+    ),
+
+    'portal_offsite_username' => array(
+      xl('Offsite Patient Portal Username'),
+      'text',                           // data type
+      '',
+      xl('Offsite Patient Portal Username(Put Blank If not Registered).')
+    ),
+
+    'portal_offsite_password' => array(
+      xl('Offsite Patient Portal Password'),
+      'pwd',                           // data type
+      '',
+      xl('Offsite Patient Portal Password(Put Blank If not Registered).')
+    ),
+
+    'portal_offsite_address' => array(
+      xl('Offsite Patient Portal Site Address'),
+      'text',                           // data type
+      'https://mydocsportal.com/provider.php',
+      xl('Offsite Https link for the Patient Portal.')
+    ),
 
   ),
 
@@ -1245,92 +1273,47 @@ $GLOBALS_METADATA = array(
       'https://openemrsupport.com:29443/len/api',
       xl('Https link for the OpenEMR Support LLC Lab Exchange Service.')
     ),
-
+    
     'erx_enable' => array(
       xl('Enable NewCrop eRx Service'),
       'bool',                           // data type
       '0',
-      xl('Enable OpenEMR Support LLC eRx service')
-    ),
-    
-    'erx_source' => array(
-      xl('NewCrop eRx Environment'),
-      array(
-        '1'=>'Pre-Production',
-        '2'=>'Production',
-      ),                           // data type
-      '0',
-      xl('Select OpenEMR Support LLC eRx service environment')
-    ),
-    
-    'erx_path' => array(
-      xl('NewCrop eRx Site Address (Pre-Production)'),
-      'text',                           // data type
-      'https://preproduction.newcropaccounts.com/InterfaceV7/RxEntry.aspx',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
-    ),
-    
-    'erx_path_soap' => array(
-      xl('NewCrop eRx Web Service Address (Pre-Production)'),
-      'text',                           // data type
-      'https://preproduction.newcropaccounts.com/v7/WebServices/Update1.asmx?WSDL;https://preproduction.newcropaccounts.com/v7/WebServices/Patient.asmx?WSDL',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
-    ),
-    
-    'partner_name' => array(
-      xl('NewCrop eRx Partner Name (Pre-Production)'),
-      'text',                           // data type
-      '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
-    ),
-    
-    'erx_name' => array(
-      xl('NewCrop eRx Name (Pre-Production)'),
-      'text',                           // data type
-      '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
-    ),
-    
-    'erx_password' => array(
-      xl('NewCrop eRx Password (Pre-Production)'),
-      'text',                           // data type
-      '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
-    ),
+      xl('Enable ZMG, LLC eRx service')
+    ),    
     
     'erx_path_production' => array(
-      xl('NewCrop eRx Site Address (Production)'),
+      xl('NewCrop eRx Site Address'),
       'text',                           // data type
       'https://secure.newcropaccounts.com/InterfaceV7/RxEntry.aspx',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
+      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
     ),
     
     'erx_path_soap_production' => array(
-      xl('NewCrop eRx Web Service Address (Production)'),
+      xl('NewCrop eRx Web Service Address'),
       'text',                           // data type
       'https://secure.newcropaccounts.com/v7/WebServices/Update1.asmx?WSDL;https://secure.newcropaccounts.com/v7/WebServices/Patient.asmx?WSDL',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
+      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
     ),
     
     'partner_name_production' => array(
-      xl('NewCrop eRx Partner Name (Production)'),
+      xl('NewCrop eRx Partner Name'),
       'text',                           // data type
       '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
+      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
     ),
     
     'erx_name_production' => array(
-      xl('NewCrop eRx Name (Production)'),
+      xl('NewCrop eRx Name'),
       'text',                           // data type
       '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
+      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
     ),
     
     'erx_password_production' => array(
-      xl('NewCrop eRx Password (Production)'),
-      'text',                           // data type
+      xl('NewCrop eRx Password'),
+      'pass',                           // data type
       '',
-      xl('Contact OpenEMR Support LLC for subscribing the eRx service')
+      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
     ),
   ),
 );
