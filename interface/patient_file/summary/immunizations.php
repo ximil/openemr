@@ -319,7 +319,7 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
         </tr>
         <tr>
           <td colspan="3" align="center">
-	
+
 	    <input type="button" name="save" id="save" value="<?php echo htmlspecialchars( xl('Save Immunization'), ENT_QUOTES); ?>">
 	
             <input type="button" name="print" id="print" value="<?php echo htmlspecialchars( xl('Print Record') . xl('PDF','',' (',')'), ENT_QUOTES); ?>">
@@ -366,8 +366,8 @@ var mypcc = '<?php echo htmlspecialchars( $GLOBALS['phone_country_code'], ENT_QU
                 " left join codes c on CAST(IFNULL(i1.cvx_code,0) AS CHAR) = c.code ".
                 " left join code_types ct on c.code_type = ct.ct_id ".
                 " where patient_id = ? ".
-                " AND (( i1.cvx_code = '0' OR cvx_code IS NULL ) OR ".
-                " ( i1.cvx_code != '0' AND ct.ct_key = 'CVX')) ".
+                " AND (( i1.cvx_code = '0' OR i1.cvx_code IS NULL ) OR ".
+                " ( (i1.cvx_code != '0' AND i1.cvx_code IS NOT NULL ) AND ct.ct_key = 'CVX') ) ".
                 " order by ";
         if ($sortby == "vacc") { 
             $sql .= " c.code_text_short, i1.immunization_id, i1.administered_date DESC"; 
@@ -424,7 +424,18 @@ Calendar.setup({inputField:"vis_date", ifFormat:"%Y-%m-%d", button:"img_vis_date
 // jQuery stuff to make the page a little easier to use
 
 $(document).ready(function(){
-    $("#save").click(function() { SaveForm(); });
+    <?php if (!($useCVX)) { ?>
+      $("#save").click(function() { SaveForm(); });
+    <?php } else { ?>
+      $("#save").click(function() { 
+        if (validate_cvx()) {
+          SaveForm();
+        }
+        else {
+          return;
+        }
+      });
+    <?php } ?>
     $("#print").click(function() { PrintForm("pdf"); });
     $("#printHtml").click(function() { PrintForm("html"); });
     $(".immrow").click(function() { EditImm(this); });
@@ -498,6 +509,17 @@ function sel_cvxcode(e) {
  dlgopen('../encounter/find_code_popup.php?codetype=CVX', '_blank', 500, 400);
 }
 
+// This ensures the cvx centric entry is filled.
+function validate_cvx() {
+ if (document.add_immunization.cvx_code.value>0) {
+  return true;
+ }
+ else {
+  document.add_immunization.cvx_code.style.backgroundColor="red";
+  document.add_immunization.cvx_code.focus();
+  return false;
+ }   
+}
 
 </script>
 
