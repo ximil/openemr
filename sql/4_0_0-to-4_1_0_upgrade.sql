@@ -1640,3 +1640,10 @@ ALTER TABLE `form_misc_billing_options`
   ADD date_initial_treatment date default NULL;
 #EndIf
 
+#IfMissingColumn prescriptions encounter
+ALTER TABLE `prescriptions` ADD COLUMN `encounter` INT NULL;
+#EndIf
+
+#IfMissingColumn lists erx_uploaded
+ALTER TABLE `lists` ADD COLUMN `erx_uploaded` ENUM('0','1') NOT NULL DEFAULT '0' COMMENT '0-Pending NewCrop upload 1-Uploaded TO NewCrop';
+#EndIf
