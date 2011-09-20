@@ -1032,6 +1032,7 @@ CREATE TABLE `form_misc_billing_options` (
   `outside_lab` tinyint(1) default NULL,
   `lab_amount` decimal(5,2) default NULL,
   `is_unable_to_work` tinyint(1) default NULL,
+  `date_initial_treatment` date default NULL,
   `off_work_from` date default NULL,
   `off_work_to` date default NULL,
   `is_hospitalized` tinyint(1) default NULL,
@@ -3032,6 +3033,7 @@ CREATE TABLE `lists` (
   `reaction` varchar(255) NOT NULL DEFAULT '',
   `external_allergyid` INT(11) DEFAULT NULL,
   `erx_source` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-OpenEMR 1-External',
+  `erx_uploaded` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-Pending NewCrop upload 1-Uploaded TO NewCrop',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
@@ -3474,14 +3476,15 @@ CREATE TABLE `patient_reminders` (
 --
 
 DROP TABLE IF EXISTS `patient_access_offsite`;
-CREATE TABLE `patient_access_offsite`(
-  `id` INT NOT NULL AUTO_INCREMENT ,
-  `pid` INT(11),
-  `portal_username` VARCHAR(100)  NOT NULL,
-  `portal_pwd` VARCHAR(100)  NOT NULL,
-  `portal_pwd_status` TINYINT DEFAULT '1' COMMENT '0=>Password Created Through Demographics by The provider or staff. Patient Should Change it at first time it.1=>Pwd updated or created by patient itself',
-  PRIMARY KEY (`id`)
-)ENGINE=MyISAM AUTO_INCREMENT=1;
+CREATE TABLE  `patient_access_offsite` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pid` int(11) NOT NULL,
+  `portal_username` varchar(100) NOT NULL,
+  `portal_pwd` varchar(100) NOT NULL,
+  `portal_pwd_status` tinyint(4) DEFAULT '1' COMMENT '0=>Password Created Through Demographics by The provider or staff. Patient Should Change it at first time it.1=>Pwd updated or created by patient itself',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pid` (`pid`)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
 
 -- 
 -- Table structure for table `payments`
@@ -3702,6 +3705,7 @@ CREATE TABLE `prescriptions` (
   `date_added` date default NULL,
   `date_modified` date default NULL,
   `provider_id` int(11) default NULL,
+  `encounter` int(11) default NULL,
   `start_date` date default NULL,
   `drug` varchar(150) default NULL,
   `drug_id` int(11) NOT NULL default '0',
@@ -4909,4 +4913,3 @@ CREATE TABLE `template_users` (
   PRIMARY KEY (`tu_id`),
   UNIQUE KEY `templateuser` (`tu_user_id`,`tu_template_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
-
