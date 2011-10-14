@@ -1242,6 +1242,12 @@ $GLOBALS_METADATA = array(
       'https://mydocsportal.com/provider.php',
       xl('Offsite Https link for the Patient Portal.')
     ),
+    'portal_offsite_address_patient_link' => array(
+      xl('Offsite Patient Portal Site Address (Patient Link)'),
+      'text',                           // data type
+      'https://mydocsportal.com',
+      xl('Offsite Https link for the Patient Portal.(Patient Link)')
+    ),
 
   ),
 
@@ -1331,6 +1337,20 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '0',
       xl('Enable import status message for NewCrop erx')
+    ),
+    
+    'erx_medication_display' => array(
+      xl('Do not display Medications uploaded to NewCrop'),
+      'bool',                           // data type
+      '0',
+      xl('Do not display Medications uploaded to NewCrop')
+    ),
+	
+	'erx_allergy_display' => array(
+      xl('Do not display Allergy uploaded to NewCrop'),
+      'bool',                           // data type
+      '0',
+      xl('Do not display Allergy uploaded to NewCrop')
     ),
   ),
   
