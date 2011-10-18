@@ -135,7 +135,6 @@ if ( $_SESSION['pc_facility'] ) {
 //==================================
 
 [-/php-]
-<div id="topheader">&nbsp;</div>
 <div id="topToolbarRight">  <!-- this wraps some of the top toolbar items -->
 <div id="functions">
 <!-- stuff form element here to avoid the margin padding it introduces into the page in some browsers -->
@@ -150,7 +149,7 @@ echo "   <a href='#' value='" . xl ("Search") .
 </div>
 
 
-<div id="dateNAV" style="width:33%;">
+<div id="dateNAV"">
 <a href='#' name='bnsubmit' value='[-php-]echo xl ("Today")[-/php-]' onClick='GoToToday(theform);'  class='css_button'/><span>[-php-] echo xl("Today")[-/php-]</span></a>
 <a href='[-php-]echo $PREV_DAY_URL[-/php-]' onclick='top.restoreSession()'>
 <img id="prevday" src="[-$TPL_IMAGE_PATH-]/leftbtn.gif" border="0" title="[-php-]echo xl("Previous Day")[-/php-]" alt="[-php-]echo xl ("Previous Day")[-/php-]" style="padding-top:5px"/></a>
@@ -173,18 +172,21 @@ echo "   <a href='#' type='button' id='monthview' title='" .htmlspecialchars( xl
 [-/php-]
 </div>
 </div> <!-- end topToolbarRight -->
-
+<div id="bottom">
 <div id="bottomLeft">
 <div id="datePicker">
-
-<table border="0" cellpadding="0" cellspacing="0">
-<tr>
 [-php-]
 $atmp = array_keys($A_EVENTS);
 $caldate = strtotime($atmp[0]);
 $cMonth = date("m", $caldate);
 $cYear = date("Y", $caldate);
 $cDay = date("d", $caldate);
+
+include_once($GLOBALS['webserver_root'].'/interface/main/calendar/modules/PostCalendar/pntemplates/default/views/monthSelector.php');
+[-/php-]
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+[-php-]
 
 // compute the previous month date
 // stay on the same day if possible
@@ -631,7 +633,6 @@ foreach ($providers as $provider) {
                 $content .= '&nbsp;'.htmlspecialchars($event['apptstatus']);
                 if ($patientid) {
                     $link_title = htmlspecialchars($fname,ENT_QUOTES)." ".htmlspecialchars($lname,ENT_QUOTES). " \n";
-                    $link_title .= xl('Age') . ": " . $patient_age . " \n" . xl('DOB') . ": " . $patient_dob . " \n";
                     $link_title .= xl('Age') . ": ".$patient_age."\n" . xl('DOB') . ": ".$patient_dob.htmlspecialchars($comment, ENT_QUOTES)."\n";
                     $link_title .= "(" . xl('Click to view') . ")";
                     $content .= "<a href='javascript:goPid($patientid)' title='$link_title'>";
@@ -769,7 +770,7 @@ echo "<P>";
 
 [-/php-]
 </div>  <!-- end bigCal DIV -->
-
+</div>  <!-- end bottom DIV -->
 </body>
 
 <script language='JavaScript'>
@@ -788,6 +789,10 @@ echo "<P>";
         $(".event").dblclick(function() { EditEvent(this); });
         $(".event").mouseover(function() { $(this).toggleClass("event_highlight"); });
         $(".event").mouseout(function() { $(this).toggleClass("event_highlight"); });
+        $(".tdMonthName-small").click(function() {
+            
+            dpCal=$("#datePicker>table"); 
+            mp = $("#monthPicker"); mp.width(dpCal.width()); mp.toggle();});
     });
 
     /* edit an existing event */

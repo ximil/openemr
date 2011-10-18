@@ -131,7 +131,7 @@ $vitals_is_registered = $tmp['count'];
 <?php include_once("{$GLOBALS['srcdir']}/dynarch_calendar_en.inc.php"); ?>
 <script type="text/javascript" src="../../../library/dynarch_calendar_setup.js"></script>
 <script type="text/javascript" src="../../../library/dialog.js"></script>
-<script type="text/javascript" src="../../../library/js/jquery.1.3.2.js"></script>
+<script type="text/javascript" src="../../../library/js/jquery-1.6.4.min.js"></script>
 <script type="text/javascript" src="../../../library/js/common.js"></script>
 <script type="text/javascript" src="../../../library/js/fancybox/jquery.fancybox-1.2.6.js"></script>
 <script type="text/javascript" language="JavaScript">
@@ -229,10 +229,11 @@ function toggleIndicator(target,div) {
 }
 
 $(document).ready(function(){
+  var msg_updation='';
 	<?php
 	if($GLOBALS['erx_enable']){
 		//$soap_status=sqlQuery("select soap_import_status from patient_data where pid=?",array($pid));
-		$soap_status=sqlStatement("select soap_import_status,pid from patient_data where soap_import_status in ('1','3')");
+		$soap_status=sqlStatement("select soap_import_status,pid from patient_data where pid=? and soap_import_status in ('1','3')",array($pid));
 		while($row_soapstatus=sqlFetchArray($soap_status)){
 			//if($soap_status['soap_import_status']=='1' || $soap_status['soap_import_status']=='3'){ ?>
 			top.restoreSession();
@@ -243,9 +244,13 @@ $(document).ready(function(){
 				data: {
 					patient:<?php echo $row_soapstatus['pid']; ?>,
 				},
+				<?php
+				if($GLOBALS['erx_import_status_message']){ ?>
 				async: false,
+				<?php } ?>
 				success: function(thedata){
-					alert(thedata);
+					//alert(thedata);
+					msg_updation+=thedata;
 				},
 				error:function(){
 					alert('ajax error');
@@ -262,15 +267,24 @@ $(document).ready(function(){
 				data: {
 					patient:<?php echo $row_soapstatus['pid']; ?>,
 				},
+				<?php
+				if($GLOBALS['erx_import_status_message']){ ?>
 				async: false,
+				<?php } ?>
 				success: function(thedata){
-					alert(thedata);
+					//alert(thedata);
+					msg_updation+=thedata;
 				},
 				error:function(){
 					alert('ajax error');
 				}	
 			});
 			<?php
+			if($GLOBALS['erx_import_status_message']){ ?>
+			if(msg_updation)
+			  alert(msg_updation);
+			<?php
+			}
 			//} 
 		}
 	}

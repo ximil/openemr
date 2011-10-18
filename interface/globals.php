@@ -313,7 +313,7 @@ $GLOBALS['style']['TEXTCOLOR11'] = "#222222";
 $GLOBALS['style']['HIGHLIGHTCOLOR'] = "#dddddd";
 $GLOBALS['style']['BOTTOM_BG_LINE'] = $bottom_bg_line;
 // The height in pixels of the Logo bar at the top of the login page:
-$GLOBALS['logoBarHeight'] = 110;
+$GLOBALS['logoBarHeight'] = 120;
 // The height in pixels of the Navigation bar:
 $GLOBALS['navBarHeight'] = 22;
 // The height in pixels of the Title bar:
@@ -335,9 +335,13 @@ if (!empty($special_timeout)) {
   $timeout = intval($special_timeout);
 }
 
-//Version tags
+//Version tag
 require_once(dirname(__FILE__) . "/../version.php");
-$openemr_version = "$v_major.$v_minor.$v_patch".$v_tag;	// Version tag used by program
+$patch_appending = "";
+if ( ($v_realpatch != '0') && (!(empty($v_realpatch))) ) {
+$patch_appending = " (".$v_realpatch.")";
+}
+$openemr_version = "$v_major.$v_minor.$v_patch".$v_tag.$patch_appending;
 
 $srcdir = $GLOBALS['srcdir'];
 $login_screen = $GLOBALS['login_screen'];
