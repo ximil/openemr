@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2007-2009 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2007-2011 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -220,8 +220,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "*" . $claim->billingFacilityETIN() .
       "~\n";
   }
-
+  if($claim->isSelfOfInsured()){
   $PatientHL = 0;
+  }
+  else{
+  $PatientHL = 1;
+  }
 
   ++$edicount;
   $out .= "HL" .        // Loop 2000B Subscriber HL Loop
@@ -237,9 +241,13 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     $log .= "*** Error: Insurance information is missing!\n";
   }
   ++$edicount;
+  $x="";
+  if($claim->isSelfOfInsured()){
+  $x=18;
+  }
   $out .= "SBR" .       // Subscriber Information
     "*" . $claim->payerSequence() .
-    "*" . $claim->insuredRelationship() .
+    "*" . $x .
     "*" . $claim->groupNumber() .
     "*" . $claim->groupName() .
     "*" . $claim->insuredTypeCode() . // applies for secondary medicare
@@ -383,7 +391,16 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     "*Y" .
     "*C" .
     "~\n"; 
-    
+
+  if ($claim->dateInitialTreatment()) {
+    ++$edicount;
+    $out .= "DTP" .       // Date of Initial Treatment
+      "*454" .
+      "*D8" .
+      "*" . $claim->dateInitialTreatment() .
+      "~\n";
+  }
+
   ++$edicount;
   $out .= "DTP" .       // Date of Onset
     "*431" .
@@ -822,7 +839,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
         "*" . $ndc .
         "~\n";
 
-      if (!preg_match('/^\d\d\d\d\d-\d\d\d\d-\d\d$/', $ndc, $tmp)) {
+      if (!preg_match('/^\d\d\d\d\d-\d\d\d\d-\d\d$/', $ndc, $tmp) && !preg_match('/^\d{11}$/', $ndc)) {
         $log .= "*** NDC code '$ndc' has invalid format!\n";
       }
 
@@ -915,6 +932,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
           "*" . $a[3] .
           "~\n";
         if (!$tmpdate) $tmpdate = $a[0];
+        if ( isset($a[4]) &&
+        	$a[4] != null ) {
+        	$out .= "CAS02" . // Previous payer's adjustment reason
+	          "*" . $a[4] .
+	          "~\n";	
+        }
       }
 
       if ($tmpdate) {

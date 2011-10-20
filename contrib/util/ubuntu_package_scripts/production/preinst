@@ -160,7 +160,7 @@ upgrade_function () {
 
       #collect openemr mysql data
       #(will need to look in sites directory if 4.0 or later)
-      if [ "$OLD_VERSION" != "3.0.1-1" ] || [ "$OLD_VERSION" != "3.1.0-1" ] || [ "$OLD_VERSION" != "3.2.0-1" ]; then
+      if [ "$OLD_VERSION" == "3.0.1-1" ] || [ "$OLD_VERSION" == "3.1.0-1" ] || [ "$OLD_VERSION" == "3.2.0-1" ]; then
          SQLLOCATION=$(collect_var \$host $OPENEMR/library/sqlconf.php)
          SQLUSER=$(collect_var \$login $OPENEMR/library/sqlconf.php)
          SQLPASSWORD=$(collect_var \$pass $OPENEMR/library/sqlconf.php)
@@ -179,7 +179,9 @@ upgrade_function () {
       fi
 
       #ensure the mysql database and user exist
-      if ! [ "`check_mysql "$SQLPASSWORD" "$SQLDATABASE" "$SQLLOCATION" "$SQLUSER"`" == "$SQLDATABASE" ]; then
+      if check_mysql "$SQLPASSWORD" "$SQLDATABASE" "$SQLLOCATION" "$SQLUSER"; then
+         log_only "For upgrade, confirmed that the mysql database and mysql user exist"
+      else
          prompt_input openemr/upgrade_not_database critical ret_result
          unable_exit "MySQL '$SQLDATABASE' database does not exist, unable to upgrade."
       fi

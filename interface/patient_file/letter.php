@@ -1,10 +1,14 @@
 <?php
-// Copyright (C) 2007-2010 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2007-2011 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
+
+// Undo magic quotes and do not allow fake register globals.
+$sanitize_all_escapes  = true;
+$fake_register_globals = false;
 
 include_once("../globals.php");
 include_once($GLOBALS['srcdir'] . "/patient.inc");
@@ -122,11 +126,11 @@ if ($_POST['formaction']=="generate") {
     if ($form_format == "pdf") {
       // documentation for ezpdf is here --> http://www.ros.co.nz/pdf/
       require_once ($GLOBALS['fileroot'] . "/library/classes/class.ezpdf.php");
-      $pdf =& new Cezpdf($GLOBALS['oer_config']['prescriptions']['paper_size']);
-      $pdf->ezSetMargins($GLOBALS['oer_config']['prescriptions']['top']
-                      ,$GLOBALS['oer_config']['prescriptions']['bottom']
-                      ,$GLOBALS['oer_config']['prescriptions']['left']
-                      ,$GLOBALS['oer_config']['prescriptions']['right']
+      $pdf =& new Cezpdf($GLOBALS['rx_paper_size']);
+      $pdf->ezSetMargins($GLOBALS['rx_top_margin']
+                      ,$GLOBALS['rx_bottom_margin']
+                      ,$GLOBALS['rx_left_margin']
+                      ,$GLOBALS['rx_right_margin']
                       );
       if (file_exists("$template_dir/custom_pdf.php")) {
         include("$template_dir/custom_pdf.php");

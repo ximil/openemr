@@ -130,7 +130,6 @@ if ( $_SESSION['pc_facility'] ) {
  //EOS FACILITY FILTERING (CHEMED)
  //==================================
 [-/php-]
-<div id="topheader">&nbsp;</div>
 <div id="topToolbarRight">  <!-- this wraps some of the top toolbar items -->
 <div id="functions">
 <!-- stuff form element here to avoid the margin padding it introduces into the page in some browsers -->
@@ -145,7 +144,7 @@ echo "   <a href='#' value='" . xl ("Search") .
 </div>
 
 
-<div id="dateNAV" style="width:33%;">
+<div id="dateNAV"">
 <a href='#' name='bnsubmit' value='[-php-]echo xl ("Today")[-/php-]' onClick='GoToToday(theform);'  class='css_button'/><span>[-php-] echo xl("Today")[-/php-]</span></a>
 <a href='[-php-]echo $PREV_MONTH_URL[-/php-]' onclick='top.restoreSession()'>
 <img id="prevmonth" src="[-$TPL_IMAGE_PATH-]/leftbtn.gif" border="0" title="[-php-]echo xl("Previous Month")[-/php-]" alt="[-php-]echo xl ("Previous Month")[-/php-]" style="padding-top:5px"/></a>
@@ -167,16 +166,22 @@ echo "   <a href='#' type='button' id='monthview' title='" .htmlspecialchars( xl
 [-/php-]
 </div>
 </div> <!-- end topToolbarRight -->
-
+<div id="bottom">
+<div id="bottomLeft">
 <div id="datePicker">
+[-php-]
+    // caldate depends on what the user has clicked
+    $caldate = strtotime($Date);
+    $cMonth = date("m", $caldate);
+    $cYear = date("Y", $caldate);
+    $cDay = date("d", $caldate);
+
+    include_once($GLOBALS['webserver_root'].'/interface/main/calendar/modules/PostCalendar/pntemplates/default/views/monthSelector.php');
+[-/php-]
+    
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
 [-php-]
-// caldate depends on what the user has clicked
-$caldate = strtotime($Date);
-$cMonth = date("m", $caldate);
-$cYear = date("Y", $caldate);
-$cDay = date("d", $caldate);
 
 // compute the previous month date
 // stay on the same day if possible
@@ -254,7 +259,6 @@ foreach ($atmp as $currdate) {
 [-/php-]
 </table>
 </div>
-
 <div id="bigCalHeader">
 </div>
 
@@ -321,6 +325,7 @@ echo "   <tr><td><div class='view1' style=background-color:".$f['color'].";font-
 [-assign var="day"     value=$DATE|date_format:"%d"|string_format:"%1d"-]
 [-assign var="month"   value=$DATE|date_format:"%m"|string_format:"%1d"-]
 [-assign var="year"    value=$DATE|date_format:"%Y"|string_format:"%4d"-]
+</div> <!-- end bottomLeft -->
 
 <div id="bigCal">
 [-php-]
@@ -493,6 +498,18 @@ foreach ($providers as $provider) {
                     $link_title .= "(" . xl('Click to view') . ")";
                     $content .= "<a href='javascript:goPid($patientid)' title='$link_title'>";
                     $content .= "<img src='$TPL_IMAGE_PATH/user-green.gif' border='0' title='$link_title' alt='View Patient' />";
+                    if ($catid == 1) $content .= "<strike>";
+                    $content .= htmlspecialchars($lname);
+                    if ($GLOBALS['calendar_appt_style'] != 1) {
+                        $content .= "," . htmlspecialchars($fname);
+                        if ($event['title'] && $GLOBALS['calendar_appt_style'] >= 3) {
+                            $content .= "(" . $event['title'];
+                            if ($event['hometext'] && $GLOBALS['calendar_appt_style'] >= 4)
+                            $content .= ": <font color='green'>" . htmlspecialchars(trim($event['hometext'])) . "</font>";
+                            $content .= ")";
+                        }
+                    }
+                    if ($catid == 1) $content .= "</strike>";
                     $content .= "</a>";
                 }
                 else {
@@ -543,7 +560,7 @@ foreach ($providers as $provider) {
 
 [-/php-]
 </div>  <!-- end bigCal DIV -->
-
+</div> <!-- end bottom DIV -->
 </body>
 
 <script language='JavaScript'>
@@ -562,6 +579,12 @@ foreach ($providers as $provider) {
         $(".month_event").dblclick(function() { EditEvent(this); });
         $(".month_event").mouseover(function() { $(this).toggleClass("event_highlight"); });
         $(".month_event").mouseout(function() { $(this).toggleClass("event_highlight"); });
+
+        $(".tdMonthName-small").click(function() {
+            
+            dpCal=$("#datePicker>table"); 
+            mp = $("#monthPicker"); mp.width(dpCal.width()); mp.toggle();});
+
     });
     
     /* edit an existing event */
