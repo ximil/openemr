@@ -5141,3 +5141,5 @@ CREATE TABLE `template_users` (
   PRIMARY KEY (`tu_id`),
   UNIQUE KEY `templateuser` (`tu_user_id`,`tu_template_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
+
+ALTER TABLE `openemr`.`facility` ADD COLUMN `email` VARCHAR(45) AFTER `state`;

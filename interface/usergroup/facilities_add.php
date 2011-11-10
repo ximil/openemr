@@ -161,7 +161,7 @@ function displayAlert()
 <tr><td>
     <span class="title"><?php xl('Add Facility','e'); ?></span>&nbsp;&nbsp;&nbsp;</td>
     <td colspan=5 align=center style="padding-left:2px;">
-        <a onclick="submitform();" class="css_button large_button" name='form_save' id='form_save' href='#'>
+        <a onClick="submitform();" class="css_button large_button" name='form_save' id='form_save' href='#'>
             <span class='css_button_span large_button_span'><?php xl('Save','e');?></span>
         </a>
         <a class="css_button large_button" id='cancel' href='#' >
@@ -198,19 +198,19 @@ function displayAlert()
         <tr>
         <td height="22"><span class="text"><?php xl('Country','e'); ?>: </span></td><td><input type=entry size=20 name=country_code value=""></td>
         <td>&nbsp;</td>
-        <td><span class="text"><?php ($GLOBALS['simplified_demographics'] ? xl('Facility Code','e') : xl('Facility NPI','e')); ?>:
-        </span></td><td><input type=entry size=20 name=facility_npi value=""></td>
+        <td><span class="text"><?php xl('Email','e'); ?>: </span></td><td><input type=entry size=20 name=email value=""></td>
         </tr>
 
         <tr>
           <td><span class='text'><?php xl('Billing Location','e'); ?>: </span></td><td><input type='checkbox' name='billing_location' value = '1'></td>
           <td>&nbsp;</td>
-          <td><span class='text'><?php xl('Accepts Assignment','e'); ?><br>(<?php xl('only if billing location','e'); ?>): </span></td> <td><input type='checkbox' name='accepts_assignment' value = '1'></td>
+          <td><span class="text"><?php ($GLOBALS['simplified_demographics'] ? xl('Facility Code','e') : xl('Facility NPI','e')); ?>:
+        </span></td><td><input type=entry size=20 name=facility_npi value=""></td>
         </tr>
         <tr>
           <td><span class='text'><?php xl('Service Location','e'); ?>: </span></td> <td><input type='checkbox' name='service_location' value = '1'></td>
           <td>&nbsp;</td>
-          <td><span class='text'><?php echo htmlspecialchars(xl('Color'),ENT_QUOTES); ?>: </span><span class="mandatory">&nbsp;*</span></td> <td><input type=entry name=ncolor id=ncolor size=20 value="">[<a href="javascript:void(0);" onClick="pick('pick','newcolor');return false;" NAME="pick" ID="pick"><?php echo htmlspecialchars(xl('Pick'),ENT_QUOTES); ?></a>]</td>
+         <td><span class='text'><?php xl('Accepts Assignment','e'); ?><br>(<?php xl('only if billing location','e'); ?>): </span></td> <td><input type='checkbox' name='accepts_assignment' value = '1'></td>
         </tr>
 	<?php
 	 $disabled='';
@@ -222,6 +222,7 @@ function displayAlert()
           <td><span class='text'><?php xl('Primary Business Entity','e'); ?>: </span></td>
           <td><input type='checkbox' name='primary_business_entity' id='primary_business_entity' value='1' <?php if ($facility['primary_business_entity'] == 1) echo 'checked'; ?> <?php if($GLOBALS['erx_enable']){ ?> onchange='return displayAlert()' <?php } ?> <?php echo $disabled;?>></td>
           <td>&nbsp;</td>
+		   <td><span class='text'><?php echo htmlspecialchars(xl('Color'),ENT_QUOTES); ?>: </span><span class="mandatory">&nbsp;*</span></td> <td><input type=entry name=ncolor id=ncolor size=20 value="">[<a href="javascript:void(0);" onClick="pick('pick','newcolor');return false;" NAME="pick" ID="pick"><?php echo htmlspecialchars(xl('Pick'),ENT_QUOTES); ?></a>]</td>
          </tr>
         <tr>
             <td><span class=text><?php xl('POS Code','e'); ?>: </span></td>

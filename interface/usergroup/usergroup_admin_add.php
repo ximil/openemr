@@ -143,7 +143,7 @@ function authorized_clicked() {
 <table><tr><td>
 <span class="title"><?php xl('Add User','e'); ?></span>&nbsp;</td>
 <td>
-<a class="css_button" name='form_save' id='form_save' href='#' onclick="return submitform()">
+<a class="css_button" name='form_save' id='form_save' href='#' onClick="return submitform()">
 	<span><?php xl('Save','e');?></span></a>
 <a class="css_button large_button" id='cancel' href='#'>
 	<span class='css_button_span large_button_span'><?php xl('Cancel','e');?></span>
@@ -191,6 +191,10 @@ foreach ($result2 as $iter) {
 </tr>
 <tr>
 <td><span class="text"><?php xl('Last Name','e'); ?>: </span></td><td><input type=entry name='lname' id='lname' style="width:120px;"><span class="mandatory">&nbsp;*</span></td>
+<td><span class="text"><?php xl('Email','e'); ?>: </span></td><td><input type=entry name='email' style="width:120px;"></td>
+</tr>
+<tr>
+<td><span class="text"><?php xl('Federal Tax ID','e'); ?>: </span></td><td><input type=entry name='federaltaxid' style="width:120px;"></td>
 <td><span class="text"><?php xl('Default Facility','e'); ?>: </span></td><td><select style="width:120px;" name=facility_id>
 <?php
 $fres = sqlStatement("select * from facility where service_location != 0 order by name");
@@ -207,10 +211,6 @@ if ($fres) {
 </select></td>
 </tr>
 <tr>
-<td><span class="text"><?php xl('Federal Tax ID','e'); ?>: </span></td><td><input type=entry name='federaltaxid' style="width:120px;"></td>
-<td><span class="text"><?php xl('Federal Drug ID','e'); ?>: </span></td><td><input type=entry name='federaldrugid' style="width:120px;"></td>
-</tr>
-<tr>
 <td><span class="text"><?php xl('UPIN','e'); ?>: </span></td><td><input type="entry" name="upin" style="width:120px;"></td>
 <td class='text'><?php xl('See Authorizations','e'); ?>: </td>
 <td><select name="see_auth" style="width:120px;">
@@ -224,7 +224,7 @@ if ($fres) {
 </select></td>
 
 <tr>
-<td><span class="text"><?php xl('NPI','e'); ?>: </span></td><td><input type="entry" name="npi" style="width:120px;"></td>
+<td><span class="text"><?php xl('PRN','e'); ?>: </span></td><td><input type="entry" name="npi" style="width:120px;"></td>
 <td><span class="text"><?php xl('Job Description','e'); ?>: </span></td><td><input type="entry" name="specialty" style="width:120px;"></td>
 </tr>
 

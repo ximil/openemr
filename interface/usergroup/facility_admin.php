@@ -170,19 +170,19 @@ function displayAlert()
         </tr>
         <tr>
             <td><span class=text><?php xl('Country','e'); ?>: </span></td><td><input type=entry size=20 name=country_code value="<?php echo htmlspecialchars($facility{"country_code"}, ENT_QUOTES) ?>"></td>
-            <td width="21"><span class=text><?php ($GLOBALS['simplified_demographics'] ? xl('Facility Code','e') : xl('Facility NPI','e')); ?>:
-          </span></td><td><input type=entry size=20 name=facility_npi value="<?php echo htmlspecialchars($facility{"facility_npi"}, ENT_QUOTES) ?>"></td>
+           <td><span class=text><?php xl('Email','e'); ?>: </span></td><td><input type=entry size=20 name=email value="<?php echo htmlspecialchars($facility{"email"}, ENT_QUOTES) ?>"></td>
         </tr>
          <tr>
           <td><span class='text'><?php xl('Billing Location','e'); ?>: </span></td>
           <td><input type='checkbox' name='billing_location' value='1' <?php if ($facility['billing_location'] != 0) echo 'checked'; ?>></td>
-          <td rowspan='2'><span class='text'><?php xl('Accepts Assignment','e'); ?><br>(<?php xl('only if billing location','e'); ?>): </span></td>
-          <td><input type='checkbox' name='accepts_assignment' value='1' <?php if ($facility['accepts_assignment'] == 1) echo 'checked'; ?>></td>
+           <td width="21"><span class=text><?php ($GLOBALS['simplified_demographics'] ? xl('Facility Code','e') : xl('Facility NPI','e')); ?>:
+          </span></td><td><input type=entry size=20 name=facility_npi value="<?php echo htmlspecialchars($facility{"facility_npi"}, ENT_QUOTES) ?>"></td>
          </tr>
          <tr>
           <td><span class='text'><?php xl('Service Location','e'); ?>: </span></td>
           <td><input type='checkbox' name='service_location' value='1' <?php if ($facility['service_location'] == 1) echo 'checked'; ?>></td>
-          <td>&nbsp;</td>
+           <td rowspan='2'><span class='text'><?php xl('Accepts Assignment','e'); ?><br>(<?php xl('only if billing location','e'); ?>): </span></td>
+          <td><input type='checkbox' name='accepts_assignment' value='1' <?php if ($facility['accepts_assignment'] == 1) echo 'checked'; ?>></td>
          </tr>
 	 <?php
 	 $disabled='';
@@ -194,6 +194,7 @@ function displayAlert()
           <td><span class='text'><?php xl('Primary Business Entity','e'); ?>: </span></td>
           <td><input type='checkbox' name='primary_business_entity' id='primary_business_entity' value='1' <?php if ($facility['primary_business_entity'] == 1) echo 'checked'; ?> <?php if($GLOBALS['erx_enable']){ ?> onchange='return displayAlert()' <?php } ?> <?php echo $disabled;?>></td>
           <td>&nbsp;</td>
+		  
          </tr>
 	 <tr>
 	  <td><span class='text'><?php echo htmlspecialchars(xl('Color'),ENT_QUOTES); ?>: </span><span class="mandatory">&nbsp;*</span></td> <td><input type=entry name=ncolor id=ncolor size=20 value="<?php echo htmlspecialchars($facility{"color"}, ENT_QUOTES) ?>"></td>

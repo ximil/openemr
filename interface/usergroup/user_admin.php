@@ -29,9 +29,13 @@ if ($_GET["mode"] == "update") {
     $tqvar = formData('taxid','G');
     sqlStatement("update users set federaltaxid='$tqvar' where id={$_GET["id"]}");
   }
-  if ($_GET["drugid"]) {
+  /*if ($_GET["drugid"]) {
     $tqvar = formData('drugid','G');
     sqlStatement("update users set federaldrugid='$tqvar' where id={$_GET["id"]}");
+  }*/
+  if ($_GET["email"]) {
+    $tqvar = formData('email','G');
+    sqlStatement("update users set email='$tqvar' where id={$_GET["id"]}");
   }
   if ($_GET["upin"]) {
     $tqvar = formData('upin','G');
@@ -378,7 +382,7 @@ $bg_count=count($acl_name);
 <TR height="30" style="valign:middle;">
 <td><span class="text">&nbsp;</span></td><td>&nbsp;</td>
 <td colspan="2"><span class=text><?php xl('Provider','e'); ?>:
- <input type="checkbox" name="authorized" onclick="authorized_clicked()"<?php
+ <input type="checkbox" name="authorized" onClick="authorized_clicked()"<?php
   if ($iter["authorized"]) echo " checked"; ?> />
  &nbsp;&nbsp;<span class='text'><?php xl('Calendar','e'); ?>:
  <input type="checkbox" name="calendar"<?php
@@ -397,20 +401,7 @@ $bg_count=count($acl_name);
 
 <TR>
 <td><span class=text><?php xl('Last Name','e'); ?>: </span></td><td><input type=entry name=lname id=lname style="width:150px;"  value="<?php echo $iter["lname"]; ?>"><span class="mandatory">&nbsp;*</span></td>
-<td><span class=text><?php xl('Default Facility','e'); ?>: </span></td><td><select name=facility_id style="width:150px;" >
-<?php
-$fres = sqlStatement("select * from facility where service_location != 0 order by name");
-if ($fres) {
-for ($iter2 = 0; $frow = sqlFetchArray($fres); $iter2++)
-                $result[$iter2] = $frow;
-foreach($result as $iter2) {
-?>
-  <option value="<?php echo $iter2['id']; ?>" <?php if ($iter['facility_id'] == $iter2['id']) echo "selected"; ?>><?php echo htmlspecialchars($iter2['name']); ?></option>
-<?php
-}
-}
-?>
-</select></td>
+<td><span class=text><?php xl('email','e'); ?>: </span></td><td><input type=entry name=email id=email style="width:150px;"  value="<?php echo $iter["email"]; ?>"></td>
 </tr>
 
 <?php if ($GLOBALS['restrict_user_facility']) { ?>
@@ -441,7 +432,20 @@ foreach($result as $iter2) {
 
 <TR>
 <TD><span class=text><?php xl('Federal Tax ID','e'); ?>: </span></TD><TD><input type=text name=taxid style="width:150px;"  value="<?php echo $iter["federaltaxid"]?>"></td>
-<TD><span class=text><?php xl('Federal Drug ID','e'); ?>: </span></TD><TD><input type=text name=drugid style="width:150px;"  value="<?php echo $iter["federaldrugid"]?>"></td>
+<td><span class=text><?php xl('Default Facility','e'); ?>: </span></td><td><select name=facility_id style="width:150px;" >
+<?php
+$fres = sqlStatement("select * from facility where service_location != 0 order by name");
+if ($fres) {
+for ($iter2 = 0; $frow = sqlFetchArray($fres); $iter2++)
+                $result[$iter2] = $frow;
+foreach($result as $iter2) {
+?>
+  <option value="<?php echo $iter2['id']; ?>" <?php if ($iter['facility_id'] == $iter2['id']) echo "selected"; ?>><?php echo htmlspecialchars($iter2['name']); ?></option>
+<?php
+}
+}
+?>
+</select></td>
 </TR>
 
 <tr>
@@ -460,7 +464,7 @@ foreach($result as $iter2) {
 </tr>
 
 <tr>
-<td><span class="text"><?php xl('NPI','e'); ?>: </span></td><td><input type="text" name="npi" style="width:150px;"  value="<?php echo $iter["npi"]?>"></td>
+<td><span class="text"><?php xl('PRN','e'); ?>: </span></td><td><input type="text" name="npi" style="width:150px;"  value="<?php echo $iter["npi"]?>"></td>
 <td><span class="text"><?php xl('Job Description','e'); ?>: </span></td><td><input type="text" name="job" style="width:150px;"  value="<?php echo $iter["specialty"]?>"></td>
 </tr>
 

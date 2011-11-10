@@ -15,6 +15,7 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "street = '"       . trim(formData('street'      )) . "', " .
   "city = '"         . trim(formData('city'        )) . "', " .
   "state = '"        . trim(formData('state'       )) . "', " .
+  "email = '"        . trim(formData('email'       )) . "', " .
   "postal_code = '"  . trim(formData('postal_code' )) . "', " .
   "country_code = '" . trim(formData('country_code')) . "', " .
   "federal_ein = '"  . trim(formData('federal_ein' )) . "', " .
@@ -40,6 +41,7 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		street='" . trim(formData('street')) . "',
 		city='" . trim(formData('city')) . "',
 		state='" . trim(formData('state')) . "',
+		email='" . trim(formData('email')) . "',
 		postal_code='" . trim(formData('postal_code')) . "',
 		country_code='" . trim(formData('country_code')) . "',
 		federal_ein='" . trim(formData('federal_ein')) . "',

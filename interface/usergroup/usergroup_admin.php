@@ -53,9 +53,13 @@ if ($_GET["privatemode"]=="user_admin") {
         $tqvar = formData('state_license_number','G');
         sqlStatement("update users set state_license_number='$tqvar' where id={$_GET["id"]}");
       }
-      if ($_GET["drugid"]) {
+      /*if ($_GET["drugid"]) {
         $tqvar = formData('drugid','G');
         sqlStatement("update users set federaldrugid='$tqvar' where id={$_GET["id"]}");
+      }*/
+	  if ($_GET["email"]) {
+        $tqvar = formData('email','G');
+        sqlStatement("update users set email='$tqvar' where id={$_GET["id"]}");
       }
       if ($_GET["upin"]) {
         $tqvar = formData('upin','G');
@@ -227,7 +231,8 @@ if (isset($_POST["mode"])) {
 	"', newcrop_user_role = '"  . trim(formData('erxrole' )) .
         "', authorized = '"    . trim(formData('authorized'   )) .
         "', info = '"          . trim(formData('info'         )) .
-        "', federaldrugid = '" . trim(formData('federaldrugid')) .
+       // "', federaldrugid = '" . trim(formData('federaldrugid')) .
+	    "', email = '"          . trim(formData('email'         )) .
         "', upin = '"          . trim(formData('upin'         )) .
         "', npi  = '"          . trim(formData('npi'          )).
         "', taxonomy = '"      . trim(formData('taxonomy'     )) .
