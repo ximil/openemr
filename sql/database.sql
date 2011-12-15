@@ -128,13 +128,14 @@ CREATE TABLE `billing` (
   `bill_date` datetime default NULL,
   `process_date` datetime default NULL,
   `process_file` varchar(255) default NULL,
-  `modifier` varchar(5) default NULL,
+  `modifier` varchar(12) default NULL,
   `units` tinyint(3) default NULL,
   `fee` decimal(12,2) default NULL,
   `justify` varchar(255) default NULL,
   `target` varchar(30) default NULL,
   `x12_partner_id` int(11) default NULL,
   `ndc_info` varchar(255) default NULL,
+  `notecodes` varchar(25) NOT NULL default '',
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -735,7 +736,8 @@ CREATE TABLE `drugs` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `ndc_number` varchar(20) NOT NULL DEFAULT '',
   `on_order` int(11) NOT NULL default '0',
-  `reorder_point` int(11) NOT NULL default '0',
+  `reorder_point` float NOT NULL DEFAULT 0.0,
+  `max_level` float NOT NULL DEFAULT 0.0,
   `last_notify` date NOT NULL default '0000-00-00',
   `reactions` text,
   `form` int(3) NOT NULL default '0',
@@ -1959,6 +1961,7 @@ CREATE TABLE `insurance_data` (
   `pid` bigint(20) NOT NULL default '0',
   `subscriber_sex` varchar(25) default NULL,
   `accept_assignment` varchar(5) NOT NULL DEFAULT 'TRUE',
+  `policy_type` varchar(25) NOT NULL default '',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `pid_type_date` (`pid`,`type`,`date`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -3217,6 +3220,12 @@ INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('msp_remit_codes', 'D23', 'D23', 215, 0, 0, '', 'This dual eligible patient is covered by Medicare Part D per Medicare Retro-Eligibility. At least one Remark Code must be provided (may be comprised of either the NCPDP Reject Reason Code, or Remittance Advice Remark Code that is not an ALERT.)');
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('msp_remit_codes', 'W1', 'W1', 216, 0, 0, '', 'Workers'' compensation jurisdictional fee schedule adjustment. Note: If adjustment is at the Claim Level, the payer must send and the provider should refer to the 835 Class of Contract Code Identification Segment (Loop 2100 Other Claim Related Information ');
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) VALUES ('msp_remit_codes', 'W2', 'W2', 217, 0, 0, '', 'Payment reduced or denied based on workers'' compensation jurisdictional regulations or payment policies, use only if no other code is applicable. Note: If adjustment is at the Claim Level, the payer must send and the provider should refer to the 835 Insur');
+
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('lists','nation_notes_replace_buttons','Nation Notes Replace Buttons',1);
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('nation_notes_replace_buttons','Yes','Yes',10);
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('nation_notes_replace_buttons','No','No',20);
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('nation_notes_replace_buttons','Normal','Normal',30);
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('nation_notes_replace_buttons','Abnormal','Abnormal',40);
 -- --------------------------------------------------------
 
 -- 
@@ -5041,8 +5050,8 @@ CREATE TABLE code_types (
   PRIMARY KEY (ct_key)
 ) ENGINE=MyISAM;
 INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('ICD9' , 2, 1, 2, ''    , 0, 0, 0, 1);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('CPT4' , 1, 2, 2, 'ICD9', 1, 0, 0, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('HCPCS', 3, 3, 2, 'ICD9', 1, 0, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('CPT4' , 1, 2, 12, 'ICD9', 1, 0, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('HCPCS', 3, 3, 12, 'ICD9', 1, 0, 0, 0);
 INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag ) VALUES ('CVX'  , 100, 100, 0, '', 0, 0, 1, 0);
 
 INSERT INTO list_options ( list_id, option_id, title, seq ) VALUES ('lists', 'code_types', 'Code Types', 1);
@@ -5141,3 +5150,12 @@ CREATE TABLE `template_users` (
   PRIMARY KEY (`tu_id`),
   UNIQUE KEY `templateuser` (`tu_user_id`,`tu_template_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
+
+CREATE TABLE `product_warehouse` (
+  `pw_drug_id`   int(11) NOT NULL,
+  `pw_warehouse` varchar(31) NOT NULL,
+  `pw_min_level` float       DEFAULT 0,
+  `pw_max_level` float       DEFAULT 0,
+  PRIMARY KEY  (`pw_drug_id`,`pw_warehouse`)
+) ENGINE=MyISAM;
+

@@ -1,5 +1,5 @@
 <?php
-// Copyright (C) 2005-2010 Rod Roark <rod@sunsetsystems.com>
+// Copyright (C) 2005-2011 Rod Roark <rod@sunsetsystems.com>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -14,6 +14,7 @@ require_once("../../../custom/code_types.inc.php");
 require_once("../../drugs/drugs.inc.php");
 require_once("$srcdir/formatting.inc.php");
 require_once("$srcdir/options.inc.php");
+require_once("$srcdir/formdata.inc.php");
 
 // Some table cells will not be displayed unless insurance billing is used.
 $usbillstyle = $GLOBALS['ippf_specific'] ? " style='display:none'" : "";
@@ -40,7 +41,8 @@ function endFSCategory() {
 
 // Generate JavaScript to build the array of diagnoses.
 function genDiagJS($code_type, $code) {
-  if ($code_type == 'ICD9') {
+  global $code_types;
+  if ($code_types[$code_type]['diag']) {
     echo "diags.push('$code');\n";
   }
 }
@@ -76,10 +78,10 @@ function contraceptionClass($code_type, $code) {
 //
 function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
   $auth = TRUE, $del = FALSE, $units = NULL, $fee = NULL, $id = NULL,
-  $billed = FALSE, $code_text = NULL, $justify = NULL, $provider_id = 0)
+  $billed = FALSE, $code_text = NULL, $justify = NULL, $provider_id = 0, $notecodes='')
 {
   global $code_types, $ndc_applies, $ndc_uom_choices, $justinit, $pid;
-  global $contraception, $usbillstyle;
+  global $contraception, $usbillstyle, $hasCharges;
 
   if ($codetype == 'COPAY') {
     if (!$code_text) $code_text = 'Cash';
@@ -152,6 +154,13 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
     echo "  <td class='billcell' align='center'>";
     genProviderSelect('', '-- Default --', $provider_id, true);
     echo "</td>\n";
+    if ($codetype == 'HCPCS' || $codetype == 'CPT4') {
+      echo "  <td class='billcell' align='center'$usbillstyle>" .
+        htmlspecialchars($notecodes, ENT_NOQUOTES) . "</td>\n";
+    }
+    else {
+      echo "  <td class='billcell' align='center'$usbillstyle></td>\n";
+    }
     echo "  <td class='billcell' align='center'$usbillstyle><input type='checkbox'" .
       ($auth ? " checked" : "") . " disabled /></td>\n";
     echo "  <td class='billcell' align='center'><input type='checkbox'" .
@@ -161,7 +170,9 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
     if (modifiers_are_used(true)) {
       if ($codetype != 'COPAY' && ($code_types[$codetype]['mod'] || $modifier)) {
         echo "  <td class='billcell'><input type='text' name='bill[$lino][mod]' " .
-          "value='$modifier' size='" . $code_types[$codetype]['mod'] . "'></td>\n";
+             "value='$modifier' " .
+             "title='" . xl("Multiple modifiers can be separated by colons or spaces, maximum of 4 (M1:M2:M3:M4)") . "' " .
+             "value='$modifier' size='" . $code_types[$codetype]['mod'] . "'></td>\n";
       } else {
         echo "  <td class='billcell'>&nbsp;</td>\n";
       }
@@ -185,7 +196,8 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
         }
         echo "</td>\n";
         if ($code_types[$codetype]['just'] || $justify) {
-          echo "  <td class='billcell' align='center'$usbillstyle>";
+          echo "  <td class='billcell' align='center'$usbillstyle ";
+          echo "title='" . xl("Select one or more diagnosis codes to justify the service") . "' >";
           echo "<select name='bill[$lino][justify]' onchange='setJustify(this)'>";
           echo "<option value='$justify'>$justify</option></select>";
           echo "</td>\n";
@@ -204,6 +216,13 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
     echo "  <td class='billcell' align='center'>";
     genProviderSelect("bill[$lino][provid]", '-- Default --', $provider_id);
     echo "</td>\n";
+    if ($codetype == 'HCPCS' || $codetype == 'CPT4') {
+      echo "  <td class='billcell' align='center'$usbillstyle><input type='text' name='bill[$lino][notecodes]' " .
+        "value='" . htmlspecialchars($notecodes, ENT_QUOTES) . "' maxlength='10' size='8' /></td>\n";
+    }
+    else {
+      echo "  <td class='billcell' align='center'$usbillstyle></td>\n";
+    }
     echo "  <td class='billcell' align='center'$usbillstyle><input type='checkbox' name='bill[$lino][auth]' " .
       "value='1'" . ($auth ? " checked" : "") . " /></td>\n";
     echo "  <td class='billcell' align='center'><input type='checkbox' name='bill[$lino][del]' " .
@@ -247,6 +266,8 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
 
   // For IPPF.  Track contraceptive services.
   if (!$del) $contraception |= contraceptionClass($codetype, $code);
+
+  if ($fee != 0) $hasCharges = true;
 }
 
 // This writes a product (drug_sales) line item to the output page.
@@ -254,7 +275,7 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
 function echoProdLine($lino, $drug_id, $del = FALSE, $units = NULL,
   $fee = NULL, $sale_id = 0, $billed = FALSE)
 {
-  global $code_types, $ndc_applies, $pid, $usbillstyle;
+  global $code_types, $ndc_applies, $pid, $usbillstyle, $hasCharges;
 
   $drow = sqlQuery("SELECT name FROM drugs WHERE drug_id = '$drug_id'");
   $code_text = $drow['name'];
@@ -310,6 +331,8 @@ function echoProdLine($lino, $drug_id, $del = FALSE, $units = NULL,
 
   echo "  <td class='billcell'>$strike1" . ucfirst(strtolower($code_text)) . "$strike2</td>\n";
   echo " </tr>\n";
+
+  if ($fee != 0) $hasCharges = true;
 }
 
 // Build a drop-down list of providers.  This includes users who
@@ -344,6 +367,7 @@ $contraception = 0;
 $ndc_uom_choices = array(
   'ML' => 'ML',
   'GR' => 'Grams',
+  'ME' => 'Milligrams',
   'F2' => 'I.U.',
   'UN' => 'Units'
 );
@@ -366,10 +390,10 @@ $visit_row = sqlQuery("SELECT fe.date, opc.pc_catname " .
   "WHERE fe.pid = '$pid' AND fe.encounter = '$encounter' LIMIT 1");
 $visit_date = substr($visit_row['date'], 0, 10);
 
-// If Save was clicked, save the new and modified billing lines;
-// then if no error, redirect to $returnurl.
+// If Save or Save-and-Close was clicked, save the new and modified billing
+// lines; then if no error, redirect to $returnurl.
 //
-if ($_POST['bn_save']) {
+if ($_POST['bn_save'] || $_POST['bn_save_close']) {
   $main_provid = 0 + $_POST['ProviderID'];
   $main_supid  = 0 + $_POST['SupervisorID'];
   if ($main_supid == $main_provid) $main_supid = 0;
@@ -399,6 +423,7 @@ if ($_POST['bn_save']) {
       $code = sprintf('%01.2f', 0 - $fee);
     }
     $justify   = trim($iter['justify']);
+    $notecodes = trim(strip_escape_custom($iter['notecodes']));
     if ($justify) $justify = str_replace(',', ':', $justify) . ':';
     // $auth      = $iter['auth'] ? "1" : "0";
     $auth      = "1";
@@ -420,7 +445,8 @@ if ($_POST['bn_save']) {
         sqlQuery("UPDATE billing SET code = '$code', " .
           "units = '$units', fee = '$fee', modifier = '$modifier', " .
           "authorized = $auth, provider_id = '$provid', " .
-          "ndc_info = '$ndc_info', justify = '$justify' WHERE " .
+          "ndc_info = '$ndc_info', justify = '$justify', notecodes = '" .
+          add_escape_custom($notecodes) . "' WHERE " .
           "id = '$id' AND billed = 0 AND activity = 1");
       }
     }
@@ -429,7 +455,7 @@ if ($_POST['bn_save']) {
     else if (! $del) {
       $code_text = addslashes($codesrow['code_text']);
       addBilling($encounter, $code_type, $code, $code_text, $pid, $auth,
-        $provid, $modifier, $units, $fee, $ndc_info, $justify);
+        $provid, $modifier, $units, $fee, $ndc_info, $justify, 0, $notecodes);
     }
   } // end for
 
@@ -491,6 +517,29 @@ if ($_POST['bn_save']) {
   sqlStatement("UPDATE form_encounter SET provider_id = '$main_provid', " .
     "supervisor_id = '$main_supid'  WHERE " .
     "pid = '$pid' AND encounter = '$encounter'");
+
+  // Save-and-Close is currently IPPF-specific but might be more generally
+  // useful.  It provides the ability to mark an encounter as billed
+  // directly from the Fee Sheet, if there are no charges.
+  if ($_POST['bn_save_close']) {
+    $tmp1 = sqlQuery("SELECT SUM(ABS(fee)) AS sum FROM drug_sales WHERE " .
+      "pid = '$pid' AND encounter = '$encounter'");
+    $tmp2 = sqlQuery("SELECT SUM(ABS(fee)) AS sum FROM billing WHERE " .
+      "pid = '$pid' AND encounter = '$encounter' AND billed = 0 AND " .
+      "activity = 1");
+    if ($tmp1['sum'] + $tmp2['sum'] == 0) {
+      sqlStatement("update drug_sales SET billed = 1 WHERE " .
+        "pid = '$pid' AND encounter = '$encounter' AND billed = 0");
+      sqlStatement("UPDATE billing SET billed = 1, bill_date = NOW() WHERE " .
+        "pid = '$pid' AND encounter = '$encounter' AND billed = 0 AND " .
+        "activity = 1");
+    }
+    else {
+      // Would be good to display an error message here... they clicked
+      // Save and Close but the close could not be done.  However the
+      // framework does not provide an easy way to do that.
+    }
+  }
 
   // More IPPF stuff.
   if (!empty($_POST['contrastart'])) {
@@ -818,7 +867,7 @@ echo " </tr>\n";
   <td class='billcell'><b><?php xl('Type','e');?></b></td>
   <td class='billcell'><b><?php xl('Code','e');?></b></td>
 <?php if (modifiers_are_used(true)) { ?>
-  <td class='billcell'><b><?php xl('Mod','e');?></b></td>
+  <td class='billcell'><b><?php xl('Modifiers','e');?></b></td>
 <?php } ?>
 <?php if (fees_are_used()) { ?>
   <td class='billcell' align='right'><b><?php xl('Price','e');?></b>&nbsp;</td>
@@ -826,6 +875,7 @@ echo " </tr>\n";
   <td class='billcell' align='center'<?php echo $usbillstyle; ?>><b><?php xl('Justify','e');?></b></td>
 <?php } ?>
   <td class='billcell' align='center'><b><?php xl('Provider','e');?></b></td>
+  <td class='billcell' align='center'<?php echo $usbillstyle; ?>><b><?php xl('Note Codes','e');?></b></td>
   <td class='billcell' align='center'<?php echo $usbillstyle; ?>><b><?php xl('Auth','e');?></b></td>
   <td class='billcell' align='center'><b><?php xl('Delete','e');?></b></td>
   <td class='billcell'><b><?php xl('Description','e');?></b></td>
@@ -835,6 +885,8 @@ echo " </tr>\n";
 $justinit = "var f = document.forms[0];\n";
 
 // $encounter_provid = -1;
+
+$hasCharges = false;
 
 // Generate lines for items already in the billing table for this encounter,
 // and also set the rendering provider if we come across one.
@@ -852,6 +904,7 @@ if ($billresult) {
     $authorized = $iter["authorized"];
     $ndc_info   = $iter["ndc_info"];
     $justify    = trim($iter['justify']);
+    $notecodes  = trim($iter['notecodes']);
     if ($justify) $justify = substr(str_replace(':', ',', $justify), 0, strlen($justify) - 1);
     $provider_id = $iter['provider_id'];
 
@@ -867,6 +920,7 @@ if ($billresult) {
         trim($bline['ndcqty']);
       }
       $justify    = $bline['justify'];
+      $notecodes  = strip_escape_custom(trim($bline['notecodes']));
       $provider_id = 0 + $bline['provid'];
     }
 
@@ -874,7 +928,7 @@ if ($billresult) {
     echoLine($bill_lino, $iter["code_type"], trim($iter["code"]),
       $modifier, $ndc_info,  $authorized,
       $del, $units, $fee, $iter["id"], $iter["billed"],
-      $iter["code_text"], $justify, $provider_id);
+      $iter["code_text"], $justify, $provider_id, $notecodes);
   }
 }
 
@@ -896,7 +950,8 @@ if ($_POST['bill']) {
     if ($iter['code_type'] == 'COPAY' && $fee > 0) $fee = 0 - $fee;
     echoLine(++$bill_lino, $iter["code_type"], $iter["code"], trim($iter["mod"]),
       $ndc_info, $iter["auth"], $iter["del"], $units,
-      $fee, NULL, FALSE, NULL, $iter["justify"], 0 + $iter['provid']);
+      $fee, NULL, FALSE, NULL, $iter["justify"], 0 + $iter['provid'],
+      strip_escape_custom($iter['notecodes']));
   }
 }
 
@@ -1086,6 +1141,10 @@ if (true) {
 <?php if (!$isBilled) { ?>
 <input type='submit' name='bn_save' value='<?php xl('Save','e');?>' />
 &nbsp;
+<?php if (!$hasCharges) { ?>
+<input type='submit' name='bn_save_close' value='<?php xl('Save and Close','e');?>' />
+&nbsp;
+<?php } ?>
 <input type='submit' name='bn_refresh' value='<?php xl('Refresh','e');?>'>
 &nbsp;
 <?php } ?>
