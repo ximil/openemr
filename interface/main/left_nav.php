@@ -122,7 +122,7 @@
   'dem' => array(xl('Patient')   , 1,  "patient_file/summary/demographics.php"),
   'his' => array(xl('History')   , 1, 'patient_file/history/history.php'),
   'ens' => array(xl('Visit History'), 1, 'patient_file/history/encounters.php'),
-  'nen' => array(xl('Create Visit'), 1, 'forms/newpatient/new.php?autoloaded=1&calenc='),
+  'nen' => array(xl('Create Visit'), 1, 'forms/common_forms/newpatient/new.php?autoloaded=1&calenc='),
   'pre' => array(xl('Rx')        , 1, 'patient_file/summary/rx_frameset.php'),
   'iss' => array(xl('Issues')    , 1, 'patient_file/summary/stats_full.php?active=all'),
   'imm' => array(xl('Immunize')  , 1, 'patient_file/summary/immunizations.php'),

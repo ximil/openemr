@@ -317,12 +317,16 @@ if (is_numeric($pid)) {
         // Use the form's report.php for display.  Forms with names starting with LBF
         // are list-based forms sharing a single collection of code.
         //
+		$specialityPath='common_forms';
+        $status = sqlQuery("SELECT * FROM registry WHERE directory='".$_GET['formname']."'");
+	        if($status['speciality'] != '')
+            $specialityPath = $status['speciality'];
         if (substr($formdir,0,3) == 'LBF') {
-          include_once($GLOBALS['incdir'] . "/forms/LBF/report.php");
+          include_once($GLOBALS['incdir'] . "/forms/common_forms/LBF/report.php");
           call_user_func("lbf_report", $pid, $encounter, 2, $iter['form_id'], $formdir);
         }
         else  {
-          include_once($GLOBALS['incdir'] . "/forms/$formdir/report.php");
+          include_once($GLOBALS['incdir'] . "/forms/".$specialityPath."/$formdir/report.php");
           call_user_func($formdir . "_report", $pid, $encounter, 2, $iter['form_id']);
         }
 

@@ -138,3 +138,11 @@ CREATE TABLE `product_warehouse` (
 ALTER TABLE `billing` ADD `notecodes` varchar(25) NOT NULL default '';
 #EndIf
 
+#IfNotRow2D list_options list_id lists option_id Speciality
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) 
+VALUES ('lists','Speciality','Speciality','218','0','0','','');
+#EndIf
+
+#IfMissingColumn registry speciality
+ALTER TABLE `registry` ADD COLUMN `speciality` VARCHAR(45) NOT NULL DEFAULT 'common_forms';
+#EndIf

@@ -4,7 +4,7 @@
 //include_once("../../globals.php");
 include_once("{$GLOBALS['srcdir']}/sql.inc");
 
-function registerForm ( $directory , $sql_run=0 , $unpackaged=1 , $state=0 )
+/*function registerForm ( $directory , $sql_run=0 , $unpackaged=1 , $state=0 )
 {
 	$check = sqlQuery("select state from registry where directory='$directory'");
 	if ($check == false)
@@ -24,8 +24,29 @@ function registerForm ( $directory , $sql_run=0 , $unpackaged=1 , $state=0 )
 		");
 	}
 	return false;
+}*/
+function registerFormspec ( $directory ,$speciality, $sql_run=0 , $unpackaged=1 , $state=0 )
+{
+	$check = sqlQuery("select state from registry where directory='$directory'");
+	if ($check == false)
+	{
+		$lines = @file($GLOBALS['srcdir']."/../interface/forms/$speciality/$directory/info.txt");
+		if ($lines)
+			$name = $lines[0];
+		else
+			$name = $directory;
+		return sqlInsert("insert into registry set
+			name='$name',
+			state='$state',
+			directory='".mysql_escape_string($directory)."',
+			sql_run='$sql_run',
+			unpackaged='$unpackaged',
+			date=NOW(),
+			speciality='$speciality'
+		");
+	}
+	return false;
 }
-
 function updateRegistered ( $id, $mod )
 {
 	return sqlInsert("update registry set
@@ -51,6 +72,24 @@ function getRegistered ( $state="1", $limit="unlimited", $offset="0")
 		return false;
 	return $all;
 }
+
+function getRegisteredSpeciality ( $state="1",$speciality=null, $limit="unlimited", $offset="0")
+{
+	$common .= $speciality ? "and speciality=\"$speciality\"" : "and (speciality=\"\" OR speciality IS NULL)";
+	$sql = "select * from registry where state like \"$state\" $common order by priority, name";
+	if ($limit != "unlimited")
+		$sql .= " limit $limit, $offset";
+	$res = sqlStatement($sql);
+	if ($res)
+	for($iter=0; $row=sqlFetchArray($res); $iter++)
+	{
+		$all[$iter] = $row;
+	}
+	else
+		return false;
+	return $all;
+}
+
 
 function getRegistryEntry ( $id, $cols = "*" )
 {
