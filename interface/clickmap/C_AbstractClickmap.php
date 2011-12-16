@@ -15,7 +15,8 @@
  * remember that include paths are calculated relative to the including script, not this file.
  * to lock the path to this script (so if called from different scripts) use the dirname(FILE) variable
 */
-require_once('../../globals.php');
+if(!include_once("../../../globals.php"))
+{include_once("../../globals.php");}
 
 /* For Controller, the class we're extending. */
 require_once ($GLOBALS['srcdir'] . '/classes/Controller.class.php');
@@ -90,7 +91,7 @@ abstract class C_AbstractClickmap extends Controller {
      */
     private function set_context( $model ) {
         $root = $GLOBALS['webroot'] . "/interface/clickmap";
-        $model->saveAction = $GLOBALS['webroot'] . "/interface/forms/" . $model->getCode() . "/save.php";
+        $model->saveAction = $GLOBALS['webroot'] . "/interface/forms/" .$model->getdirectory(). $model->getCode() . "/save.php";
         $model->template_dir = $root . "/template";
         $model->image = $this->getImage();
         $optionList = $this->getOptionList();
