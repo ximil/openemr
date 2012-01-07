@@ -33,7 +33,7 @@
 // Linux and with Windows XP.
 // Do not assume that it works for you until you have successfully
 // tested a restore!
-
+set_time_limit(0);
 require_once("../globals.php");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/log.inc");
@@ -174,6 +174,7 @@ if ($form_step == 1) {
     //include routines during backup when de-identification is enabled
     $cmd = "$mysql_dump_cmd -u " . escapeshellarg($sqlconf["login"]) .
     " -p" . escapeshellarg($sqlconf["pass"]) .
+    " -h" . escapeshellarg($sqlconf["host"]) .
     " --routines".
     " --opt --quote-names -r $file_to_compress " .
     escapeshellarg($sqlconf["dbase"]);
@@ -182,6 +183,7 @@ if ($form_step == 1) {
   { 
     $cmd = "$mysql_dump_cmd -u " . escapeshellarg($sqlconf["login"]) .
     " -p" . escapeshellarg($sqlconf["pass"]) .
+    " -h" . escapeshellarg($sqlconf["host"]) .
     " --opt --quote-names -r $file_to_compress " .
     escapeshellarg($sqlconf["dbase"]);
   } 
