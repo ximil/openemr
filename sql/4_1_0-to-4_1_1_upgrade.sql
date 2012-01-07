@@ -138,3 +138,19 @@ CREATE TABLE `product_warehouse` (
 ALTER TABLE `billing` ADD `notecodes` varchar(25) NOT NULL default '';
 #EndIf
 
+#IfNotRow2D list_options list_id lists option_id Speciality
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`) 
+VALUES ('lists','Speciality','Speciality','10','0','0','','');
+#EndIf
+
+#IfMissingColumn registry speciality
+ALTER TABLE `registry` ADD COLUMN `speciality` VARCHAR(45) NOT NULL DEFAULT 'common_forms';
+#EndIf
+
+#IfMissingColumn registry priority_list
+ALTER TABLE `registry` ADD COLUMN `priority_list` INT(11) NOT NULL DEFAULT '0';
+#EndIf
+
+#IfMissingColumn registry allow_duplication
+ALTER TABLE `registry` ADD COLUMN `allow_duplication` tinyint(1) NOT NULL DEFAULT '1';
+#EndIf

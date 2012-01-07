@@ -15,7 +15,8 @@
 
 /* for $GLOBALS['srcdir','pid'] */
 /* remember that include paths are calculated relative to the including script, not this file. */
-require_once('../../globals.php');
+if(!include_once("../../../globals.php"))
+{include_once("../../globals.php");}
 
 /* for OrDataObject, the class we're extending. */
 require_once ($GLOBALS['srcdir'] . '/classes/ORDataObject.class.php');
@@ -125,6 +126,8 @@ abstract class AbstractClickmapModel extends ORDataObject {
      * @return A string thats a 'code' for this form.
      */
     abstract function getCode();
+	
+	
 
     /**
      * @brief Fill in this object's members with the contents from the database representing the stored form.
