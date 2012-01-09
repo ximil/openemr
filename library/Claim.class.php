@@ -708,8 +708,7 @@ class Claim {
 
   function insuredTypeCode($ins=0) {
     if (strcmp($this->claimType($ins),'MB') == 0 && $this->payerSequence($ins) != 'P')
-      return '12'; // medicare secondary working aged beneficiary or
-                   // spouse with employer group health plan
+      return $this->payers[$ins]['data']['policy_type'];
     return '';
   }
 
@@ -917,7 +916,18 @@ class Claim {
   }
 
   function cptModifier($prockey) {
-    return x12clean(trim($this->procs[$prockey]['modifier']));
+    // Split on the colon or space and clean each modifier
+    $mods = array();
+    $cln_mods = array();
+    $mods = preg_split("/[: ]/",trim($this->procs[$prockey]['modifier']));
+    foreach ($mods as $mod) {
+        array_push($cln_mods, x12clean($mod));
+    }
+    return (implode (':', $cln_mods));
+  }
+
+  function cptNotecodes($prockey) {
+    return x12clean(trim($this->procs[$prockey]['notecodes']));
   }
 
   // Returns the procedure code, followed by ":modifier" if there is one.

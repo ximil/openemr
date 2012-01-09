@@ -20,6 +20,21 @@ $PLAYER_FITNESSES = array(
 );
 $PLAYER_FITCOLORS = array('#6677ff', '#00cc00', '#ffff00', '#ff3333', '#ff8800', '#ffeecc', '#ffccaa');
 
+// Hard-coding this array because its values and meanings are fixed by the 837p
+// standard and we don't want people messing with them.
+$policy_types = array(
+  ''   => xl('N/A'),
+  '12' => xl('Working Aged Beneficiary or Spouse with Employer Group Health Plan'),
+  '13' => xl('End-Stage Renal Disease Beneficiary in MCP with Employer`s Group Plan'),
+  '14' => xl('No-fault Insurance including Auto is Primary'),
+  '15' => xl('Worker`s Compensation'),
+  '16' => xl('Public Health Service (PHS) or Other Federal Agency'),
+  '41' => xl('Black Lung'),
+  '42' => xl('Veteran`s Administration'),
+  '43' => xl('Disabled Beneficiary Under Age 65 with Large Group Health Plan (LGHP)'),
+  '47' => xl('Other Liability Insurance is Primary'),
+);
+
 function getPatientData($pid, $given = "*, DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS") {
     $sql = "select $given from patient_data where pid=? order by date DESC limit 0,1";
     return sqlQuery($sql, array($pid) );
@@ -377,8 +392,8 @@ function getPatientLnames($lname = "%", $given = "pid, id, lname, fname, mname, 
     }
     $search_for_pieces1 = '';
     $search_for_pieces2 = '';
-    if ($lname{0} != strtoupper($lname{0})) {$search_for_pieces1 = '%';}
-    if ($fname{0} != strtoupper($fname{0})) {$search_for_pieces2 = '%';}
+    if ((strlen($lname) < 1)|| ($lname{0} != strtoupper($lname{0}))) {$search_for_pieces1 = '%';}
+    if ((strlen($fname) < 1)|| ($fname{0} != strtoupper($fname{0}))) {$search_for_pieces2 = '%';}
 
     $sqlBindArray = array();
     $where = "lname LIKE ? AND fname LIKE ? ";
@@ -397,6 +412,7 @@ function getPatientLnames($lname = "%", $given = "pid, id, lname, fname, mname, 
 
     $rez = sqlStatement($sql, $sqlBindArray);
 
+    $returnval=array();
     for($iter=0; $row=sqlFetchArray($rez); $iter++)
         $returnval[$iter] = $row;
 
@@ -945,7 +961,8 @@ function newInsuranceData(
   $copay = "",
   $subscriber_sex = "",
   $effective_date = "0000-00-00",
-  $accept_assignment = "TRUE")
+  $accept_assignment = "TRUE",
+  $policy_type = "")
 {
   if (strlen($type) <= 0) return FALSE;
 
@@ -1019,6 +1036,7 @@ function newInsuranceData(
     $data['pid'] = $pid;
     $data['date'] = $effective_date;
     $data['accept_assignment'] = $accept_assignment;
+    $data['policy_type'] = $policy_type;
     updateInsuranceData($idrow['id'], $data);
     return $idrow['id'];
   }
@@ -1051,7 +1069,8 @@ function newInsuranceData(
       subscriber_sex = '$subscriber_sex',
       pid = '$pid',
       date = '$effective_date',
-      accept_assignment = '$accept_assignment'
+      accept_assignment = '$accept_assignment',
+      policy_type = '$policy_type'
     ");
   }
 }
