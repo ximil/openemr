@@ -24,13 +24,13 @@ $fake_register_globals=false;
  require_once("$srcdir/edi.inc");
  require_once("$srcdir/clinical_rules.php");
 
-  if ($GLOBALS['concurrent_layout'] && $_GET['set_pid']) {
+  if ($GLOBALS['concurrent_layout'] && isset($_GET['set_pid'])) {
   include_once("$srcdir/pid.inc");
   setpid($_GET['set_pid']);
  }
 
   $active_reminders = false;
-  if (($_SESSION['alert_notify_pid'] != $pid) && $_GET['set_pid'] && acl_check('patients', 'med') && $GLOBALS['enable_cdr'] && $GLOBALS['enable_cdr_crp']) {
+  if ((!isset($_SESSION['alert_notify_pid']) || ($_SESSION['alert_notify_pid'] != $pid)) && isset($_GET['set_pid']) && acl_check('patients', 'med') && $GLOBALS['enable_cdr'] && $GLOBALS['enable_cdr_crp']) {
     // showing a new patient, so check for active reminders
     $active_reminders = active_alert_summary($pid,"reminders-due");
   }
@@ -146,7 +146,7 @@ if((top.window.parent) && (parent.window)){
  var mypcc = '<?php echo htmlspecialchars($GLOBALS['phone_country_code'],ENT_QUOTES); ?>';
 
  function oldEvt(eventid) {
-  dlgopen('../../main/calendar/add_edit_event.php?eid=' + eventid, '_blank', 550, 270);
+  dlgopen('../../main/calendar/add_edit_event.php?eid=' + eventid, '_blank', 550, 350);
  }
 
  function advdirconfigure() {
@@ -199,7 +199,7 @@ if ($GLOBALS['athletic_team']) {
  }
 
  function newEvt() {
-  dlgopen('../../main/calendar/add_edit_event.php?patientid=<?php echo htmlspecialchars($pid,ENT_QUOTES); ?>', '_blank', 550, 270);
+  dlgopen('../../main/calendar/add_edit_event.php?patientid=<?php echo htmlspecialchars($pid,ENT_QUOTES); ?>', '_blank', 550, 350);
   return false;
  }
 
@@ -244,10 +244,7 @@ $(document).ready(function(){
 				data: {
 					patient:<?php echo $row_soapstatus['pid']; ?>,
 				},
-				<?php
-				if($GLOBALS['erx_import_status_message']){ ?>
 				async: false,
-				<?php } ?>
 				success: function(thedata){
 					//alert(thedata);
 					msg_updation+=thedata;
@@ -267,10 +264,7 @@ $(document).ready(function(){
 				data: {
 					patient:<?php echo $row_soapstatus['pid']; ?>,
 				},
-				<?php
-				if($GLOBALS['erx_import_status_message']){ ?>
 				async: false,
-				<?php } ?>
 				success: function(thedata){
 					//alert(thedata);
 					msg_updation+=thedata;
@@ -786,11 +780,16 @@ if ( $insurance_count > 0 ) {
 							<?php if ($row['copay'] != "") { ?>
 								  <span class='bold'><?php echo htmlspecialchars(xl('CoPay'),ENT_NOQUOTES); ?>: </span>
 								  <span class='text'><?php echo htmlspecialchars($row['copay'],ENT_NOQUOTES); ?></span>
+                  <br />
 							<?php } ?>
-							<br>
 								  <span class='bold'><?php echo htmlspecialchars(xl('Accept Assignment'),ENT_NOQUOTES); ?>:</span>
 								  <span class='text'><?php if($row['accept_assignment'] == "TRUE") echo xl("YES"); ?>
 								  <?php if($row['accept_assignment'] == "FALSE") echo xl("NO"); ?></span>
+							<?php if (!empty($row['policy_type'])) { ?>
+                  <br />
+								  <span class='bold'><?php echo htmlspecialchars(xl('Secondary Medicare Type'),ENT_NOQUOTES); ?>: </span>
+								  <span class='text'><?php echo htmlspecialchars($policy_types[$row['policy_type']],ENT_NOQUOTES); ?></span>
+							<?php } ?>
 								 </td>
 								 <td valign='top'></td>
 								 <td valign='top'></td>
@@ -1223,7 +1222,7 @@ expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel,
 
 </div> <!-- end main content div -->
 
-<?php if ($GLOBALS['concurrent_layout'] && $_GET['set_pid']) { ?>
+<?php if ($GLOBALS['concurrent_layout'] && isset($_GET['set_pid'])) { ?>
 <script language='JavaScript'>
  top.window.parent.left_nav.setPatient(<?php echo "'" . htmlspecialchars(($result['fname']) . " " . ($result['lname']),ENT_QUOTES) .
    "'," . htmlspecialchars($pid,ENT_QUOTES) . ",'" . htmlspecialchars(($result['pubpid']),ENT_QUOTES) .
