@@ -10,6 +10,7 @@
  require_once("$srcdir/log.inc");
  require_once("$srcdir/acl.inc");
  require_once("$srcdir/sl_eob.inc.php");
+ require_once("$srcdir/classes/CouchDb.class.php");
 
  $patient     = $_REQUEST['patient'];
  $encounterid = $_REQUEST['encounterid'];
@@ -104,8 +105,16 @@ function form_delete($formdir, $formid) {
 // Delete a specified document including its associated relations and file.
 //
 function delete_document($document) {
-  $trow = sqlQuery("SELECT url FROM documents WHERE id = '$document'");
+  $trow = sqlQuery("SELECT url,couch_docid,couch_revid FROM documents WHERE id = '$document'");
   $url = $trow['url'];
+  $docid = $trow['couch_docid'];
+  $revid = $trow['couch_revid'];
+  if($docid){
+   global $CDBconf;
+   $couch = new CouchDB($CDBconf);
+   $couch->DeleteDoc($CDBconf['dbase'],$docid,$revid);
+   echo "Success fully deleted from CouchDB.<br>\n";
+  }
   row_delete("categories_to_documents", "document_id = '$document'");
   row_delete("documents", "id = '$document'");
   row_delete("gprelations", "type1 = 1 AND id1 = '$document'");

@@ -571,6 +571,17 @@ $GLOBALS_METADATA = array(
       '0',                              // default = true
       xl('This will use the custom immunizations list rather than the standard CVX immunization list.')
     ),
+    
+    'document_storage_method' => array(
+      xl('Document Storage Method'),
+      array(
+        '0' => xl('Hard Disk'),
+        '1' => xl('CouchDB'),
+        '2' => xl('Both Hard Disk And CouchDB'),
+      ),
+      '0',                              // default
+      xl('Option to save method of document storage.')
+    ),
 
   ),
 

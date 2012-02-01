@@ -167,3 +167,15 @@ CREATE TABLE `dated_reminders_link` (
             KEY `dr_id` (`dr_id`)
           ) ENGINE=MyISAM AUTO_INCREMENT=1;
 #EndIf
+
+#IfMissingColumn documents pc_sendalertsms
+ALTER TABLE `documents` ADD COLUMN `couch_docid` VARCHAR(40) NULL;
+#EndIf
+
+#IfMissingColumn documents pc_sendalertsms
+ALTER TABLE `documents` ADD COLUMN `couch_revid` VARCHAR(40) NULL;
+#EndIf
+
+#IfMissingColumn documents pc_sendalertsms
+ALTER TABLE `documents` ADD COLUMN `storagemethod` TINYINT DEFAULT '0' NOT NULL COMMENT '0->Harddisk,1->CouchDB and 2->Both Harddisk and CouchDB';
+#EndIf

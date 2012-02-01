@@ -9,6 +9,7 @@ require_once(dirname(__FILE__) . "/../library/classes/Document.class.php");
 require_once(dirname(__FILE__) . "/../library/classes/CategoryTree.class.php");
 require_once(dirname(__FILE__) . "/../library/classes/TreeMenu.php");
 require_once(dirname(__FILE__) . "/../library/classes/Note.class.php");
+require_once(dirname(__FILE__) . "/../library/classes/CouchDB.class.php");
 
 class C_Document extends Controller {
 
@@ -52,6 +53,19 @@ class C_Document extends Controller {
 	}
 	
 	function upload_action_process() {
+		$couchDB = 0;
+		$harddisk = 0;
+		global $CDBconf;
+		if($GLOBALS['document_storage_method']==0){
+		$harddisk++;
+		}
+		if($GLOBALS['document_storage_method']==1){
+		$couchDB++;
+		}
+		else{
+		$harddisk++;
+		$couchDB++;
+		}
 		
 		if ($_POST['process'] != "true")
 			return;
@@ -112,12 +126,43 @@ class C_Document extends Controller {
                 fwrite( $tmpfile, $plaintext );
                 fclose( $tmpfile );
                 $file['size'] = filesize( $tmpfilepath.$tmpfilename );
-		  	} 
-		  	
-		  	if (move_uploaded_file($file['tmp_name'],$this->file_path.$fname)) {
+		  	}
+			$couchDBSave = 0;
+			$docid = '';
+			$resp = '';
+		  	if($couchDB>0){
+				$couch = new CouchDB($CDBconf);
+				if(!$couch->check_connection()) die("CouchDB Connection Failed.");
+				$couch->createDB($CDBconf['dbase']);
+				$docname = $_SESSION['authId'].$patient_id.$encounter.$fname.date("%Y-%m-%d H:i:s");
+				$docid = $couch->stringToId($docname);
+				$tmpfile = fopen( $file['tmp_name'], "rb" );
+				$filetext = fread( $tmpfile, $file['size'] );
+				fclose( $tmpfile );
+				$json = json_encode(base64_encode($filetext));
+				$data = array($CDBconf['dbase'],$docid,$patient_id,$encounter,$file['type'],$json);
+				$resp = $couch->check_saveDOC($data);
+				$revid = $resp->rev;
+				$couchDBSave = 1;
+			}
+			if($harddisk>0 || $couchDBSave>0){
+			if($harddisk>0){
+			$uploadSuccess = 0;
+			if(move_uploaded_file($file['tmp_name'],$this->file_path.$fname))
+		  	$uploadSuccess = 1;	
+			}
+			if ($uploadSuccess>0 || $couchDBSave>0) {
         		$this->assign("upload_success", "true");
 		  		$d = new Document();
+				$d->storagemethod = $GLOBALS['document_storage_method'];
+				if($harddisk>0)
 		  		$d->url = "file://" .$this->file_path.$fname;
+				else
+				$d->url = $fname;
+				if($couchDB>0){
+				$d->couch_docid = $docid;
+				$d->couch_revid = $revid;
+				}
 				if ($file['type'] == 'text/xml') {
 					$d->mimetype = 'application/xml';
 				}
@@ -141,6 +186,7 @@ class C_Document extends Controller {
 		  	else {
 		  		$error .= "The file could not be succesfully stored, this error is usually related to permissions problems on the storage system.\n";
 		  	}
+			}
 		  }
 		}
 		$this->assign("error", nl2br($error));

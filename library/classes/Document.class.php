@@ -97,11 +97,29 @@ class Document extends ORDataObject{
 	* @var int
 	*/
 	var $list_id;
-
+        
 	/**
 	 * Constructor sets all Document attributes to their default value
 	 * @param int $id optional existing id of a specific document, if omitted a "blank" document is created 
 	 */
+        var $storagemethod;
+        
+        /*
+	* 0->Harddisk,1->CouchDB and 2->Both Harddisk and CouchDB.
+	* @var int
+	*/
+        var $couch_docid;
+        
+        /*
+	* To store CouchDB document id whether it is stored in CouchDB.
+	* @var string
+	*/
+        var $couch_revid;
+        
+        /*
+	* To store CouchDB document revision id whether it is stored in CouchDB.
+	* @var string
+	*/
 	function Document($id = "")	{
 		//call the parent constructor so we have a _db to work with
 		parent::ORDataObject();
@@ -354,7 +372,30 @@ class Document extends ORDataObject{
 		}
 		parent::persist();
 	}
-
+        
+        function set_storagemethod($str) {
+		$this->storagemethod = $str;
+	}
+        
+        function get_storagemethod() {
+		return $this->storagemethod;
+	}
+        
+        function set_couch_docid($str) {
+		$this->couch_docid = $str;
+	}
+        
+        function get_couch_docid() {
+		return $this->couch_docid;
+	}
+        
+        function set_couch_revid($str) {
+		$this->couch_revid = $str;
+	}
+        
+        function get_couch_revid() {
+		return $this->couch_revid;
+	}
 } // end of Document
 
 /*
