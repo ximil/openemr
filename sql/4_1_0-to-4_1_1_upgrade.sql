@@ -169,11 +169,11 @@ CREATE TABLE `dated_reminders_link` (
 #EndIf
 
 #IfMissingColumn documents pc_sendalertsms
-ALTER TABLE `documents` ADD COLUMN `couch_docid` VARCHAR(40) NULL;
+ALTER TABLE `documents` ADD COLUMN `couch_docid` VARCHAR(100) NULL;
 #EndIf
 
 #IfMissingColumn documents pc_sendalertsms
-ALTER TABLE `documents` ADD COLUMN `couch_revid` VARCHAR(40) NULL;
+ALTER TABLE `documents` ADD COLUMN `couch_revid` VARCHAR(100) NULL;
 #EndIf
 
 #IfMissingColumn documents pc_sendalertsms

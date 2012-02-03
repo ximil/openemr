@@ -25,8 +25,8 @@ $sqlconf["dbase"] = $dbase;
 
 $CDBhost	= 'localhost';
 $CDBport	= '5985';
-$CDBlogin	= null;
-$CDBpass	= null;
+$CDBlogin	= 'jacob';
+$CDBpass	= 'jacob';
 $CDBdbase	= 'openemrCDB';
 
 $CDBconf = array();

@@ -140,9 +140,19 @@ class C_Document extends Controller {
 				$filetext = fread( $tmpfile, $file['size'] );
 				fclose( $tmpfile );
 				$json = json_encode(base64_encode($filetext));
-				$data = array($CDBconf['dbase'],$docid,$patient_id,$encounter,$file['type'],$json);
+				$db = $CDBconf['dbase'];
+				$data = array($db,$docid,$patient_id,$encounter,$file['type'],$json);
 				$resp = $couch->check_saveDOC($data);
+				if(!$resp->id || $resp->rev){
+				$data = array($db,$docid,$patient_id,$encounter);
+				$resp = $couch->retrieve_doc($data);
+				$docid = $resp->_id;
+				$revid = $resp->_rev;
+				}
+				else{
+				$docid = $resp->id;
 				$revid = $resp->rev;
+				}
 				$couchDBSave = 1;
 			}
 			if($harddisk>0 || $couchDBSave>0){
@@ -349,7 +359,7 @@ class C_Document extends Controller {
 			header('Expires: 0');
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header('Pragma: public');
-			$tmpcouchpath = $GLOBALS['temporary_files_dir']."couch_".date("YmdHis").$url;
+			$tmpcouchpath = $GLOBALS['temporary_files_dir']."couch_".date("YmdHis").$d->get_url_file();
 			$fh = fopen($tmpcouchpath,"w");
 			fwrite($fh,base64_decode($content));
 			fclose($fh);
