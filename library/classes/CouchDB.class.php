@@ -56,6 +56,12 @@ class CouchDB {
         return true;
     }
     
+    function retrieve_doc($data){
+        list($db,$docid,$patient_id,$encounter) = $data;
+        $resp = $this->send("GET", "/".$db."/".$docid); 
+        return json_decode($resp); // string(47) "{"_id":"123","_rev":"2039697587","data":"Foo"}" 
+    }
+    
     function stringToId( $string, $replace = '_' )
     {
         // First translit string to ASCII, as this characters are most probably

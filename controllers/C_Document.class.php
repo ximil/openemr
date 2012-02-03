@@ -309,7 +309,7 @@ class C_Document extends Controller {
 	
 	
 	function retrieve_action($patient_id="",$document_id,$as_file=true,$original_file=true) {
-	    
+			    
 	    $encrypted = $_POST['encrypted'];
 		$passphrase = $_POST['passphrase'];
 		$doEncryption = false;
@@ -335,7 +335,49 @@ class C_Document extends Controller {
 	    
 		$d = new Document($document_id);
 		$url =  $d->get_url();
-		
+		$storagemethod = $d->get_storagemethod();
+		$couch_docid = $d->get_couch_docid();
+		$couch_revid = $d->get_couch_revid();
+		if($couch_docid && $couch_revid){
+			global $CDBconf,$pid,$encounter;
+			$couch = new CouchDB($CDBconf);
+			$data = array($CDBconf['dbase'],$couch_docid,$pid,$encounter);
+			$resp = $couch->retrieve_doc($data);
+			$content = $resp->data;
+			header('Content-Description: File Transfer');
+			header('Content-Transfer-Encoding: binary');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			header('Pragma: public');
+			$tmpcouchpath = $GLOBALS['temporary_files_dir']."couch_".date("YmdHis").$url;
+			$fh = fopen($tmpcouchpath,"w");
+			fwrite($fh,base64_decode($content));
+			fclose($fh);
+			$f = fopen($tmpcouchpath,"r");
+			if ( $doEncryption ) {
+				$filetext = fread( $f, filesize($tmpcouchpath) );
+			        $ciphertext = $this->encrypt( $filetext, $passphrase );
+			        $tmpfilepath = $GLOBALS['temporary_files_dir'];
+			        $tmpfilename = "/encrypted_".$d->get_url_file();
+			        $tmpfile = fopen( $tmpfilepath.$tmpfilename, "w+" );
+				fwrite( $tmpfile, $ciphertext );
+				fclose( $tmpfile );
+				header('Content-Disposition: attachment; filename='.$tmpfilename );
+			        header("Content-Type: application/octet-stream" );
+			        header("Content-Length: " . filesize( $tmpfilepath.$tmpfilename ) );
+			        ob_clean();
+				flush();
+				readfile( $tmpfilepath.$tmpfilename );
+				unlink( $tmpfilepath.$tmpfilename );
+			} else {
+				header("Content-Disposition: " . ($as_file ? "attachment" : "inline") . "; filename=\"" . basename($d->get_url()) . "\"");
+			        header("Content-Type: " . $d->get_mimetype());
+			        header("Content-Length: " . filesize($tmpcouchpath));
+			        fpassthru($f);
+			}
+			exit;
+			unlink($tmpcouchpath);
+		}
 		//strip url of protocol handler
 		$url = preg_replace("|^(.*)://|","",$url);
 		
