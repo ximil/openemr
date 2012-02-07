@@ -435,9 +435,6 @@ function gen_hcfa_1500_page($pid, $encounter, &$log, &$claim) {
     ++$svccount;
     $lino = $svccount * 2 + 41;
 
-    //Note Codes.
-    put_hcfa($lino, 25, 7, $claim->cptNotecodes($hcfa_proc_index));
-
     // Drug Information. Medicaid insurers want this with HCPCS codes.
     //
     $ndc = $claim->cptNDCID($hcfa_proc_index);
@@ -454,6 +451,9 @@ function gen_hcfa_1500_page($pid, $encounter, &$log, &$claim) {
       put_hcfa($lino, 1, 50, "N4$ndc   " . $claim->cptNDCUOM($hcfa_proc_index) .
         $claim->cptNDCQuantity($hcfa_proc_index));
     }
+
+    //Note Codes.
+    put_hcfa($lino, 25, 7, $claim->cptNotecodes($hcfa_proc_index));
 
     // 24i and 24j Top. ID Qualifier and Rendering Provider ID
     if ($claim->supervisorNumber()) {
@@ -572,12 +572,12 @@ function gen_hcfa_1500_page($pid, $encounter, &$log, &$claim) {
 
   // 32. Service Facility Location Information: City State Zip
   $tmp = $claim->facilityCity() ? ($claim->facilityCity() . ' ') : '';
-  put_hcfa(60, 23, 25, $tmp . $claim->facilityState() . ' ' .
+  put_hcfa(60, 23, 27, $tmp . $claim->facilityState() . ' ' .
     $claim->facilityZip());
 
-  // 32. Billing Provider: City State Zip
+  // 33. Billing Provider: City State Zip
   $tmp = $claim->billingFacilityCity() ? ($claim->billingFacilityCity() . ' ') : '';
-  put_hcfa(60, 50, 25, $tmp . $claim->billingFacilityState() . ' ' .
+  put_hcfa(60, 50, 27, $tmp . $claim->billingFacilityState() . ' ' .
     $claim->billingFacilityZip());
 
   // 32a. Service Facility NPI
