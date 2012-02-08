@@ -27,7 +27,7 @@ $CDBhost	= 'localhost';
 $CDBport	= '5985';
 $CDBlogin	= 'jacob';
 $CDBpass	= 'jacob';
-$CDBdbase	= 'openemrCDB';
+$CDBdbase	= 'openemrCDBNDW';
 
 $CDBconf = array();
 global $CDBconf;

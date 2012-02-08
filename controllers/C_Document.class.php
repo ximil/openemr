@@ -132,8 +132,6 @@ class C_Document extends Controller {
 			$resp = '';
 		  	if($couchDB>0){
 				$couch = new CouchDB($CDBconf);
-				if(!$couch->check_connection()) die("CouchDB Connection Failed.");
-				$couch->createDB($CDBconf['dbase']);
 				$docname = $_SESSION['authId'].$patient_id.$encounter.$fname.date("%Y-%m-%d H:i:s");
 				$docid = $couch->stringToId($docname);
 				$tmpfile = fopen( $file['tmp_name'], "rb" );

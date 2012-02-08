@@ -11,6 +11,7 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/formdata.inc.php");
 require_once("$srcdir/globals.inc.php");
 require_once("$srcdir/user.inc");
+require_once("$srcdir/classes/CouchDB.class.php");
 
 if ($_GET['mode'] != "user") {
   // Check authorization.
@@ -73,7 +74,12 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
 	  $fldvalueold = $pass['gl_value'];
 	  }
       sqlStatement("DELETE FROM globals WHERE gl_name = '$fldid'");
-
+      if($fldid=='document_storage_method' && $fldvalue!=0){
+	$couch = new CouchDB($CDBconf);
+	if(!$couch->check_connection()) die("CouchDB Connection Failed.");
+	$couch->createDB($CDBconf['dbase']);
+	$couch->createView($CDBconf['dbase']);
+      }
       if (substr($fldtype, 0, 2) == 'm_') {
         if (isset($_POST["form_$i"])) {
           $fldindex = 0;

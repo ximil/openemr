@@ -45,6 +45,14 @@ class CouchDB {
         return true;
     }
     
+    function createView($db){
+        
+        $resp = $this->send("PUT", "/".$db."/_design/FilteringViews", '{"_id":"_design/FilteringViews","views": {"FilterPid": {"map": "function(doc) { if(doc.pid){emit(doc._id, doc);} }"},
+                                                                                                                "FilterEncounter": {"map": "function(doc) { if(doc.encounter){emit(doc._id, doc);} }"},
+                                                                                                                "FilterPidEncounter": {"map": "function(doc) { if(doc.pid && doc.encounter){emit(doc._id, doc);} }"}}}');
+        return json_decode($resp);
+    }
+    
     function check_saveDOC($data){
         list($db,$docid,$patient_id,$encounter,$type,$json) = $data;
         $resp = $this->send("PUT", "/".$db."/".$docid, '{"_id":"'.$docid.'","pid":"'.$patient_id.'","encounter":"'.$encounter.'","mimetype":"'.$type.'","data":'.$json.'}');
