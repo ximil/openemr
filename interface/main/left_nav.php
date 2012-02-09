@@ -187,7 +187,7 @@
      echo "forceSpec(false,true);";
    }
    echo "return loadFrame2('$id','$frame','" .
-        $primary_docs[$name][2] . "')\">" . $title . "</a></li>";
+        $primary_docs[$name][2] . "')\">" . $title . ($name == 'msg' ? ' <span id="reminderCountSpan" class="bold"></span>' : '')."</a></li>";
   }
  }
  function genMiscLink($frame, $name, $level, $title, $url, $mono=false) {
@@ -359,7 +359,26 @@ function genFindBlock() {
 <script type="text/javascript" src="../../library/dialog.js"></script>
 
 <script language='JavaScript'>
-
+ 
+ // tajemo work by CB 2012/01/31 12:32:57 PM dated reminders counter
+ function getReminderCount(){ 
+   top.restoreSession();
+   // Send the skip_timeout_reset parameter to not count this as a manual entry in the
+   //  timing out mechanism in OpenEMR.
+   $.post("<?php echo $GLOBALS['webroot']; ?>/library/ajax/dated_reminders_counter.php",
+     { skip_timeout_reset: "1" }, 
+     function(data) {
+       $("#reminderCountSpan").html(data);
+    // run updater every 60 seconds 
+     var repeater = setTimeout("getReminderCount()", 60000); 
+   });
+ }   
+ 
+ $(document).ready(function (){
+   getReminderCount();//
+ }) 
+ // end of tajemo work dated reminders counter
+ 
  // Master values for current pid and encounter.
  var active_pid = 0;
  var active_encounter = 0;
@@ -1079,7 +1098,7 @@ if ($GLOBALS['athletic_team']) {
 <?php } else { // not athletic team ?>
 
   <?php if (!$GLOBALS['disable_calendar'] && !$GLOBALS['ippf_specific']) genTreeLink('RTop','cal',xl('Calendar')); ?>
-  <?php genTreeLink('RBot','msg',xl('Messages')); ?>
+  <?php genTreeLink('RBot','msg',xl('Messages')); ?> 
   <?php if ($GLOBALS['lab_exchange_enable']) genTreeLink('RTop', 'lab', xl('Check Lab Results'));?>
   <?php if($GLOBALS['portal_offsite_enable'] && $GLOBALS['portal_offsite_address'] && acl_check('patientportal','portal'))  genTreeLink('RTop','app',xl('Portal Activity')); ?>
   <li class="open"><a class="expanded" id="patimg" ><span><?php xl('Patient/Client','e') ?></span></a>
