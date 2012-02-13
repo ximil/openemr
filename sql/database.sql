@@ -227,6 +227,7 @@ CREATE TABLE `claims` (
   `process_file` varchar(255) default NULL,
   `target` varchar(30) default NULL,
   `x12_partner_id` int(11) NOT NULL default '0',
+  `x12_gs03` varchar(15) default NULL,
   PRIMARY KEY  (`patient_id`,`encounter_id`,`version`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
