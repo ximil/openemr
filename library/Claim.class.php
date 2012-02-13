@@ -537,6 +537,13 @@ class Claim {
     return $tmp;
   }
 
+  function x12gs03() {
+    if($this->x12_partner['x12_gs03'])
+     return $this->x12_partner['x12_gs03'];
+    else
+      return null;
+  }
+
   function x12gsreceiverid() {
     $tmp = $this->x12_partner['x12_receiver_id'];
     while (strlen($tmp) < 15) $tmp .= " ";

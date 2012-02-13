@@ -46,11 +46,19 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     "*" . $claim->x12gsisa15() .
     "*:" .
     "~\n";
+//In some clearing houses ISA08 and GS03 are different
+//Example: http://www.acs-gcro.com/downloads/DOL/DOL_CG_X12N_5010_837_v1_02.pdf - Page 18
+if($claim->x12gs03()){
+    $gs03Value = $claim->x12gs03();
+}
+else{
+    $gs03Value = trim($claim->x12gsreceiverid());
+}
 
   $out .= "GS" .
     "*HC" .
     "*" . $claim->x12gsgs02() .
-    "*" . trim($claim->x12gsreceiverid()) .
+    "*" . $gs03Value .
     "*" . date('Ymd', $today) .
     "*" . date('Hi', $today) .
     "*1" .
