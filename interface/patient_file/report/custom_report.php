@@ -127,7 +127,14 @@ while($result = sqlFetchArray($inclookupres)) {
   if (substr($formdir,0,3) == 'LBF')
     include_once($GLOBALS['incdir'] . "/forms/LBF/report.php");
   else
-    include_once($GLOBALS['incdir'] . "/forms/$formdir/report.php");
+  {
+   $status = sqlQuery("SELECT * FROM registry WHERE directory='".$formdir."'");	
+    if($status['specialty'] != ''){
+      include_once($GLOBALS['incdir'] . "/forms/".$status['specialty'].'/'."$formdir/report.php");
+	}else{
+	  include_once($GLOBALS['incdir'] . "/forms/$formdir/report.php");
+	}
+  }
 }
 
 // For each form field from patient_report.php...

@@ -93,6 +93,8 @@ if ($_POST['formaction']=='save' && $list_id) {
               // Force List Based Form names to start with LBF.
               if ($list_id == 'lbfnames' && substr($id,0,3) != 'LBF')
                 $id = "LBF$id";
+              elseif($list_id == 'Specialty' && substr($id,0,9) != 'Specialty')
+                $id = "Specialty_$id";
               sqlInsert("INSERT INTO list_options ( " .
                 "list_id, option_id, title, seq, is_default, option_value, mapping, notes " .
                 ") VALUES ( " .

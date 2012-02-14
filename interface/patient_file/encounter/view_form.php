@@ -5,7 +5,9 @@
 // of the License, or (at your option) any later version.
 
 include_once("../../globals.php");
-
+$status = sqlQuery("SELECT * FROM registry WHERE directory='".$_GET['formname']."'");
+    if($status['specialty'] != '')
+    $specialtyPath = $status['specialty']."/";
 if (substr($_GET["formname"], 0, 3) === 'LBF') {
   // Use the List Based Forms engine for all LBFxxxxx forms.
   include_once("$incdir/forms/LBF/view.php");
@@ -13,9 +15,12 @@ if (substr($_GET["formname"], 0, 3) === 'LBF') {
 else {
 
   // ensure the path variable has no illegal characters
+	if($status['specialty'] != ''){
+		check_file_dir_name(rtrim($specialtyPath,"/"));
+	}
   check_file_dir_name($_GET["formname"]);
 
-  include_once("$incdir/forms/" . $_GET["formname"] . "/view.php");
+  include_once("$incdir/forms/".$specialtyPath.$_GET["formname"]."/view.php");
 }
 
 $id = $_GET["id"];
