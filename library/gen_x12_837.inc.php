@@ -449,7 +449,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     ($CMS_5010 ? "" : "*C") .
     "~\n"; 
 
-  if ($claim->onsetDate() && ($claim->onsetDate()!==$claim->serviceDate())) {
+  if ($claim->onsetDate() && 
+      ($claim->onsetDate()!== $claim->serviceDate()) &&
+      ($claim->onsetDateValid()) 
+     ) {
     ++$edicount;
     $out .= "DTP" .       // Date of Onset
       "*431" .
@@ -458,7 +461,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "~\n";
   }
 
-  if ($claim->dateInitialTreatment()) {
+  if ($claim->dateInitialTreatment() && ($claim->onsetDateValid())) {
     ++$edicount;
     $out .= "DTP" .       // Date of Initial Treatment
       "*454" .
@@ -477,7 +480,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   // Segment DTP*297 (Last Worked Date) omitted.
   // Segment DTP*296 (Authorized Return to Work Date) omitted.
 
-  if (strcmp($claim->facilityPOS(),'21') == 0) {
+  if (strcmp($claim->facilityPOS(),'21') == 0 && $claim->onsetDateValid() ) {
     ++$edicount;
     $out .= "DTP" .     // Date of Hospitalization
       "*435" .
@@ -610,34 +613,58 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     }
   }
 
-  ++$edicount;
-  $out .= "NM1" .       // Loop 2310B Rendering Provider
-    "*82" .
-    "*1" .
-    "*" . $claim->providerLastName() .
-    "*" . $claim->providerFirstName() .
-    "*" . $claim->providerMiddleName() .
-    "*" .
-    "*";
-  if ($CMS_5010 || $claim->providerNPI()) { $out .=
-    "*XX" .
-    "*" . $claim->providerNPI();
-  } else { $out .=
-    "*34" .                             // not allowed for 5010
-    "*" . $claim->providerSSN();
-    $log .= "*** Rendering provider has no NPI.\n";
-  }
-  $out .= "~\n";
-
-  if ($claim->providerTaxonomy()) {
+  
+  /* Per the implementation guide lines, only include this information if it is different 
+   * than the Loop 2010AA information
+   */
+  if(!$CMS_5010 || 
+          ($claim->providerNPIValid() && 
+          $claim->billingFacilityNPI() !== $claim->providerNPI() ))
+  {
     ++$edicount;
-    $out .= "PRV" .
-      "*PE" . // PErforming provider
-      "*" . ($CMS_5010 ? "PXC" : "ZZ") .
-      "*" . $claim->providerTaxonomy() .
-      "~\n";
-  }
+    $out .= "NM1" .       // Loop 2310B Rendering Provider
+        "*82" .
+        "*1" .
+        "*" . $claim->providerLastName() .
+        "*" . $claim->providerFirstName() .
+        "*" . $claim->providerMiddleName() .
+        "*" .
+        "*";
+    if ($CMS_5010 || $claim->providerNPI()) { $out .=
+        "*XX" .
+        "*" . $claim->providerNPI();
+    } else { $out .=
+        "*34" .                             // not allowed for 5010
+        "*" . $claim->providerSSN();
+        $log .= "*** Rendering provider has no NPI.\n";
+    }
+    $out .= "~\n";
 
+    if ($claim->providerTaxonomy()) {
+        ++$edicount;
+        $out .= "PRV" .
+        "*PE" . // PErforming provider
+        "*" . ($CMS_5010 ? "PXC" : "ZZ") .
+        "*" . $claim->providerTaxonomy() .
+        "~\n";
+    }
+    // End of Loop 2310B
+  }
+  else
+  {
+    // This loop can only get skipped if we are generating a 5010 claim
+    if(!($claim->providerNPIValid()))
+    {
+        /* If the loop was skipped because the provider NPI was invalid, generate
+         * a warning for the log.*/
+        $log.="*** Skipping 2310B because ".$claim->providerLastName() ."," . $claim->providerFirstName() . " has invalid NPI.\n";
+    }
+    /* Skipping this segment because the providerNPI and the billingFacilityNPI are identical
+     * is a normal condition, so no need to warn.
+     */
+    
+  }
+  
   // 4010: REF*1C is required here for the Medicare provider number if NPI was
   // specified in NM109.  Not sure if other payers require anything here.
   // --- apparently ECLAIMS, INC wants the data in 2010 but NOT in 2310B - tony@mi-squared.com
