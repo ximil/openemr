@@ -33,6 +33,7 @@
 //   Greek                          // xl('Greek')
 //   Hebrew                         // xl('Hebrew')
 //   Hindi                          // xl('Hindi')
+//   Hungarian                      // xl('Hungarian')
 //   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
 //   Polish                         // xl('Polish')
@@ -45,6 +46,7 @@
 //   Spanish (Spain)                // xl('Spanish (Spain)')
 //   Swedish                        // xl('Swedish')
 //   Turkish                        // xl('Turkish')
+//   Vietnamese                     // xl('Vietnamese')
 
 // OS-dependent stuff.
 if (stristr(PHP_OS, 'WIN')) {
