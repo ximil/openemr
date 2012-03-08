@@ -144,8 +144,9 @@ require_once("$srcdir/billing.inc");
         {
         for ($check_count=1;$check_count<=$out['check_count'];$check_count++)
          { 
-        
-        if(isset($_REQUEST['chk'.$out['check_number'.$check_count]]))
+        $chk_123=$out['check_number'.$check_count];
+        $chk_123=str_replace(' ','_',$chk_123);
+        if(isset($_REQUEST['chk'.$chk_123]))
         {
         $check_date=$out['check_date'.$check_count]?$out['check_date'.$check_count]:$_REQUEST['paydate'];
         $post_to_date=$_REQUEST['post_to_date']!=''?$_REQUEST['post_to_date']:date('Y-m-d');
