@@ -577,6 +577,56 @@ $GLOBALS_METADATA = array(
     ),
 
   ),
+    
+    //Documents Tab
+    'Documents' => array(
+        'document_storage_method' => array(
+            xl('Document Storage Method'),
+            array(
+                '0' => xl('Hard Disk'),
+                '1' => xl('CouchDB'),
+                '2' => xl('Both Hard Disk And CouchDB'),
+            ),
+            '0',                              // default
+            xl('Option to save method of document storage.')
+        ),
+        'couchdb_host' => array(
+            xl('CouchDB HostName'),
+            'text',
+            'localhost',
+            xl('Apache CouchDB host'),
+        ),
+        'couchdb_user' => array(
+            xl('CouchDB UserName'),
+            'text',
+            '',
+            xl('Username to connect to Apache CouchDB'),
+        ),
+        'couchdb_pass' => array(
+            xl('CouchDB Password'),
+            'pwd',
+            '',
+            xl('Password to connect to Apache CouchDB'),
+        ),
+        'couchdb_port' => array(
+            xl('CouchDB Port'),
+            'text',
+            '5984',
+            xl('CouchDB port'),
+        ),
+        'couchdb_dbase' => array(
+            xl('CouchDB Database'),
+            'text',
+            '',
+            xl('CouchDB database name'),
+        ),
+        'couchdb_log' => array(
+            xl('CouchDB Log Enable'),
+            'bool',
+            '0',
+            xl('Enable log for document uploads/downloads'),
+        ),
+    ),
 
   // Calendar Tab
   //
@@ -1487,6 +1537,6 @@ $GLOBALS_METADATA = array(
       '30',
       xl('Rx Bottom Margin (px)')
     ),
-  ),
+  ),    
 );
 ?>

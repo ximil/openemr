@@ -349,6 +349,9 @@ foreach ($ar as $key => $val) {
                     // echo "<b>NOTE</b>: ".xl('Document')."'" . $fname ."' ".xl('cannot be displayed inline because its type is not supported by the browser.')."<br><br>";	
                     // This requires ImageMagick to be installed.
                     $url_file = $d->get_url_filepath();
+                    if($d->get_storagemethod()==1 || $d->get_storagemethod()==2){
+                      $url_file = $d->get_couch_url($pid,$encounter);
+                    }
                     // just grab the last two levels, which contain filename and patientid
                     $from_all = explode("/",$url_file);
                     $from_filename = array_pop($from_all);
@@ -361,6 +364,9 @@ foreach ($ar as $key => $val) {
                     } else {
                         echo "<b>NOTE</b>: " . xl('Document') . "'" . $fname . "' " .
                         xl('cannot be converted to JPEG. Perhaps ImageMagick is not installed?') . "<br><br>";
+                    }
+                    if($d->get_storagemethod()==1 || $d->get_storagemethod()==2){
+                      unlink($url_file);
                     }
                 } // end if-else
             } // end Documents loop

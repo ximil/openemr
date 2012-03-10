@@ -11,11 +11,32 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/formdata.inc.php");
 require_once("$srcdir/globals.inc.php");
 require_once("$srcdir/user.inc");
+require_once("$srcdir/classes/CouchDB.class.php");
 
 if ($_GET['mode'] != "user") {
   // Check authorization.
   $thisauth = acl_check('admin', 'super');
   if (!$thisauth) die(xl('Not authorized'));
+}
+
+function checkCreateCDB(){
+  if($GLOBALS['document_storage_method'] != 0){
+    $globalsres = sqlStatement("SELECT gl_name, gl_index, gl_value FROM globals WHERE gl_name IN ('couchdb_host','couchdb_user','couchdb_pass','couchdb_port','couchdb_dbase')");
+    $options = array();
+    while($globalsrow = sqlFetchArray($globalsres)){
+      $GLOBALS[$globalsrow['gl_name']] = $globalsrow['gl_value'];
+    }
+    $couch = new CouchDB();
+    if(!$couch->check_connection()) {
+      echo "<script type='text/javascript'>alert('CouchDB Connection Failed.');</script>";
+      return;
+    }
+    if($GLOBALS['couchdb_host'] || $GLOBALS['couchdb_port'] || $GLOBALS['couchdb_dbase']){
+      $couch->createDB($GLOBALS['couchdb_dbase']);
+      $couch->createView($GLOBALS['couchdb_dbase']);
+    }
+  }
+  return true;
 }
 ?>
 
@@ -103,6 +124,7 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
       ++$i;
     }
   }
+  checkCreateCDB();
   echo "<script type='text/javascript'>";
   echo "parent.left_nav.location.reload();";
   echo "parent.Title.location.reload();";
