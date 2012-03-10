@@ -192,7 +192,16 @@ class Claim {
 
       $this->procs[] = $row;
     }
-
+    
+    $resMoneyGot = sqlStatement("SELECT pay_amount as PatientPay,session_id as id,".
+      "date(post_time) as date FROM ar_activity where pid ='{$this->pid}' and encounter ='{$this->encounter_id}' ".
+      "and payer_type=0 and (code='CO-PAY' or account_code='PCP')");
+      //new fees screen copay gives account_code='PCP' openemr payment screen copay gives code='CO-PAY'
+    while($rowMoneyGot = sqlFetchArray($resMoneyGot)){
+      $PatientPay=$rowMoneyGot['PatientPay']*-1;
+      $this->copay -= $PatientPay;
+    }
+    
     $sql = "SELECT * FROM x12_partners WHERE " .
       "id = '" . $this->procs[0]['x12_partner_id'] . "'";
     $this->x12_partner = sqlQuery($sql);
@@ -1016,7 +1025,7 @@ class Claim {
   
   function onsetDateValid()
   {
-      return onsetDate()!=='';
+      return $this->onsetDate()!=='';
   }
 
   function serviceDate() {

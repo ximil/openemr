@@ -64,7 +64,8 @@
 
 // insert an event
 // $args is mainly filled with content from the POST http var
-function InsertEvent($args) {
+function InsertEvent($args,$from = 'general') {
+	if($from == 'general'){
     return sqlInsert("INSERT INTO openemr_postcalendar_events ( " .
                     "pc_catid, pc_multiple, pc_aid, pc_pid, pc_title, pc_time, pc_hometext, " .
                     "pc_informant, pc_eventDate, pc_endDate, pc_duration, pc_recurrtype, " .
@@ -93,6 +94,18 @@ function InsertEvent($args) {
                     "1, " .
                     "1, " .(int)$args['facility']. ",".(int)$args['billing_facility']." )"
                 );
+	}elseif($from == 'payment'){
+		sqlStatement("INSERT INTO openemr_postcalendar_events ( " .
+			"pc_catid, pc_multiple, pc_aid, pc_pid, pc_title, pc_time, " .
+			"pc_eventDate, pc_endDate, pc_duration, pc_recurrtype, " .
+			"pc_recurrspec, pc_startTime, pc_endTime, pc_alldayevent, " .
+			"pc_apptstatus, pc_prefcatid, pc_location, pc_eventstatus, pc_sharing, pc_facility,pc_billing_location " .
+			") VALUES (?,?,?,?,?,NOW(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+			array($args['form_category'],$args['new_multiple_value'],$args['form_provider'],$args['form_pid'],$args['form_title'],
+				$args['event_date'],$args['form_enddate'],$args['duration'],($args['form_repeat'] ? '1' : '0'),serialize($args['recurrspec']),
+				$args['starttime'],$args['endtime'],$args['form_allday'],$args['form_apptstatus'],$args['form_prefcat'], $args['locationspec'],
+				1,1,(int)$args['facility'],(int)$args['billing_facility']));
+	}
 }
 //================================================================================================================
 function InsertEventFull()
