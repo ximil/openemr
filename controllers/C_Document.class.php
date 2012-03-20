@@ -61,11 +61,7 @@ class C_Document extends Controller {
 		if($GLOBALS['document_storage_method']==1){
 			$couchDB = true;
 		}
-		else{
-			$harddisk = true;
-			$couchDB = true;
-		}
-		
+				
 		if ($_POST['process'] != "true")
 			return;
 			
@@ -150,12 +146,16 @@ class C_Document extends Controller {
 					$revid = $resp->rev;
 				}
 				if(!$docid && !$revid){ //if couchdb save failed, save file to hard disk
+					$error .= "The file could not be saved to CouchDB .\n";
 					if($GLOBALS['couchdb_log']==1){
+						ob_start();
+						var_dump($resp);
+						$couchError=ob_get_clean();
 						$log_content = date('Y-m-d H:i:s')." ==> Uploading document: ".$fname."\r\n";
-						$log_content .= date('Y-m-d H:i:s')." ==> CouchDB enabled for storing documents.\r\n";
 						$log_content .= date('Y-m-d H:i:s')." ==> Failed to Store document content to CouchDB.\r\n";
 						$log_content .= date('Y-m-d H:i:s')." ==> Document ID: ".$docid."\r\n";
-						$log_content .= date('Y-m-d H:i:s')." ==> ".print_r($data,1)."\r\n";					
+						$log_content .= date('Y-m-d H:i:s')." ==> ".print_r($data,1)."\r\n";
+						$log_content .= $couchError;
 						$this->document_upload_download_log($patient_id,$log_content);//log error if any, for testing phase only
 					}
 				}				
@@ -166,11 +166,8 @@ class C_Document extends Controller {
 					$uploadSuccess = true;
 				}
 				else{
-					$log_content = date('Y-m-d H:i:s')." ==> Uploading document: ".$fname."\r\n";
-					$log_content .= date('Y-m-d H:i:s')." ==> Failed uploading document to HardDisk.\r\n";
 					$error .= "The file could not be succesfully stored, this error is usually related to permissions problems on the storage system.\n";
-					$log_content .= date('Y-m-d H:i:s')." ==> The file could not be succesfully stored, this error is usually related to permissions problems on the storage system.\r\n";
-				}
+					}
 			}
 			$this->assign("upload_success", "true");
 			$d = new Document();
@@ -184,7 +181,7 @@ class C_Document extends Controller {
 				$d->couch_revid = $revid;
 			}
 			if ($file['type'] == 'text/xml') {
-				$d->mimetype = 'application/xml';
+				$d->mimetyp6e = 'application/xml';
 			}
 			else {
 				$d->mimetype = $file['type'];
@@ -372,13 +369,14 @@ class C_Document extends Controller {
 				$log_content .= date('Y-m-d H:i:s')." ==> Failed to fetch document content from CouchDB.\r\n";
 				$log_content .= date('Y-m-d H:i:s')." ==> Will try to download file from HardDisk if exists.\r\n\r\n";
 				$this->document_upload_download_log($patient_id,$log_content);
+				die("File retrival from CouchDB failed");
 			}
 			header('Content-Description: File Transfer');
 			header('Content-Transfer-Encoding: binary');
 			header('Expires: 0');
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header('Pragma: public');
-			$tmpcouchpath = $GLOBALS['temporary_files_dir']."couch_".date("YmdHis").$d->get_url_file();
+			$tmpcouchpath = $GLOBALS['temporary_files_dir']."/couch_".date("YmdHis").$d->get_url_file();
 			$fh = fopen($tmpcouchpath,"w");
 			fwrite($fh,base64_decode($content));
 			fclose($fh);
@@ -425,10 +423,7 @@ class C_Document extends Controller {
 		}
 		if (!file_exists($url)) {
 			echo xl('The requested document is not present at the expected location on the filesystem or there are not sufficient permissions to access it.','','',' ') . $url;
-			if($GLOBALS['couchdb_log']==1){				
-				$log_content .= date('Y-m-d H:i:s')." ==> Failed to fetch document ".$temp_url." content from HardDisk.\r\n";
-				$this->document_upload_download_log($patient_id,$log_content);
-			}
+			
 		}
 		else {
 		        if ($original_file) {
@@ -966,7 +961,7 @@ class C_Document extends Controller {
 		$log_path = $GLOBALS['OE_SITE_DIR']."/documents/couchdb/";
 		$log_file = 'log.txt';
 		if(!is_dir($log_path))
-		    mkdir($log_path,777,true);
+		    mkdir($log_path,0777,true);
 		$LOG = fopen($log_path.$log_file,'a');
 		fwrite($LOG,$content);
 		fclose($LOG);

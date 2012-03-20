@@ -20,13 +20,14 @@ if ($_GET['mode'] != "user") {
 }
 
 function checkCreateCDB(){
-  if($GLOBALS['document_storage_method'] != 0){
-    $globalsres = sqlStatement("SELECT gl_name, gl_index, gl_value FROM globals WHERE gl_name IN ('couchdb_host','couchdb_user','couchdb_pass','couchdb_port','couchdb_dbase')");
+  $globalsres = sqlStatement("SELECT gl_name, gl_index, gl_value FROM globals WHERE gl_name IN 
+  ('couchdb_host','couchdb_user','couchdb_pass','couchdb_port','couchdb_dbase','document_storage_method')");
     $options = array();
     while($globalsrow = sqlFetchArray($globalsres)){
       $GLOBALS[$globalsrow['gl_name']] = $globalsrow['gl_value'];
     }
-    $couch = new CouchDB();
+  if($GLOBALS['document_storage_method'] != 0){
+        $couch = new CouchDB();
     if(!$couch->check_connection()) {
       echo "<script type='text/javascript'>alert('CouchDB Connection Failed.');</script>";
       return;

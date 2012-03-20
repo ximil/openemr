@@ -584,8 +584,7 @@ $GLOBALS_METADATA = array(
             xl('Document Storage Method'),
             array(
                 '0' => xl('Hard Disk'),
-                '1' => xl('CouchDB'),
-                '2' => xl('Both Hard Disk And CouchDB'),
+                '1' => xl('CouchDB')
             ),
             '0',                              // default
             xl('Option to save method of document storage.')
