@@ -17,12 +17,14 @@
 // Otherwise configure it as needed (print /d:PRN) might be an option for Windows parallel printers
 
 //  Current supported languages:    // Allow capture of term for translation:
+//   Albanian                       // xl('Albanian')
 //   Amharic                        // xl('Amharic')
 //   Arabic                         // xl('Arabic')
 //   Armenian                       // xl('Armenian')
 //   Bahasa Indonesia               // xl('Bahasa Indonesia')
 //   Chinese (Simplified)           // xl('Chinese (Simplified)')
 //   Chinese (Traditional)          // xl('Chinese (Traditional)')
+//   Czech                          // xl('Czech')
 //   Danish                         // xl('Danish')
 //   Dutch                          // xl('Dutch')
 //   English (Indian)               // xl('English (Indian)')
@@ -33,6 +35,7 @@
 //   Greek                          // xl('Greek')
 //   Hebrew                         // xl('Hebrew')
 //   Hindi                          // xl('Hindi')
+//   Hungarian                      // xl('Hungarian')
 //   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
 //   Polish                         // xl('Polish')
@@ -45,6 +48,7 @@
 //   Spanish (Spain)                // xl('Spanish (Spain)')
 //   Swedish                        // xl('Swedish')
 //   Turkish                        // xl('Turkish')
+//   Ukrainian                      // xl('Ukrainian')
 //   Vietnamese                     // xl('Vietnamese')
 
 // OS-dependent stuff.

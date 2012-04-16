@@ -33,7 +33,7 @@
  //       $sanitize_all_escapes=true; 
         require_once("../../globals.php");
         require_once("$srcdir/htmlspecialchars.inc.php");  
-        require_once("$srcdir/dated_reminders.php"); 
+        require_once("$srcdir/dated_reminder_functions.php"); 
              
         $days_to_show = 5;
         $alerts_to_show = 5;
@@ -130,7 +130,7 @@
              }
              if(id == 'new'){
               $(".drTD").html('<p style="text-size:3em; margin-left:200px; color:black; font-weight:bold;"><?php echo xla("Processing") ?>...</p>');
-             }
+             }    
              top.restoreSession();
              // Send the skip_timeout_reset parameter to not count this as a manual entry in the
              //  timing out mechanism in OpenEMR.
@@ -170,19 +170,12 @@
 }
       </script>
       
-        <?php 
-          $isAdmin =acl_check('admin', 'users');  
-          
-            
-          // Temporary for allowing all users to see this
-          $isAdmin = true;             
-          
-           
+        <?php  
           // initialize html string        
           $pdHTML = '<div class="dr_container"><table><tr><td valign="top">                         
                         <p><a class="hideDR css_button_small" href="#"><span>'.xlt('Hide Reminders').'</span></a><br /></p>
                         <div class="drHide">'.
-                        ($isAdmin ? '<p><a onclick="openLogScreen()" class="css_button_small" href="#"><span>'.xlt('View Log').'</span></a><br /></p>' : '')
+                        '<p><a title="'.xla('View Past and Future Reminders').'" onclick="openLogScreen()" class="css_button_small" href="#"><span>'.xlt('View Log').'</span></a><br /></p>'
                         .'<p><a onclick="openAddScreen(0)" class="css_button_small" href="#"><span>'.xlt('Send A Dated Reminder').'</span></a></p></div> 
                         </td><td class="drHide drTD">'; 
                         
