@@ -24,6 +24,7 @@
 //   Bahasa Indonesia               // xl('Bahasa Indonesia')
 //   Chinese (Simplified)           // xl('Chinese (Simplified)')
 //   Chinese (Traditional)          // xl('Chinese (Traditional)')
+//   Czech                          // xl('Czech')
 //   Danish                         // xl('Danish')
 //   Dutch                          // xl('Dutch')
 //   English (Indian)               // xl('English (Indian)')
@@ -47,6 +48,7 @@
 //   Spanish (Spain)                // xl('Spanish (Spain)')
 //   Swedish                        // xl('Swedish')
 //   Turkish                        // xl('Turkish')
+//   Ukrainian                      // xl('Ukrainian')
 //   Vietnamese                     // xl('Vietnamese')
 
 // OS-dependent stuff.
