@@ -164,7 +164,7 @@ class existingpatient {
                 return array($query,array($pid,'pre_payment'));
             break;
             case 'A10':
-                $query = "SELECT sum(pay_total)  as pay_amount FROM ar_session,ar_activity WHERE patient_id=? AND adjustment_code=?
+                $query = "SELECT sum(pay_amount)  as pay_amount FROM ar_session,ar_activity WHERE patient_id=? AND adjustment_code=?
                           AND pid=? AND ar_session.session_id=ar_activity.session_id  and pay_amount>0";
                 return array($query,array($pid,'pre_payment',$pid));
             break;
@@ -173,7 +173,7 @@ class existingpatient {
                 return array($query,array($pid,'pre_payment'));
             break;
             case 'A12':
-                $query = "SELECT sum(pay_total)  as pay_amount FROM ar_session,ar_activity WHERE patient_id=? AND adjustment_code!=?
+                $query = "SELECT sum(pay_amount)  as pay_amount FROM ar_session,ar_activity WHERE patient_id=? AND adjustment_code!=?
                           AND pid=? AND ar_session.session_id=ar_activity.session_id  and pay_amount>0";
                 return array($query,array($pid,'pre_payment',$pid));
             break;
@@ -560,6 +560,16 @@ class existingpatient {
             //Checking whether a new patient entry is pending in the audit master
             case 'J2':
             $query = "SELECT pid FROM audit_master WHERE approval_status=1 and type=1 and pid=?";
+            return array($query,array($pid));
+            break;
+            
+            case 'payment_settings':
+            $query = "SELECT login_id,transaction_key,md5 FROM payment_gateway_details WHERE service_name=?";
+            return array($query,$data[1]);
+            break;
+            
+            case 'authorizenet_id':
+            $query = "SELECT authorize_net_id FROM patient_access_offsite WHERE pid=?";
             return array($query,array($pid));
             break;
         }
