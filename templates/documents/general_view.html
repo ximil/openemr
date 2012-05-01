@@ -77,8 +77,13 @@
                 <form method="post" name="document_validate" action="{$VALIDATE_ACTION}" onsubmit="return top.restoreSession()">
                 <div>
                     <div style="float:left">
+		       {if $file->couch_docid && $file->couch_revid}
+			<b>{xl t='CouchDB Rev ID'}:</b>&nbsp;
+                        <i>{$file->couch_revid}</i>&nbsp;
+		       {else}
                         <b>{xl t='Sha-1 Hash'}:</b>&nbsp;
                         <i>{$file->get_hash()}</i>&nbsp;
+		       {/if}
                     </div>
                     <div style="float:none">
                         <a href="javascript:;" onclick="document.forms['document_validate'].submit();">(<span>{xl t='validate'})</span></a>

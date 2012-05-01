@@ -32,7 +32,11 @@
     {xl t='URL'}: {$file->get_url()}<br>
     {xl t='Size'}: {$file->get_size()}<br>
     {xl t='Date'}: {$file->get_date()}<br>
+    {if $file->couch_docid && $file->couch_revid}
+    {xl t='CouchDB Rev ID'}: {$file->couch_revid}<br>
+    {else}
     {xl t='Hash'}: {$file->get_hash()}<br>
+    {/if}    
     {xl t='MimeType'}: {$file->get_mimetype()}<br>
     {xl t='Revision'}: {$file->revision}<br>
 </div>
