@@ -40,6 +40,10 @@
 --               1) The table table_name does not have a row where colname = value AND colname2 = value2.
 --               2) The table table_name does not have a row where colname = value AND colname3 = value3.
 
+--  #IfRow2D
+--    arguments: table_name colname value colname2 value2
+--    behavior:  If the table table_name does have a row where colname = value AND colname2 = value2, the block will be executed.
+
 --  #IfNotIndex
 --    desc:      This function will allow adding of indexes/keys.
 --    arguments: table_name colname
@@ -248,5 +252,55 @@ CREATE TABLE `temp_table_one` (
 INSERT INTO `temp_table_one` (`id`, `seq`) VALUES ( IF( ((SELECT MAX(`ct_id`) FROM `code_types`)>=100), ((SELECT MAX(`ct_id`) FROM `code_types`) + 1), 100 ) , IF( ((SELECT MAX(`ct_seq`) FROM `code_types`)>=100), ((SELECT MAX(`ct_seq`) FROM `code_types`) + 1), 100 )  );
 INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external ) VALUES ('SNOMED' , (SELECT MAX(`id`) FROM `temp_table_one`), (SELECT MAX(`seq`) FROM `temp_table_one`), 2, '', 0, 0, 0, 1, 0, 'SNOMED', 2);
 DROP TABLE `temp_table_one`;
+#EndIf
+
+#IfRow2D billing code_type COPAY activity 1
+DROP TABLE IF EXISTS `temp_table_one`;
+CREATE TABLE `temp_table_one` (
+  id             int unsigned  NOT NULL AUTO_INCREMENT,
+  session_id     int unsigned  NOT NULL,
+  payer_id       int(11)       NOT NULL DEFAULT 0,
+  user_id        int(11)       NOT NULL,
+  pay_total      decimal(12,2) NOT NULL DEFAULT 0,
+  payment_type varchar( 50 ) NOT NULL DEFAULT 'patient',
+  description text NOT NULL,
+  adjustment_code varchar( 50 ) NOT NULL DEFAULT 'patient_payment',
+  post_to_date date NOT NULL,
+  patient_id int( 11 ) NOT NULL,
+  payment_method varchar( 25 ) NOT NULL DEFAULT 'cash',
+  pid            int(11)       NOT NULL,
+  encounter      int(11)       NOT NULL,
+  code           varchar(9)    NOT NULL,
+  modifier       varchar(5)    NOT NULL DEFAULT '',
+  payer_type     int           NOT NULL DEFAULT 0,
+  post_time      datetime      NOT NULL,
+  post_user      int(11)       NOT NULL,
+  pay_amount     decimal(12,2) NOT NULL DEFAULT 0,
+  account_code varchar(15) NOT NULL DEFAULT 'PCP',
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=1;
+INSERT INTO `temp_table_one` (`user_id`, `pay_total`, `patient_id`, `post_to_date`, `pid`, `encounter`, `post_time`, `post_user`, `pay_amount`, `description`) SELECT `user`, (`fee`*-1), `pid`, `date`, `pid`, `encounter`, `date`, `user`, (`fee`*-1), 'COPAY' FROM `billing` WHERE `code_type`='COPAY' AND `activity`!=0;
+UPDATE `temp_table_one` SET `session_id`= ((SELECT MAX(session_id) FROM ar_session)+`id`);
+UPDATE `billing`, `code_types`, `temp_table_one` SET temp_table_one.code=billing.code, temp_table_one.modifier=billing.modifier WHERE billing.code_type=code_types.ct_key AND code_types.ct_fee=1 AND temp_table_one.pid=billing.pid AND temp_table_one.encounter=billing.encounter AND billing.activity!=0;
+INSERT INTO `ar_session` (`payer_id`, `user_id`, `pay_total`, `payment_type`, `description`, `patient_id`, `payment_method`, `adjustment_code`, `post_to_date`) SELECT `payer_id`, `user_id`, `pay_total`, `payment_type`, `description`, `patient_id`, `payment_method`, `adjustment_code`, `post_to_date` FROM `temp_table_one`;
+INSERT INTO `ar_activity` (`pid`, `encounter`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code`) SELECT `pid`, `encounter`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code` FROM `temp_table_one`;
+UPDATE `billing` SET `activity`=0 WHERE `code_type`='COPAY';
+DROP TABLE IF EXISTS `temp_table_one`;
+#EndIf
+
+#IfNotTable facility_user_ids
+CREATE TABLE  `facility_user_ids` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `uid` bigint(20) DEFAULT NULL,
+  `facility_id` bigint(20) DEFAULT NULL,
+  `field_id`    varchar(31)  NOT NULL COMMENT 'references layout_options.field_id',
+  `field_value` TEXT NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `uid` (`uid`,`facility_id`,`field_id`)
+) ENGINE=MyISAM  AUTO_INCREMENT=1 ;
+#EndIf
+
+#IfNotRow layout_options form_id FACUSR
+INSERT INTO `layout_options` (form_id, field_id, group_name, title, seq, data_type, uor, fld_length, max_length, list_id, titlecols, datacols, default_value, edit_options, description) VALUES ('FACUSR', 'provider_id', '1General', 'Provider ID', 1, 2, 1, 15, 63, '', 1, 1, '', '', 'Provider ID at Specified Facility');
 #EndIf
 
