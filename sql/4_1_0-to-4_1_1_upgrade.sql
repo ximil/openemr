@@ -176,6 +176,19 @@ CREATE TABLE `dated_reminders_link` (
 ALTER TABLE `x12_partners` ADD COLUMN `x12_gs03` VARCHAR(15) NOT NULL DEFAULT '';
 #EndIf
 
+#IfMissingColumn documents couch_docid
+ALTER TABLE `documents` ADD COLUMN `couch_docid` VARCHAR(100) NULL;
+#EndIf
+
+#IfMissingColumn documents couch_revid
+ALTER TABLE `documents` ADD COLUMN `couch_revid` VARCHAR(100) NULL;
+#EndIf
+
+#IfMissingColumn documents storagemethod
+ALTER TABLE `documents` ADD COLUMN `storagemethod` TINYINT(4) DEFAULT '0' NOT NULL COMMENT '0->Harddisk,1->CouchDB';
+#EndIf
+#EndIf
+
 #IfNotTable payment_gateway_details
 CREATE TABLE `payment_gateway_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
