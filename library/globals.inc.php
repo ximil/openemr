@@ -22,6 +22,7 @@
 //   Arabic                         // xl('Arabic')
 //   Armenian                       // xl('Armenian')
 //   Bahasa Indonesia               // xl('Bahasa Indonesia')
+//   Bengali                        // xl('Bengali')
 //   Chinese (Simplified)           // xl('Chinese (Simplified)')
 //   Chinese (Traditional)          // xl('Chinese (Traditional)')
 //   Czech                          // xl('Czech')
@@ -84,6 +85,8 @@ $USER_SPECIFIC_TABS = array('Appearance',
 $USER_SPECIFIC_GLOBALS = array('default_top_pane',
                                'concurrent_layout',
                                'css_header',
+                               'gbl_pt_list_page_size',
+                               'gbl_pt_list_new_window',
                                'units_of_measurement',
                                'date_display_format',
                                'time_display_format',
@@ -223,7 +226,26 @@ $GLOBALS_METADATA = array(
       ),
       '20',
       xl('Number of encounters to display per page.')
-    )      
+    ),
+
+    'gbl_pt_list_page_size' => array(
+      xl('Patient List Page Size'),
+      array(
+        '10'  =>  '10',
+        '25'  =>  '25',
+        '50'  =>  '50',
+        '100' => '100',
+      ),
+      '10',
+      xl('Number of patients to display per page in the patient list.')
+    ),
+
+    'gbl_pt_list_new_window' => array(
+      xl('Patient List New Window'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('Default state of New Window checkbox in the patient list.')
+    ),
 
   ),
 
@@ -580,6 +602,55 @@ $GLOBALS_METADATA = array(
     ),
 
   ),
+    
+    //Documents Tab
+    'Documents' => array(
+        'document_storage_method' => array(
+            xl('Document Storage Method'),
+            array(
+                '0' => xl('Hard Disk'),
+                '1' => xl('CouchDB')
+            ),
+            '0',                              // default
+            xl('Option to save method of document storage.')
+        ),
+        'couchdb_host' => array(
+            xl('CouchDB HostName'),
+            'text',
+            'localhost',
+            xl('CouchDB host'),
+        ),
+        'couchdb_user' => array(
+            xl('CouchDB UserName'),
+            'text',
+            '',
+            xl('Username to connect to CouchDB'),
+        ),
+        'couchdb_pass' => array(
+            xl('CouchDB Password'),
+            'text',
+            '',
+            xl('Password to connect to CouchDB'),
+        ),
+        'couchdb_port' => array(
+            xl('CouchDB Port'),
+            'text',
+            '5984',
+            xl('CouchDB port'),
+        ),
+        'couchdb_dbase' => array(
+            xl('CouchDB Database'),
+            'text',
+            '',
+            xl('CouchDB database name'),
+        ),
+        'couchdb_log' => array(
+            xl('CouchDB Log Enable'),
+            'bool',
+            '0',
+            xl('Enable log for document uploads/downloads to CouchDB'),
+        ),
+    ),
 
   // Calendar Tab
   //
@@ -1490,6 +1561,6 @@ $GLOBALS_METADATA = array(
       '30',
       xl('Rx Bottom Margin (px)')
     ),
-  ),
+  ),    
 );
 ?>

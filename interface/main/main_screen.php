@@ -25,29 +25,33 @@
   $_SESSION['expiration_msg'] = 1; // only show the expired message once
  }
 }
- if ($GLOBALS['athletic_team']) {
+
+if ($is_expired) {
+  $frame1url = "pwd_expires_alert.php"; //php file which display's password expiration message.
+}
+else if (!empty($_POST['patientID'])) {
+  $patientID = 0 + $_POST['patientID'];
+  $frame1url = "../patient_file/summary/demographics.php?set_pid=$patientID";
+}
+else if ($GLOBALS['athletic_team']) {
   $frame1url = "../reports/players_report.php?embed=1";
- } else {
-  if ($is_expired) {
-   $frame1url = "pwd_expires_alert.php"; //php file which display's password expiration message.
-  }
-  elseif (isset($_GET['mode']) && $_GET['mode'] == "loadcalendar") {
-   $frame1url = "calendar/index.php?pid=" . $_GET['pid'];
-   if (isset($_GET['date'])) $frame1url .= "&date=" . $_GET['date'];
+}
+else if (isset($_GET['mode']) && $_GET['mode'] == "loadcalendar") {
+  $frame1url = "calendar/index.php?pid=" . $_GET['pid'];
+  if (isset($_GET['date'])) $frame1url .= "&date=" . $_GET['date'];
+}
+else if ($GLOBALS['concurrent_layout']) {
+  // new layout
+  if ($GLOBALS['default_top_pane']) {
+    $frame1url=$GLOBALS['default_top_pane'];
   } else {
-   if ($GLOBALS['concurrent_layout']) {
-    // new layout
-    if ($GLOBALS['default_top_pane']) {
-      $frame1url=$GLOBALS['default_top_pane'];
-     } else {
-     $frame1url = "main_info.php";
-     }
-    }
-   else
-    // old layout
-    $frame1url = "main.php?mode=" . $_GET['mode'];
+    $frame1url = "main_info.php";
   }
- }
+}
+else {
+  // old layout
+  $frame1url = "main.php?mode=" . $_GET['mode'];
+}
 
 $nav_area_width = $GLOBALS['athletic_team'] ? '230' : '130';
 if (!empty($GLOBALS['gbl_nav_area_width'])) $nav_area_width = $GLOBALS['gbl_nav_area_width'];
@@ -61,6 +65,16 @@ if (!empty($GLOBALS['gbl_nav_area_width'])) $nav_area_width = $GLOBALS['gbl_nav_
 
 <script language='JavaScript'>
 <?php require($GLOBALS['srcdir'] . "/restoreSession.php"); ?>
+
+// This counts the number of frames that have reported themselves as loaded.
+// Currently only left_nav and Title do this, so the maximum will be 2.
+// This is used to determine when those frames are all loaded.
+var loadedFrameCount = 0;
+
+function allFramesLoaded() {
+ // Change this number if more frames participate in reporting.
+ return loadedFrameCount >= 2;
+}
 </script>
 
 </head>

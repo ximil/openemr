@@ -132,7 +132,6 @@ CREATE TABLE `product_warehouse` (
 ) ENGINE=MyISAM;
 #EndIf
 
-# Increase size from 5 to 12 to support 4 modifiers with colon separation
 #IfNotColumnType billing modifier varchar(12)
    ALTER TABLE `billing` MODIFY `modifier` varchar(12);
    UPDATE `code_types` SET `ct_mod` = '12' where ct_key = 'CPT4' OR ct_key = 'HCPCS';
@@ -141,8 +140,6 @@ CREATE TABLE `product_warehouse` (
 #IfMissingColumn billing notecodes
 ALTER TABLE `billing` ADD `notecodes` varchar(25) NOT NULL default '';
 #EndIf
-
-
 
 #IfNotTable dated_reminders
 CREATE TABLE `dated_reminders` (
@@ -302,5 +299,73 @@ CREATE TABLE  `facility_user_ids` (
 
 #IfNotRow layout_options form_id FACUSR
 INSERT INTO `layout_options` (form_id, field_id, group_name, title, seq, data_type, uor, fld_length, max_length, list_id, titlecols, datacols, default_value, edit_options, description) VALUES ('FACUSR', 'provider_id', '1General', 'Provider ID', 1, 2, 1, 15, 63, '', 1, 1, '', '', 'Provider ID at Specified Facility');
+#EndIf
+
+#IfMissingColumn patient_data ref_providerID
+ALTER TABLE `patient_data` ADD COLUMN `ref_providerID` int(11) default NULL;
+UPDATE `patient_data` SET `ref_providerID`=`providerID`;
+INSERT INTO `layout_options` (form_id, field_id, group_name, title, seq, data_type, uor, fld_length, max_length, list_id, titlecols, datacols, default_value, edit_options, description) VALUES ('DEM', 'ref_providerID', '3Choices', 'Referring Provider', 2, 11, 1, 0, 0, '', 1, 3, '', '', 'Referring Provider');
+UPDATE `layout_options` SET `description`='Provider' WHERE `form_id`='DEM' AND `field_id`='providerID';
+UPDATE `layout_options` SET `seq`=(1+`seq`) WHERE `form_id`='DEM' AND `group_name` LIKE '%Choices' AND `field_id` != 'providerID' AND `field_id` != 'ref_providerID';
+#EndIf
+
+#IfMissingColumn documents couch_docid
+ALTER TABLE `documents` ADD COLUMN `couch_docid` VARCHAR(100) NULL;
+#EndIf
+
+#IfMissingColumn documents couch_revid
+ALTER TABLE `documents` ADD COLUMN `couch_revid` VARCHAR(100) NULL;
+#EndIf
+
+#IfMissingColumn documents storagemethod
+ALTER TABLE `documents` ADD COLUMN `storagemethod` TINYINT(4) DEFAULT '0' NOT NULL COMMENT '0->Harddisk,1->CouchDB';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id ptlistcols
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('lists','ptlistcols','Patient List Columns','1','0','','');
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('ptlistcols','name'      ,'Full Name'     ,'10','3','','');
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('ptlistcols','phone_home','Home Phone'    ,'20','3','','');
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('ptlistcols','ss'        ,'SSN'           ,'30','3','','');
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('ptlistcols','DOB'       ,'Date of Birth' ,'40','3','','');
+insert into list_options (list_id, option_id, title, seq, option_value, mapping, notes) values('ptlistcols','pubpid'    ,'External ID'   ,'50','3','','');
+#EndIf
+
+#IfNotRow2D code_types ct_key DSMIV ct_mod 0
+UPDATE `code_types` SET `ct_mod`=0 WHERE `ct_key`='DSMIV' OR `ct_key`='ICD9' OR `ct_key`='ICD10' OR `ct_key`='SNOMED';
+#EndIf
+
+#IfMissingColumn layout_options fld_rows
+ALTER TABLE `layout_options` ADD COLUMN `fld_rows` int(11) NOT NULL default '0';
+UPDATE `layout_options` SET `fld_rows`=max_length WHERE `data_type`='3';
+UPDATE `layout_options` SET `max_length`='0' WHERE `data_type`='3';
+UPDATE `layout_options` SET `max_length`='0' WHERE `data_type`='34';
+UPDATE `layout_options` SET `max_length`='20' WHERE `field_id`='financial_review' AND `form_id`='DEM';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='history_father' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='history_mother' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='history_siblings' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='history_spouse' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='history_offspring' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_cancer' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_tuberculosis' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_diabetes' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_high_blood_pressure' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_heart_problems' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_stroke' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_epilepsy' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_mental_illness' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='relatives_suicide' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='coffee' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='tobacco' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='alcohol' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='recreational_drugs' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='counseling' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='exercise_patterns' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='hazardous_activities' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='sleep_patterns' AND `form_id`='HIS';
+UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='seatbelt_use' AND `form_id`='HIS';
+#EndIf
+
+#IfNotColumnType history_data usertext11 TEXT
+ALTER TABLE `history_data` CHANGE `usertext11` `usertext11` TEXT NOT NULL;
 #EndIf
 
