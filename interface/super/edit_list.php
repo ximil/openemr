@@ -58,9 +58,11 @@ if ($_POST['formaction']=='save' && $list_id) {
         $ct_active = empty($iter['ct_active' ]) ? 0 : 1;
         $ct_label = formTrim($iter['ct_label']);
         $ct_external = formTrim($iter['ct_external']) + 0;
+        $ct_claim = empty($iter['ct_claim']) ? 0 : 1;
+        $ct_proc = empty($iter['ct_proc']) ? 0 : 1;
         if (strlen($ct_key) > 0 && $ct_id > 0) {
           sqlInsert("INSERT INTO code_types ( " .
-            "ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_mask, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external " .
+            "ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_mask, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc " .
             ") VALUES ( "   .
             "'$ct_key' , " .
             "'$ct_id'  , " .
@@ -74,7 +76,9 @@ if ($_POST['formaction']=='save' && $list_id) {
             "'$ct_diag', " .
             "'$ct_active', " .
             "'$ct_label', " .
-            "'$ct_external' " .
+            "'$ct_external', " .
+            "'$ct_claim', " .
+            "'$ct_proc' " .
             ")");
         }
       }
@@ -145,6 +149,7 @@ $opt_line_no = 0;
 
 // Given a string of multiple instances of code_type|code|selector,
 // make a description for each.
+// @TODO Instead should use a function from custom/code_types.inc.php and need to remove casing functions
 function getCodeDescriptions($codes) {
   global $code_types;
   $arrcodes = explode('~', $codes);
@@ -385,12 +390,16 @@ function writeCTLine($ct_array) {
     xl('If billing justification is used enter the name of the diagnosis code type.'));
   echo ctGenCell($opt_line_no, $ct_array, 'ct_mask', 6,  9,
     xl('Specifies formatting for codes. # = digit, @ = alpha, * = any character. Empty if not used.'));
+  echo ctGenCBox($opt_line_no, $ct_array, 'ct_claim',
+    xl('Is this code type used in claims?'));
   echo ctGenCBox($opt_line_no, $ct_array, 'ct_fee',
     xl('Are fees charged for this type?'));
   echo ctGenCBox($opt_line_no, $ct_array, 'ct_rel',
     xl('Does this type allow related codes?'));
   echo ctGenCBox($opt_line_no, $ct_array, 'ct_nofs',
     xl('Is this type hidden in the fee sheet?'));
+  echo ctGenCBox($opt_line_no, $ct_array, 'ct_proc',
+    xl('Is this a procedure/service type?'));
   echo ctGenCBox($opt_line_no, $ct_array, 'ct_diag',
     xl('Is this a diagnosis type?'));
   // Show the external code types selector
@@ -646,9 +655,11 @@ while ($row = sqlFetchArray($res)) {
   <td><b><?php xl('ModLength'   ,'e'); ?></b></td>
   <td><b><?php xl('Justify'     ,'e'); ?></b></td>
   <td><b><?php xl('Mask'        ,'e'); ?></b></td>
+  <td><b><?php xl('Claims'      ,'e'); ?></b></td>
   <td><b><?php xl('Fees'        ,'e'); ?></b></td>
   <td><b><?php xl('Relations'   ,'e'); ?></b></td>
   <td><b><?php xl('Hide'        ,'e'); ?></b></td>
+  <td><b><?php xl('Procedure'   ,'e'); ?></b></td>
   <td><b><?php xl('Diagnosis'   ,'e'); ?></b></td>
   <td><b><?php xl('External'    ,'e'); ?></b></td>
 <?php } else { ?>

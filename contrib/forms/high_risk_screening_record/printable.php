@@ -49,7 +49,7 @@ include_once("$srcdir/calendar.inc");
 
 ?>
 
-<body <?echo $top_bg_line;?>>
+<body <?php echo $top_bg_line;?>>
 
 
 
@@ -125,7 +125,7 @@ include_once("$srcdir/calendar.inc");
 
     </tr>
 
-<?	
+<?php
 
 $rsi = 1;
 

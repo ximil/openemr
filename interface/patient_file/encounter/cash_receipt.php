@@ -29,7 +29,7 @@ require_once("$srcdir/formatting.inc.php");
 <html>
 <head>
 <?php html_header_show();?>
-<link rel=stylesheet href="<?echo $css_header;?>" type="text/css">
+<link rel=stylesheet href="<?php echo $css_header;?>" type="text/css">
 </head>
 
 <body bgcolor="#ffffff" topmargin=0 rightmargin=0 leftmargin=2 bottommargin=0 marginwidth=2 marginheight=0>
@@ -58,10 +58,10 @@ require_once("$srcdir/formatting.inc.php");
   echo "<img src='$practice_logo' align='left'>\n";
  }
 ?>
-<h2><?=$facility['name']?></h2>
-<?=$facility['street']?><br>
-<?=$facility['city']?>, <?=$facility['state']?> <?=$facility['postal_code']?><br clear='all'>
-<?=$facility['phone']?><br>
+<h2><?php echo $facility['name']?></h2>
+<?php echo $facility['street']?><br>
+<?php echo $facility['city']?>, <?php echo $facility['state']?> <?php echo $facility['postal_code']?><br clear='all'>
+<?php echo $facility['phone']?><br>
 
 </p>
 

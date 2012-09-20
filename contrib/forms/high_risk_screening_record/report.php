@@ -14,7 +14,7 @@ include_once("$srcdir/calendar.inc");
      $fdata = sqlFetchArray($fres);
    }
 ?>
-<body <?echo $top_bg_line;?>>
+<body <?php echo $top_bg_line;?>>
 
 <div class="srvChapter">High risk screening record* </div>
 <div style="border: solid 2px black; background-color:#FFFFFF;">
@@ -52,7 +52,7 @@ include_once("$srcdir/calendar.inc");
       <td width="6%" class="ficaption2">HEPATITIS C<br>
         VIRUS TEST</td>
     </tr>
-<?	
+<?php
 $rsi = 1;
 while ($rsi < 13){
 list(

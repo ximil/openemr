@@ -21,6 +21,12 @@ require_once "$srcdir/options.inc.php";
 require_once "$srcdir/formdata.inc.php";
 require_once "$srcdir/clinical_rules.php";
 
+//To improve performance and not freeze the session when running this
+// report, turn off session writing. Note that php session variables
+// can not be modified after the line below. So, if need to do any php
+// session work in the future, then will need to remove this line.
+session_write_close();
+
 //Remove time limit, since script can take many minutes
 set_time_limit(0);
 
@@ -37,7 +43,7 @@ $rule_filter = (isset($_POST['form_rule_filter'])) ? trim($_POST['form_rule_filt
 $plan_filter = (isset($_POST['form_plan_filter'])) ? trim($_POST['form_plan_filter']) : "";
 $organize_method = (empty($plan_filter)) ? "default" : "plans";
 $provider  = trim($_POST['form_provider']);
-
+$pat_prov_rel = (empty($_POST['form_pat_prov_rel'])) ? "primary" : trim($_POST['form_pat_prov_rel']);
 ?>
 
 <html>
@@ -255,6 +261,27 @@ $provider  = trim($_POST['form_provider']);
                         </td>
 		</tr>
 
+                <tr>
+                        <td class='label'>
+                           <?php echo htmlspecialchars( xl('Provider Relationship'), ENT_NOQUOTES); ?>:
+                        </td>
+                        <td>
+                                <?php
+
+                                 // Build a drop-down list of of patient provider relationships.
+                                 //
+                                 echo "   <select name='form_pat_prov_rel' title='" . xlt('Only applicable if a provider or collated list was chosen above. PRIMARY only selects patients that the provider is the primary provider. ENCOUNTER selects all patients that the provider has seen.') . "'>\n";
+                                 echo "    <option value='primary'";
+                                 if ($pat_prov_rel == 'primary') echo " selected";
+                                 echo ">" . xlt('Primary') . "\n";
+                                 echo "    <option value='encounter'";
+                                 if ($pat_prov_rel == 'encounter') echo " selected";
+                                 echo ">" . xlt('Encounter') . "\n";
+                                 echo "   </select>\n";
+                                ?>
+                        </td>
+                </tr>
+
                 <?php if ($type_report == "amc") { ?>
                   <tr>
                         <td>
@@ -360,19 +387,24 @@ $provider  = trim($_POST['form_provider']);
  <tbody>  <!-- added for better print-ability -->
 <?php
 
+  // Process report and collect results
+  $options = array();
+  $array_date = array();
   if ($type_report == "amc") {
     // For AMC:
     //   need to make $target_date an array with two elements ('dateBegin' and 'dateTarget')
-    //   need to to send a manual data entry option (number of labs)
-    $array_date = array();
+    //   need to send a manual data entry option (number of labs)
     $array_date['dateBegin'] = $begin_date;
     $array_date['dateTarget'] = $target_date;
     $options = array('labs_manual'=>$labs_manual);
-    $dataSheet = test_rules_clinic($provider,$rule_filter,$array_date,"report",'',$plan_filter,$organize_method,$options);
   }
   else {
-    $dataSheet = test_rules_clinic($provider,$rule_filter,$target_date,"report",'',$plan_filter,$organize_method);
+    // For others, use the unmodified target date array and send an empty options array
+    $array_date = $target_date;
   }
+
+  // Collect results (note using the batch method to decrease memory overhead and improve performance)
+  $dataSheet = test_rules_clinic_batch_method($provider,$rule_filter,$array_date,"report",$plan_filter,$organize_method,$options,$pat_prov_rel);
 
   $firstProviderFlag = TRUE;
   $firstPlanFlag = TRUE;

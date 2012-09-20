@@ -33,7 +33,10 @@
  require_once("$srcdir/acl.inc");
 
  $my_permission = acl_check('patients', 'appt');
- if ($my_permission !== 'write' && $my_permission !== 'wsome')
+// Add these restrictions back using new acl return value parameter when
+//  that mechanism is added to codebase.
+// if ($my_permission !== 'write' && $my_permission !== 'wsome')
+ if (!$my_permission)
    die(xl('Access not allowed'));
 
  // Things that might be passed by our opener.
@@ -405,7 +408,7 @@ if ($_POST['form_action'] == "save") {
                         "pc_prefcatid = '" . add_escape_custom($_POST['form_prefcat']) . "' ,"  .
                         "pc_facility = '" . add_escape_custom((int)$_POST['facility']) ."' ,"  . // FF stuff
                         "pc_billing_location = '" . add_escape_custom((int)$_POST['billing_facility']) ."' "  . 
-						"WHERE pc_aid = ? AND pc_multiple=?", array($provider,$row['pc_multiple']) );
+			"WHERE pc_aid = '" . add_escape_custom($provider) . "' AND pc_multiple = '" . add_escape_custom($row['pc_multiple'])  . "'");
                 } // foreach
             }
 
@@ -497,7 +500,7 @@ if ($_POST['form_action'] == "save") {
                     "pc_prefcatid = '" . add_escape_custom($_POST['form_prefcat']) . "' ,"  .
                     "pc_facility = '" . add_escape_custom((int)$_POST['facility']) ."' ,"  . // FF stuff
                     "pc_billing_location = '" . add_escape_custom((int)$_POST['billing_facility']) ."' "  . 
-					"WHERE pc_eid = ?", array($eid) );
+		    "WHERE pc_eid = '" . add_escape_custom($eid) . "'");
             }
         }
 
@@ -1389,7 +1392,11 @@ if ($repeatexdate != "") {
 <p>
 <input type='button' name='form_save' id='form_save' value='<?php echo xla('Save');?>' />
 &nbsp;
-<input type='button' id='find_available' value='<?php echo xla('Find Available');?>' />
+
+<?php if (!($GLOBALS['select_multi_providers'])) { //multi providers appt is not supported by check slot avail window, so skip ?>
+  <input type='button' id='find_available' value='<?php echo xla('Find Available');?>' />
+<?php } ?>
+
 &nbsp;
 <input type='button' name='form_delete' id='form_delete' value='<?php echo xla('Delete');?>'<?php if (!$eid) echo " disabled" ?> />
 &nbsp;
@@ -1489,7 +1496,7 @@ function HideRecurrPopup() {
 }
 
 function deleteEvent() {
-    if (confirm("<?php echo addslashes(xl('Deleting this event cannot be undone. It cannot be recovered once it is gone.\nAre you sure you wish to delete this event?')); ?>")) {
+    if (confirm("<?php echo addslashes(xl('Deleting this event cannot be undone. It cannot be recovered once it is gone. Are you sure you wish to delete this event?')); ?>")) {
         $('#form_action').val("delete");
 
         <?php if ($repeats): ?>
@@ -1508,7 +1515,8 @@ function deleteEvent() {
 }
 
 function SubmitForm() {
-  var f = document.forms[0];
+ var f = document.forms[0];
+ <?php if (!($GLOBALS['select_multi_providers'])) { // multi providers appt is not supported by check slot avail window, so skip ?>
   if (f.form_action.value != 'delete') {
     // Check slot availability.
     var mins = parseInt(f.form_hour.value) * 60 + parseInt(f.form_minute.value);
@@ -1519,6 +1527,11 @@ function SubmitForm() {
     top.restoreSession();
     f.submit();
   }
+ <?php } else { ?>
+  top.restoreSession();
+  f.submit();
+ <?php } ?>
+
   return true;
 }
 

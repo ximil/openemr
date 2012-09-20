@@ -111,7 +111,7 @@
     if (! $user) $user = $_SESSION['authUser'];
 
     if ($phpgacl_location) {
-      return $gacl_object->acl_return_value($section, $value, $section_aro_value, $user);
+      return $gacl_object->acl_check($section, $value, $section_aro_value, $user);
     }
 
     // If no phpgacl, then apply the old static rules whereby "authorized"
@@ -160,11 +160,23 @@
     return 0;
   }
 
+  // Sort squads by their order value.  Used only by acl_get_squads().
+  function _acl_squad_compare($a, $b) {
+    if ($a[2] == $b[2]) {
+      // If order value is the same, sort by squad name.
+      if ($a[3] == $b[3]) return 0;
+      return ($a[3] < $b[3]) ? -1 : 1;
+    }
+    return ($a[2] < $b[2]) ? -1 : 1;
+  }
+
   // Return an array keyed on squad ACO names.
   // This is only applicable for sports team use.
   //
   function acl_get_squads() {
-    return acl_get_section_acos('squads');
+    $squads = acl_get_section_acos('squads');
+    uasort($squads, "_acl_squad_compare");
+    return $squads;
   }
 
   // Return an array keyed on encounter sensitivity level ACO names.

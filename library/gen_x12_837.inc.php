@@ -29,10 +29,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     date('Y-m-d H:i', $today) . ".\n";
 
   $out .= "ISA" .
-    "*00" .
-    "*          " .
-    "*00" .
-    "*          " .
+    "*" . $claim->x12gsisa01() .
+    "*" . $claim->x12gsisa02() .
+    "*" . $claim->x12gsisa03() .
+    "*" . $claim->x12gsisa04() .
     "*" . $claim->x12gsisa05() .
     "*" . $claim->x12gssenderid() .
     "*" . $claim->x12gsisa07() .
@@ -341,7 +341,12 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     // Prior to the mandated implementation date and prior to any phase-
     // in period identified by Federal regulation, PI must be sent."
     // *************** Anybody know what that date is? ***************
-    "*PI" .
+	//    August 2011 - Publish interim final rule
+//    October 1, 2012-March 31, 2013 - Enumeration
+//    April 1, 2013-September 30, 2013 - Testing
+ //   October 1, 2013 - Implementation
+
+    "*XV" .
     // Zirmed ignores this if using payer name matching:
     "*" . ($encounter_claim ? $claim->payerAltID() : $claim->payerID()) .
     "~\n";
@@ -393,9 +398,10 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
       "*QC" .
       "*1" .
       "*" . $claim->patientLastName() .
-      "*" . $claim->patientFirstName() .
-      "*" . $claim->patientMiddleName() .
-      "~\n";
+      "*" . $claim->patientFirstName();
+    if ($claim->patientMiddleName() !== '') $out .= "*"
+. $claim->patientMiddleName();
+    $out .= "~\n";
 
     ++$edicount;
     $out .= "N3" .

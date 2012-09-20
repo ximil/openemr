@@ -206,6 +206,14 @@ $GLOBALS_METADATA = array(
       xl('Enables the old Charges panel for entering billing codes and payments. Not recommended, use the Fee Sheet instead.')
     ),
 
+    // TajEmo Work BY CB 2012/06/21 10:42:31 AM added option to Hide Fees
+    'enable_fees_in_left_menu' => array(
+      xl('Enable Fees In Left Menu'),
+      'bool',                           // data type
+      '1',                              // default = true
+      xl('Enable Fees In Left Menu')
+    ),
+
     'online_support_link' => array(
       xl('Online Support Link'),
       'text',                           // data type
@@ -1068,6 +1076,13 @@ $GLOBALS_METADATA = array(
       'bool',                           // data type
       '0',                              // default
       xl('Enable logging of all SQL SELECT queries.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
+    ),
+
+    'audit_events_cdr' => array(
+      xl('Audit CDR Engine Queries'),
+      'bool',                           // data type
+      '0',                              // default
+      xl('Enable logging of CDR Engine Queries.').' ('.xl('Note that Audit Logging needs to be enabled above').')'
     ),
 
     'enable_atna_audit' => array(

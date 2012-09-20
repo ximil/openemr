@@ -12,6 +12,7 @@ $sanitize_all_escapes=true;
 require_once("../globals.php");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/patient.inc");
+require_once("$srcdir/billing.inc");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/sl_eob.inc.php");
 require_once("$srcdir/invoice_summary.inc.php");
@@ -44,28 +45,6 @@ function rawbucks($amount) {
     return $amount;
   }
   return '';
-}
-
-// Get the co-pay amount that is effective on the given date.
-// Or if no insurance on that date, return -1.
-//
-function getCopay($patient_id, $encdate) {
- $tmp = sqlQuery("SELECT provider, copay FROM insurance_data " .
-   "WHERE pid = '$patient_id' AND type = 'primary' " .
-   "AND date <= '$encdate' ORDER BY date DESC LIMIT 1");
- if ($tmp['provider']) return sprintf('%01.2f', 0 + $tmp['copay']);
- return 0;
-}
-
-// Get the total co-pay amount paid by the patient for an encounter
-function getPatientCopay($patient_id, $encounter) {
-	$resMoneyGot = sqlStatement("SELECT sum(pay_amount) as PatientPay FROM ar_activity where ".
-	  "pid = ? and encounter = ? and payer_type=0 and account_code='PCP'",
-	  array($patient_id,$encounter));
-	 //new fees screen copay gives account_code='PCP'
-	$rowMoneyGot = sqlFetchArray($resMoneyGot);
-	$Copay=$rowMoneyGot['PatientPay'];
-	return $Copay*-1;
 }
 
 // Display a row of data for an encounter.
@@ -231,11 +210,13 @@ if ($_POST['form_save']) {
 				array($form_pid,$enc));
 			 if($RowSearch = sqlFetchArray($ResultSearchNew))
 			  {
+                                $Codetype=$RowSearch['code_type'];
 				$Code=$RowSearch['code'];
 				$Modifier=$RowSearch['modifier'];
 			  }
 			 else
 			  {
+                                $Codetype='';
 				$Code='';
 				$Modifier='';
 			  }
@@ -247,9 +228,9 @@ if ($_POST['form_save']) {
 				 " VALUES ('0',?,?,now(),now(),?,'','patient','COPAY',?,?,'patient_payment',now())",
 				 array($_SESSION['authId'],$form_source,$amount,$form_pid,$form_method));
 				 
-				  $insrt_id=idSqlStatement("INSERT INTO ar_activity (pid,encounter,code,modifier,payer_type,post_time,post_user,session_id,pay_amount,account_code)".
-				   " VALUES (?,?,?,?,0,now(),?,?,?,'PCP')",
-					 array($form_pid,$enc,$Code,$Modifier,$_SESSION['authId'],$session_id,$amount));
+				  $insrt_id=idSqlStatement("INSERT INTO ar_activity (pid,encounter,code_type,code,modifier,payer_type,post_time,post_user,session_id,pay_amount,account_code)".
+				   " VALUES (?,?,?,?,?,0,now(),?,?,?,'PCP')",
+					 array($form_pid,$enc,$Codetype,$Code,$Modifier,$_SESSION['authId'],$session_id,$amount));
 				   
 				 frontPayment($form_pid, $enc, $form_method, $form_source, $amount, 0);//insertion to 'payments' table.
 			 }
@@ -298,20 +279,21 @@ if ($_POST['form_save']) {
 					  array($form_pid,$enc));
 					 while($RowSearch = sqlFetchArray($ResultSearchNew))
 					  {
+                                                $Codetype=$RowSearch['code_type'];
 						$Code=$RowSearch['code'];
 						$Modifier =$RowSearch['modifier'];
 						$Fee =$RowSearch['fee'];
 						
 						$resMoneyGot = sqlStatement("SELECT sum(pay_amount) as MoneyGot FROM ar_activity where pid =? ".
-							"and code=? and modifier=? and encounter =? and !(payer_type=0 and account_code='PCP')",
-						array($form_pid,$Code,$Modifier,$enc));
+							"and code_type=? and code=? and modifier=? and encounter =? and !(payer_type=0 and account_code='PCP')",
+						array($form_pid,$Codetype,$Code,$Modifier,$enc));
 						//new fees screen copay gives account_code='PCP'
 						$rowMoneyGot = sqlFetchArray($resMoneyGot);
 						$MoneyGot=$rowMoneyGot['MoneyGot'];
 
 						$resMoneyAdjusted = sqlStatement("SELECT sum(adj_amount) as MoneyAdjusted FROM ar_activity where ".
-						  "pid =? and code=? and modifier=? and encounter =?",
-						  array($form_pid,$Code,$Modifier,$enc));
+						  "pid =? and code_type=? and code=? and modifier=? and encounter =?",
+						  array($form_pid,$Codetype,$Code,$Modifier,$enc));
 						$rowMoneyAdjusted = sqlFetchArray($resMoneyAdjusted);
 						$MoneyAdjusted=$rowMoneyAdjusted['MoneyAdjusted'];
 						
@@ -332,6 +314,7 @@ if ($_POST['form_save']) {
 						  sqlStatement("insert into ar_activity set "    .
 							"pid = ?"       .
 							", encounter = ?"     .
+                                                        ", code_type = ?"      .
 							", code = ?"      .
 							", modifier = ?"      .
 							", payer_type = ?"   .
@@ -341,7 +324,7 @@ if ($_POST['form_save']) {
 							", pay_amount = ?" .
 							", adj_amount = ?"    .
 							", account_code = 'PP'",
-							array($form_pid,$enc,$Code,$Modifier,0,$_SESSION['authUserID'],$payment_id,$insert_value,0));
+							array($form_pid,$enc,$Codetype,$Code,$Modifier,0,$_SESSION['authUserID'],$payment_id,$insert_value,0));
 						 }//if
 					  }//while
 					 if($amount!=0)//if any excess is there.
@@ -349,6 +332,7 @@ if ($_POST['form_save']) {
 						  sqlStatement("insert into ar_activity set "    .
 							"pid = ?"       .
 							", encounter = ?"     .
+                                                        ", code_type = ?"      .
 							", code = ?"      .
 							", modifier = ?"      .
 							", payer_type = ?"   .
@@ -358,7 +342,7 @@ if ($_POST['form_save']) {
 							", pay_amount = ?" .
 							", adj_amount = ?"    .
 							", account_code = 'PP'",
-							array($form_pid,$enc,$Code,$Modifier,0,$_SESSION['authUserID'],$payment_id,$amount,0));
+							array($form_pid,$enc,$Codetype,$Code,$Modifier,0,$_SESSION['authUserID'],$payment_id,$amount,0));
 					  }
 
 	//--------------------------------------------------------------------------------------------------------------------

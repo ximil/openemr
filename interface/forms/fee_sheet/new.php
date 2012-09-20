@@ -46,7 +46,7 @@ function endFSCategory() {
 function genDiagJS($code_type, $code) {
   global $code_types;
   if ($code_types[$code_type]['diag']) {
-    echo "diags.push('" . attr($code) . "');\n";
+    echo "diags.push('" . attr($code_type) . "|" . attr($code) . "');\n";
   }
 }
 
@@ -159,6 +159,8 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
       } else {
         echo "  <td class='billcell'>&nbsp;</td>\n";
       }
+    }
+    if (justifiers_are_used()) {
       echo "  <td class='billcell' align='center'$usbillstyle>" . text($justify) . "</td>\n";
     }
 
@@ -166,7 +168,7 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
     echo "  <td class='billcell' align='center'>";
     genProviderSelect('', '-- '.xl("Default").' --', $provider_id, true);
     echo "</td>\n";
-    if ($codetype == 'HCPCS' || $codetype == 'CPT4') {
+    if ($code_types[$codetype]['claim'] && !$code_types[$codetype]['diag']) {
       echo "  <td class='billcell' align='center'$usbillstyle>" .
         htmlspecialchars($notecodes, ENT_NOQUOTES) . "</td>\n";
     }
@@ -207,20 +209,21 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
           echo "<input type='hidden' name='bill[".attr($lino)."][units]' value='" . attr($units) . "'>";
         }
         echo "</td>\n";
-        if ($code_types[$codetype]['just'] || $justify) {
-          echo "  <td class='billcell' align='center'$usbillstyle ";
-          echo "title='" . xla("Select one or more diagnosis codes to justify the service") . "' >";
-          echo "<select name='bill[".attr($lino)."][justify]' onchange='setJustify(this)'>";
-          echo "<option value='" . attr($justify) . "'>" . text($justify) . "</option></select>";
-          echo "</td>\n";
-          $justinit .= "setJustify(f['bill[".attr($lino)."][justify]']);\n";
-        } else {
-          echo "  <td class='billcell'$usbillstyle>&nbsp;</td>\n";
-        }
       } else {
         echo "  <td class='billcell'>&nbsp;</td>\n";
         echo "  <td class='billcell'>&nbsp;</td>\n";
-        echo "  <td class='billcell'$usbillstyle>&nbsp;</td>\n"; // justify
+      }
+    }
+    if (justifiers_are_used()) {
+      if ($code_types[$codetype]['just'] || $justify) {
+        echo "  <td class='billcell' align='center'$usbillstyle ";
+        echo "title='" . xla("Select one or more diagnosis codes to justify the service") . "' >";
+        echo "<select name='bill[".attr($lino)."][justify]' onchange='setJustify(this)'>";
+        echo "<option value='" . attr($justify) . "'>" . text($justify) . "</option></select>";
+        echo "</td>\n";
+        $justinit .= "setJustify(f['bill[".attr($lino)."][justify]']);\n";
+      } else {
+        echo "  <td class='billcell'$usbillstyle>&nbsp;</td>\n";
       }
     }
 
@@ -228,7 +231,7 @@ function echoLine($lino, $codetype, $code, $modifier, $ndc_info='',
     echo "  <td class='billcell' align='center'>";
     genProviderSelect("bill[$lino][provid]", '-- '.xl("Default").' --', $provider_id);
     echo "</td>\n";
-    if ($codetype == 'HCPCS' || $codetype == 'CPT4') {
+    if ($code_types[$codetype]['claim'] && !$code_types[$codetype]['diag']) {
       echo "  <td class='billcell' align='center'$usbillstyle><input type='text' name='bill[".attr($lino)."][notecodes]' " .
         "value='" . htmlspecialchars($notecodes, ENT_QUOTES) . "' maxlength='10' size='8' /></td>\n";
     }
@@ -313,6 +316,8 @@ function echoProdLine($lino, $drug_id, $del = FALSE, $units = NULL,
     if (fees_are_used()) {
       echo "  <td class='billcell' align='right'>" . text(oeFormatMoney($price)) . "</td>\n";
       echo "  <td class='billcell' align='center'>" . text($units) . "</td>\n";
+    }
+    if (justifiers_are_used()) {
       echo "  <td class='billcell' align='center'$usbillstyle>&nbsp;</td>\n"; // justify
     }
     echo "  <td class='billcell' align='center'>&nbsp;</td>\n";             // provider
@@ -333,6 +338,8 @@ function echoProdLine($lino, $drug_id, $del = FALSE, $units = NULL,
       echo "<input type='text' name='prod[".attr($lino)."][units]' " .
         "value='" . attr($units) . "' size='2' style='text-align:right'>";
       echo "</td>\n";
+    }
+    if (justifiers_are_used()) {
       echo "  <td class='billcell'$usbillstyle>&nbsp;</td>\n"; // justify
     }
     echo "  <td class='billcell' align='center'>&nbsp;</td>\n"; // provider
@@ -413,8 +420,9 @@ if ($_POST['bn_save'] || $_POST['bn_save_close']) {
   $bill = $_POST['bill'];
   $copay_update = FALSE;
   $update_session_id = '';
-  $cod0 = '';//takes the code of the first non-empty modifier from the fee sheet, against which the copay is posted
-  $mod0 = '';//takes the first non-empty modifier from the fee sheet, against which the copay is posted
+  $ct0 = '';//takes the code type of the first fee type code type entry from the fee sheet, against which the copay is posted
+  $cod0 = '';//takes the code of the first fee type code type entry from the fee sheet, against which the copay is posted
+  $mod0 = '';//takes the modifier of the first fee type code type entry from the fee sheet, against which the copay is posted
   for ($lino = 1; $bill["$lino"]['code_type']; ++$lino) {
     $iter = $bill["$lino"];
     $code_type = $iter['code_type'];
@@ -426,9 +434,10 @@ if ($_POST['bn_save'] || $_POST['bn_save_close']) {
 
     $id        = $iter['id'];
     $modifier  = trim($iter['mod']);
-    if(!$mod0 && $modifier != ''){
+    if( !($cod0) && ($code_types[$code_type]['fee'] == 1) ){
       $mod0 = $modifier;
       $cod0 = $code;
+      $ct0 = $code_type;
     }
     $units     = max(1, intval(trim($iter['units'])));
     $fee       = sprintf('%01.2f',(0 + trim($iter['price'])) * $units);
@@ -442,9 +451,9 @@ if ($_POST['bn_save'] || $_POST['bn_save_close']) {
         $session_id = idSqlStatement("INSERT INTO ar_session(payer_id,user_id,pay_total,payment_type,description,".
           "patient_id,payment_method,adjustment_code,post_to_date) VALUES('0',?,?,'patient','COPAY',?,'','patient_payment',now())",
           array($_SESSION['authId'],$fee,$pid));
-        SqlStatement("INSERT INTO ar_activity (pid,encounter,code,modifier,payer_type,post_time,post_user,session_id,".
-          "pay_amount,account_code) VALUES (?,?,?,?,0,now(),?,?,?,'PCP')",
-          array($pid,$encounter,$cod0,$mod0,$_SESSION['authId'],$session_id,$fee));
+        SqlStatement("INSERT INTO ar_activity (pid,encounter,code_type,code,modifier,payer_type,post_time,post_user,session_id,".
+          "pay_amount,account_code) VALUES (?,?,?,?,?,0,now(),?,?,?,'PCP')",
+          array($pid,$encounter,$ct0,$cod0,$mod0,$_SESSION['authId'],$session_id,$fee));
       }else{
         //editing copay saved to ar_session and ar_activity
         if($fee < 0){
@@ -456,12 +465,12 @@ if ($_POST['bn_save'] || $_POST['bn_save_close']) {
         if($fee != $res_amount['pay_amount']){
           sqlStatement("UPDATE ar_session SET user_id=?,pay_total=?,modified_time=now(),post_to_date=now() WHERE session_id=?",
             array($_SESSION['authId'],$fee,$session_id));
-          sqlStatement("UPDATE ar_activity SET code=?, modifier=?, post_user=?, post_time=now(),".
+          sqlStatement("UPDATE ar_activity SET code_type=?, code=?, modifier=?, post_user=?, post_time=now(),".
             "pay_amount=?, modified_time=now() WHERE pid=? AND encounter=? AND account_code='PCP' AND session_id=?",
-            array($cod0,$mod0,$_SESSION['authId'],$fee,$pid,$encounter,$session_id));
+            array($ct0,$cod0,$mod0,$_SESSION['authId'],$fee,$pid,$encounter,$session_id));
         }
       }
-      if(!$mod0){
+      if(!$cod0){
         $copay_update = TRUE;
         $update_session_id = $session_id;
       }
@@ -507,9 +516,9 @@ if ($_POST['bn_save'] || $_POST['bn_save_close']) {
   //if modifier is not inserted during loop update the record using the first
   //non-empty modifier and code
   if($copay_update == TRUE && $update_session_id != '' && $mod0 != ''){
-    sqlStatement("UPDATE ar_activity SET code=?, modifier=?".
+    sqlStatement("UPDATE ar_activity SET code_type=?, code=?, modifier=?".
       " WHERE pid=? AND encounter=? AND account_code='PCP' AND session_id=?",
-      array($cod0,$mod0,$pid,$encounter,$update_session_id));
+      array($ct0,$cod0,$mod0,$pid,$encounter,$update_session_id));
   }
 
   // Doing similarly to the above but for products.
@@ -921,6 +930,8 @@ echo " </tr>\n";
 <?php if (fees_are_used()) { ?>
   <td class='billcell' align='right'><b><?php echo xlt('Price');?></b>&nbsp;</td>
   <td class='billcell' align='center'><b><?php echo xlt('Units');?></b></td>
+<?php } ?>
+<?php if (justifiers_are_used()) { ?>
   <td class='billcell' align='center'<?php echo $usbillstyle; ?>><b><?php echo xlt('Justify');?></b></td>
 <?php } ?>
   <td class='billcell' align='center'><b><?php echo xlt('Provider');?></b></td>

@@ -51,7 +51,7 @@ class Claim {
   var $billing_options;   // row from form_misc_billing_options table
   var $invoice;           // result from get_invoice_summary()
   var $payers;            // array of arrays, for all payers
-  var $copay;             // total of copays from the billing table
+  var $copay;             // total of copays from the ar_activity table
   
   function loadPayerInfo(&$billrow) {
     global $sl_err;
@@ -145,18 +145,20 @@ class Claim {
     $this->encounter = sqlQuery($sql);
 
     // Sort by procedure timestamp in order to get some consistency.
-    $sql = "SELECT * FROM billing WHERE " .
-      "encounter = '{$this->encounter_id}' AND pid = '{$this->pid}' AND " .
-      "(code_type = 'CPT4' OR code_type = 'HCPCS' OR code_type = 'COPAY' OR code_type = 'ICD9') AND " .
-      "activity = '1' ORDER BY date, id";
+    $sql = "SELECT b.id, b.date, b.code_type, b.code, b.pid, b.provider_id, " .
+      "b.user, b.groupname, b.authorized, b.encounter, b.code_text, b.billed, " .
+      "b.activity, b.payer_id, b.bill_process, b.bill_date, b.process_date, " .
+      "b.process_file, b.modifier, b.units, b.fee, b.justify, b.target, b.x12_partner_id, " .
+      "b.ndc_info, b.notecodes, ct.ct_diag " .
+      "FROM billing as b INNER JOIN code_types as ct " .
+      "ON b.code_type = ct.ct_key " .
+      "WHERE ct.ct_claim = '1' AND ct.ct_active = '1' AND " .
+      "b.encounter = '{$this->encounter_id}' AND b.pid = '{$this->pid}' AND " .
+      "b.activity = '1' ORDER BY b.date, b.id";
     $res = sqlStatement($sql);
     while ($row = sqlFetchArray($res)) {
-      if ($row['code_type'] == 'COPAY') {
-        $this->copay -= $row['fee'];
-        continue;
-      }
       // Save all diagnosis codes.
-      if ($row['code_type'] == 'ICD9') {
+      if ($row['ct_diag'] == '1') {
         $this->diags[$row['code']] = $row['code'];
         continue;
       }
@@ -508,7 +510,7 @@ class Claim {
   //
   function patientPaidAmount() {
     // For primary claims $this->invoice is not loaded, so get the co-pay
-    // from the billing table instead.
+    // from the ar_activity table instead.
     if (empty($this->invoice)) return $this->copay;
     //
     $amount = 0;
@@ -590,7 +592,24 @@ class Claim {
   function x12gsisa05() {
     return $this->x12_partner['x12_isa05'];
   }
+//adding in functions for isa 01 - isa 04
 
+  function x12gsisa01() {
+    return $this->x12_partner['x12_isa01'];
+  }
+
+  function x12gsisa02() {
+    return $this->x12_partner['x12_isa02'];
+  }
+  
+   function x12gsisa03() {
+    return $this->x12_partner['x12_isa03'];
+  }
+   function x12gsisa04() {
+    return $this->x12_partner['x12_isa04'];
+  }
+      
+/////////
   function x12gsisa07() {
     return $this->x12_partner['x12_isa07'];
   }
@@ -1111,7 +1130,15 @@ class Claim {
       $atmp = explode(':', $row['justify']);
       foreach ($atmp as $tmp) {
         if (!empty($tmp)) {
-          $diag = str_replace('.', '', $tmp);
+          $code_data = explode('|',$tmp);
+          if (!empty($code_data[1])) {
+            //Strip the prepended code type label
+            $diag = str_replace('.', '', $code_data[1]);
+          }
+          else {
+            //No prepended code type label
+            $diag = str_replace('.', '', $code_data[0]);
+          }
           $da[$diag] = $diag;
         }
       }
@@ -1149,7 +1176,15 @@ class Claim {
     $atmp = explode(':', $this->procs[$prockey]['justify']);
     foreach ($atmp as $tmp) {
       if (!empty($tmp)) {
-        $diag = str_replace('.', '', $tmp);
+        $code_data = explode('|',$tmp);
+        if (!empty($code_data[1])) {
+          //Strip the prepended code type label
+          $diag = str_replace('.', '', $code_data[1]);
+        }
+        else {
+          //No prepended code type label
+          $diag = str_replace('.', '', $code_data[0]);
+        }
         $i = 0;
         foreach ($da as $value) {
           ++$i;

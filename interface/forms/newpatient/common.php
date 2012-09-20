@@ -106,6 +106,21 @@ var dte=document.getElementById('form_date').value;
 var facility=document.forms[0].facility_id.value;
 ajax_bill_loc(pid,dte,facility);
 }
+
+// Handler for Cancel clicked when creating a new encounter.
+// Show demographics or encounters list depending on what frame we're in.
+function cancelClicked() {
+ if (window.name == 'RBot') {
+  parent.left_nav.setRadio(window.name, 'ens');
+  parent.left_nav.loadFrame('ens1', window.name, 'patient_file/history/encounters.php');
+ }
+ else {
+  parent.left_nav.setRadio(window.name, 'dem');
+  parent.left_nav.loadFrame('dem1', window.name, 'patient_file/summary/demographics.php');
+ }
+ return false;
+}
+
 </script>
 </head>
 
@@ -147,7 +162,10 @@ ajax_bill_loc(pid,dte,facility);
         class="css_button link_submit" target='Main' onClick="top.restoreSession()">
       <span><?php xl('Cancel','e'); ?>]</span></a>
   <?php } // end not concurrent layout ?>
-  <?php } // end not autoloading ?>
+  <?php } else if ($GLOBALS['concurrent_layout']) { // not $viewmode ?>
+      <a href="" class="css_button link_submit" onClick="return cancelClicked()">
+      <span><?php xl('Cancel','e'); ?></span></a>
+  <?php } // end not $viewmode ?>
     </div>
  </div>
 
@@ -330,19 +348,18 @@ while ($irow = sqlFetchArray($ires)) {
   $list_id = $irow['id'];
   $tcode = $irow['type'];
   if ($ISSUE_TYPES[$tcode]) $tcode = $ISSUE_TYPES[$tcode][2];
-
+  echo "    <option value='$list_id'";
   if ($viewmode) {
-    echo "    <option value='$list_id'";
     $perow = sqlQuery("SELECT count(*) AS count FROM issue_encounter WHERE " .
       "pid = '$pid' AND encounter = '$encounter' AND list_id = '$list_id'");
     if ($perow['count']) echo " selected";
-    echo ">$tcode: " . $irow['begdate'] . " " .
-      htmlspecialchars(substr($irow['title'], 0, 40)) . "</option>\n";
   }
   else {
-    echo "    <option value='$list_id'>$tcode: ";
-    echo $irow['begdate'] . " " . htmlspecialchars(substr($irow['title'], 0, 40)) . "</option>\n";
+    // For new encounters the invoker may pass an issue ID.
+    if (!empty($_REQUEST['issue']) && $_REQUEST['issue'] == $list_id) echo " selected";
   }
+  echo ">$tcode: " . $irow['begdate'] . " " .
+    htmlspecialchars(substr($irow['title'], 0, 40)) . "</option>\n";
 }
 ?>
    </select>
