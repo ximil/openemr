@@ -4331,6 +4331,20 @@ INSERT INTO `registry` VALUES ('Procedure Order', 1, 'procedure_order', 16, 1, 1
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `report_results`
+--
+
+DROP TABLE IF EXISTS `report_results`;
+CREATE TABLE `report_results` (
+  `report_id` bigint(20) NOT NULL,
+  `field_id` varchar(31) NOT NULL default '',
+  `field_value` text,
+  PRIMARY KEY (`report_id`,`field_id`)
+) ENGINE=MyISAM;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `rule_action`
 --
 
@@ -5475,9 +5489,10 @@ CREATE TABLE version (
   v_patch    int(11)     NOT NULL DEFAULT 0,
   v_realpatch int(11)    NOT NULL DEFAULT 0,
   v_tag      varchar(31) NOT NULL DEFAULT '',
-  v_database int(11)     NOT NULL DEFAULT 0
+  v_database int(11)     NOT NULL DEFAULT 0,
+  v_acl      int(11)     NOT NULL DEFAULT 0
 ) ENGINE=MyISAM;
-INSERT INTO version (v_major, v_minor, v_patch, v_realpatch, v_tag, v_database) VALUES (0, 0, 0, 0, '', 0);
+INSERT INTO version (v_major, v_minor, v_patch, v_realpatch, v_tag, v_database, v_acl) VALUES (0, 0, 0, 0, '', 0, 0);
 -- --------------------------------------------------------
 
 --
