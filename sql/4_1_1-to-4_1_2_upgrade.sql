@@ -70,3 +70,6 @@ CREATE TABLE `report_results` (
 ALTER TABLE `version` ADD COLUMN `v_acl` int(11) NOT NULL DEFAULT 0;
 #EndIf
 
+#IfMissingColumn registry show_patient_portal
+ALTER TABLE `registry` ADD COLUMN `show_patient_portal` TINYINT(4) NULL;
+#EndIf
