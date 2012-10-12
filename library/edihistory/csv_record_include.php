@@ -431,7 +431,7 @@ function csv_clear_tmpdir() {
  * The 'datecolumn' and 'fncolumn' entries are used in csv_to_html() to filter by date 
  * or place links to files.
  * 
- * @param string $type -- default = ALL or one of batch, ibr, ebr, dpr, f997, f277, era, ack, text
+ * @param string $type -- default = ALL or one of batch, ibr, ebr, dpr, f997, f277, era, ack, ta1, text
  * @return array
  */
 function csv_parameters($type="ALL") {
@@ -535,7 +535,6 @@ function csv_dirfile_list ($type) {
 		return FALSE;
 	}
 	$params = csv_parameters($type);
-	//$search_dir = dirname(__FILE__).$params['directory'].DIRECTORY_SEPARATOR;
     $search_dir = $params['directory'].DIRECTORY_SEPARATOR;
     $typedir = basename($params['directory']);
 	$ext_re = $params['regex'];
@@ -558,6 +557,7 @@ function csv_dirfile_list ($type) {
                             if (ext == '999' || ext == '997' || $ext == 'ack') { continue; }
                         } 
                     } else {
+                        //if ($file == '.' || $file == '..') { continue; }  // . and .. are not files
 						csv_edihist_log("csv_dirfile_list: $type wrong type $file");
 					}
 				}
@@ -744,7 +744,7 @@ function csv_write_record($csv_data, $file_type, $csv_type) {
 	if (!is_array($csv_data)) { return FALSE;}
 	// use CSV_RECORD class to write ibr or ebr claims data to the csv file 
 	//  csv, batch, ibr, ebr, f997, or era
-	if (! strpos("|era|f997|ibr|ebr|dpr|f277|batch|ack", $file_type) ) {	
+	if (! strpos("|era|f997|ibr|ebr|dpr|f277|batch|ta1|ack", $file_type) ) {	
 		csv_edihist_log("csv_write_record error: incorrect file type $file_type");
 		return FALSE;
 	}
@@ -1484,9 +1484,9 @@ function csv_to_html($file_type, $csv_type, $row_pct = 1, $datestart='', $dateen
 	if ($rwst < 1) { $rwst = 1; $rwct = $ln_ct; }
 	// 
 	if ($is_date) {
-		$csv_html .= "<h4>Table: $f_name &nbsp;&nbsp; Start Date: $datestart &nbsp; End Date: $dateend &nbsp;Rows: $rwct</h4>".PHP_EOL;
+		$csv_html .= "<div id='dttl'>Table: $f_name &nbsp;&nbsp; Start Date: $datestart &nbsp; End Date: $dateend &nbsp;Rows: $rwct</div>".PHP_EOL;
 	} else {
-		$csv_html .= "<h4>Table: $f_name &nbsp;&nbsp; Rows: $ln_ct &nbsp;&nbsp; Shown: $rwct</h4>".PHP_EOL;
+		$csv_html .= "<div id='dttl'>Table: $f_name &nbsp;&nbsp; Rows: $ln_ct &nbsp;&nbsp; Shown: $rwct</div>".PHP_EOL;
 	}
 	//
 	 $csv_html .= "<table id=\"csvTable\" class=\"csvDisplay\">".PHP_EOL;
