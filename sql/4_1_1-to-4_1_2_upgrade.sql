@@ -70,3 +70,22 @@ CREATE TABLE `report_results` (
 ALTER TABLE `version` ADD COLUMN `v_acl` int(11) NOT NULL DEFAULT 0;
 #EndIf
 
+#IfMissingColumn documents_legal_detail dld_moved
+ALTER TABLE `documents_legal_detail` ADD COLUMN `dld_moved` TINYINT DEFAULT 0 NOT NULL; 
+#EndIf
+
+#IfTable audit_master
+ALTER TABLE `audit_master` CHANGE `type` `type` TINYINT(4) NOT NULL COMMENT '1-new patient,2-existing patient,3-change is only in the document,4-Patient upload,5-random key,10-Appointment'; 
+#EndIf
+
+#IfTable documents_legal_detail
+ALTER TABLE `documents_legal_detail` CHANGE `dld_signed` `dld_signed` SMALLINT(5) UNSIGNED NOT NULL COMMENT '0-Not Signed or Cannot Sign(Layout),1-Signed,2-Ready to sign,3-Denied(Pat Regi),4-Patient Upload,10-Save(Layout)'; 
+#EndIf
+
+#IfMissingColumn documents_legal_detail dld_patient_comments
+ALTER TABLE `documents_legal_detail` ADD COLUMN `dld_patient_comments` TEXT NULL COMMENT 'Patient comments stored here';
+#EndIf
+
+#IfMissingColumn documents_legal_master dlm_upload_type
+ALTER TABLE `documents_legal_master` ADD COLUMN `dlm_upload_type` TINYINT(4) DEFAULT 0 NULL COMMENT '0-Provider Uploaded,1-Patient Uploaded';
+#EndIf
