@@ -1,71 +1,28 @@
 <?php
-/**
-* Sql functions/classes for OpenEMR.
-*
-* Includes classes and functions that OpenEMR uses
-* to interact with SQL.
-*
-* LICENSE: This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://opensource.org/licenses/gpl-license.php>.
-* 
-* @package   OpenEMR
-* @link      http://www.open-emr.org
-*/
 
-require_once(dirname(__FILE__) . "/sqlconf.php");
+include_once(dirname(__FILE__) . "/sqlconf.php");
 require_once(dirname(__FILE__) . "/adodb/adodb.inc.php");
 require_once(dirname(__FILE__) . "/adodb/drivers/adodb-mysql.inc.php");
-require_once(dirname(__FILE__) . "/log.inc");
 
-/**
-* ADODB_mysql class wrapper to ensure proper auditing in OpenEMR.
-*
-* @author  Kevin Yeh <kevin.y@integralemr.com>
-*/
+include_once(dirname(__FILE__) . "/log.inc");
+
 class ADODB_mysql_log extends ADODB_mysql
 {
-        /**
-        * ADODB Execute function wrapper to ensure proper auditing in OpenEMR.
-        *
-        * @param  string  $sql         query
-        * @param  array   $inputarr    binded variables array (optional)
-        * @return boolean              returns false if error
-        */
     	function Execute($sql,$inputarr=false)
         {
             $retval= parent::Execute($sql,$inputarr);
-            if ($retval === false) {
-              $outcome = false;
-              // Stash the error into last_mysql_error so it doesn't get clobbered when
-              // we insert into the audit log.
-              $GLOBALS['last_mysql_error']=$this->ErrorMsg();
-            }
-            else {
-              $outcome = true;
-            }
-            // Stash the insert ID into lastidado so it doesn't get clobbered when
-            // we insert into the audit log.
+            // Kevin Yeh(kevin.y@integralemr.com)
+            // Stash the insert ID into lastidado so it doesn't get clobbered when 
+            // we insert into the audit log
             $GLOBALS['lastidado']=$this->Insert_ID();
+            $outcome= ($retval === false) ? false : true;
             auditSQLEvent($sql,$outcome,$inputarr);
             return $retval;
         }
 
-        /**
-        *  ADODB _insertid function wrapper to ensure proper auditing in OpenEMR.
-        *
-        *  Need to override this method to prevent infinite recursion with execute
-        *  when trying to retrieve the last insert id.
-        *
-        * @return boolean    returns false if error
-        */
+        // Kevin Yeh(kevin.y@integralemr.com)
+        // Need to override this method to prevent infinite recursion with execute
+        // when trying to retrieve the last insert id.
         function _insertid()
         {
             $rs=$this->ExecuteNoLog("SELECT LAST_INSERT_ID()");
@@ -74,71 +31,14 @@ class ADODB_mysql_log extends ADODB_mysql
             return $ret;
         }
 
-        /**
-        * ADODB Execute function wrapper to skip auditing in OpenEMR.
-        *
-        * Bypasses the OpenEMR auditing engine.
-        *
-        * @param  string  $sql         query
-        * @param  array   $inputarr    binded variables array (optional)
-        * @return boolean              returns false if error
-        */
         function ExecuteNoLog($sql,$inputarr=false)
         {
             return parent::Execute($sql,$inputarr);
         }
-
-        /*
-        * ADODB GenID function wrapper to work with OpenEMR.
-        *
-        * Need to override to fix a bug where call to GenID was updating
-        * sequences table but always returning a zero with the OpenEMR audit
-        * engine both on and off. Note this bug only appears to occur in recent
-        * php versions on windows. The fix is to use the ExecuteNoLog() function
-        * rather than the Execute() functions within this function (otherwise,
-        * there are no other changes from the original ADODB GenID function).
-        *
-        * @param  string  $seqname     table name containing sequence (default is adodbseq)
-        * @param  integer $startID     id to start with for a new sequence (default is 1)
-        * @return integer              returns the sequence integer
-        */
-        function GenID($seqname='adodbseq',$startID=1)
-        {
-                // post-nuke sets hasGenID to false
-                if (!$this->hasGenID) return false;
-
-                $savelog = $this->_logsql;
-                $this->_logsql = false;
-                $getnext = sprintf($this->_genIDSQL,$seqname);
-                $holdtransOK = $this->_transOK; // save the current status
-                $rs = @$this->ExecuteNoLog($getnext);
-                if (!$rs) {
-                        if ($holdtransOK) $this->_transOK = true; //if the status was ok before reset
-                        $u = strtoupper($seqname);
-                        $this->ExecuteNoLog(sprintf($this->_genSeqSQL,$seqname));
-                        $cnt = $this->GetOne(sprintf($this->_genSeqCountSQL,$seqname));
-                        if (!$cnt) $this->ExecuteNoLog(sprintf($this->_genSeq2SQL,$seqname,$startID-1));
-                        $rs = $this->ExecuteNoLog($getnext);
-                }
-
-                if ($rs) {
-                        $this->genID = mysql_insert_id($this->_connectionID);
-                        $rs->Close();
-                } else
-                        $this->genID = 0;
-
-                $this->_logsql = $savelog;
-                return $this->genID;
-        }
 }
 if (!defined('ADODB_FETCH_ASSOC')) define('ADODB_FETCH_ASSOC', 2);
 $database = NewADOConnection("mysql_log"); // Use the subclassed driver which logs execute events
-// Below clientFlags flag is telling the mysql connection to allow local_infile setting,
-// which is needed to import data in the Administration->Other->External Data Loads feature.
-// Note this is a specific bug to work in Ubuntu 12.04, of which the Data Load feature does not
-// work and is suspicious for a bug in PHP of that OS; Setting this clientFlags fixes this bug
-// and appears to not cause problems in other operating systems.
-$database->clientFlags = 128;
+
 $database->PConnect($host, $login, $pass, $dbase);
 $GLOBALS['adodb']['db'] = $database;
 $GLOBALS['dbh'] = $database->_connectionID;
@@ -147,7 +47,7 @@ $GLOBALS['dbh'] = $database->_connectionID;
 if (!$disable_utf8_flag) {
  $success_flag = $database->Execute("SET NAMES 'utf8'");
   if (!$success_flag) {
-   error_log("PHP custom error: from openemr library/sql.inc  - Unable to set up UTF8 encoding with mysql database: ".getSqlLastError(), 0);
+   error_log("PHP custom error: from openemr library/sql.inc  - Unable to set up UTF8 encoding with mysql database: ".$database->ErrorMsg(), 0);
   }
 }
 
@@ -163,36 +63,29 @@ if (!$GLOBALS['dbh']) {
   } else {
     echo "Check that you can ping the server '$host'.<p>";
   }//if local
-  HelpfulDie("Could not connect to server!", getSqlLastError("native_mysql"));
+  HelpfulDie("Could not connect to server!", mysql_error($GLOBALS['dbh']));
   exit;
 }//if no connection
 
-/**
-* Standard sql query in OpenEMR.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. Will continue to
-* be compatible with previous function calls that do
-* not use binding.
-* If use adodb binding, then will return a recordset object.
-* If do not use binding, then will return a resource object.
-* The sqlFetchArray() function should be used to
-* utilize the return object (it will accept both recordset
-* and resource objects).
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return recordset/resource
-*/
+
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection. Will continue to
+//   be compatible with previous function calls that do
+//   not use binding.
+// If use adodb binding, then will return a recordset object.
+// If do not use binding, then will return a resource object.
+// The sqlFetchArray() function should be used to
+//   utilize the return object (it will accept both recordset
+//   and resource objects).
 function sqlStatement($statement, $binds=NULL )
 {
   if (is_array($binds)) {
     // Use adodb Execute with binding and return a recordset.
     //   Note that the auditSQLEvent function is embedded
-    //    in the Execute command.
+    //    in the adodb Execute command.
     $recordset = $GLOBALS['adodb']['db']->Execute( $statement, $binds );
     if ($recordset === FALSE) {
-      HelpfulDie("query failed: $statement", getSqlLastError());
+      HelpfulDie("query failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
     }
     return $recordset;
   }
@@ -201,40 +94,24 @@ function sqlStatement($statement, $binds=NULL )
     $resource = mysql_query($statement, $GLOBALS['dbh']);
     if ($resource === FALSE) {
       auditSQLEvent($statement, FALSE, $binds);
-      HelpfulDie("query failed: $statement", getSqlLastError("native_mysql"));
+      HelpfulDie("query failed: $statement", mysql_error($GLOBALS['dbh']));
     }
     auditSQLEvent($statement, TRUE, $binds);
     return $resource;
   }
 }
 
-/**
-* Specialized sql query in OpenEMR that skips auditing.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. Will continue to
-* be compatible with previous function calls that do
-* not use binding. It is equivalent to the 
-* sqlStatement() function, EXCEPT it skips the
-* audit engine. This function should only be used
-* in very special situations.
-* If use adodb binding, then will return a recordset object.
-* If do not use binding, then will return a resource object.
-* The sqlFetchArray() function should be used to
-* utilize the return object (it will accept both recordset
-* and resource objects).
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return recordset/resource
-*/
+// Function that is the equivalent of the above
+//   sqlStatement() function, EXCEPT it skips the
+//   audit engine. This function should only be used
+//   in very special situations.
 function sqlStatementNoLog($statement, $binds=NULL )
 {
   if (is_array($binds)) {
     // Use adodb ExecuteNoLog with binding and return a recordset.
     $recordset = $GLOBALS['adodb']['db']->ExecuteNoLog( $statement, $binds );
     if ($recordset === FALSE) {
-      HelpfulDie("query failed: $statement", getSqlLastError());
+      HelpfulDie("query failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
     }
     return $recordset;
   }
@@ -242,44 +119,18 @@ function sqlStatementNoLog($statement, $binds=NULL )
     // Use mysql_query and return a resource.
     $resource = mysql_query($statement, $GLOBALS['dbh']);
     if ($resource === FALSE) {
-      HelpfulDie("query failed: $statement", getSqlLastError("native_mysql"));
+      HelpfulDie("query failed: $statement", mysql_error($GLOBALS['dbh']));
     }
     return $resource;
   }
 }
 
-/**
-* sqlStatement() function wrapper for CDR engine in OpenEMR.
-* Allows option to turn on/off auditing specifically for the
-* CDR engine.
-* 
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return recordset/resource
-*/
-function sqlStatementCdrEngine($statement, $binds=NULL )
-{
-  if ($GLOBALS['audit_events_cdr']) {
-    return sqlStatement($statement,$binds);
-  }
-  else {
-    return sqlStatementNoLog($statement,$binds);
-  }
-}
-
-/**
-* Returns a row (as an array) from a sql recordset or resource object.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection.
-* It will act upon the object returned from the
-* sqlStatement() function (and sqlQ() function).
-* It will automatically figure out if the input
-* object is a recordset or a resource.
-*
-* @param recordset/resource $r
-* @return array
-*/
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// It will act upon the object returned from the 
+//   sqlStatement() function (and sqlQ() function).
+// It will automatically figure out if the input
+//   object is a recordset or a resource.
 function sqlFetchArray($r)
 {
   if (!is_resource($r)) {
@@ -301,171 +152,86 @@ function sqlFetchArray($r)
   }
 }
 
-/**
-* Standard sql insert query in OpenEMR.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. This function
-* is specialized for insert function and will return
-* the last id generated from the insert.
-*
-* @param  string   $statement  query
-* @param  array    $binds      binded variables array (optional)
-* @return integer  Last id generated from the sql insert command
-*/
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// This function is specialized for insert functions
+//   and will return the last id generated from the
+//   insert.
 function sqlInsert($statement, $binds=array())
 {
   //Run a adodb execute
   // Note the auditSQLEvent function is embedded in the
-  //   Execute function.
+  //   adodb Execute function.
   $recordset = $GLOBALS['adodb']['db']->Execute($statement, $binds);
   if ($recordset === FALSE) {
-    HelpfulDie("insert failed: $statement", getSqlLastError());
+    HelpfulDie("insert failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
   }
   // Return the correct last id generated using function
   //   that is safe with the audit engine.
   return getSqlLastID();
 }
 
-/**
-* Specialized sql query in OpenEMR that only returns
-* the first row of query results as an associative array.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection.
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return array
-*/
-function sqlQuery($statement, $binds=NULL)
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// This function is specialized for simply returning
+//   the first row of a query as an associative array.
+// The $status_or_binds parameter can do following:
+//   FALSE or an array() - Run adodb Execute with binding,
+//     if applicable.
+//   TRUE - run mysql_query for a specific case in the audit engine
+//     (library/log.inc) to skip auditing and reporting if the query
+//     does not work.
+function sqlQuery($statement, $status_or_binds=FALSE)
 {
-  if (is_array($binds)) {
-    $recordset = $GLOBALS['adodb']['db']->Execute( $statement, $binds );
+  if ((is_array($status_or_binds)) || ($status_or_binds === FALSE)) {
+    // run the adodb Execute function
+    //   Note the auditSQLEvent function is embedded in the
+    //     adodb Execute function.
+    if (is_array($status_or_binds)) {
+      $recordset = $GLOBALS['adodb']['db']->Execute( $statement, $status_or_binds );
+    }
+    else {
+      $recordset = $GLOBALS['adodb']['db']->Execute( $statement );
+    }
+    if ($recordset === FALSE) {
+      HelpfulDie("query failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
+    }
+    if ($recordset->EOF)
+     return FALSE;
+    $rez = $recordset->FetchRow();
+    if ($rez == FALSE)
+      return FALSE;
+    return $rez;
   }
   else {
-    $recordset = $GLOBALS['adodb']['db']->Execute( $statement );
-  }
-  if ($recordset === FALSE) {
-    HelpfulDie("query failed: $statement", getSqlLastError());
-  }
-  if ($recordset->EOF)
-   return FALSE;
-  $rez = $recordset->FetchRow();
-  if ($rez == FALSE)
-    return FALSE;
-  return $rez;
-}
-
-/**
-* Specialized sql query in OpenEMR that bypasses the auditing engine
-* and only returns the first row of query results as an associative array.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. It is equivalent to the
-* sqlQuery() function, EXCEPT it skips the
-* audit engine. This function should only be used
-* in very special situations.
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return array
-*/
-function sqlQueryNoLog($statement, $binds=NULL)
-{
-  if (is_array($binds)) {
-    $recordset = $GLOBALS['adodb']['db']->ExecuteNoLog( $statement, $binds );
-  }
-  else {
-    $recordset = $GLOBALS['adodb']['db']->ExecuteNoLog( $statement );
-  }
-  if ($recordset === FALSE) {
-    HelpfulDie("query failed: $statement", getSqlLastError());
-  }
-  if ($recordset->EOF)
-   return FALSE;
-  $rez = $recordset->FetchRow();
-  if ($rez == FALSE)
-    return FALSE;
-  return $rez;
-}
-
-/**
-* Specialized sql query in OpenEMR that ignores sql errors, bypasses the
-* auditing engine and only returns the first row of query results as an
-* associative array.
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. It is equivalent to the
-* sqlQuery() function, EXCEPT it skips the
-* audit engine and ignores erros. This function should only be used
-* in very special situations.
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return array
-*/
-function sqlQueryNoLogIgnoreError($statement, $binds=NULL)
-{
-  if (is_array($binds)) {
-    $recordset = $GLOBALS['adodb']['db']->ExecuteNoLog( $statement, $binds );
-  }
-  else {
-    $recordset = $GLOBALS['adodb']['db']->ExecuteNoLog( $statement );
-  }
-  if ($recordset === FALSE) {
-    // ignore the error and return FALSE
-    return FALSE;
-  }
-  if ($recordset->EOF)
-   return FALSE;
-  $rez = $recordset->FetchRow();
-  if ($rez == FALSE)
-    return FALSE;
-  return $rez;
-}
-
-/**
-* sqlQuery() function wrapper for CDR engine in OpenEMR.
-* Allows option to turn on/off auditing specifically for the
-* CDR engine.
-*
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return array
-*/
-function sqlQueryCdrEngine($statement, $binds=NULL )
-{
-  if ($GLOBALS['audit_events_cdr']) {
-    return sqlQuery($statement,$binds);
-  }
-  else {
-    return sqlQueryNoLog($statement,$binds);
+    // run mysql_query to bypass the audit engine if error
+    //   in query.
+    $resource = mysql_query($statement, $GLOBALS['dbh']);
+    auditSQLEvent($statement, TRUE, $status_or_binds);
+   //$rez = @mysql_fetch_array($query, MYSQL_ASSOC);
+    $rez = @mysql_fetch_array($resource, MYSQL_ASSOC); //Replace $query with $resource to calculate correct checksum
+    if ($rez == FALSE)
+      return FALSE;
+    return $rez;
   }
 }
 
-/**
-* Specialized sql query in OpenEMR that skips auditing.
-*
-* This function should only be used in very special situations.
-*
-* @param  string  $statement  query
-*/
+// ViSolve: Create a seperate function for audit log calls.
+/* Kevin Yeh (kevin.y@integralemr.com) 12/13/2011
+ * This allows us to insert a row in the log table that doesn't log its own actions.
+ */
 function sqlInsertClean_audit($statement)
 {
 
   $ret = $GLOBALS['adodb']['db']->ExecuteNoLog($statement);
   if ($ret === FALSE) {
-    HelpfulDie("insert failed: $statement", getSqlLastError());
+    HelpfulDie("insert failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
   }
 }
 
-/**
-* Function that will safely return the last ID inserted,
-* and accounts for the audit engine.
-*
-* @return  integer Last ID that was inserted into sql
-*/
+// Function that will safely return the last
+//   ID inserted, and accounts for
+//   the audit engine.
 function getSqlLastID() {
   if ($GLOBALS['lastidado'] >0) {
     return $GLOBALS['lastidado'];
@@ -475,34 +241,8 @@ function getSqlLastID() {
   }
 }
 
-/**
-* Function that will safely return the last error,
-* and accounts for the audit engine.
-*
-* @param   string  $mode either adodb(default) or native_mysql
-* @return  string        last mysql error
-*/
-function getSqlLastError($mode="adodb") {
-  if (!empty($GLOBALS['last_mysql_error'])) {
-    return $GLOBALS['last_mysql_error'];
-  }
-  else {
-    if ($mode == "adodb") {
-      return $GLOBALS['adodb']['db']->ErrorMsg();
-    }
-    else { // $mode = "native_mysql"
-      return mysql_error($GLOBALS['dbh']);
-    }
-  }
-}
-
-/**
-* Function that will return an array listing
-* of columns that exist in a table.
-*
-* @param   string  $table sql table
-* @return  array
-*/
+// Function that will return an array listing
+//   of columns that exist in a table.
 function sqlListFields($table) {
   $sql = "SHOW COLUMNS FROM ". mysql_real_escape_string($table);
   $resource = sqlQ($sql);
@@ -513,19 +253,13 @@ function sqlListFields($table) {
   return $field_list;
 }
 
-/**
-* Returns the number of sql rows
-*
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection.
-* It will act upon the object returned from the
-* sqlStatement() function (and sqlQ() function).
-* It will automatically figure out if the input
-* object is a recordset or a resource.
-*
-* @param recordset/resource $r
-* @return integer Number of rows
-*/
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// It will act upon the object returned from the
+//   sqlStatement() function (and sqlQ() function).
+// It will automatically figure out if the input
+//   object is a recordset or a resource.
+// It will return the number of rows.
 function sqlNumRows($r)
 {
   if (!is_resource($r)) {
@@ -538,12 +272,7 @@ function sqlNumRows($r)
   }
 }
 
-/**
-* Error function for OpenEMR sql functions
-*
-* @param string $statement
-* @param string $sqlerr
-*/
+//fmg: Much more helpful that way...
 function HelpfulDie ($statement, $sqlerr='')
 {
   echo "<p><p><font color='red'>ERROR:</font> $statement<p>";
@@ -553,125 +282,80 @@ function HelpfulDie ($statement, $sqlerr='')
   exit;
 }
 
-/**
-* @todo document use of the generate_id function
-*/
 function generate_id () {
   $database = $GLOBALS['adodb']['db'];
   return $database->GenID("sequences");
 }
 
-/**
-* Specialized sql query in OpenEMR with limited functionality
-*
-* Does not fully incorporate the audit engine, so
-* recommend not using this function (if bind is set,
-* then will get logged, however if bind is not set,
-* then will not get logged).  
-* Function that will allow use of the adodb binding
-* feature to prevent sql-injection. Will continue to
-* be compatible with previous function calls that do
-* not use binding.
-* If use adodb binding, then will return a recordset object.
-* If do not use binding, then will return a resource object.
-* The sqlFetchArray() function should be used to
-* utilize the return object (it will accept both recordset
-* and resource objects).
-*
-* @deprecated
-* @param  string  $statement  query
-* @param  array   $binds      binded variables array (optional)
-* @return recordset/resource
-*/
+// Does not fully incorporate the audit engine, so
+//   recommend not using this function (if bind is set,
+//   then will get logged, however if bind is not set,
+//   then will not get logged).  
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection. Will continue to
+//   be compatible with previous function calls that do
+//   not use binding.
+// If use adodb binding, then will return a recordset object.
+// If do not use binding, then will return a resource object.
+// The sqlFetchArray() function should be used to
+//   utilize the return object (it will accept both recordset
+//   and resource objects).
 function sqlQ($statement, $binds=NULL )
 {
   if (is_array($binds)) {
     $recordset = $GLOBALS['adodb']['db']->Execute( $statement, $binds ) or
-      HelpfulDie("query failed: $statement", getSqlLastError());
+      HelpfulDie("query failed: $statement", $GLOBALS['adodb']['db']->ErrorMsg());
     return $recordset;
   }
   else {
     $resource = mysql_query($statement, $GLOBALS['dbh']) or
-      HelpfulDie("query failed: $statement", getSqlLastError("native_mysql"));
+      HelpfulDie("query failed: $statement", mysql_error($GLOBALS['dbh']));
     return $resource;
   }
 }
 
-/**
-* Simple wrapper for sqlInsert() function (deprecated).
-*
-* Function that will allow use of the adodb binding feature
-* to prevent sql-injection.
-*
-* @deprecated
-* @param  string   $statement  query
-* @param  array    $binds      binded variables array (optional)
-* @return integer  Last id generated from the sql insert command
-*/
+// DEPRECATED FUNCTION
+//
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// A simple wrapper for the sqlInsert() function.
 function idSqlStatement($statement , $binds=NULL )
 {
   return sqlInsert($statement, $binds);
 }
 
-/**
-* Simple wrapper for sqlInsert() function (deprecated).
-*
-* Function that will allow use of the adodb binding feature
-* to prevent sql-injection.
-*
-* @deprecated
-* @param  string   $statement  query
-* @param  array    $binds      binded variables array (optional)
-* @return integer  Last id generated from the sql insert command
-*/
+// DEPRECATED FUNCTION
+//
+// Function that will allow use of the adodb binding
+//   feature to prevent sql-injection.
+// A simple wrapper for the sqlInsert() function.
 function sqlInsertClean($statement, $binds=NULL )
 {
   return sqlInsert($statement, $binds);
 }
 
-/**
-* Sql connection function (deprecated)
-*
-* No longer needed
-*
-* @deprecated
-* @param string $login
-* @param string $pass
-* @param string $dbase
-* @param string $host
-* @param string $port
-* @return connection
-*/
+// DEPRECATED FUNCTION
 function sqlConnect($login,$pass,$dbase,$host,$port = '3306')
 {
   $GLOBALS['dbh'] = $database->_connectionID;
   return $GLOBALS['dbh'];
 }
 
-/**
-* Sql close connection function (deprecated)
-*
-* No longer needed since PHP does this automatically.
-*
-* @deprecated
-* @return boolean
-*/
+// DEPRECATED FUNCTION
+//
+// Function to close the connection. PHP does
+//   this automatically, so not needed.
 function sqlClose()
 {
   //----------Close our mysql connection
   $closed = $GLOBALS['adodb']['db']->close or
-    HelpfulDie("could not disconnect from mysql server link", getSqlLastError());
+    HelpfulDie("could not disconnect from mysql server link", $GLOBALS['adodb']['db']->ErrorMsg());
   return $closed;
 }
 
-/**
-* Very simple wrapper function and not necessary (deprecated)
-*
-* Do not use.
-*
-* @deprecated
-* @return connection
-*/
+// DEPRECATED FUNCTION
 function get_db() {
   return $GLOBALS['adodb']['db'];
 }

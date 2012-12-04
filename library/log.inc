@@ -108,9 +108,6 @@ function getEvents($params)
  * If this is not an insert/update query, return "".
  * If multiple rows were modified, return "".
  * If we're unable to determine the row modified, return "".
- *
- * TODO: May need to incorporate the binded stuff (still analyzing)
- *
  */
 function sql_checksum_of_modified_row($statement)
 {
@@ -255,9 +252,7 @@ function sql_checksum_of_modified_row($statement)
      else {
         $sql = "select * from $table where id = $rid";
     }
-    // When this function is working perfectly, can then shift to the
-    // sqlQueryNoLog() function.
-    $results = sqlQueryNoLogIgnoreError($sql);    
+    $results = sqlQuery($sql,'true');    
     $column_values = "";
    /* Concatenating the column values for the row inserted/updated */
     if (is_array($results)) {
@@ -266,8 +261,6 @@ function sql_checksum_of_modified_row($statement)
         }
     }
     // ViCarePlus: As per NIST standard, the encryption algorithm SHA1 is used
-
-    //error_log("COLUMN_VALUES: ".$column_values,0);
     return sha1($column_values);
 }
 
@@ -537,15 +530,7 @@ function auditSQLEvent($statement, $outcome, $binds=NULL)
         $success = 0;
     }
     if ($outcome !== FALSE) {
-        // Should use the $statement rather than the processed
-        // variables, which includes the binded stuff. If do
-        // indeed need the binded values, then will need
-        // to include this as a separate array.
-
-        //error_log("STATEMENT: ".$statement,0);
-        //error_log("BINDS: ".$processed_binds,0);
-        $checksum = sql_checksum_of_modified_row($statement);
-        //error_log("CHECKSUM: ".$checksum,0);
+        $checksum = sql_checksum_of_modified_row($comments);
     }
     /* Determine the query type (select, update, insert, delete) */
     $querytype = "select";

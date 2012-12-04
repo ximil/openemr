@@ -1130,15 +1130,7 @@ class Claim {
       $atmp = explode(':', $row['justify']);
       foreach ($atmp as $tmp) {
         if (!empty($tmp)) {
-          $code_data = explode('|',$tmp);
-          if (!empty($code_data[1])) {
-            //Strip the prepended code type label
-            $diag = str_replace('.', '', $code_data[1]);
-          }
-          else {
-            //No prepended code type label
-            $diag = str_replace('.', '', $code_data[0]);
-          }
+          $diag = str_replace('.', '', $tmp);
           $da[$diag] = $diag;
         }
       }
@@ -1176,15 +1168,7 @@ class Claim {
     $atmp = explode(':', $this->procs[$prockey]['justify']);
     foreach ($atmp as $tmp) {
       if (!empty($tmp)) {
-        $code_data = explode('|',$tmp);
-        if (!empty($code_data[1])) {
-          //Strip the prepended code type label
-          $diag = str_replace('.', '', $code_data[1]);
-        }
-        else {
-          //No prepended code type label
-          $diag = str_replace('.', '', $code_data[0]);
-        }
+        $diag = str_replace('.', '', $tmp);
         $i = 0;
         foreach ($da as $value) {
           ++$i;

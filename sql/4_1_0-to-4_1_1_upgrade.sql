@@ -11,7 +11,7 @@
 
 --  #IfMissingColumn
 --    arguments: table_name colname
---    behavior:  if the table exists but the column does not,  the block will be executed
+--    behavior:  if the colname in the table_name table does not exist,  the block will be executed
 
 --  #IfNotColumnType
 --    arguments: table_name colname value
@@ -44,18 +44,13 @@
 --    arguments: table_name colname value colname2 value2
 --    behavior:  If the table table_name does have a row where colname = value AND colname2 = value2, the block will be executed.
 
---  #IfIndex
---    desc:      This function is most often used for dropping of indexes/keys.
---    arguments: table_name colname
---    behavior:  If the table and index exist the relevant statements are executed, otherwise not.
-
 --  #IfNotIndex
 --    desc:      This function will allow adding of indexes/keys.
 --    arguments: table_name colname
 --    behavior:  If the index does not exist, it will be created
 
 --  #EndIf
---    all blocks are terminated with a #EndIf statement.
+--    all blocks are terminated with and #EndIf statement.
 
 
 #IfNotIndex lists type
@@ -70,20 +65,12 @@ CREATE INDEX `pid` ON `lists` (`pid`);
 CREATE INDEX `pid` ON `form_vitals` (`pid`);
 #EndIf
 
-#IfIndex forms pid
-DROP INDEX `pid` ON `forms`;
+#IfNotIndex forms pid
+CREATE INDEX `pid` ON `forms` (`pid`);
 #EndIf
 
-#IfIndex form_encounter pid
-DROP INDEX `pid` ON `form_encounter`;
-#EndIf
-
-#IfNotIndex forms pid_encounter
-CREATE INDEX `pid_encounter` ON `forms` (`pid`, `encounter`);
-#EndIf
-
-#IfNotIndex form_encounter pid_encounter
-CREATE INDEX `pid_encounter` ON `form_encounter` (`pid`, `encounter`);
+#IfNotIndex form_encounter pid
+CREATE INDEX `pid` ON `form_encounter` (`pid`);
 #EndIf
 
 #IfNotIndex immunizations patient_id
@@ -108,10 +95,6 @@ CREATE INDEX `patient_id` ON `extended_log` (`patient_id`);
 
 #IfNotIndex prescriptions patient_id
 CREATE INDEX `patient_id` ON `prescriptions` (`patient_id`);
-#EndIf
-
-#IfNotIndex openemr_postcalendar_events pc_eventDate
-CREATE INDEX `pc_eventDate` ON `openemr_postcalendar_events` (`pc_eventDate`);
 #EndIf
 
 #IfMissingColumn version v_realpatch
@@ -268,10 +251,6 @@ INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, 
 DROP TABLE `temp_table_one`;
 #EndIf
 
-#IfMissingColumn ar_activity code_type
-ALTER TABLE `ar_activity` ADD COLUMN `code_type` varchar(12) NOT NULL DEFAULT '';
-#EndIf
-
 #IfRow2D billing code_type COPAY activity 1
 DROP TABLE IF EXISTS `temp_table_one`;
 CREATE TABLE `temp_table_one` (
@@ -288,7 +267,6 @@ CREATE TABLE `temp_table_one` (
   payment_method varchar( 25 ) NOT NULL DEFAULT 'cash',
   pid            int(11)       NOT NULL,
   encounter      int(11)       NOT NULL,
-  code_type      varchar(12)   NOT NULL DEFAULT '',
   code           varchar(9)    NOT NULL,
   modifier       varchar(5)    NOT NULL DEFAULT '',
   payer_type     int           NOT NULL DEFAULT 0,
@@ -300,9 +278,9 @@ CREATE TABLE `temp_table_one` (
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
 INSERT INTO `temp_table_one` (`user_id`, `pay_total`, `patient_id`, `post_to_date`, `pid`, `encounter`, `post_time`, `post_user`, `pay_amount`, `description`) SELECT `user`, (`fee`*-1), `pid`, `date`, `pid`, `encounter`, `date`, `user`, (`fee`*-1), 'COPAY' FROM `billing` WHERE `code_type`='COPAY' AND `activity`!=0;
 UPDATE `temp_table_one` SET `session_id`= ((SELECT MAX(session_id) FROM ar_session)+`id`);
-UPDATE `billing`, `code_types`, `temp_table_one` SET temp_table_one.code_type=billing.code_type, temp_table_one.code=billing.code, temp_table_one.modifier=billing.modifier WHERE billing.code_type=code_types.ct_key AND code_types.ct_fee=1 AND temp_table_one.pid=billing.pid AND temp_table_one.encounter=billing.encounter AND billing.activity!=0;
+UPDATE `billing`, `code_types`, `temp_table_one` SET temp_table_one.code=billing.code, temp_table_one.modifier=billing.modifier WHERE billing.code_type=code_types.ct_key AND code_types.ct_fee=1 AND temp_table_one.pid=billing.pid AND temp_table_one.encounter=billing.encounter AND billing.activity!=0;
 INSERT INTO `ar_session` (`payer_id`, `user_id`, `pay_total`, `payment_type`, `description`, `patient_id`, `payment_method`, `adjustment_code`, `post_to_date`) SELECT `payer_id`, `user_id`, `pay_total`, `payment_type`, `description`, `patient_id`, `payment_method`, `adjustment_code`, `post_to_date` FROM `temp_table_one`;
-INSERT INTO `ar_activity` (`pid`, `encounter`, `code_type`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code`) SELECT `pid`, `encounter`, `code_type`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code` FROM `temp_table_one`;
+INSERT INTO `ar_activity` (`pid`, `encounter`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code`) SELECT `pid`, `encounter`, `code`, `modifier`, `payer_type`, `post_time`, `post_user`, `session_id`, `pay_amount`, `account_code` FROM `temp_table_one`;
 UPDATE `billing` SET `activity`=0 WHERE `code_type`='COPAY';
 DROP TABLE IF EXISTS `temp_table_one`;
 #EndIf
@@ -389,285 +367,5 @@ UPDATE `layout_options` SET `max_length`='0' WHERE `field_id`='seatbelt_use' AND
 
 #IfNotColumnType history_data usertext11 TEXT
 ALTER TABLE `history_data` CHANGE `usertext11` `usertext11` TEXT NOT NULL;
-#EndIf
-
-#IfMissingColumn x12_partners x12_isa01
-ALTER TABLE x12_partners ADD COLUMN x12_isa01 VARCHAR( 2 ) NOT NULL DEFAULT '00' COMMENT 'User logon Required Indicator';
-#EndIf
-
-#IfMissingColumn x12_partners x12_isa02
-ALTER TABLE x12_partners ADD COLUMN x12_isa02 VARCHAR( 10 ) NOT NULL DEFAULT '          ' COMMENT 'User Logon';
-#EndIf
-
-#IfMissingColumn x12_partners x12_isa03
-ALTER TABLE x12_partners ADD COLUMN x12_isa03 VARCHAR( 2 ) NOT NULL DEFAULT '00' COMMENT 'User password required Indicator';
-#EndIf
-
-#IfMissingColumn x12_partners x12_isa04
-ALTER TABLE x12_partners ADD COLUMN x12_isa04 VARCHAR( 10 ) NOT NULL DEFAULT '          ' COMMENT 'User Password';
-#EndIf
-
-#IfMissingColumn codes financial_reporting
-ALTER TABLE `codes` ADD COLUMN `financial_reporting` TINYINT(1) DEFAULT 0 COMMENT '0 = negative, 1 = considered important code in financial reporting';
-#EndIf
-
-#IfNotColumnType codes code_type smallint(6)
-ALTER TABLE `codes` CHANGE `code_type` `code_type` SMALLINT(6) default NULL;
-#EndIf
-
-#IfNotIndex codes code_type
-CREATE INDEX `code_type` ON `codes` (`code_type`);
-#EndIf
-
-#IfNotColumnType billing code_type varchar(15)
-ALTER TABLE `billing` CHANGE `code_type` `code_type` VARCHAR(15) default NULL;
-#EndIf
-
-#IfNotColumnType codes modifier varchar(12)
-ALTER TABLE `codes` CHANGE `modifier` `modifier` VARCHAR(12) NOT NULL default '';
-#EndIf
-
-#IfNotColumnType ar_activity modifier varchar(12)
-ALTER TABLE `ar_activity` CHANGE `modifier` `modifier` VARCHAR(12) NOT NULL default '';
-#EndIf
-
-#IfNotRow code_types ct_key CPTII
-DROP TABLE IF EXISTS `temp_table_one`;
-CREATE TABLE `temp_table_one` (
-  `id` int(11) NOT NULL DEFAULT '0',
-  `seq` int(11) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM ;
-INSERT INTO `temp_table_one` (`id`, `seq`) VALUES ( IF( ((SELECT MAX(`ct_id`) FROM `code_types`)>=100), ((SELECT MAX(`ct_id`) FROM `code_types`) + 1), 100 ) , IF( ((SELECT MAX(`ct_seq`) FROM `code_types`)>=100), ((SELECT MAX(`ct_seq`) FROM `code_types`) + 1), 100 )  );
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external ) VALUES ('CPTII' , (SELECT MAX(`id`) FROM `temp_table_one`), (SELECT MAX(`seq`) FROM `temp_table_one`), 12, 'ICD9', 1, 0, 0, 0, 0, 'CPTII', 0);
-DROP TABLE `temp_table_one`;
-#EndIf
-
-#IfNotRow code_types ct_key ICD9-SG
-DROP TABLE IF EXISTS `temp_table_one`;
-CREATE TABLE `temp_table_one` (
-  `id` int(11) NOT NULL DEFAULT '0',
-  `seq` int(11) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM ;
-INSERT INTO `temp_table_one` (`id`, `seq`) VALUES ( IF( ((SELECT MAX(`ct_id`) FROM `code_types`)>=100), ((SELECT MAX(`ct_id`) FROM `code_types`) + 1), 100 ) , IF( ((SELECT MAX(`ct_seq`) FROM `code_types`)>=100), ((SELECT MAX(`ct_seq`) FROM `code_types`) + 1), 100 )  );
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external ) VALUES ('ICD9-SG' , (SELECT MAX(`id`) FROM `temp_table_one`), (SELECT MAX(`seq`) FROM `temp_table_one`), 12, 'ICD9', 1, 0, 0, 0, 0, 'ICD9 Procedure/Service', 5);
-DROP TABLE `temp_table_one`;
-#EndIf
-
-#IfNotRow code_types ct_key ICD10-PCS
-DROP TABLE IF EXISTS `temp_table_one`;
-CREATE TABLE `temp_table_one` (
-  `id` int(11) NOT NULL DEFAULT '0',
-  `seq` int(11) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM ;
-INSERT INTO `temp_table_one` (`id`, `seq`) VALUES ( IF( ((SELECT MAX(`ct_id`) FROM `code_types`)>=100), ((SELECT MAX(`ct_id`) FROM `code_types`) + 1), 100 ) , IF( ((SELECT MAX(`ct_seq`) FROM `code_types`)>=100), ((SELECT MAX(`ct_seq`) FROM `code_types`) + 1), 100 )  );
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external ) VALUES ('ICD10-PCS' , (SELECT MAX(`id`) FROM `temp_table_one`), (SELECT MAX(`seq`) FROM `temp_table_one`), 12, 'ICD10', 1, 0, 0, 0, 0, 'ICD10 Procedure/Service', 6);
-DROP TABLE `temp_table_one`;
-UPDATE `code_types` SET `ct_label`='ICD9 Diagnosis' WHERE `ct_key`='ICD9';
-UPDATE `code_types` SET `ct_label`='CPT4 Procedure/Service' WHERE `ct_key`='CPT4';
-UPDATE `code_types` SET `ct_label`='HCPCS Procedure/Service' WHERE `ct_key`='HCPCS';
-UPDATE `code_types` SET `ct_label`='CVX Immunization' WHERE `ct_key`='CVX';
-UPDATE `code_types` SET `ct_label`='DSMIV Diagnosis' WHERE `ct_key`='DSMIV';
-UPDATE `code_types` SET `ct_label`='ICD10 Diagnosis' WHERE `ct_key`='ICD10';
-UPDATE `code_types` SET `ct_label`='SNOMED Diagnosis' WHERE `ct_key`='SNOMED';
-#EndIf
-
-#IfMissingColumn code_types ct_claim
-ALTER TABLE `code_types` ADD COLUMN `ct_claim` tinyint(1) NOT NULL default 0 COMMENT '1 if this is used in claims';
-UPDATE `code_types` SET `ct_claim`='1' WHERE `ct_key`='ICD9' OR `ct_key`='CPT4' OR `ct_key`='HCPCS' OR `ct_key`='DSMIV' OR `ct_key`='ICD10' OR `ct_key`='SNOMED' OR `ct_key`='CPTII' OR `ct_key`='ICD9-SG' OR `ct_key`='ICD10-PCS';
-UPDATE `code_types` SET `ct_fee`='0', `ct_mod`='0', `ct_label`='CPTII Performance Measures' WHERE `ct_key`='CPTII';
-#EndIf
-
-#IfNotTable icd9_dx_code
-CREATE TABLE `icd9_dx_code` (
-  `dx_id` SERIAL,
-  `dx_code`             varchar(5),
-  `formatted_dx_code`   varchar(6),
-  `short_desc`          varchar(60),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0,
-  KEY `dx_code` (`dx_code`),
-  KEY `formatted_dx_code` (`formatted_dx_code`),
-  KEY `active` (`active`)
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd9_sg_code
-CREATE TABLE `icd9_sg_code` (
-  `sg_id` SERIAL,
-  `sg_code`             varchar(5),
-  `formatted_sg_code`   varchar(6),
-  `short_desc`          varchar(60),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0,
-  KEY `sg_code` (`sg_code`),
-  KEY `formatted_sg_code` (`formatted_sg_code`),
-  KEY `active` (`active`)
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd9_dx_long_code
-CREATE TABLE `icd9_dx_long_code` (
-  `dx_id` SERIAL,
-  `dx_code`             varchar(5),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd9_sg_long_code
-CREATE TABLE `icd9_sg_long_code` (
-  `sq_id` SERIAL,
-  `sg_code`             varchar(5),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_dx_order_code
-CREATE TABLE `icd10_dx_order_code` (
-  `dx_id`               SERIAL,
-  `dx_code`             varchar(7),
-  `formatted_dx_code`   varchar(10),
-  `valid_for_coding`    char,
-  `short_desc`          varchar(60),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0,
-  KEY `formatted_dx_code` (`formatted_dx_code`),
-  KEY `active` (`active`)
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_pcs_order_code
-CREATE TABLE `icd10_pcs_order_code` (
-  `pcs_id`              SERIAL,
-  `pcs_code`            varchar(7),
-  `valid_for_coding`    char,
-  `short_desc`          varchar(60),
-  `long_desc`           varchar(300),
-  `active` tinyint default 0,
-  `revision` int default 0,
-  KEY `pcs_code` (`pcs_code`),
-  KEY `active` (`active`)
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_gem_pcs_9_10
-CREATE TABLE `icd10_gem_pcs_9_10` (
-  `map_id` SERIAL,
-  `pcs_icd9_source` varchar(5) default NULL,
-  `pcs_icd10_target` varchar(7) default NULL,
-  `flags` varchar(5) default NULL,
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_gem_pcs_10_9
-CREATE TABLE `icd10_gem_pcs_10_9` (
-  `map_id` SERIAL,
-  `pcs_icd10_source` varchar(7) default NULL,
-  `pcs_icd9_target` varchar(5) default NULL,
-  `flags` varchar(5) default NULL,
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_gem_dx_9_10
-DROP TABLE IF EXISTS `icd10_gem_dx_9_10`;
-CREATE TABLE `icd10_gem_dx_9_10` (
-  `map_id` SERIAL,
-  `dx_icd9_source` varchar(5) default NULL,
-  `dx_icd10_target` varchar(7) default NULL,
-  `flags` varchar(5) default NULL,
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_gem_dx_10_9
-CREATE TABLE `icd10_gem_dx_10_9` (
-  `map_id` SERIAL,
-  `dx_icd10_source` varchar(7) default NULL,
-  `dx_icd9_target` varchar(5) default NULL,
-  `flags` varchar(5) default NULL,
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_reimbr_dx_9_10
-CREATE TABLE `icd10_reimbr_dx_9_10` (
-  `map_id` SERIAL,
-  `code`        varchar(8),
-  `code_cnt`    tinyint,
-  `ICD9_01`     varchar(5),
-  `ICD9_02`     varchar(5),
-  `ICD9_03`     varchar(5),
-  `ICD9_04`     varchar(5),
-  `ICD9_05`     varchar(5),
-  `ICD9_06`     varchar(5),
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable icd10_reimbr_pcs_9_10
-CREATE TABLE `icd10_reimbr_pcs_9_10` (
-  `map_id`      SERIAL,
-  `code`        varchar(8),
-  `code_cnt`    tinyint,
-  `ICD9_01`     varchar(5),
-  `ICD9_02`     varchar(5),
-  `ICD9_03`     varchar(5),
-  `ICD9_04`     varchar(5),
-  `ICD9_05`     varchar(5),
-  `ICD9_06`     varchar(5),
-  `active` tinyint default 0,
-  `revision` int default 0
-) ENGINE=MyISAM;
-#EndIf
-
-#IfNotTable supported_external_dataloads
-CREATE TABLE `supported_external_dataloads` (
-  `load_id` SERIAL,
-  `load_type` varchar(24) NOT NULL DEFAULT '',
-  `load_source` varchar(24) NOT NULL DEFAULT 'CMS',
-  `load_release_date` date NOT NULL,
-  `load_filename` varchar(256) NOT NULL DEFAULT '',
-  `load_checksum` varchar(32) NOT NULL DEFAULT ''
-) ENGINE=MyISAM;
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD9', 'CMS', '2011-10-01', 'cmsv29_master_descriptions.zip', 'c360c2b5a29974d6c58617c7378dd7c4');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD9', 'CMS', '2012-10-01', 'cmsv30_master_descriptions.zip', 'eb26446536435f5f5e677090a7976b15');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD10', 'CMS', '2011-10-01', '2012_PCS_long_and_abbreviated_titles.zip', '201a732b649d8c7fba807cc4c083a71a');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD10', 'CMS', '2011-10-01', 'DiagnosisGEMs_2012.zip', '6758c4a3384c47161ce24f13a2464b53');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD10', 'CMS', '2011-10-01', 'ICD10OrderFiles_2012.zip', 'a76601df7a9f5270d8229828a833f6a1');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD10', 'CMS', '2011-10-01', 'ProcedureGEMs_2012.zip', 'f37416d8fab6cd2700b634ca5025295d');
-INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_release_date`, `load_filename`, `load_checksum`) VALUES
-('ICD10', 'CMS', '2011-10-01', 'ReimbursementMapping_2012.zip', '8b438d1fd1f34a9bb0e423c15e89744b');
-#EndIf
-
-#IfMissingColumn standardized_tables_track file_checksum
-ALTER TABLE `standardized_tables_track` ADD COLUMN `file_checksum` varchar(32);
-#EndIf
-
-#IfMissingColumn code_types ct_proc
-ALTER TABLE `code_types` ADD COLUMN `ct_proc` tinyint(1) NOT NULL default 0 COMMENT '1 if this is a procedure type';
-UPDATE `code_types` SET `ct_proc`='1' WHERE `ct_key`='CPT4' OR `ct_key`='HCPCS' OR `ct_key`='ICD9-SG' OR `ct_key`='ICD10-PCS';
-#EndIf
-
-#IfNotIndex forms form_id
-CREATE INDEX `form_id` ON `forms` (`form_id`);
 #EndIf
 
