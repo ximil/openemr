@@ -47,6 +47,13 @@
 }
 */
 
+@media print
+{
+  table.era835 thead { display:table-header-group }
+  table.era835 tfoot { display:table-footer-group }
+  table.era835 tbody.eraclp { page-break-inside:avoid; page-break-after:auto }
+}
+
 p.text {
 	width:80%;
 	text-align:left;
@@ -80,6 +87,7 @@ ol.logview li {
 /*
  * ibr-ebr file listings for process csv output
  */
+ 
 table.ibr_ebr {
 	font-size: medium;
 	background-color: #9dc1d2;
@@ -87,6 +95,14 @@ table.ibr_ebr {
 	border-collapse: collapse;
 	border: 1px solid #000;
 	empty-cells: show; 
+}
+table.ibr_ebr caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #9dc1d2;
+    border: 1px solid #000;
 }
 table.ibr_ebr th {
 	padding: 5px;
@@ -136,6 +152,14 @@ table.ibr_dpr {
 	border-collapse: collapse;
 	border: 1px solid #000;
 	empty-cells: show; 
+} 
+table.ibr_dpr caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #d1fad0;
+    border: 1px solid #000;
 }
 table.ibr_dpr th {
 	padding: 5px;
@@ -173,6 +197,14 @@ table.f277 {
 	border-collapse: collapse;
 	border: 1px solid #000;
 	empty-cells: show; 
+} 
+table.f277 caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #bcf8e7;
+    border: 1px solid #000;
 }
 table.f277 th {
 	padding: 5px;
@@ -209,6 +241,14 @@ table.batch {
 	border-collapse: collapse;
 	border: 1px solid #000;
 	empty-cells: show; 
+} 
+table.batch caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #9fd7ad;
+    border: 1px solid #000;
 }
 table.batch th {
 	padding: 5px;
@@ -238,16 +278,24 @@ table.f997 {
 	border: 1px solid #000;
 	empty-cells: show; 
 }
+table.f997 caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #d8a684;
+    border: 1px solid #000;
+}
 table.f997 th {
 	padding: 5px;
-	background-color: #7fb3Cb;
+	background-color: #e1cbbd;
 }
 table.f997 td {
 	color: #000000;
 	padding: 3px;
 }
 table.f997 tr.odd td {
-	background-color: #b4a499;
+	background-color: #c5bdb7;
 }
 table.f997 tr.even td {
 	background-color: #eeb995;
@@ -266,6 +314,14 @@ table.eracsv {
 	border-collapse: collapse;
 	border: 1px solid #000;
 	empty-cells: show; 
+}
+table.eracsv caption {
+    padding: 2px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: medium;
+    background-color: #c5d7bf;
+    border: 1px solid #000;
 }
 table.eracsv th {
 	padding: 5px;
@@ -410,7 +466,7 @@ table.summaryRA caption {
     padding: 2px 10px;
     text-align: left;
     font-weight: bold;
-    font-size: 12px;
+    font-size: large;
     background-color: #C0E8E7;
     border: 2px solid #000;
 }
@@ -422,7 +478,7 @@ p.ibrmsg {
 	background-color: #d4ddde;
 	margin: 1.6em 8px;
 	text-align: left;
-	font-size: 12px;
+	font-size: medium;
 }
 
 /* 
@@ -432,7 +488,7 @@ p.ak999stat {
 	background-color: #eae1d0;
 	margin: 1.6em 8px;
 	text-align: left;
-	font-size: 12px;
+	font-size: medium;
 }
 	
 /*
@@ -505,6 +561,12 @@ table.era835 caption {
  * files display, text files, monospace
  * 
  */
+div.filetext {  
+  font-family: sans-serif;
+  background-color: #FDF5DB;
+  width: auto;
+  clear:both;
+} 
 
 div.filetext pre,code,kbd,samp,tt {
   font-family: monospace,monospace;
@@ -520,7 +582,6 @@ div.filetext code {
   width: auto;
   float: left
 }
-
 
 div.filetext ol {
 	font-family: sans-serif;
@@ -551,15 +612,23 @@ div.filetext ol p {
   /*overflow: break-word; */
 }
 
+div.filetext table.batchst caption {
+    font-family: sans-serif;
+    padding: 4px;
+    text-align: left;
+    font-weight: bold;
+    font-size: large;
+}
+
 div.filetext table.batchst thead {
   font-family: monospace,monospace;
-  font-size: 1em;
+  font-size: medium;
   border-width: thin;
 }
 
 div.filetext table.batchst tbody {
   font-family: monospace,monospace;
-  font-size: 12px;
+  font-size: medium;
   border-width: thin;
   width: auto;
 }
@@ -602,6 +671,8 @@ div.csvcptn {
 }
 	
 /* Table csvDisplay */
+.outlinetr { outline: 1px solid #09450f }
+
 table.csvDisplay {
     width: 100%;
     clear: both;
