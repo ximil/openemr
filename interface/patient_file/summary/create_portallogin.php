@@ -83,7 +83,9 @@ function messageCreate($uname,$pass,$site){
         $message .= "<a href='" . $offsite_portal_patient_link . "'>" .
                     $offsite_portal_patient_link . "</a><br><br>";
     }
-        $message .= htmlspecialchars(xl("User Name"),ENT_NOQUOTES) . ": " .
+        $message .= htmlspecialchars(xl("Provider Id"),ENT_NOQUOTES) . ": " .
+                    htmlspecialchars($GLOBALS['portal_offsite_providerid'],ENT_NOQUOTES) . "<br><br>" .
+		    htmlspecialchars(xl("User Name"),ENT_NOQUOTES) . ": " .
                     htmlspecialchars($uname,ENT_NOQUOTES) . "<br><br>" .
                     htmlspecialchars(xl("Password"),ENT_NOQUOTES) . ": " .
                     htmlspecialchars($pass,ENT_NOQUOTES) . "<br><br>";
@@ -176,6 +178,10 @@ function convertPass(){
         <tr class="text">
             <th colspan="5" align="center"><?php echo htmlspecialchars(xl("Generate Username And Password For")." ".$row['fname'],ENT_QUOTES);?></th>
         </tr>
+        <tr class="text">
+            <td><?php echo htmlspecialchars(xl('Provider Id').':',ENT_QUOTES);?></td>
+            <td><span><?php echo htmlspecialchars($GLOBALS['portal_offsite_providerid'],ENT_QUOTES);?></span></td>
+        </tr>	
         <tr class="text">
             <td><?php echo htmlspecialchars(xl('User Name').':',ENT_QUOTES);?></td>
             <td><input type="text" name="uname" value="<?php if($row['portal_username']) echo htmlspecialchars($row['portal_username'],ENT_QUOTES); else echo htmlspecialchars($row['fname'].$row['id'],ENT_QUOTES);?>" size="10" readonly></td>

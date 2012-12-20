@@ -2012,7 +2012,7 @@ function generate_layout_validation($form_id) {
   $fres = sqlStatement("SELECT * FROM layout_options " .
     "WHERE form_id = ? AND uor > 0 AND field_id != '' " .
     "ORDER BY group_name, seq", array($form_id) );
-
+  echo "var errMsgs = new Array();";
   while ($frow = sqlFetchArray($fres)) {
     if ($frow['uor'] < 2) continue;
     $data_type = $frow['data_type'];

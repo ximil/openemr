@@ -278,6 +278,17 @@ function validate(f) {
     return false;
   }
   <?php } ?>
+  var msg = "";
+  msg += "<?php echo htmlspecialchars(xl('The following fields are required'),ENT_QUOTES); ?>:\n\n";
+  for ( var i = 0; i < errMsgs.length; i++ ) {
+         msg += errMsgs[i] + "\n";
+  }
+  msg += "\n<?php echo htmlspecialchars(xl('Please fill them before continuing'),ENT_QUOTES); ?>";
+ 
+  if ( errMsgs.length > 0 ) {
+         alert(msg);
+         return false;
+  }
  return true;
 }
 
