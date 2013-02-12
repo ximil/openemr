@@ -1,8 +1,12 @@
 <?php
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
+/**
+ * patient.inc includes functions for manipulating patient information.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ */
 
 require_once("{$GLOBALS['srcdir']}/sql.inc");
 require_once(dirname(__FILE__) . "/classes/WSWrapper.class.php");
@@ -35,6 +39,16 @@ $policy_types = array(
   '47' => xl('Other Liability Insurance is Primary'),
 );
 
+/**
+ * Get a patient's demographic data.
+ *
+ * @param int    $pid   The PID of the patient
+ * @param string $given an optional subsection of the patient's demographic
+ *                      data to retrieve.
+ * @return array The requested subsection of a patient's demographic data.
+ *               If no subsection was given, returns everything, with the
+ *               date of birth as the last field.
+ */
 function getPatientData($pid, $given = "*, DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS") {
     $sql = "select $given from patient_data where pid=? order by date DESC limit 0,1";
     return sqlQuery($sql, array($pid) );

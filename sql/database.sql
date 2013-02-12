@@ -113,7 +113,7 @@ CREATE TABLE `billing` (
   `id` int(11) NOT NULL auto_increment,
   `date` datetime default NULL,
   `code_type` varchar(15) default NULL,
-  `code` varchar(9) default NULL,
+  `code` varchar(20) default NULL,
   `pid` int(11) default NULL,
   `provider_id` int(11) default NULL,
   `user` int(11) default NULL,
@@ -488,7 +488,7 @@ CREATE TABLE `codes` (
   `id` int(11) NOT NULL auto_increment,
   `code_text` varchar(255) NOT NULL default '',
   `code_text_short` varchar(24) NOT NULL default '',
-  `code` varchar(10) NOT NULL default '',
+  `code` varchar(25) NOT NULL default '',
   `code_type` smallint(6) default NULL,
   `modifier` varchar(12) NOT NULL default '',
   `units` tinyint(3) default NULL,
@@ -2542,6 +2542,7 @@ CREATE TABLE `list_options` (
   `option_value` float NOT NULL default '0',
   `mapping` varchar(31) NOT NULL DEFAULT '',
   `notes` varchar(255) NOT NULL DEFAULT '',
+  `codes` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY  (`list_id`,`option_id`)
 ) ENGINE=MyISAM;
 
@@ -5290,7 +5291,7 @@ CREATE TABLE ar_activity (
   encounter      int(11)       NOT NULL,
   sequence_no    int unsigned  NOT NULL AUTO_INCREMENT,
   `code_type`    varchar(12)   NOT NULL DEFAULT '',
-  code           varchar(9)    NOT NULL            COMMENT 'empty means claim level',
+  code           varchar(20)   NOT NULL            COMMENT 'empty means claim level',
   modifier       varchar(12)   NOT NULL DEFAULT '',
   payer_type     int           NOT NULL            COMMENT '0=pt, 1=ins1, 2=ins2, etc',
   post_time      datetime      NOT NULL,
@@ -5331,11 +5332,30 @@ CREATE TABLE gprelations (
   KEY key2  (type2,id2)
 ) ENGINE=MyISAM COMMENT='general purpose relations';
 
+CREATE TABLE `procedure_providers` (
+  `ppid`         bigint(20)   NOT NULL auto_increment,
+  `name`         varchar(255) NOT NULL DEFAULT '',
+  `npi`          varchar(15)  NOT NULL DEFAULT '',
+  `send_app_id`  varchar(255) NOT NULL DEFAULT ''  COMMENT 'Sending application ID (MSH-3.1)',
+  `send_fac_id`  varchar(255) NOT NULL DEFAULT ''  COMMENT 'Sending facility ID (MSH-4.1)',
+  `recv_app_id`  varchar(255) NOT NULL DEFAULT ''  COMMENT 'Receiving application ID (MSH-5.1)',
+  `recv_fac_id`  varchar(255) NOT NULL DEFAULT ''  COMMENT 'Receiving facility ID (MSH-6.1)',
+  `DorP`         char(1)      NOT NULL DEFAULT 'D' COMMENT 'Debugging or Production (MSH-11)',
+  `protocol`     varchar(15)  NOT NULL DEFAULT 'DL',
+  `remote_host`  varchar(255) NOT NULL DEFAULT '',
+  `login`        varchar(255) NOT NULL DEFAULT '',
+  `password`     varchar(255) NOT NULL DEFAULT '',
+  `orders_path`  varchar(255) NOT NULL DEFAULT '',
+  `results_path` varchar(255) NOT NULL DEFAULT '',
+  `notes`        text         NOT NULL DEFAULT '',
+  PRIMARY KEY (`ppid`)
+) ENGINE=MyISAM;
+
 CREATE TABLE `procedure_type` (
   `procedure_type_id`   bigint(20)   NOT NULL AUTO_INCREMENT,
   `parent`              bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references procedure_type.procedure_type_id',
   `name`                varchar(63)  NOT NULL DEFAULT '' COMMENT 'name for this category, procedure or result type',
-  `lab_id`              bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references users.id, 0 means default to parent',
+  `lab_id`              bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references procedure_providers.ppid, 0 means default to parent',
   `procedure_code`      varchar(31)  NOT NULL DEFAULT '' COMMENT 'code identifying this procedure',
   `procedure_type`      varchar(31)  NOT NULL DEFAULT '' COMMENT 'see list proc_type',
   `body_site`           varchar(31)  NOT NULL DEFAULT '' COMMENT 'where to do injection, e.g. arm, buttok',
@@ -5348,37 +5368,78 @@ CREATE TABLE `procedure_type` (
   `units`               varchar(31)  NOT NULL DEFAULT '' COMMENT 'default for procedure_result.units',
   `range`               varchar(255) NOT NULL DEFAULT '' COMMENT 'default for procedure_result.range',
   `seq`                 int(11)      NOT NULL default 0  COMMENT 'sequence number for ordering',
+  `activity`            tinyint(1)   NOT NULL default 1  COMMENT '1=active, 0=inactive',
+  `notes`               varchar(255) NOT NULL default '' COMMENT 'additional notes to enhance description',
   PRIMARY KEY (`procedure_type_id`),
   KEY parent (parent)
 ) ENGINE=MyISAM;
 
+CREATE TABLE `procedure_questions` (
+  `lab_id`              bigint(20)   NOT NULL DEFAULT 0   COMMENT 'references procedure_providers.ppid to identify the lab',
+  `procedure_code`      varchar(31)  NOT NULL DEFAULT ''  COMMENT 'references procedure_type.procedure_code to identify this order type',
+  `question_code`       varchar(31)  NOT NULL DEFAULT ''  COMMENT 'code identifying this question',
+  `seq`                 int(11)      NOT NULL default 0   COMMENT 'sequence number for ordering',
+  `question_text`       varchar(255) NOT NULL DEFAULT ''  COMMENT 'descriptive text for question_code',
+  `required`            tinyint(1)   NOT NULL DEFAULT 0   COMMENT '1 = required, 0 = not',
+  `maxsize`             int          NOT NULL DEFAULT 0   COMMENT 'maximum length if text input field',
+  `fldtype`             char(1)      NOT NULL DEFAULT 'T' COMMENT 'Text, Number, Select, Multiselect, Date, Gestational-age',
+  `options`             text         NOT NULL DEFAULT ''  COMMENT 'choices for fldtype S and T',
+  `tips`                varchar(255) NOT NULL DEFAULT ''  COMMENT 'Additional instructions for answering the question',
+  `activity`            tinyint(1)   NOT NULL DEFAULT 1   COMMENT '1 = active, 0 = inactive',
+  PRIMARY KEY (`lab_id`, `procedure_code`, `question_code`)
+) ENGINE=MyISAM;
+
 CREATE TABLE `procedure_order` (
   `procedure_order_id`     bigint(20)   NOT NULL AUTO_INCREMENT,
-  `procedure_type_id`      bigint(20)   NOT NULL            COMMENT 'references procedure_type.procedure_type_id',
-  `provider_id`            bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references users.id',
+  `provider_id`            bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references users.id, the ordering provider',
   `patient_id`             bigint(20)   NOT NULL            COMMENT 'references patient_data.pid',
   `encounter_id`           bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references form_encounter.encounter',
   `date_collected`         datetime     DEFAULT NULL        COMMENT 'time specimen collected',
   `date_ordered`           date         DEFAULT NULL,
   `order_priority`         varchar(31)  NOT NULL DEFAULT '',
   `order_status`           varchar(31)  NOT NULL DEFAULT '' COMMENT 'pending,routed,complete,canceled',
+  `diagnoses`              text         NOT NULL DEFAULT '' COMMENT 'diagnoses and maybe other coding (e.g. ICD9:111.11)',
   `patient_instructions`   text         NOT NULL DEFAULT '',
   `activity`               tinyint(1)   NOT NULL DEFAULT 1  COMMENT '0 if deleted',
   `control_id`             bigint(20)   NOT NULL            COMMENT 'This is the CONTROL ID that is sent back from lab',
+  `lab_id`                 bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references procedure_providers.ppid',
+  `specimen_type`          varchar(31)  NOT NULL DEFAULT '' COMMENT 'from the Specimen_Type list',
+  `specimen_location`      varchar(31)  NOT NULL DEFAULT '' COMMENT 'from the Specimen_Location list',
+  `specimen_volume`        varchar(30)  NOT NULL DEFAULT '' COMMENT 'from a text input field',
   PRIMARY KEY (`procedure_order_id`),
   KEY datepid (date_ordered, patient_id),
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM;
 
+CREATE TABLE `procedure_order_code` (
+  `procedure_order_id`  bigint(20)  NOT NULL                COMMENT 'references procedure_order.procedure_order_id',
+  `procedure_order_seq` int(11)     NOT NULL AUTO_INCREMENT COMMENT 'supports multiple tests per order',
+  `procedure_code`      varchar(31) NOT NULL DEFAULT ''     COMMENT 'like procedure_type.procedure_code',
+  `procedure_name`      varchar(255) NOT NULL DEFAULT ''    COMMENT 'descriptive name of the procedure code',
+  `procedure_source`    char(1)     NOT NULL DEFAULT '1'    COMMENT '1=original order, 2=added after order sent',
+  PRIMARY KEY (`procedure_order_id`, `procedure_order_seq`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `procedure_answers` (
+  `procedure_order_id`  bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references procedure_order.procedure_order_id',
+  `procedure_order_seq` int(11)      NOT NULL DEFAULT 0  COMMENT 'references procedure_order_code.procedure_order_seq',
+  `question_code`       varchar(31)  NOT NULL DEFAULT '' COMMENT 'references procedure_questions.question_code',
+  `answer_seq`          int(11)      NOT NULL AUTO_INCREMENT COMMENT 'supports multiple-choice questions',
+  `answer`              varchar(255) NOT NULL DEFAULT '' COMMENT 'answer data',
+  PRIMARY KEY (`procedure_order_id`, `procedure_order_seq`, `question_code`, `answer_seq`)
+) ENGINE=MyISAM;
+
 CREATE TABLE `procedure_report` (
   `procedure_report_id` bigint(20)     NOT NULL AUTO_INCREMENT,
   `procedure_order_id`  bigint(20)     DEFAULT NULL   COMMENT 'references procedure_order.procedure_order_id',
+  `procedure_order_seq` int(11)        NOT NULL DEFAULT 1  COMMENT 'references procedure_order_code.procedure_order_seq',
   `date_collected`      datetime       DEFAULT NULL,
   `date_report`         date           DEFAULT NULL,
   `source`              bigint(20)     NOT NULL DEFAULT 0  COMMENT 'references users.id, who entered this data',
   `specimen_num`        varchar(63)    NOT NULL DEFAULT '',
   `report_status`       varchar(31)    NOT NULL DEFAULT '' COMMENT 'received,complete,error',
-  `review_status`       varchar(31)    NOT NULL DEFAULT 'received' COMMENT 'panding reivew status: received,reviewed',  
+  `review_status`       varchar(31)    NOT NULL DEFAULT 'received' COMMENT 'pending review status: received,reviewed',  
+  `report_notes`        text           NOT NULL DEFAULT '' COMMENT 'notes from the lab',
   PRIMARY KEY (`procedure_report_id`),
   KEY procedure_order_id (procedure_order_id)
 ) ENGINE=MyISAM; 
@@ -5386,7 +5447,9 @@ CREATE TABLE `procedure_report` (
 CREATE TABLE `procedure_result` (
   `procedure_result_id` bigint(20)   NOT NULL AUTO_INCREMENT,
   `procedure_report_id` bigint(20)   NOT NULL            COMMENT 'references procedure_report.procedure_report_id',
-  `procedure_type_id`   bigint(20)   NOT NULL            COMMENT 'references procedure_type.procedure_type_id',
+  `result_data_type`    char(1)      NOT NULL DEFAULT 'S' COMMENT 'N=Numeric, S=String, F=Formatted, E=External, L=Long text as first line of comments',
+  `result_code`         varchar(31)  NOT NULL DEFAULT '' COMMENT 'LOINC code, might match a procedure_type.procedure_code',
+  `result_text`         varchar(255) NOT NULL DEFAULT '' COMMENT 'Description of result_code',
   `date`                datetime     DEFAULT NULL        COMMENT 'lab-provided date specific to this result',
   `facility`            varchar(255) NOT NULL DEFAULT '' COMMENT 'lab-provided testing facility ID',
   `units`               varchar(31)  NOT NULL DEFAULT '',
@@ -5423,19 +5486,22 @@ CREATE TABLE code_types (
   ct_external tinyint(1) NOT NULL default 0 COMMENT '0 if stored codes in codes tables, 1 or greater if codes stored in external tables',
   ct_claim tinyint(1) NOT NULL default 0 COMMENT '1 if this is used in claims',
   ct_proc tinyint(1) NOT NULL default 0 COMMENT '1 if this is a procedure type',
+  ct_term tinyint(1) NOT NULL default 0 COMMENT '1 if this is a clinical term',
   PRIMARY KEY (ct_key)
 ) ENGINE=MyISAM;
 
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('ICD9' , 2, 1, 0, ''    , 0, 0, 0, 1, 1, 'ICD9 Diagnosis', 4, 1, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('CPT4' , 1, 2, 12, 'ICD9', 1, 0, 0, 0, 1, 'CPT4 Procedure/Service', 0, 1, 1);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('HCPCS', 3, 3, 12, 'ICD9', 1, 0, 0, 0, 1, 'HCPCS Procedure/Service', 0, 1, 1);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('CVX'  , 100, 100, 0, '', 0, 0, 1, 0, 1, 'CVX Immunization', 0, 0, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('DSMIV' , 101, 101, 0, '', 0, 0, 0, 1, 0, 'DSMIV Diagnosis', 0, 1, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('ICD10' , 102, 102, 0, '', 0, 0, 0, 1, 0, 'ICD10 Diagnosis', 1, 1, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('SNOMED' , 103, 103, 0, '', 0, 0, 0, 1, 0, 'SNOMED Diagnosis', 2, 1, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('CPTII' , 104, 104, 0, 'ICD9', 0, 0, 0, 0, 0, 'CPTII Performance Measures', 0, 1, 0);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('ICD9-SG' , 105, 105, 12, 'ICD9', 1, 0, 0, 0, 0, 'ICD9 Procedure/Service', 5, 1, 1);
-INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc ) VALUES ('ICD10-PCS' , 106, 106, 12, 'ICD10', 1, 0, 0, 0, 0, 'ICD10 Procedure/Service', 6, 1, 1);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('ICD9' , 2, 1, 0, ''    , 0, 0, 0, 1, 1, 'ICD9 Diagnosis', 4, 1, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('CPT4' , 1, 2, 12, 'ICD9', 1, 0, 0, 0, 1, 'CPT4 Procedure/Service', 0, 1, 1, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('HCPCS', 3, 3, 12, 'ICD9', 1, 0, 0, 0, 1, 'HCPCS Procedure/Service', 0, 1, 1, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('CVX'  , 100, 100, 0, '', 0, 0, 1, 0, 1, 'CVX Immunization', 0, 0, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('DSMIV' , 101, 101, 0, '', 0, 0, 0, 1, 0, 'DSMIV Diagnosis', 0, 1, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('ICD10' , 102, 102, 0, '', 0, 0, 0, 1, 0, 'ICD10 Diagnosis', 1, 1, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('SNOMED' , 103, 103, 0, '', 0, 0, 0, 1, 0, 'SNOMED Diagnosis', 2, 1, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('CPTII' , 104, 104, 0, 'ICD9', 0, 0, 0, 0, 0, 'CPTII Performance Measures', 0, 1, 0, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('ICD9-SG' , 105, 105, 12, 'ICD9', 1, 0, 0, 0, 0, 'ICD9 Procedure/Service', 5, 1, 1, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('ICD10-PCS' , 106, 106, 12, 'ICD10', 1, 0, 0, 0, 0, 'ICD10 Procedure/Service', 6, 1, 1, 0);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('SNOMED-CT' , 107, 107, 0, '', 0, 0, 1, 0, 0, 'SNOMED Clinical Term', 7, 0, 0, 1);
+INSERT INTO code_types (ct_key, ct_id, ct_seq, ct_mod, ct_just, ct_fee, ct_rel, ct_nofs, ct_diag, ct_active, ct_label, ct_external, ct_claim, ct_proc, ct_term ) VALUES ('SNOMED-PR' , 108, 108, 0, 'SNOMED', 1, 0, 0, 0, 0, 'SNOMED Procedure', 9, 1, 1, 0);
 
 INSERT INTO list_options ( list_id, option_id, title, seq ) VALUES ('lists', 'code_types', 'Code Types', 1);
 
@@ -5445,12 +5511,14 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('disclosure_type', 'disclosure-healthcareoperations', 'Health Care Operations', 30, 0);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'smoking_status','Smoking Status', 1,0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '1', 'Current every day smoker', 10, 0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '2', 'Current some day smoker', 20, 0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '3', 'Former smoker', 30, 0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '4', 'Never smoker', 40, 0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '5', 'Smoker, current status unknown', 50, 0);
-INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('smoking_status', '9', 'Unknown if ever smoked', 60, 0);
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '1', 'Current every day smoker', 10, 0, 'SNOMED-CT:449868002');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '2', 'Current some day smoker', 20, 0, 'SNOMED-CT:428041000124106');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '3', 'Former smoker', 30, 0, 'SNOMED-CT:8517006');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '4', 'Never smoker', 40, 0, 'SNOMED-CT:266919005');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '5', 'Smoker, current status unknown', 50, 0, 'SNOMED-CT:77176002');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '9', 'Unknown if ever smoked', 60, 0, 'SNOMED-CT:266927001');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '15', 'Heavy tobacco smoker', 70, 0, 'SNOMED-CT:428071000124103');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, codes ) VALUES ('smoking_status', '16', 'Light tobacco smoker', 80, 0, 'SNOMED-CT:428061000124105');
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists'   ,'race','Race', 1,0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('race', 'amer_ind_or_alaska_native', 'American Indian or Alaska Native', 10, 0);

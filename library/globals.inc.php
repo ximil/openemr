@@ -40,6 +40,7 @@
 //   Hungarian                      // xl('Hungarian')
 //   Italian                        // xl('Italian')
 //   Norwegian                      // xl('Norwegian')
+//   Persian                        // xl('Persian')
 //   Polish                         // xl('Polish')
 //   Portuguese (Brazilian)         // xl('Portuguese (Brazilian)')
 //   Portuguese (European)          // xl('Portuguese (European)')
@@ -1367,6 +1368,13 @@ $GLOBALS_METADATA = array(
       xl('Enable Offsite Patient Portal.')
     ),
 
+    'portal_offsite_providerid' => array(
+      xl('Offsite Patient Portal Provider ID'),
+      'text',                           // data type
+      '',
+      xl('Offsite Patient Portal Provider ID(Put Blank If not Registered).')
+    ),    
+
     'portal_offsite_username' => array(
       xl('Offsite Patient Portal Username'),
       'text',                           // data type
@@ -1509,6 +1517,34 @@ $GLOBALS_METADATA = array(
         '',
         xl('Default Patient Country'),
     ),
+
+    'phimail_enable' => array(
+      xl('Enable phiMail Direct Messaging Service'),
+      'bool',                           // data type
+      '0',
+      xl('Enable phiMail Direct Messaging Service')
+    ),
+
+    'phimail_server_address' => array(
+      xl('phiMail Server Address'),
+      'text',                           // data type
+      'https://phimail.example.com:32541',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_username' => array(
+      xl('phiMail Username'),
+      'text',                           // data type
+      '',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_password' => array(
+      xl('phiMail Password'),
+      'pass',                           // data type
+      '',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    )
   ),
   
   'Rx' => array(

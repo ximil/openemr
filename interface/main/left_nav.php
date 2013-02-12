@@ -109,8 +109,11 @@
   'ono' => array(xl('Ofc Notes') , 0, 'main/onotes/office_comments.php'),
   'fax' => array(xl('Fax/Scan')  , 0, 'fax/faxq.php'),
   'adb' => array(xl('Addr Bk')   , 0, 'usergroup/addrbook_list.php'),
+  'orl' => array(xl('Proc Prov') , 0, 'orders/procedure_provider_list.php'),
   'ort' => array(xl('Proc Cat')  , 0, 'orders/types.php'),
+  'orc' => array(xl('Proc Load') , 0, 'orders/load_compendium.php'),
   'orb' => array(xl('Proc Bat')  , 0, 'orders/orders_results.php?batch=1'),
+  'ore' => array(xl('E-Reports') , 0, 'orders/list_reports.php'),
   'cht' => array(xl('Chart Trk') , 0, '../custom/chart_tracker.php'),
   'imp' => array(xl('Import')    , 0, '../custom/import.php'),
   'bil' => array(xl('Billing')   , 0, 'billing/billing_report.php'),
@@ -551,6 +554,23 @@ function goHome() {
     top.frames['RBot'].location='messages/messages.php?form_active=1';
 }
 
+//Function to clear active patient and encounter in the server side
+function clearactive() {
+	top.restoreSession();
+	//Ajax call to clear active patient in session
+	$.ajax({
+	  type: "POST",
+	  url: "<?php echo $GLOBALS['webroot'] ?>/library/ajax/unset_session_ajax.php",
+	  data: { func: "unset_pid"},
+	  success:function( msg ) {
+		clearPatient();
+		top.frames['RTop'].location='<?php echo $GLOBALS['default_top_pane']?>';
+		top.frames['RBot'].location='messages/messages.php?form_active=1';
+	  }
+	});
+    
+	$(parent.Title.document.getElementById('clear_active')).hide();
+}
  // Reference to the search.php window.
  var my_window;
 
@@ -713,6 +733,7 @@ function goHome() {
   }
 
   reloadIssues(pid);
+  $(parent.Title.document.getElementById('clear_active')).show();//To display Clear Active Patient button on selecting a patient
  }
  function setPatientEncounter(EncounterIdArray,EncounterDateArray,CalendarCategoryArray) {
  //This function lists all encounters of the patient.
@@ -790,9 +811,9 @@ function getEncounterTargetFrame( name ) {
   active_pid = 0;
   active_encounter = 0;
   setDivContent('current_patient', '<b><?php xl('None','e'); ?></b>');
-  setTitleContent('current_patient', '<b><?php xl('None','e'); ?></b>');
+  $(parent.Title.document.getElementById('current_patient_block')).hide();
   top.window.parent.Title.document.getElementById('past_encounter').innerHTML='';
-  top.window.parent.Title.document.getElementById('current_encounter').innerHTML="<b><?php echo htmlspecialchars( xl('None'), ENT_QUOTES) ?></b>";
+  $(parent.Title.document.getElementById('current_encounter_block')).hide();
   reloadPatient('');
   syncRadios();
  }
@@ -984,7 +1005,7 @@ if ($GLOBALS['athletic_team']) {
   </li>
   <li class="open"><a class="collapsed" id="patimg" ><span><?php xl('Demographics','e') ?></span></a>
     <ul>
-      <?php genMiscLink('RTop','new','0',xl('Patients'),'main/finder/dynamic_finder.php'); ?>
+      <?php genMiscLink('RTop','fin','0',xl('Patients'),'main/finder/dynamic_finder.php'); ?>
       <?php genTreeLink('RTop','new',($GLOBALS['full_new_patient_form'] ? xl('New/Search') : xl('New'))); ?>
       <?php genTreeLink('RTop','dem',xl('Current')); ?>
     </ul>
@@ -1112,7 +1133,7 @@ if ($GLOBALS['athletic_team']) {
   <?php if($GLOBALS['portal_offsite_enable'] && $GLOBALS['portal_offsite_address'] && acl_check('patientportal','portal'))  genTreeLink('RTop','app',xl('Portal Activity')); ?>
   <li class="open"><a class="expanded" id="patimg" ><span><?php xl('Patient/Client','e') ?></span></a>
     <ul>
-      <?php genMiscLink('RTop','new','0',xl('Patients'),'main/finder/dynamic_finder.php'); ?>
+      <?php genMiscLink('RTop','fin','0',xl('Patients'),'main/finder/dynamic_finder.php'); ?>
       <?php genTreeLink('RTop','new',($GLOBALS['full_new_patient_form'] ? xl('New/Search') : xl('New'))); ?>
       <?php genTreeLink('RTop','dem',xl('Summary')); ?>
       <li class="open"><a class="expanded_lv2"><span><?php xl('Visits','e') ?></span></a>
@@ -1192,10 +1213,13 @@ if (!empty($reg)) {
 <?php } ?>
   <li><a class="collapsed" id="proimg" ><span><?php xl('Procedures','e') ?></span></a>
     <ul>
+      <?php genTreeLink('RTop','orl',xl('Providers')); ?>
       <?php genTreeLink('RTop','ort',xl('Configuration')); ?>
+      <?php genTreeLink('RTop','orc',xl('Load Compendium')); ?>
       <?php genTreeLink('RTop','orp',xl('Pending Review')); ?>
       <?php genTreeLink('RTop','orr',xl('Patient Results')); ?>
       <?php genTreeLink('RTop','orb',xl('Batch Results')); ?>
+      <?php genTreeLink('RTop','ore',xl('Electronic Reports')); ?>
     </ul>
   </li>
   <?php
@@ -1274,7 +1298,7 @@ if (!empty($reg)) {
           <?php if ($GLOBALS['enable_amc_tracking']) genMiscLink('RTop','rep','0',xl('AMC Tracking'),'reports/amc_tracking.php'); ?>
         </ul>
       </li>
-      <li class="open"><a class="expanded_lv2"><span><?php xl('Visits','e') ?></span></a>
+      <li><a class="collapsed_lv2"><span><?php xl('Visits','e') ?></span></a>
         <ul>
           <?php if (!$GLOBALS['disable_calendar']) genMiscLink('RTop','rep','0',xl('Appointments'),'reports/appointments_report.php'); ?>
           <?php  genMiscLink('RTop','rep','0',xl('Encounters'),'reports/encounters_report.php'); ?>
