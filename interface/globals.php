@@ -103,7 +103,7 @@ if (empty($_SESSION['site_id']) || !empty($_GET['site'])) {
     if (!is_dir($GLOBALS['OE_SITES_BASE'] . "/$tmp")) $tmp = "default";
   }
   if (empty($tmp) || preg_match('/[^A-Za-z0-9\\-.]/', $tmp))
-    die("Site ID '$tmp' contains invalid characters.");
+    die("Site ID '". htmlspecialchars($tmp,ENT_NOQUOTES) . "' contains invalid characters.");
   if (!isset($_SESSION['site_id']) || $_SESSION['site_id'] != $tmp) {
     $_SESSION['site_id'] = $tmp;
     //error_log("Session site ID has been set to '$tmp'"); // debugging
@@ -153,10 +153,10 @@ $GLOBALS['edi_271_file_path'] = $GLOBALS['OE_SITE_DIR'] . "/edi/";
 include_once (dirname(__FILE__) . "/../library/translation.inc.php");
 
 // Include convenience functions with shorter names than "htmlspecialchars"
-include_once (dirname(__FILE__) . "/../library/htmlspecialchars.inc.php");
+require_once (dirname(__FILE__) . "/../library/htmlspecialchars.inc.php");
 
 // Include sanitization/checking function (for security)
-include_once (dirname(__FILE__) . "/../library/sanitize.inc.php");
+require_once (dirname(__FILE__) . "/../library/sanitize.inc.php");
 
 // Includes functions for date internationalization
 include_once (dirname(__FILE__) . "/../library/date_functions.php");
