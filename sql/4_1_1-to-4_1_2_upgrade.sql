@@ -283,6 +283,8 @@ CREATE TABLE `modules` (
   `mod_ui_order` tinyint(3) NOT NULL DEFAULT '0',
   `mod_ui_active` int(1) unsigned NOT NULL DEFAULT '0',
   `mod_description` varchar(255) NOT NULL DEFAULT '',
+  `mod_nick_name` varchar(25) NOT NULL DEFAULT '',
+  `mod_enc_menu` varchar(10) NOT NULL DEFAULT 'no',
   `permissions_item_table` char(100) DEFAULT NULL,
   `directory` varchar(255) NOT NULL,
   `date` datetime NOT NULL,

@@ -10,7 +10,15 @@ function register(status,title,name,method,type){
 }
 
 function manage(id,action){
-	$.post("./Installer/manage", { modId: id, modAction: action},
+	if(document.getElementById('mod_enc_menu'))
+	modencmenu = document.getElementById('mod_enc_menu').value;
+	else
+	modencmenu = '';
+	if(document.getElementById('mod_nick_name'))
+	modnickname = document.getElementById('mod_nick_name').value;
+	else
+	modnickname = '';
+	$.post("./Installer/manage", { modId: id, modAction: action,mod_enc_menu:modencmenu,mod_nick_name:modnickname},
 	   function(data) {
 			if(data=="Success")
 				window.location.reload();

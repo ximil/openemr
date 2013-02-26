@@ -4,10 +4,10 @@ echo $this->headScript()->appendFile(
 		$this->basePath() . '/js/installer/action.js',
 		'text/javascript'
 );
-$title = 'Module Installer';
+$title = xlt('Module Installer');
 $this->headTitle($title);
 $baseModuleDir 	= $GLOBALS['baseModuleDir'];
-$customDir 		= $GLOBALS['customDir'];
+$customDir 	= $GLOBALS['customDir'];
 $zendModDir 	= $GLOBALS['zendModDir'];
 
 ?>
@@ -16,12 +16,12 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 <ul class="tabNav">
 		<li class="current divMenu" onclick="$('.registered').show();$('.unregistered').hide();$('.divMenu').removeClass('current');$(this).addClass('current');" >
 			<a href="javascript:void(0)" id="header_tab_.htmlspecialchars(Registered,ENT_QUOTES).">
-               Registered
+              <?php echo xlt('Registered');?>
             </a>
 		</li>
 	  	<li class="divMenu"  onclick="$('.registered').hide();$('.unregistered').show();$('.divMenu').removeClass('current');$(this).addClass('current');">
 			<a href="javascript:void(0)" id="header_tab_.htmlspecialchars(UnReg,ENT_QUOTES).">
-               Unregistered <span id='ct'></span>
+              <?php echo xlt('Unregistered');?> <span id='ct'></span>
             </a>
 		</li>
 </ul>
@@ -35,17 +35,19 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 					<table id="table-6" class="imagetable" align="center">
 						<thead>  
 							<tr>
-								<th colspan='6' class="groupReg">
-									Registered Modules
+								<th colspan='8' class="groupReg">
+									<?php echo xlt('Registered Modules');?>
 								</th>
 							<tr>
 							<tr >
-								<th scope="col" ><?php xl('Sl.No ','e'); ?></th>
-							    <th scope="col" ><?php xl('Module ','e'); ?> </th>
-								<th scope="col" ><?php xl('Status ','e'); ?> </th>
-								<th scope="col" ><?php xl('Menu Text ','e'); ?> </th>
-								<th scope="col" ><?php xl('Type ','e'); ?> </th>			
-								<th scope="col" ><?php xl('Action ','e'); ?> </th>						
+								<th scope="col" ><?php echo xlt('Sl.No'); ?></th>
+								<th scope="col" ><?php echo xlt('Module'); ?> </th>
+								<th scope="col" ><?php echo xlt('Status'); ?> </th>
+								<th scope="col" ><?php echo xlt('Menu Text'); ?> </th>
+								<th scope="col" ><?php echo xlt('Nick Name'); ?> </th>
+								<th scope="col" ><?php echo xlt('Encounter Menu'); ?> </th>
+								<th scope="col" ><?php echo xlt('Type'); ?> </th>			
+								<th scope="col" ><?php echo xlt('Action'); ?> </th>						
 							</tr>
 					  </thead>
 					<?php
@@ -62,20 +64,47 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 									<?php					
 		 
 			  							if ($moduleResult -> sqlRun==0){?>
-			  								Not Installed
+			  								<?php echo xlt('Not Installed');?>
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								Active
+			  								<?php echo xlt('Active');?>
 										<?php }
 										else{?>
-											Inactive
+											<?php echo xlt('Inactive');?>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}
 									?>		
 			  					</td>
 								<td >
 								  <?php echo xl_form_title($moduleResult -> modUiName); ?>
-								</td>	
+								</td>
+								<td >
+								  <?php
+								  if ($moduleResult -> sqlRun==0){
+								  ?>
+								  <input type="text" name="mod_nick_name" id="mod_nick_name" value="">
+								  <?php
+								  }
+								  else{
+								  echo xl_form_title($moduleResult -> modnickname);
+								  }
+								  ?>
+								</td>
+								<td >
+								  <?php
+								  if ($moduleResult -> sqlRun==0){
+								  ?>
+								  <select name="mod_enc_menu" id="mod_enc_menu">
+										<option value="no"><?php echo xlt('No');?></option>
+										<option value="yes"><?php echo xlt('Yes');?></option>
+								  </select>
+								  <?php
+								  }
+								  else{
+								  echo xl_form_title(ucwords($moduleResult -> modencmenu));
+								  }
+								  ?>
+								</td>
 								<td>
 									<?php echo xl_form_title(($moduleResult -> type == 1)? "Zend" : "Custom");?>
 								</td>
@@ -83,13 +112,13 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 								<?php					
 		 
 			  							if ($moduleResult -> sqlRun==0){?>
-			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="Click Here to Install This module"><input type='button' class='activate' value='Install'/></a>
+			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo xlt('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo xlt('Install');?>"/></a>
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="Click Here to Disable This module"><input type='button' class='deactivate' value='Disable'/></a>
+			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo xlt('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo xlt('Disable');?>"/></a>
 										<?php }
 										else{?>
-											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="Click Here to Enable This module"><input type='button' class='activate' value='Activate'/></a>
+											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo xlt('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo xlt('Activate');?>"/></a>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}?>
 								</td>
@@ -122,7 +151,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 				$inDir = array();
 				for ($i=0; false != ($fname = readdir($dp)); $i++){
 
-					if ($fname != "." && $fname != ".." && $fname != "Application" && is_dir($fname))
+					if ($fname != "." && $fname != ".." && $fname != "Application" && is_dir($dpath.$fname))
 						$inDir[$i] = $fname;
 				}
 				if (sizeof($InstallersExisting) > 0){
@@ -163,7 +192,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 				$dp 	= opendir($dpath);				
 				$inDir = array();
 				for ($i=0; false != ($fname = readdir($dp)); $i++){
-					if ($fname != "." && $fname != ".." && ($fname != "Application" && $fname != "Installer") && is_dir($fname))
+					if ($fname != "." && $fname != ".." && ($fname != "Application" && $fname != "Installer") && is_dir($dpath."/".$fname))
 						$inDir[$i] = $fname;
 				}
 				if (sizeof($InstallersExisting) > 0){

@@ -179,8 +179,7 @@ if (!empty($reg)) {
     }
     $StringEcho.= "<tr><td style='border-top: 1px solid #000000;padding:0px;'><a onclick=\"openNewForm('" . $rootdir .'/patient_file/encounter/load_form.php?formname=' .urlencode($entry['directory']) .
     "')\" href='JavaScript:void(0);'>" . xl_form_title($nickname) . "</a></td></tr>";
-  }
-  $StringEcho.= '</table></div></li>';
+  }$StringEcho.= '</table></div></li>';
 }
 if($StringEcho){
   $StringEcho2= '<div style="clear:both"></div>';
@@ -210,10 +209,37 @@ if (sqlNumRows($lres)) {
   $StringEcho.= "<tr><td style='border-top: 1px solid #000000;padding:0px;'><a href='" . $rootdir .'/patient_file/encounter/load_form.php?formname=' 
 				.urlencode($option_id) ."' >" . xl_form_title($title) . "</a></td></tr>";
   }
+  if($StringEcho){
+  $StringEcho.= "</table></div></li>";
+  }
 }
-if($StringEcho){
-  $StringEcho.= "</table></div></li></ul>".$StringEcho2;
-}
+
+
+  $module_query = sqlStatement("SELECT mod_name,mod_nick_name,mod_relative_link,type FROM modules WHERE mod_active = 1 AND sql_run= 1 AND mod_enc_menu='yes' ORDER BY mod_ui_order ASC");
+  $DivId = 'mod_installer';
+  $new_category = 'Modules';
+  $StringEcho.= "<li><a href='JavaScript:void(0);' onClick=\"mopen('$DivId');\" >$new_category</a><div id='$DivId' ><table border='0' cellspacing='0' cellpadding='0'>";
+  if (sqlNumRows($module_query)) {
+    while ($modulerow = sqlFetchArray($module_query)) {
+     $modulePath = "";
+     $added      = "";
+     if($modulerow['type'] == 0) {
+	     $modulePath = $GLOBALS['customDir'];
+	     $added		= "";
+     }
+     else{ 	
+	     $added		= "index";
+	     $modulePath = $GLOBALS['zendModDir'];
+     }
+     $relative_link = "../../modules/".$modulePath."/".$modulerow['mod_relative_link'].$added;
+     $nickname = $modulerow['mod_nick_name'] ? $modulerow['mod_nick_name'] : $modulerow['mod_name'];
+     $StringEcho.= "<tr><td style='border-top: 1px solid #000000;padding:0px;'><a onclick=\"openNewForm('$relative_link')\" href='JavaScript:void(0);'>" . xl_form_title($nickname) . "</a></td></tr>";
+   }
+  }
+  $StringEcho.= '</table></div></li></ul>'.$StringEcho2;
+  
+  
+  
 ?>
 <table cellspacing="0" cellpadding="0" align="center">
   <tr>

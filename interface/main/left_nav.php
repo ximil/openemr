@@ -1210,7 +1210,7 @@ if (!empty($reg)) {
 	 <?php //genTreeLink('RTop','ort',xl('Settings')); ?>
       
 	<?php 	
-		$module_query = sqlStatement("select mod_name,mod_relative_link,type from modules where mod_active = 1 AND sql_run= 1 order by mod_ui_order asc");
+		$module_query = sqlStatement("select mod_name,mod_nick_name,mod_relative_link,type from modules where mod_active = 1 AND sql_run= 1 order by mod_ui_order asc");
 		if (sqlNumRows($module_query)) {
 		  while ($modulerow = sqlFetchArray($module_query)) {
 				$modulePath = "";
@@ -1225,8 +1225,9 @@ if (!empty($reg)) {
 		  		}
 		  			
 		 		$relative_link ="modules/".$modulePath."/".$modulerow['mod_relative_link'].$added;
+                                $mod_nick_name = $modulerow['mod_nick_name'] ? $modulerow['mod_nick_name'] : $modulerow['mod_name'];
 			?>
-		      <?php genMiscLink('RTop','adm','0',xl($modulerow['mod_name']),$relative_link);
+		      <?php genMiscLink('RTop','adm','0',xlt($mod_nick_name),$relative_link);
 			  //genTreeLink('RTop','0',xl($modulerow['mod_name']),$relative_link); ?>
 			  <?php }
 		} ?>
