@@ -32,10 +32,12 @@ return array(
         'template_map' => array(
             'layout/layout'           => __DIR__ . '/../view/layout/layout.phtml',
         ),
-        'strategies' => array(
-                'ViewJsonStrategy',
-                'ViewFeedStrategy',
-        ),
+    ),
+    
+    'view_helpers' => array(
+        'invokables'=> array(
+            'emr_helper' => 'Zend\View\Helper\Openemr\Emr'   
+        )
     ),
 );
 

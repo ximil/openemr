@@ -52,7 +52,7 @@ class Module
                     $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Lab());
-                    return new TableGateway('patient_data', $dbAdapter, null, $resultSetPrototype);
+                    return new TableGateway('procedure_order', $dbAdapter, null, $resultSetPrototype);
                 },
             ),
         );
