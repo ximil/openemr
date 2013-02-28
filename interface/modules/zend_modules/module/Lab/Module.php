@@ -40,22 +40,22 @@ class Module
     }
 	
     public function getServiceConfig()
-    {
-        return array(
-            'factories' => array(
-                'Lab\Model\LabTable' =>  function($sm) {
-                    $tableGateway = $sm->get('LabTableGateway');
-                    $table = new LabTable($tableGateway);
-                    return $table;
-                },
-                'LabTableGateway' => function ($sm) {
-                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
-                    $resultSetPrototype = new ResultSet();
-                    $resultSetPrototype->setArrayObjectPrototype(new Lab());
-                    return new TableGateway('patient_data', $dbAdapter, null, $resultSetPrototype);
-                },
-            ),
-        );
-    }
+	{
+       return array(
+           'factories' => array(
+               'Lab\Model\LabTable' =>  function($sm) {
+                   $tableGateway = $sm->get('LabTableGateway');
+                   $table = new LabTable($tableGateway);
+                   return $table;
+               },
+               'LabTableGateway' => function ($sm) {
+                   $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                   $resultSetPrototype = new ResultSet();
+                   $resultSetPrototype->setArrayObjectPrototype(new Lab());
+                   return new TableGateway('procedure_order', $dbAdapter, null, $resultSetPrototype);
+               },
+           ),
+       );
+	}
 }
 ?>

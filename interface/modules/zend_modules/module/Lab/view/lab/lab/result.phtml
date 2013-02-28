@@ -1,0 +1,93 @@
+
+<script type="text/javascript">
+		$(function(){
+			$('#dg').edatagrid({
+				url: './resultShow',
+				saveUrl: './resultUpdate',
+				updateUrl: './resultUpdate',
+				//destroyUrl: 'destroy_user.php'
+			});
+		});
+	</script>
+	
+	<table id="dg" title="Pending Review" style="width:auto;height:450px"
+			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq"
+			rownumbers="true" fitColumns="true" singleSelect="true">
+			
+		<thead>
+			<tr>
+				<th colspan="2">Order</th>
+				<th colspan="4">Report</th>
+				<th colspan="7">Results and Recommendations</th>
+				<th colspan="1">Action</th>
+			</tr>
+			
+			<tr>
+			
+			<th data-options="field:'date_ordered',width:50">Date</th> 
+			<!--<th field="date_ordered" width="50" editor="{type:'validatebox',options:{required:true}}">Date</th>-->
+			<!--<th field="procedure_name" width="80" editor="{type:'validatebox',options:{required:true}}">Procedure Name</th>-->
+			<th data-options="field:'procedure_name',width:80">Procedure Name</th> 	 	 	
+			<th field="date_report" width="60" editor="datebox">Reported</th>
+			<th field="date_collected" width="70" editor="datebox">Ext Time Collected</th>
+			<th field="specimen_num" width="40" editor="text">Specimen</th>
+			<!--<th field="report_status" width="30" editor="combobox" >Status</th>-->
+			<th data-options="field:'report_status',width:50,  
+                        formatter:function(value,row){  
+                            return row.status;  
+                        },  
+                        editor:{  
+                            type:'combobox',  
+                            options:{  
+                                valueField:'report_status',  
+                                textField:'status',  
+                                url:'http://192.168.1.241/openemr/interface/modules/zend_modules/module/Lab/view/lab/lab/status.json',  
+                                required:false  
+                            } 
+                        }">Status</th>
+
+			<th field="result_code" width="40" editor="text">Code</th>
+			<th field="result_text" width="80" editor="text">Name</th>
+			<!--<th field="abnormal" width="40" editor="combobox">Abn</th>-->
+			<th data-options="field:'abnormal',width:40,  
+                        formatter:function(value,row){  
+                            return row.abn;  
+                        },  
+                        editor:{  
+                            type:'combobox',  
+                            options:{  
+                                valueField:'abnormal',  
+                                textField:'abn',  
+                                url:'http://192.168.1.241/openemr/interface/modules/zend_modules/module/Lab/view/lab/lab/abn.json',  
+                                required:false  
+                            } 
+                        }">Abn</th>
+			<th field="result" width="40" editor="text">Value</th>
+			<th field="pt2_units" width="50" editor="text">Units</th>
+			<th field="pt2_range" width="50" editor="text">Range</th>
+			<th field="comments" width="50" editor="text">&#63;</th>
+			
+			<th data-options="field:'action',title:'',width:80,align:'center',
+						formatter:function(value,row,index){
+							if (row.editing){
+								var s = '<a></a> ';
+								var c = '<a></a>';
+								return s+c;
+							} else {
+								var e = '<a><img src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=Result /> &nbsp;&nbsp;';
+								var d = '<a><img src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=Requisition /></a>';
+								return e+d;
+							}
+						}"></th>
+			
+			
+			
+		</tr>
+		</thead>
+	</table>
+	<div id="toolbar">
+		<!--<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow')">New</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#dg').edatagrid('destroyRow')">Destroy</a>-->
+		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')">Save</a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Cancel</a>
+	</div>

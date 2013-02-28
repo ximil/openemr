@@ -437,6 +437,7 @@ while ($row = sqlFetchArray($res)) {
   $review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
 
   // skip report_status = receive to make sure do not show the report before it reviewed and sign off by Physicians
+
   if ($form_review) {
     if ($review_status == "reviewed") continue;
   }
