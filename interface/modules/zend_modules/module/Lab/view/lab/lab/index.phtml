@@ -54,6 +54,10 @@
 	</div>
 	</div>
 </div>
-	<?php
-	echo $this->form()->closeTag();
-	?>
+<?php
+echo $this->form()->closeTag();
+echo $this->headScript()->prependFile($this->basePath() . '/js/lab/lab.js')
+					->appendFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+					->appendFile($this->basePath() . '/js/lib/jquery.mockjax.js')
+					->appendFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+?>

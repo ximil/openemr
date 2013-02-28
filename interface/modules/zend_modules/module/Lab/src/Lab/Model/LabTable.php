@@ -51,6 +51,20 @@ class LabTable extends AbstractTableGateway
 //	return $rows;
 //
 //    }
+    public function listProcedures($inputString='s',$labId='2')
+    {
+	$sql = "SELECT * FROM procedure_type AS pt LEFT OUTER JOIN procedure_questions AS pq ON pt.procedure_code=pq.procedure_code
+		WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
+	$result = sqlStatement($sql,array($labId,$inputString."%"));
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_type_id'] . '-' . $tmp['procedure_code'];
+	}
+	//$fh = fopen("D:/test11111.txt","a");
+	//fwrite($fh,print_r($arr,1));
+	return $arr;
+    }
 }
 ?>
 

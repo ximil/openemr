@@ -39,6 +39,10 @@ return array(
             'emr_helper' => 'Zend\View\Helper\Openemr\Emr'   
         )
     ),
+    'strategies' => array(
+        'ViewJsonStrategy',
+        'ViewFeedStrategy',
+    ),
 );
 
 ?>

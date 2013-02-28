@@ -5,6 +5,7 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Lab\Model\Lab;
 use Lab\Form\LabForm;
+use Zend\View\Model\JsonModel;
 
 class LabController extends AbstractActionController
 {
@@ -60,17 +61,30 @@ class LabController extends AbstractActionController
 	return $patents;
     }
     
-    public function searchAjaxAction()
+    public function searchAction()
     {	
 	$request 	= $this->getRequest();
 	$inputString 	= $request->getPost('inputValue');
+	$dependentId 	= $request->getPost('dependentId');
 	if ($request->isPost()) {
 		if($request->getPost('type') == 'getProcedures' ){ 
-			$patients = $this->getPatients($inputString);
-			$data = new JsonModel($patients);
-			return $data;
+			$procedures = $this->getProcedures($inputString,$dependentId);
+			$data = new JsonModel($procedures);
+			$result = new ViewModel($data);
+			$result->setTerminal(true);
+		    
+			return $result;
+			//return $data;
 		}
 	}
+    }
+    
+    public function getProcedures($inputString,$labId)
+    {
+	$procedures = $this->getLabTable()->listProcedures($inputString,$labId);
+	//$fh = fopen("D:/test.txt","a");
+	//fwrite($fh,print_r($procedures,1));
+	return $procedures;
     }
     
     public function getLabTable()

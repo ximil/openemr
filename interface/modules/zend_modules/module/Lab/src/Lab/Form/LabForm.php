@@ -19,7 +19,7 @@ class LabForm extends Form
             'name' => 'provider',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-		'class' => 'easyui-combobox combo',
+		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
 		'editable' => 'false',
             ),
@@ -33,25 +33,11 @@ class LabForm extends Form
             'name' => 'lab_id',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-		'class' => 'easyui-combobox combo',
+		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
-		//'onChange' => 'getLocation(this.value)',
-		'onChange' => 'getTestList(this.value)',
-            ),
-	    'options' => array(
-		'value_options' => array(
-		    '' => xlt('Unassigned'),
-		),
-	    ),
-        ));
-	$this->add(array(
-            'name' => 'lab_id',
-	    'type'  => 'Zend\Form\Element\Select',
-            'attributes' => array(
 		'id' => 'lab_id',
-		'class' => 'easyui-combobox combo',
-		'data-options' => 'required:true',
 		//'onChange' => 'getLocation(this.value)',
+		//'onChange' => 'getTestList(this.value)',
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -63,7 +49,7 @@ class LabForm extends Form
             'name' => 'location',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-		'class' => 'easyui-combobox combo',
+		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
             ),
 	    'options' => array(
@@ -94,7 +80,7 @@ class LabForm extends Form
             'name' => 'priority',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-		'class' => 'easyui-combobox combo',
+		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true'
             ),
 	    'options' => array(
@@ -107,7 +93,7 @@ class LabForm extends Form
             'name' => 'status',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-		'class' => 'easyui-combobox combo',
+		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true'
             ),
 	    'options' => array(
@@ -139,7 +125,7 @@ class LabForm extends Form
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
 		'data-options' => 'required:true',
-		//'onKeyup' => 'getProcedures(this.value, this.id ,"labid")'
+		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")'
             ),
         ));
         $this->add(array(
