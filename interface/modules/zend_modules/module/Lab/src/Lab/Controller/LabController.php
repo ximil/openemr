@@ -14,16 +14,16 @@ class LabController extends AbstractActionController
         $form = new LabForm();
 	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	$providers = $helper->getProviders();
-	//$form->get('provider')->setValueOptions($providers);
+	$form->get('provider')->setValueOptions($providers);
 	
 	$labs = $helper->getLabs();
-	//$form->get('lab_id')->setValueOptions($labs);
+	$form->get('lab_id')->setValueOptions($labs);
 	
 	$priority = $helper->getList("ord_priority");
-	//$form->get('priority')->setValueOptions($priority);
+	$form->get('priority')->setValueOptions($priority);
 	
 	$status = $helper->getList("ord_status");
-	//$form->get('priority')->setValueOptions($priority);
+	$form->get('status')->setValueOptions($status);
 	$form->get('submit')->setValue('Add');
 
         $request = $this->getRequest();
@@ -42,7 +42,37 @@ class LabController extends AbstractActionController
         }
         return array('form' => $form);
     }
-
+    
+    public function labLocationAction()
+    {
+	$request 		= $this->getRequest();
+	$inputString 	= $request->getPost('inputValue');
+	if ($request->isPost()) {
+		$location = $this->getLabLocation($inputString);
+		$data = new JsonModel($location);
+		return $data;
+	}
+    }
+    
+    public function getLabLocation($inputString)
+    {
+	$patents = $this->getLabTable()->listLabLocation($inputString);
+	return $patents;
+    }
+    
+    public function searchAjaxAction()
+    {	
+	$request 	= $this->getRequest();
+	$inputString 	= $request->getPost('inputValue');
+	if ($request->isPost()) {
+		if($request->getPost('type') == 'getProcedures' ){ 
+			$patients = $this->getPatients($inputString);
+			$data = new JsonModel($patients);
+			return $data;
+		}
+	}
+    }
+    
     public function getLabTable()
     {
         if (!$this->labTable) {

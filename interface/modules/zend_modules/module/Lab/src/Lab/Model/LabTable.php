@@ -34,6 +34,23 @@ class LabTable extends AbstractTableGateway
             }
         }
     }
+    
+//    public function listLabLocation($inputString)
+//    {
+//	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
+//	$result = sqlStatement($sql);
+//	$i = 0;
+//	
+//	while($row=sqlFetchArray($res)) {
+//		$rows[$i] = array (
+//			'value' => $row['ppid'],
+//			'label' => $row['name'],
+//		);
+//		$i++;
+//	}
+//	return $rows;
+//
+//    }
 }
 ?>
 

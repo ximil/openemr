@@ -54,7 +54,7 @@ class Emr extends AbstractHelper
 	$res = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid"); 
 	$rows[0] = array (
 		'value' => '',
-		'label' => xlt('Unassigned'),
+		'label' => xlt('Local Lab'),
 		'selected' => TRUE,
 		'disabled' => FALSE
 	);

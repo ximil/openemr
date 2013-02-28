@@ -25,6 +25,11 @@
     </head>
     <body  class="body_top">
         <div class="container">
+	    <div style="padding:5px;border:1px solid #ddd">
+		<a href="#" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Procedure Order');?></a>
+		<a id="btn-edit" href="#" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pending Review/ Result');?></a>
+		<a href="#" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pull Compandium');?></a>
+	    </div>
             <?php echo $this->content; ?>
             <hr>
             <footer>
