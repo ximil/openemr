@@ -289,6 +289,8 @@
   border-style: solid;
   overflow: hidden;
   vertical-align: middle;
+  height: 20px;
+  width: 138px;
 }
 .combo .combo-text {
   font-size: 12px;
@@ -320,6 +322,7 @@
 }
 .combo-panel {
   overflow: auto;
+  height: auto !important;
 }
 .combo-arrow {
   background: url('images/combo_arrow.png') no-repeat center center;
