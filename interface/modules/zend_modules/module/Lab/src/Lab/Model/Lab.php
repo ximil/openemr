@@ -24,17 +24,17 @@ class Lab implements InputFilterAwareInterface
 
     public function exchangeArray($data)
     {
-	$this->id	     	 	= (isset($data['id']))   	  	? $data['id']  			: null;
-	$this->pid	    	 	= (isset($data['pid']))     		? $data['pid']  		: null;
-	$this->patienName		= (isset($data['patientName']))  	? $data['patientName']  	: null;
-	$this->labName   		= (isset($data['labName']))   		? $data['labName'] 		: null;
-	$this->locationName  		= (isset($data['locationName']))  	? $data['locationName']  	: null;
-	$this->testGroupName 		= (isset($data['testGroupName']))  	? $data['testGroupName']	: null;
-	$this->BillTo  			= (isset($data['BillTo']))  		? $data['BillTo']  		: null;
-	$this->OrderingProvider		= (isset($data['OrderingProvider'])) 	? $data['OrderingProvider']  	: null;
-	$this->Priority  		= (isset($data['Priority']))  		? $data['Priority']  		: null;
-	$this->Status  			= (isset($data['Status']))  		? $data['Status']  		: null;
-	$this->PatientInstructions  	= (isset($data['PatientInstructions'])) ? $data['PatientInstructions']  : null;
+	$this->id	     			= (isset($data['id']))   	  			? $data['id']  						: null;
+	$this->pid	    	 		= (isset($data['pid']))     			? $data['pid']  					: null;
+	$this->patienName			= (isset($data['patientName']))  		? $data['patientName']  			: null;
+	$this->labName   			= (isset($data['labName']))   			? $data['labName'] 					: null;
+	$this->locationName  		= (isset($data['locationName']))  		? $data['locationName']  			: null;
+	$this->testGroupName 		= (isset($data['testGroupName']))  		? $data['testGroupName']			: null;
+	$this->BillTo  				= (isset($data['BillTo']))  			? $data['BillTo']  					: null;
+	$this->OrderingProvider		= (isset($data['OrderingProvider'])) 	? $data['OrderingProvider']  		: null;
+	$this->Priority  			= (isset($data['Priority']))  			? $data['Priority']  				: null;
+	$this->Status  				= (isset($data['Status']))  			? $data['Status']  					: null;
+	$this->PatientInstructions  = (isset($data['PatientInstructions'])) ? $data['PatientInstructions']  	: null;
     }
     public function getArrayCopy()
     {
@@ -44,7 +44,8 @@ class Lab implements InputFilterAwareInterface
     {
         throw new \Exception("Not used");
     }
-   public function getInputFilter()
+
+    public function getInputFilter()
     {
         if (!$this->inputFilter) {
             $inputFilter = new InputFilter();

@@ -7,6 +7,7 @@ use Lab\Model\LabTable;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\ModuleManager\ModuleManager;
+use Zend\View\Helper\Openemr\Emr;
 //use Zend\EventManager\EventManager;
 
 class Module
@@ -53,6 +54,18 @@ class Module
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Lab());
                     return new TableGateway('procedure_order', $dbAdapter, null, $resultSetPrototype);
+                },
+            ),
+        );
+    }
+    public function getViewHelperConfig()
+    {
+        return array(
+            'factories' => array(
+                // the array key here is the name you will call the view helper by in your view scripts
+                'emr_helper' => function($sm) {
+                    $locator = $sm->getServiceLocator(); // $sm is the view helper manager, so we need to fetch the main service manager
+                    return new Emr($locator->get('Request'));
                 },
             ),
         );

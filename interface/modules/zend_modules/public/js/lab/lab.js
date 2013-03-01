@@ -34,7 +34,7 @@ function getLocation(selectedLab){
 	}
 }
 function getProcedures(inputString,thisID,labID) {
-	//alert(document.getElementById(labID).value);
+	//alert(document.getElementById(thisID).value);
 	$(function () {
 		'use strict';
 		$.ajax({
@@ -75,7 +75,7 @@ function getProcedures(inputString,thisID,labID) {
 							query: query,
 							suggestions: suggestions
 						};
-		
+			
 					this.responseText = JSON.stringify(response);
 				}
 			});
@@ -83,7 +83,7 @@ function getProcedures(inputString,thisID,labID) {
 			// Initialize ajax autocomplete:
 			$('#' + thisID).autocomplete({
 				serviceUrl: '/autosuggest/service/url',
-				onSelect: function(suggestion) {alert(suggestion);
+				onSelect: function(suggestion) {
 					var arr = suggestion.value.split("-");
 					$('#' + thisID).val(arr[0]);
 				}

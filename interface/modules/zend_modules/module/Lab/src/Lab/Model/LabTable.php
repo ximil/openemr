@@ -16,7 +16,7 @@ class LabTable extends AbstractTableGateway
         $this->tableGateway = $tableGateway;
     }
 	
-	public function listPatients()
+	public function listLabResult()
 	{	
 		$form_review = 1; // review mode
 		$lastpoid = -1;
@@ -111,44 +111,37 @@ class LabTable extends AbstractTableGateway
 				$result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
 				$result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
 				
-					if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
-						$arr1[$i]['date_ordered'] = $row['date_ordered'];
-					}
-					if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
-						$arr1[$i]['procedure_name'] = $row['procedure_name'];
-						$arr1[$i]['date_report'] = $date_report ? $date_report: '';
-						$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
-						$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
-						$arr1[$i]['report_status'] = $report_status ? $report_status: '';
-					}
-					$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
-					$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
-					$arr1[$i]['procedure_order_seq'] = $order_seq ? $order_seq: '';
-					$arr1[$i]['procedure_report_id'] = $report_id ? $report_id: '';
-					
-					
-					
-					
-					$arr1[$i]['review_status'] = $review_status ? $review_status: '';
-				
-					$arr1[$i]['procedure_code'] = $restyp_code;
-					$arr1[$i]['procedure_type'] = $restyp_type;
-					$arr1[$i]['name'] = $restyp_name;
-					$arr1[$i]['pt2_units'] = $restyp_units;
-					$arr1[$i]['pt2_range'] = $restyp_range;
-					$arr1[$i]['procedure_result_id'] = $result_id;
-					$arr1[$i]['result_code'] = $result_code;
-					$arr1[$i]['result_text'] = $result_text;
-					$arr1[$i]['abnormal'] = $result_abnormal;
-					$arr1[$i]['result'] = $result_result;
-					$arr1[$i]['units'] = $result_units;
-					$arr1[$i]['facility'] = $facility;
-					$arr1[$i]['comments'] = $result_comments;
-					$arr1[$i]['range'] = $result_range;
-					$arr1[$i]['result_status'] = $result_status;
-					$i++;
-
-				//}
+				if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
+					$arr1[$i]['date_ordered'] = $row['date_ordered'];
+				}
+				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
+					$arr1[$i]['procedure_name'] = $row['procedure_name'];
+					$arr1[$i]['date_report'] = $date_report ? $date_report: '';
+					$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
+					$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
+					$arr1[$i]['report_status'] = $report_status ? $report_status: '';
+				}
+				$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
+				$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
+				$arr1[$i]['procedure_order_seq'] = $order_seq ? $order_seq: '';
+				$arr1[$i]['procedure_report_id'] = $report_id ? $report_id: '';
+				$arr1[$i]['review_status'] = $review_status ? $review_status: '';
+				$arr1[$i]['procedure_code'] = $restyp_code;
+				$arr1[$i]['procedure_type'] = $restyp_type;
+				$arr1[$i]['name'] = $restyp_name;
+				$arr1[$i]['pt2_units'] = $restyp_units;
+				$arr1[$i]['pt2_range'] = $restyp_range;
+				$arr1[$i]['procedure_result_id'] = $result_id;
+				$arr1[$i]['result_code'] = $result_code;
+				$arr1[$i]['result_text'] = $result_text;
+				$arr1[$i]['abnormal'] = $result_abnormal;
+				$arr1[$i]['result'] = $result_result;
+				$arr1[$i]['units'] = $result_units;
+				$arr1[$i]['facility'] = $facility;
+				$arr1[$i]['comments'] = $result_comments;
+				$arr1[$i]['range'] = $result_range;
+				$arr1[$i]['result_status'] = $result_status;
+				$i++;
 			}
 			
 		}
@@ -162,6 +155,7 @@ class LabTable extends AbstractTableGateway
 	{	//$result_id, $report_id, $specimen_num
 		//$sql = "SELECT procedure_report_id FROM procedure_report WHERE procedure_report_id='$report_id'";
 		//$result = sqlStatement($query);
+		$report_id		= $data['procedure_report_id'];
 		$order_id 		= $data['procedure_order_id'];
 		$result_id 		= $data['procedure_result_id'];
 		$specimen_num 	= $data['specimen_num'];
@@ -177,15 +171,22 @@ class LabTable extends AbstractTableGateway
         "date_collected = " . QuotedOrNull(oresData("form_date_collected", $lino)) . ", " .
         "specimen_num = '" . oresData("form_specimen_num", $lino) . "', " .
         "report_status = '" . oresData("form_report_status", $lino) . "'"; */
-
-		$sql = "INSERT INTO procedure_report 
-							SET procedure_order_id='$order_id', 
-							specimen_num='$specimen_num', 
-							report_status='$report_status'";
-		sqlInsert($sql);	
+		if ($report_id > 0) {
+			$sql = "UPDATE procedure_report 
+								SET procedure_order_id='$order_id', 
+								specimen_num='$specimen_num:$report_id', 
+								report_status='$report_status'  
+								WHERE procedure_report_id = '$report_id'";
+			sqlStatement($sql);
+		} else {
+			$sql = "INSERT INTO procedure_report 
+								SET procedure_order_id='$order_id', 
+								specimen_num='$specimen_num:$report_id', 
+								report_status='$report_status'";
+			sqlInsert($sql);
+		}
 	}
-    }
-    public function saveLab(Lab $lab)
+	public function saveLab(Lab $lab)
     {
         $data = array(
             'artist' 	=> $lab->artist,

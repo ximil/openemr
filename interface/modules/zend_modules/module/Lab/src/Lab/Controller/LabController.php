@@ -68,15 +68,12 @@ class LabController extends AbstractActionController
 	$inputString 	= $request->getPost('inputValue');
 	$dependentId 	= $request->getPost('dependentId');
 	if ($request->isPost()) {
-		if($request->getPost('type') == 'getProcedures' ){ 
-			$procedures = $this->getProcedures($inputString,$dependentId);
-			$data = new JsonModel($procedures);
-			$result = new ViewModel($data);
-			$result->setTerminal(true);
-		    
-			return $result;
-			//return $data;
-		}
+	    if($request->getPost('type') == 'getProcedures' ){ 
+		$procedures = $this->getProcedures($inputString,$dependentId);
+		$data = new JsonModel($procedures);
+		//$data = json_encode($procedures);
+		return $data;
+	    }
 	}
     }
     
@@ -97,29 +94,48 @@ class LabController extends AbstractActionController
         return $this->labTable;
     }
 	
-	public function resultAction()
+    public function resultAction()
     {
 
     }
 	
-	public function getPatients()
+	public function getLabResult()
 	{
-		$patents = $this->getLabTable()->listPatients();
-		return $patents;
+		$labResult = $this->getLabTable()->listLabResult();
+		return $labResult;
 	}
 	
 	public function resultShowAction()
 	{
-		$patients = $this->getPatients();
-		$data = new JsonModel($patients);
+		$labResult = $this->getLabResult();
+		$data = new JsonModel($labResult);
 		return $data; 
 		
 	}
 	public function resultUpdateAction()
 	{
+		/*$form = new LabForm();
+    	$lab = new Lab();
+		$request = $this->getRequest();
+    	if ($request->isPost()) {
+			$form->setInputFilter($lab->getInputFilter());
+			if ($form->isValid()) {
+				$lab->exchangeArray($form->getData());
+				print_r($form->getData());
+				$this->getLabTable()->saveLab($lab);
+				echo 'Successfuly inserted..';
+			} else {
+				echo 'invalid ..';
+				foreach ($form->getMessages() as $messageId => $message) {
+					echo "Validation failure '$messageId':"; print_r($message);
+				}
+			}
+		}*/
+		
 		$request = $this->getRequest();
         if ($request->isPost()) {
 			$data = array(
+					'procedure_report_id'	=> $request->getPost('procedure_report_id'),
 					'procedure_result_id'	=> $request->getPost('procedure_result_id'),
 					'procedure_order_id'	=> $request->getPost('procedure_order_id'),
 					'specimen_num'			=> $request->getPost('specimen_num'),
