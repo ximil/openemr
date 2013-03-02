@@ -6,6 +6,7 @@
 	<?php
 	$form = $this->form;
 	$form->setAttribute('action', $this->url('lab', array('action' => 'index')));
+	$form->setAttribute('method', 'post');
 	$form->prepare();
 	echo $this->form()->openTag();
 	//print_r($this->emr_helper()->getList("ord_priority"));
@@ -45,12 +46,13 @@
 		</tr>
 		<tr>
 			<td><?php echo xlt('Procedure');?>:</td>
-			<td><?php echo $this->formRow($form->get('procedures'));?></td>
+			<td><?php echo $this->formRow($form->get('procedures'));?><div class="autocomplete-suggestions" id="prodiv" style="display:none;z-index:99999"></div></td>
 		</tr>
+		
 	</table>
 	<div style="text-align:center;padding:5px">
-	    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()">Submit</a>
-	    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()">Clear</a>
+	    <input type="submit" name="submit" class="easyui-linkbutton" value="Save">
+	    <input type="reset" name="clear" value="Clear">
 	</div>
 	</div>
 </div>

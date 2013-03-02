@@ -222,18 +222,26 @@ class LabTable extends AbstractTableGateway
 //	return $rows;
 //
 //    }
-    public function listProcedures($inputString='s',$labId='2')
+    public function listProcedures($inputString,$labId)
     {
-	$sql = "SELECT * FROM procedure_type AS pt LEFT OUTER JOIN procedure_questions AS pq ON pt.procedure_code=pq.procedure_code
-		WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
+	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
 	$result = sqlStatement($sql,array($labId,$inputString."%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
-	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_type_id'] . '-' . $tmp['procedure_code'];
+	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_code'];
 	}
-	//$fh = fopen("D:/test11111.txt","a");
-	//fwrite($fh,print_r($arr,1));
+	return $arr;
+    }
+    
+    public function listAOE($procedureCode,$labId){
+	$sql = "SELECT * FROM procedure_questions WHERE lab_id=? AND procedure_code=? AND activity=1";
+	$result = sqlStatement($sql,array($labId,$procedureCode));
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[] = $tmp['question_text'];
+	}
 	return $arr;
     }
 }

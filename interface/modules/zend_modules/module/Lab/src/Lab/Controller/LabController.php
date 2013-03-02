@@ -30,17 +30,20 @@ class LabController extends AbstractActionController
 
         $request = $this->getRequest();
         if ($request->isPost()) {
-            $album = new Lab();
-            $form->setInputFilter($album->getInputFilter());
-            $form->setData($request->getPost());
-
-            if ($form->isValid()) {
-                $album->exchangeArray($form->getData());
-                $this->getLabTable()->saveAlbum($album);
-
-                // Redirect to list of albums
-                return $this->redirect()->toRoute('lab');
-            }
+            //$album = new Lab();
+            //$form->setInputFilter($album->getInputFilter());
+            //$form->setData($request->getPost());
+            //
+            //if ($form->isValid()) {
+            //    $album->exchangeArray($form->getData());
+            //    $this->getLabTable()->saveAlbum($album);
+            //
+            //    // Redirect to list of albums
+            //    return $this->redirect()->toRoute('lab');
+            //}
+	    $fh = fopen("D:/AOE.txt","a");
+	    fwrite($fh,print_r($request->isPost(),1));
+	    print_r($request->isPost());die;
         }
         return array('form' => $form);
     }
@@ -74,15 +77,24 @@ class LabController extends AbstractActionController
 		//$data = json_encode($procedures);
 		return $data;
 	    }
+	    if($request->getPost('type') == 'loadAOE'){
+		$AOE = $this->getAOE($inputString,$dependentId);
+		$data = new JsonModel($AOE);
+		return $data;
+	    }
 	}
     }
     
     public function getProcedures($inputString,$labId)
     {
 	$procedures = $this->getLabTable()->listProcedures($inputString,$labId);
-	//$fh = fopen("D:/test.txt","a");
-	//fwrite($fh,print_r($procedures,1));
 	return $procedures;
+    }
+    
+    public function getAOE($procedureCode,$labId)
+    {
+	$AOE = $this->getLabTable()->listAOE($procedureCode,$labId);
+	return $AOE;
     }
     
     public function getLabTable()
@@ -99,55 +111,54 @@ class LabController extends AbstractActionController
 
     }
 	
-	public function getLabResult()
-	{
-		$labResult = $this->getLabTable()->listLabResult();
-		return $labResult;
-	}
+    public function getLabResult()
+    {
+	$labResult = $this->getLabTable()->listLabResult();
+	return $labResult;
+    }
 	
-	public function resultShowAction()
-	{
-		$labResult = $this->getLabResult();
-		$data = new JsonModel($labResult);
-		return $data; 
-		
-	}
-	public function resultUpdateAction()
-	{
-		/*$form = new LabForm();
-    	$lab = new Lab();
+    public function resultShowAction()
+    {
+	$labResult = $this->getLabResult();
+	$data = new JsonModel($labResult);
+	return $data;
+    }
+    public function resultUpdateAction()
+    {
+	/*$form = new LabForm();
+	$lab = new Lab();
 		$request = $this->getRequest();
-    	if ($request->isPost()) {
-			$form->setInputFilter($lab->getInputFilter());
-			if ($form->isValid()) {
-				$lab->exchangeArray($form->getData());
-				print_r($form->getData());
-				$this->getLabTable()->saveLab($lab);
-				echo 'Successfuly inserted..';
-			} else {
-				echo 'invalid ..';
-				foreach ($form->getMessages() as $messageId => $message) {
-					echo "Validation failure '$messageId':"; print_r($message);
-				}
-			}
-		}*/
-		
-		$request = $this->getRequest();
-        if ($request->isPost()) {
-			$data = array(
-					'procedure_report_id'	=> $request->getPost('procedure_report_id'),
-					'procedure_result_id'	=> $request->getPost('procedure_result_id'),
-					'procedure_order_id'	=> $request->getPost('procedure_order_id'),
-					'specimen_num'			=> $request->getPost('specimen_num'),
-					'report_status'  		=> $request->getPost('report_status'),
-					'procedure_order_seq'	=> $request->getPost('procedure_order_seq'),
-					'date_report'			=> $request->getPost('date_report'),
-					'date_collected'		=> $request->getPost('date_collected'),
-			);
-			$this->getLabTable()->saveResult($data);
-			return $this->redirect()->toRoute('result');
-        }
-        return $this->redirect()->toRoute('result');
+	if ($request->isPost()) {
+	    $form->setInputFilter($lab->getInputFilter());
+	    if ($form->isValid()) {
+		    $lab->exchangeArray($form->getData());
+		    print_r($form->getData());
+		    $this->getLabTable()->saveLab($lab);
+		    echo 'Successfuly inserted..';
+	    } else {
+		    echo 'invalid ..';
+		    foreach ($form->getMessages() as $messageId => $message) {
+			    echo "Validation failure '$messageId':"; print_r($message);
+		    }
+	    }
+	}*/
+	    
+	$request = $this->getRequest();
+	if ($request->isPost()) {
+	    $data = array(
+		'procedure_report_id'	=> $request->getPost('procedure_report_id'),
+		'procedure_result_id'	=> $request->getPost('procedure_result_id'),
+		'procedure_order_id'	=> $request->getPost('procedure_order_id'),
+		'specimen_num'		=> $request->getPost('specimen_num'),
+		'report_status'  	=> $request->getPost('report_status'),
+		'procedure_order_seq'	=> $request->getPost('procedure_order_seq'),
+		'date_report'		=> $request->getPost('date_report'),
+		'date_collected'	=> $request->getPost('date_collected'),
+	    );
+	    $this->getLabTable()->saveResult($data);
+	    return $this->redirect()->toRoute('result');
 	}
+	return $this->redirect()->toRoute('result');
+    }
 
 }
