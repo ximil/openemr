@@ -26,24 +26,25 @@ class LabController extends AbstractActionController
 	
 	$status = $helper->getList("ord_status");
 	$form->get('status')->setValueOptions($status);
-	$form->get('submit')->setValue('Add');
+	//$form->get('submit')->setValue('Add');
 
         $request = $this->getRequest();
         if ($request->isPost()) {
-            //$album = new Lab();
-            //$form->setInputFilter($album->getInputFilter());
-            //$form->setData($request->getPost());
-            //
-            //if ($form->isValid()) {
-            //    $album->exchangeArray($form->getData());
-            //    $this->getLabTable()->saveAlbum($album);
-            //
-            //    // Redirect to list of albums
-            //    return $this->redirect()->toRoute('lab');
-            //}
-	    $fh = fopen("D:/AOE.txt","a");
-	    fwrite($fh,print_r($request->isPost(),1));
-	    print_r($request->isPost());die;
+	    $Lab = new Lab();
+	    //$form->setInputFilter($Lab->getInputFilter());
+            $form->setData($request->getPost());
+            if ($form->isValid()) {
+		$Lab->exchangeArray($form->getData());
+                $this->getLabTable()->saveLab($Lab);
+            
+                return $this->redirect()->toRoute('result');
+            }
+	    else {
+		echo 'invalid ..';
+		foreach ($form->getMessages() as $messageId => $message) {
+			echo "Validation failure '$messageId':"; var_dump($message);
+		} //echo '<pre>'; var_dump($form); echo '</pre>';
+	    }//die("jjjjjjjjjj");
         }
         return array('form' => $form);
     }
@@ -70,6 +71,7 @@ class LabController extends AbstractActionController
 	$request 	= $this->getRequest();
 	$inputString 	= $request->getPost('inputValue');
 	$dependentId 	= $request->getPost('dependentId');
+	
 	if ($request->isPost()) {
 	    if($request->getPost('type') == 'getProcedures' ){ 
 		$procedures = $this->getProcedures($inputString,$dependentId);
@@ -78,6 +80,36 @@ class LabController extends AbstractActionController
 		return $data;
 	    }
 	    if($request->getPost('type') == 'loadAOE'){
+		$AOE = $this->getAOE($inputString,$dependentId);
+		$data = new JsonModel($AOE);
+		return $data;
+	    }
+	}
+    }
+    public function search11Action()
+    {
+	//$fh = fopen("D:/AOE3.txt","a");
+	//fwrite($fh,"gfgzGGGGGGG\r\n");
+	$request 	= $this->getRequest();
+	$inputString 	= $request->getPost('inputValue');
+	$dependentId 	= $request->getPost('dependentId');
+	$viewModel = new ViewModel();
+    //$viewModel->setTemplate('module/controller/action');
+    $viewModel->setTerminal(true);
+    
+	//$fh = fopen("D:/AOE.txt","a");
+		//fwrite($fh,"gfgzGGGGGGG\r\n");
+		//fwrite($fh,print_r($request->getPost(),1));
+	if ($request->isPost()) {
+	    if($request->getPost('type') == 'getProcedures' ){ 
+		$procedures = $this->getProcedures($inputString,$dependentId);
+		$data = new JsonModel($procedures);
+		//$data = json_encode($procedures);
+		return $data;
+	    }
+	    if($request->getPost('type') == 'loadAOE'){
+		//$fh = fopen("D:/AOE.txt","a");
+		//fwrite($fh,"gfgzG");
 		$AOE = $this->getAOE($inputString,$dependentId);
 		$data = new JsonModel($AOE);
 		return $data;

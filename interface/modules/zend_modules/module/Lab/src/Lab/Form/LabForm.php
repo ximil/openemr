@@ -7,6 +7,7 @@ class LabForm extends Form
 {
     public function __construct($name = null)
     {
+	global $pid,$encounter;
         parent::__construct('lab');
         $this->setAttribute('method', 'post');
         $this->add(array(
@@ -16,12 +17,27 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
+            'name' => 'patient_id',
+            'attributes' => array(
+                'type'  => 'hidden',
+		'value' => $pid,
+            ),
+        ));
+	$this->add(array(
+            'name' => 'encounter_id',
+            'attributes' => array(
+                'type'  => 'hidden',
+		'value' => $encounter,
+            ),
+        ));
+	$this->add(array(
             'name' => 'provider',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
 		'editable' => 'false',
+		'required' => 'required'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -36,8 +52,7 @@ class LabForm extends Form
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
 		'id' => 'lab_id',
-		//'onChange' => 'getLocation(this.value)',
-		//'onChange' => 'getTestList(this.value)',
+		'required' => 'required'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -45,26 +60,29 @@ class LabForm extends Form
 		),
 	    ),
         ));
-	$this->add(array(
-            'name' => 'location',
-	    'type'  => 'Zend\Form\Element\Select',
-            'attributes' => array(
-		'class' => '/*easyui-combobox*/ combo',
-		'data-options' => 'required:true',
-            ),
-	    'options' => array(
-		'value_options' => array(
-		    '' => xlt('Unassigned'),
-		),
-	    ),
-        ));
+//	$this->add(array(
+//            'name' => 'location',
+//	    'type'  => 'Zend\Form\Element\Select',
+//            'attributes' => array(
+//		'class' => '/*easyui-combobox*/ combo',
+//		'data-options' => 'required:true',
+//		'required' => 'required'
+//            ),
+//	    'options' => array(
+//		'value_options' => array(
+//		    '' => xlt('Unassigned'),
+//		),
+//	    ),
+//        ));
 	$this->add(array(
             'name' => 'orderdate',
-            'attributes' => array(
+	    'type'  => 'Zend\Form\Element\Date',
+	    'attributes' => array(
                 'type'  => 'text',
 		'class' => 'easyui-datebox',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d"),
+		'required' => 'required'
             ),
         ));
 	$this->add(array(
@@ -74,6 +92,7 @@ class LabForm extends Form
 		'class' => 'easyui-datetimebox',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d H:i:s"),
+		'required' => 'required'
             ),
         ));
 	$this->add(array(
@@ -81,7 +100,8 @@ class LabForm extends Form
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
-		'data-options' => 'required:true'
+		'data-options' => 'required:true',
+		'required' => 'required'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -94,7 +114,8 @@ class LabForm extends Form
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
-		'data-options' => 'required:true'
+		'data-options' => 'required:true',
+		'required' => 'required'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -107,7 +128,8 @@ class LabForm extends Form
             'attributes' => array(
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
-		'data-options' => 'required:true'
+		'data-options' => 'required:true',
+		'required' => 'required'
             ),
         ));
 	$this->add(array(
@@ -125,7 +147,22 @@ class LabForm extends Form
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
 		'data-options' => 'required:true',
-		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")'
+		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")',
+		'required' => 'required'
+            ),
+        ));
+	$this->add(array(
+            'name' => 'procedure_code',
+            'attributes' => array(
+                'type' => 'hidden',
+		'id' => 'procedure_code'
+            ),
+        ));
+	$this->add(array(
+            'name' => 'procedure_suffix',
+            'attributes' => array(
+                'type' => 'hidden',
+		'id' => 'procedure_suffix'
             ),
         ));
         $this->add(array(

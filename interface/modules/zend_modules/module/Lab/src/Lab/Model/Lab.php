@@ -8,33 +8,25 @@ use Zend\InputFilter\InputFilterInterface;
 
 class Lab implements InputFilterAwareInterface
 {
-    public $id;
-    public $patienName;
-    public $PatientInstructions;
-    public $pid;
-    public $labName;
-    public $locationName;
-    public $testGroupName;
-    public $BillTo;
-    public $OrderingProvider;
-    public $Priority;
-    public $Status;
-  	
     protected $inputFilter;
 
     public function exchangeArray($data)
     {
-	$this->id	     			= (isset($data['id']))   	  			? $data['id']  						: null;
-	$this->pid	    	 		= (isset($data['pid']))     			? $data['pid']  					: null;
-	$this->patienName			= (isset($data['patientName']))  		? $data['patientName']  			: null;
-	$this->labName   			= (isset($data['labName']))   			? $data['labName'] 					: null;
-	$this->locationName  		= (isset($data['locationName']))  		? $data['locationName']  			: null;
-	$this->testGroupName 		= (isset($data['testGroupName']))  		? $data['testGroupName']			: null;
-	$this->BillTo  				= (isset($data['BillTo']))  			? $data['BillTo']  					: null;
-	$this->OrderingProvider		= (isset($data['OrderingProvider'])) 	? $data['OrderingProvider']  		: null;
-	$this->Priority  			= (isset($data['Priority']))  			? $data['Priority']  				: null;
-	$this->Status  				= (isset($data['Status']))  			? $data['Status']  					: null;
-	$this->PatientInstructions  = (isset($data['PatientInstructions'])) ? $data['PatientInstructions']  	: null;
+	$this->id	     		= (isset($data['id']))   	  	? $data['id']  			: null;
+	$this->pid	    	 	= (isset($data['patient_id']))     	? $data['patient_id']  		: null;
+	$this->encounter    	 	= (isset($data['encounter_id']))     	? $data['encounter_id']  	: null;
+	$this->provider			= (isset($data['provider']))  		? $data['provider']	  	: null;
+	$this->lab_id   		= (isset($data['lab_id']))   		? $data['lab_id'] 		: null;
+	$this->location  		= (isset($data['location']))  		? $data['locationName']  	: null;
+	$this->orderdate 		= (isset($data['orderdate']))  		? $data['orderdate']		: null;
+	$this->timecollected		= (isset($data['timecollected']))	? $data['timecollected']  	: null;
+	$this->diagnoses		= (isset($data['diagnoses'])) 		? $data['diagnoses']  		: null;
+	$this->priority  		= (isset($data['priority']))  		? $data['priority']  		: null;
+	$this->status  			= (isset($data['status']))  		? $data['status']  		: null;
+	$this->patient_instructions  	= (isset($data['patient_instructions']))? $data['patient_instructions'] : null;
+	$this->procedures  		= (isset($data['procedures'])) 		? $data['procedures'] 		: null;
+	$this->procedurecode  		= (isset($data['procedure_code'])) 	? $data['procedure_code'] 	: null;
+	$this->proceduresuffix 		= (isset($data['procedure_suffix'])) 	? $data['procedure_suffix']	: null;
     }
     public function getArrayCopy()
     {
@@ -51,16 +43,170 @@ class Lab implements InputFilterAwareInterface
             $inputFilter = new InputFilter();
             $factory     = new InputFactory();
 
-            $inputFilter->add($factory->createInput(array(
-                'name'     => 'id',
+//            $inputFilter->add($factory->createInput(array(
+//                'name'     => 'id',
+//                'required' => false,
+//                'filters'  => array(
+//                    array('name' => 'Int'),
+//                ),
+//            )));
+//	    $inputFilter->add($factory->createInput(array(
+//                'name'     => 'patient_id',
+//                'required' => false,
+//                'filters'  => array(
+//                    array('name' => 'Int'),
+//                ),
+//            )));
+//	    $inputFilter->add($factory->createInput(array(
+//                'name'     => 'encounter_id',
+//                'required' => false,
+//                'filters'  => array(
+//                    array('name' => 'Int'),
+//                ),
+//            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'provider',
                 'required' => true,
                 'filters'  => array(
                     array('name' => 'Int'),
                 ),
             )));
-
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'lab_id',
+                'required' => false,
+                'filters'  => array(
+                    array('name' => 'Int'),
+                ),
+            )));
             $inputFilter->add($factory->createInput(array(
-                'name'     => 'artist',
+                'name'     => 'patient_instructios',
+                'required' => false,
+		'allow_empty' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 0,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'procedures',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'procedure_code',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'procedure_suffix',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'diagnoses',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'status',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'priority',
+                'required' => true,
+                'filters'  => array(
+                    array('name' => 'StripTags'),
+                    array('name' => 'StringTrim'),
+                ),
+                'validators' => array(
+                    array(
+                        'name'    => 'StringLength',
+                        'options' => array(
+                            'encoding' => 'UTF-8',
+                            'min'      => 1,
+                            'max'      => 100,
+                        ),
+                    ),
+                ),
+            )));
+	    $inputFilter->add($factory->createInput(array(
+                'name'     => 'orderdate',
                 'required' => true,
                 'filters'  => array(
                     array('name' => 'StripTags'),
@@ -79,7 +225,7 @@ class Lab implements InputFilterAwareInterface
             )));
 
             $inputFilter->add($factory->createInput(array(
-                'name'     => 'title',
+                'name'     => 'timecollected',
                 'required' => true,
                 'filters'  => array(
                     array('name' => 'StripTags'),
