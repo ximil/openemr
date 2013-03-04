@@ -190,7 +190,5 @@ class LabController extends AbstractActionController
 	    $this->getLabTable()->saveResult($data);
 	    return $this->redirect()->toRoute('result');
 	}
-	return $this->redirect()->toRoute('result');
-    }
 
 }
