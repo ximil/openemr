@@ -412,24 +412,15 @@ class LabTable extends AbstractTableGateway
 			}
 		}
 	}
-	public function saveLab(Lab $lab)
+    public function saveLab(Lab $lab)
     {
-        $data = array(
-            'artist' 	=> $lab->artist,
-            'title'  	=> $lab->title,
-            'category'  => $lab->category,
-        );
-
-        $id = (int)$lab->id;
-        if ($id == 0) {
-            $this->tableGateway->insert($data);
-        } else {
-            if ($this->getLab($id)) {
-                $this->tableGateway->update($data, array('id' => $id));
-            } else {
-                throw new \Exception('Form id does not exist');
-            }
-        }
+        $procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
+		  diagnoses,patient_instructions,lab_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
+		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
+			$lab->diagnoses,$lab->patient_instructions,$lab->lab_id));
+	sqlStatement("INSERT INTO procedure_order_code (procedure_order_id,procedure_order_seq,procedure_code,procedure_name,procedure_suffix)
+		     VALUES (?,?,?,?,?)",array($procedure_type_id,1,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
+	return true;
     }
     
 //    public function listLabLocation($inputString)
@@ -448,18 +439,26 @@ class LabTable extends AbstractTableGateway
 //	return $rows;
 //
 //    }
-    public function listProcedures($inputString='s',$labId='2')
+    public function listProcedures($inputString,$labId)
     {
-	$sql = "SELECT * FROM procedure_type AS pt LEFT OUTER JOIN procedure_questions AS pq ON pt.procedure_code=pq.procedure_code
-		WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
+	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
 	$result = sqlStatement($sql,array($labId,$inputString."%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
-	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_type_id'] . '-' . $tmp['procedure_code'];
+	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_code']. '-' . $tmp['suffix'];
 	}
-	//$fh = fopen("D:/test11111.txt","a");
-	//fwrite($fh,print_r($arr,1));
+	return $arr;
+    }
+    
+    public function listAOE($procedureCode,$labId){
+	$sql = "SELECT * FROM procedure_questions WHERE lab_id=? AND procedure_code=? AND activity=1";
+	$result = sqlStatement($sql,array($labId,$procedureCode));
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[] = $tmp['question_text'];
+	}
 	return $arr;
     }
 }
