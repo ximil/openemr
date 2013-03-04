@@ -16,6 +16,10 @@
 				dtTo: $('#acpro_inp4').val(),
 			}); 
 		}
+		
+		function getRequisition() {
+			
+		}
 </script>
 	
 	<table id="dg" title="Pending Review"  style="width:auto;height:450px"
@@ -52,7 +56,7 @@
 								options:{  
 									valueField:'status',  
 									textField:'status',  
-									url:'http://192.168.1.241/openemr/interface/modules/zend_modules/module/Lab/view/lab/lab/status.json',  
+									url:'<?php echo $this->basePath(); ?>/../module/Lab/view/lab/lab/status.json',  
 									required:false  
 								} 
 							}"><?php echo xlt('Status'); ?></th>
@@ -71,7 +75,7 @@
 								options:{  
 									valueField:'abnid',  
 									textField:'abn',  
-									url:'http://192.168.1.241/openemr/interface/modules/zend_modules/module/Lab/view/lab/lab/abn.json',  
+									url:'<?php echo $this->basePath(); ?>/../module/Lab/view/lab/lab/abn.json',  
 									required:false  
 								} 
 							}"><?php echo xlt('Abn'); ?></th>
@@ -80,11 +84,24 @@
 				<th field="pt2_range" width="50" editor="text"><?php echo xlt('Range'); ?></th>
 				<!--<th data-options="field:'comments',width:50">
 					<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()"></a>
-				</th> -->
-				<th field="comments" width="50" editor="text">
+				</th>-->
+				<th data-options="field:'comments',title:'',width:50,align:'center',
+							formatter:function(value,row,index){
+								if (row.editing){
+									var s = '<a></a> ';
+									var c = '<a></a>';
+									return s+c;
+								} else {
+									var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editUser()><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png /></a>';
+									var q = '';
+									return r+q;
+								}
+							}">Comments</th>
+
+				<!--<th field="comments" width="50" editor="text">
 				&#63;
-				<!--<a href="javascript:void(0)" class="easyui-linkbutton" onclick="$('#w').window('open')">Open</a>-->
-				</th>
+				<a href="javascript:void(0)" class="easyui-linkbutton" onclick="$('#w').window('open')">Open</a>
+				</th>-->
 				
 			<!-- End Results and Recommendations -->
 
@@ -115,15 +132,15 @@
 											return m+n;
 										}
 									}"><?php echo xlt('Requisition'); ?></th>-->
-				<th data-options="field:'requisition',title:'',width:100,align:'center',
+				<th data-options="field:'requisition',title:'',width:80,align:'left',
 							formatter:function(value,row,index){
 								if (row.editing){
 									var s = '<a></a> ';
 									var c = '<a></a>';
 									return s+c;
 								} else {
-									var e = '<a><img  src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?> /></a>';
-									var d = '<a><img src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> /></a>';
+									var e = '<a href=\'./getlabresult\' style=padding-left:10px; ><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a><span style=padding-right:30px;>&nbsp;</span>';
+									var d = '<a href=\'./getlabrequisition \' ><img src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
 									return e+d;
 								}
 							}">
@@ -165,25 +182,34 @@
 		</div>
 	</div>
 	
-	<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"  
+	<div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
             closed="true" buttons="#dlg-buttons">  
         <div class="ftitle">Blood Group Test</div>  
         <form id="fm" method="post" novalidate>  
             <div class="fitem">  
                 <label>Status:</label>  
-                <input name="firstname" class="easyui-validatebox" required="true">  
+                <!--<input name="firstname" class="easyui-validatebox" required="true"> -->
+				<select class="easyui-combobox"  panelHeight="auto" style="width:100px">
+				<option value="">--Select--</option>
+				<option value="final">Final</option>
+				<option value="review">Reviewed</option>
+				<option value="prelim">Preliminary</option>
+				<option value="cancel">Canceled</option>
+				<option value="error">Error</option>
+				<option value="correct">Corrected</option>
+			</select>
             </div>  
             <div class="fitem">  
                 <label>Facility:</label>  
-                <input name="lastname" class="easyui-validatebox" required="true">  
+                <input name="form_facility" class="easyui-validatebox" style="width: 280px"; required="true">  
             </div>  
             <div class="fitem">  
                 <label>Comments:</label>  
-                <input name="phone">  
+				<textarea name="form_comments" style="height:60px; width: 280px;"></textarea>  
             </div>  
             <div class="fitem">  
                 <label>Notes:</label>  
-                <input name="email" class="easyui-validatebox" validType="email">  
+				<textarea name="form_notes" style="height:60px; width: 280px;"></textarea>
             </div>  
         </form>  
     </div>  
@@ -202,13 +228,13 @@
         function editUser(){  
             var row = $('#dg').datagrid('getSelected');  
             if (row){  
-                $('#dlg').dialog('open').dialog('setTitle','Edit User');  
+                $('#dlg').dialog('open').dialog('setTitle','Result');  
                 $('#fm').form('load',row);  
-                url = 'update_user.php?id='+row.id;  
+                url = './formcomments?id='+row.id;  
             }  
         }  
         function saveUser(){  
-            $('#fm').form('submit',{  
+            $('#fm').form('submit',{ 
                 url: url,  
                 onSubmit: function(){  
                     return $(this).form('validate');  
@@ -267,4 +293,5 @@
             width:80px;  
         }  
     </style>
+
 	
