@@ -12,7 +12,8 @@
                         ->prependStylesheet($this->basePath() . '/css/demo.css')
 			->prependStylesheet($this->basePath() . '/css/bootstrap-responsive.min.css')
 			->prependStylesheet($this->basePath() . '/css/style.css')
-                        ->prependStylesheet($GLOBALS['css_header']) ?>
+			->prependStylesheet($this->basePath() . '/css/mockjax.css')
+			->prependStylesheet($GLOBALS['css_header']) ?>
 
         <!-- Scripts -->
         <?php echo $this->headScript()
@@ -30,7 +31,7 @@
 	    <div style="padding:5px;border:1px solid #ddd">
 		<a href="./index" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Procedure Order');?></a>
 		<a id="btn-edit" href="./result" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pending Review/ Result');?></a>
-		<a href="#" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pull Compandium');?></a>
+		<a href="#" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
 	    </div>
             <?php echo $this->content; ?>
             <hr>
