@@ -49,6 +49,9 @@ function getProcedures(inputString,thisID,labID) {
 			},
 			async: false,
 			cache: false
+			//success:function(thedata){
+			//	
+			//}
 		}).done(function (source) {
 			var dataArray = $.map(source, function (value, key) { 
 										return { 
@@ -57,58 +60,77 @@ function getProcedures(inputString,thisID,labID) {
 										}; 
 									    }),
 			items = $.map(source, function (value) { return value; });
-			$.mockjax({
-				url: '*',
-				responseTime:  200,
-				response: function (settings) {
-					var query = settings.data.query,
-						queryLowerCase = query.toLowerCase(),
-						suggestions = $.grep(items, function(items) {
-							 return items.toLowerCase().indexOf(queryLowerCase) !== -1;
-						}),
-						response = {
-							query: query,
-							suggestions: suggestions
-						};
-			
-					this.responseText = JSON.stringify(response);
-				}
-			});
-		
+			//$.mockjax({
+			//	url: '*',
+			//	responseTime:  200,
+			//	response: function (settings) {
+			//		var query = settings.data.query,
+			//			queryLowerCase = query.toLowerCase(),
+			//			suggestions = $.grep(items, function(items) {
+			//				 return items.toLowerCase().indexOf(queryLowerCase) !== -1;
+			//			}),
+			//			response = {
+			//				query: query,
+			//				suggestions: suggestions
+			//			};
+			//
+			//		this.responseText = JSON.stringify(response);
+			//	}
+			//});
+		loadAOE11("123456",thisID,labID);
 			// Initialize ajax autocomplete:
-			$('#' + thisID).autocomplete({
-				serviceUrl: '/autosuggest/service/url',
-				onSelect: function(suggestion) {
-					var arr = suggestion.value.split("-");
-					$('#' + thisID).val(arr[0]);
-					$('#procedure_code').val(arr[1]);
-					$('#procedure_suffix').val(arr[2]);
-					//loadAOE11(arr[1],thisID,labID);
-					//loadaoe();
-				}
-			});
+			//$('#' + thisID).autocomplete({
+			//	serviceUrl: '/autosuggest/service/url',
+			//	onSelect: function(suggestion) {
+			//		var arr = suggestion.value.split("-");
+			//		$('#' + thisID).val(arr[0]);
+			//		$('#procedure_code').val(arr[1]);
+			//		$('#procedure_suffix').val(arr[2]);
+			//		
+			//		//loadaoe();
+			//	}
+			//});
 		});
 	
 	});
 }
 
-function loadaoe(){
-	procedureCode = "123456";//document.getElementById('procedure_code').value;
-	$(function () {
-		'use strict';
-		$.ajax({
+function loadAOE11(procedureCode,thisID,labID){
+	//procedureCode = "123456";//document.getElementById('procedure_code').value;
+	alert(procedureCode+","+thisID+","+labID);
+	labVal = $("#"+labID).val();alert(labVal);
+	$.ajax({
+		type: "POST",
+		url: "./search11",
+		data: {
+				query: procedureCode,
+				inputValue: procedureCode,
+				dependentId: labVal,
+				type: 'loadAOE'
+			},
+		success: function(){
+				alert("OK");
+			},
+		dataType: 'json'
+	      });
+	//$(function () {
+		//'use strict';
+		/*$.ajax({
 			type: "POST",
 			url: './search11',
 			dataType: 'json',
 			data: {
 				query: procedureCode,
 				inputValue: procedureCode,
-				dependentId: "2",
+				dependentId: labVal,
 				type: 'loadAOE'
 			},
 			async: false,
-			cache: false
-		}).done(function (source) {
+			cache: false,
+			success:function(){
+				alert("OK");
+			}
+		});*//*.done(function (source) {
 			var dataArray = $.map(source, function (value, key) { 
 										return { 
 											value: value, 
@@ -132,7 +154,7 @@ function loadaoe(){
 			
 					this.responseText = JSON.stringify(response);
 				}
-			});
+			});*/
 			// Initialize ajax autocomplete:
 			//$('#' + thisID).autocomplete({
 			//	serviceUrl: '/autosuggest/service/url',
@@ -144,9 +166,9 @@ function loadaoe(){
 			//		alert(suggestion);
 			//	}
 			//});
-		});
+		//});
 	
-	});
+	//});
 }
 //load();
 //function load(){

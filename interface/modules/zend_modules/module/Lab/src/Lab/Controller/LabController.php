@@ -236,7 +236,5 @@ class LabController extends AbstractActionController
         }
         return $this->redirect()->toRoute('result');
 	}
-	return $this->redirect()->toRoute('result');
-    }
 
 }
