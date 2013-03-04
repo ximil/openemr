@@ -96,21 +96,53 @@ class LabController extends AbstractActionController
 	
     public function resultAction()
     {
-
+		
     }
 	
-	public function getLabResult()
+	public function resultSearchAction()
+    {
+		$request = $this->getRequest();
+		if ($request->isPost()) {
+			//$request->getQuery();
+			//echo '<pre>'; print_r($request->getQuery()); echo '</pre>';
+			$data = array(
+				'status'	=> $request->getPost('status'),
+			); 
+			$labResult = $this->getSearchLabResult($data);
+			$data = new JsonModel($labResult);
+			return $data; 
+		}
+    }
+	
+	public function getSearchLabResult($data)
 	{
-		$labResult = $this->getLabTable()->listLabResult();
+		$labResult = $this->getLabTable()->listSearchLabResult($data);
+		return $labResult;
+	}
+	
+	public function getLabResult($data)
+	{
+		$labResult = $this->getLabTable()->listLabResult($data);
 		return $labResult;
 	}
 	
 	public function resultShowAction()
 	{
-		$labResult = $this->getLabResult();
-		$data = new JsonModel($labResult);
-		return $data; 
+		$request = $this->getRequest();
+		$data =array();
+		if($request->getPost('status')){
+			$data = array(
+				'status'	=> $request->getPost('status'),
+				'dtFrom'	=> $request->getPost('dtFrom'),
+				'dtTo'	=> $request->getPost('dtTo'),
+			); 
+		}
 		
+		//$fh = fopen("D:/test.txt","a");
+		//fwrite($fh,print_r($data,1));
+		$labResult = $this->getLabResult($data);
+		$data = new JsonModel($labResult);
+		return $data;
 	}
 	public function resultUpdateAction()
 	{
@@ -143,7 +175,18 @@ class LabController extends AbstractActionController
 					'procedure_order_seq'	=> $request->getPost('procedure_order_seq'),
 					'date_report'			=> $request->getPost('date_report'),
 					'date_collected'		=> $request->getPost('date_collected'),
+					'result_code'			=> $request->getPost('result_code'),
+					'procedure_report_id'	=> $request->getPost('procedure_report_id'),
+					'result_text'			=> $request->getPost('result_text'),
+					'abnormal'				=> $request->getPost('abnormal'),
+					'result'				=> $request->getPost('result'),
+					'range'					=> $request->getPost('range'),
+					'units'					=> $request->getPost('units'),
+					'result_status'			=> $request->getPost('result_status'),
 			);
+
+			//$fh = fopen("D:/test.txt","a");
+			//fwrite($fh,print_r($data,1));
 			$this->getLabTable()->saveResult($data);
 			return $this->redirect()->toRoute('result');
         }

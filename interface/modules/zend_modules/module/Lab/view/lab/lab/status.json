@@ -1,5 +1,5 @@
 [
-{"statusid":"final","status":"Final"},
+{"report_status":"final","status":"Final"},
 {"statusid":"review","status":"Reviewed"},
 {"statusid":"prelim","status":"Preliminary"},
 {"statusid":"cancel","status":"Canceled"},
