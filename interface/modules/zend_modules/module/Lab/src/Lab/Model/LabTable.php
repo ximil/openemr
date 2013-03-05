@@ -21,7 +21,7 @@ class LabTable extends AbstractTableGateway
     }
 	
 	public function listLabResult($data)
-	{	
+	{	global $pid;
 		$flagSearch = 0;
 		if (isset($data['status']) && $data['status'] != '--Select--') { 
 			$stats = $data['status'];
@@ -49,7 +49,7 @@ class LabTable extends AbstractTableGateway
 		$extra_html = '';
 		$lastrcn = '';
 		$facilities = array();
-		$pid = 1;
+		//$pid = 1;
 		$selects =
 			"po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
 			"pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
@@ -83,7 +83,7 @@ class LabTable extends AbstractTableGateway
 					  "$joins " .
 					  "WHERE po.patient_id = '$pid' AND $where " .
 					  "$groupby ORDER BY $orderby";
-
+//echo $sql;
       	$result = sqlStatement($sql);
 		$arr1 = array();
 		$i = 0;
@@ -421,10 +421,10 @@ class LabTable extends AbstractTableGateway
         $procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
 		  diagnoses,patient_instructions,lab_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
 		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
-			$lab->diagnoses,$lab->patient_instructions,$lab->lab_id));
+			"ICD9:".$lab->diagnoses,$lab->patient_instructions,$lab->lab_id));
 	sqlStatement("INSERT INTO procedure_order_code (procedure_order_id,procedure_order_seq,procedure_code,procedure_name,procedure_suffix)
 		     VALUES (?,?,?,?,?)",array($procedure_type_id,1,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
-	return true;
+	return $procedure_type_id;
     }
     
 //    public function listLabLocation($inputString)
@@ -1130,9 +1130,9 @@ class LabTable extends AbstractTableGateway
         $guarantor_postal_code                  = "";    
         $guarantor_phone_no                     = "";    
         $guarantor_mname                        = "";    
-        $ordering_provider_id                   = "";    
-        $ordering_provider_lname                = "";    
-        $ordering_provider_fname                = "";    
+        $ordering_provider_id                   = "1122334455";    
+        $ordering_provider_lname                = "Allan";    
+        $ordering_provider_fname                = "Joseph";    
         $observation_request_comments           = "";
         
         $xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
@@ -1274,7 +1274,7 @@ class LabTable extends AbstractTableGateway
         $misc_value_arr = array();
         
         $misc_value_arr['patient_id']   = $pid;
-        $misc_value_arr['order_status'] = "";
+        $misc_value_arr['order_status'] = "pending";
         $misc_value_arr['lab_id']       = $lab_id;
         
         $res_misc   = sqlStatement($sql_misc,$misc_value_arr);
