@@ -8,6 +8,8 @@ use Lab\Form\LabForm;
 use Zend\View\Model\JsonModel;
 
 use Zend\Soap\Client;
+use Zend\Config;
+use Zend\Config\Reader;
 
 class LabController extends AbstractActionController
 {
@@ -32,9 +34,10 @@ class LabController extends AbstractActionController
 
         $request = $this->getRequest();
         if ($request->isPost()) {
-	    $Lab = new Lab();
-	    //$form->setInputFilter($Lab->getInputFilter());
+            $album = new Lab();
+            $form->setInputFilter($album->getInputFilter());
             $form->setData($request->getPost());
+
             if ($form->isValid()) {
 		$Lab->exchangeArray($form->getData());
                 $clientorder_id = $this->getLabTable()->saveLab($Lab);
@@ -208,7 +211,6 @@ class LabController extends AbstractActionController
 				'dtTo'	=> $request->getPost('dtTo'),
 			); 
 		}
-		
 		//$fh = fopen("D:/test.txt","a");
 		//fwrite($fh,print_r($data,1));
 		$labResult = $this->getLabResult($data);
@@ -218,24 +220,6 @@ class LabController extends AbstractActionController
 	
 	public function resultUpdateAction()
 	{
-		/*$form = new LabForm();
-    	$lab = new Lab();
-		$request = $this->getRequest();
-    	if ($request->isPost()) {
-			$form->setInputFilter($lab->getInputFilter());
-			if ($form->isValid()) {
-				$lab->exchangeArray($form->getData());
-				print_r($form->getData());
-				$this->getLabTable()->saveLab($lab);
-				echo 'Successfuly inserted..';
-			} else {
-				echo 'invalid ..';
-				foreach ($form->getMessages() as $messageId => $message) {
-					echo "Validation failure '$messageId':"; print_r($message);
-				}
-			}
-		}*/
-		
 		$request = $this->getRequest();
         if ($request->isPost()) {
 			$data = array(
@@ -257,17 +241,15 @@ class LabController extends AbstractActionController
 					'result_status'			=> $request->getPost('result_status'),
 			);
 
-			//$fh = fopen("D:/test.txt","a");
-			//fwrite($fh,print_r($data,1));
 			$this->getLabTable()->saveResult($data);
 			return $this->redirect()->toRoute('result');
         }
         return $this->redirect()->toRoute('result');
 	}
 	
-	public function formcommentsAction()
+	public function formCommentsAction()
 	{
-		echo 'test';die;
+
 	}
 	
 	/**
@@ -275,131 +257,185 @@ class LabController extends AbstractActionController
 	*/
 	
 	public function pullcompandiantestAction()
-    {
-        ini_set("soap.wsdl_cache_enabled","0");
-	
-	ini_set('memory_limit', '-1');
-        
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
-                            'uri'      => "urn://zhhealthcare/lab"
-                        );
-
-	$client = new Client(null,$options);
-        
-        $result = $client->check_for_tests();
-        
-        $testconfig_arr = $this->getLabTable()->pullCompandianTestConfig();
-        //print_r($testconfig_arr);
-        
-        //$this->getLabTable()->importData($result,$testconfig_arr);
-        $this->getLabTable()->importDataCheck($result,$testconfig_arr);
-        
-        //print_r($xmlfile);
-		return $this->redirect()->toRoute('result');
-    }
-    
-    public function generateorderAction()
-    {
-        //$xmlfileurl = "ordernew.xml";
-        //$xmlfile = $this->getLabTable()->generateOrderXml(5,$xmlfileurl);//Pateint ID, Lab ID, File Name to be created
-        //print_r($xmlfile);
-        
-        $lab_id     = 0;
-        $patient_id = 7962;
-        
-        $xmlfile = $this->getLabTable()->generateOrderXml($patient_id,$lab_id,$xmlfileurl);
-        //print_r($xmlfile);
-        
-        $fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
+        {
+            ini_set("soap.wsdl_cache_enabled","0");
             
-        $xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
-        
-        //return false;
+            ini_set('memory_limit', '-1');
+            
+            $options = array(
+                                'location' => "http://192.168.1.139/webserver/lab_server.php",
+                                'uri'      => "urn://zhhealthcare/lab"
+                            );
     
-        ini_set("soap.wsdl_cache_enabled","0");
-	
-	ini_set('memory_limit', '-1');
-        
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
-                            'uri'      => "urn://zhhealthcare/lab"
-                        );
-
-	$client = new Client(null,$options);
-        
-        $client_id      = "1";
-        $clientorder_id = "1";
-        $lab_id         = "1";
-        
-        $result = $client->importOrder($client_id,$clientorder_id,$lab_id,$xmlstring);
-        echo "Result <br>";
-        print_r($result);
-    }
+            $client = new Client(null,$options);
+            
+            $result = $client->check_for_tests();
+            
+            $testconfig_arr = $this->getLabTable()->pullCompandianTestConfig();
+            //print_r($testconfig_arr);
+            
+            //$this->getLabTable()->importData($result,$testconfig_arr);
+            $this->getLabTable()->importDataCheck($result,$testconfig_arr);
+            
+            //print_r($xmlfile);
+            return $this->redirect()->toRoute('result');
+        }
     
+        /* //THIS ACTION IS MOVED INTO INDEX ACTION
+        public function generateorderAction()
+        {
+            //$xmlfileurl = "ordernew.xml";
+            //$xmlfile = $this->getLabTable()->generateOrderXml(5,$xmlfileurl);//Pateint ID, Lab ID, File Name to be created
+            //print_r($xmlfile);
+            
+            $lab_id     = 0;
+            $patient_id = 7962;
+            
+            $xmlfile = $this->getLabTable()->generateOrderXml($patient_id,$lab_id,$xmlfileurl);
+            //print_r($xmlfile);
+            
+            $fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
+                
+            $xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
+            
+            //return false;
+        
+            ini_set("soap.wsdl_cache_enabled","0");
+            
+            ini_set('memory_limit', '-1');
+            
+            $options = array(
+                                'location' => "http://192.168.1.139/webserver/lab_server.php",
+                                'uri'      => "urn://zhhealthcare/lab"
+                            );
     
-    public function getlabrequisitionAction()
-    {
-        ini_set("soap.wsdl_cache_enabled","0");
-	
-		ini_set('memory_limit', '-1');
-	
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
-                            'uri'      => "urn://zhhealthcare/lab"
-                        );
-
-	$client = new Client(null,$options);
-        //echo "<br>REQUISITION RESULT <br>";
-        $result = $client->getLabRequisition(1,101);       //CLIENT ID, CLIENT ORDER ID   
+            $client = new Client(null,$options);
+            
+            $client_id      = "1";
+            $clientorder_id = "1";
+            $lab_id         = "1";
+            
+            $result = $client->importOrder($client_id,$clientorder_id,$lab_id,$xmlstring);
+            echo "Result <br>";
+            print_r($result);
+        }*/
         
-        //echo $result;
+    
+        public function getlabrequisitionAction()
+        {
+            $request = $this->getRequest();
+            if($request->isGet())
+            {
+                $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+            }
+            
+            
+            //$data['procedure_order_id'] = 4; //HARD CODED FOR TESTING
+            //print_r($data);
+            $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            
+            $username   = $cred['login'];
+            $password   = $cred['password'];        
+            $site_dir   = $GLOBALS['OE_SITE_DIR'];
+               
+            
+            ini_set("soap.wsdl_cache_enabled","0");	
+            ini_set('memory_limit', '-1');
+            
+            $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
+                                'uri'      => "urn://zhhealthcare/lab"
+                                );
+    
+            $client     = new Client(null,$options);
+            $result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID   
+            //print_r($result);
+            //return false;
         
-        $labresultfile  = "labrequisition_".gmdate('YmdHis').".pdf";
-        
-        $fp = fopen("module/Lab/".$labresultfile,"wb");
-        fwrite($fp,base64_decode($result));
-        
-        //$tmpfilename = "/encrypted_".$labresultfile;
-		//$tmpfile = fopen( $tmpfilepath.$tmpfilename, "w+" );
-		//fwrite( $tmpfile, $ciphertext );
-		//fclose( $tmpfile );
-		header('Content-Disposition: attachment; filename='.$labresultfile );
-		header("Content-Type: application/octet-stream" );
-		header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );
-		//ob_clean();
-		//flush();
-		readfile( "module/Lab/".$labresultfile );
-         
-    }
+            $labresultfile  = "labrequisition_".gmdate('YmdHis').".pdf";
+            
+            $fp = fopen("module/Lab/".$labresultfile,"wb");
+            fwrite($fp,base64_decode($result));
+            
+            header('Content-Disposition: attachment; filename='.$labresultfile );
+            header("Content-Type: application/octet-stream" );
+            header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );		
+            readfile( "module/Lab/".$labresultfile );         
+        }
     
     public function getlabresultAction()
     {
-        ini_set("soap.wsdl_cache_enabled","0");
-	
+        $request = $this->getRequest();
+        if($request->isGet())
+        {
+            $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+        }
+        
+        $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            
+        $username   = $cred['login'];
+        $password   = $cred['password'];        
+        $site_dir   = $GLOBALS['OE_SITE_DIR'];
+            
+        ini_set("soap.wsdl_cache_enabled","0");	
 	ini_set('memory_limit', '-1');
         
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
+        $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
                             'uri'      => "urn://zhhealthcare/lab"
-                        );
+                            );
 
-	$client = new Client(null,$options);
-        //echo "<br>LAB RESULT <br>";
-        $result = $client->getLabResult(1,101);  //CLIENT ID, CLIENT ORDER ID     
-        
+	$client     = new Client(null,$options);
+        $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
         //print_r($result);
         
         $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
-        
         $fp = fopen("module/Lab/".$labresultfile,"wb");
         fwrite($fp,base64_decode($result));
-		
-		header('Content-Disposition: attachment; filename='.$labresultfile );
-		header("Content-Type: application/octet-stream" );
-		header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );
+	header('Content-Disposition: attachment; filename='.$labresultfile );
+        header("Content-Type: application/octet-stream" );
+        header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );
+        readfile( "module/Lab/".$labresultfile );         
+    }
+    
+    public function getlabresultdetailsAction()
+    {
+        $request = $this->getRequest();
+        if($request->isGet())
+        {
+            $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+        }
+        
+        $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            
+        $username   = $cred['login'];
+        $password   = $cred['password'];        
+        $site_dir   = $GLOBALS['OE_SITE_DIR'];
+            
+        ini_set("soap.wsdl_cache_enabled","0");	
+	ini_set('memory_limit', '-1');
+        
+        $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
+                            'uri'      => "urn://zhhealthcare/lab"
+                            );
 
-		readfile( "module/Lab/".$labresultfile );
-         
+	$client     = new Client(null,$options);
+        $result     = $client->getLabResultDetails($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
+        //print_r($result);
+        
+        $labresultdetailsfile  = "labresultdetails_".gmdate('YmdHis').".xml";
+            
+        $fp = fopen("module/Lab/".$labresultdetailsfile,"wb");
+        fwrite($fp,base64_decode($result));
+        
+        
+        $reader = new Config\Reader\Xml();
+        $data   = $reader->fromFile("module/Lab/".$labresultdetailsfile);
+        
+        //foreach($data['Order'] as $xmltag => $xmlvalue)
+        //{
+        //    echo $xmltag." => ".$xmlvalue;
+        //    echo "<br>";
+        //}
+        print_r($data['Order']);
+        
     }
 }

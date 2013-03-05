@@ -11,42 +11,75 @@
 		
 		function doSearch(){
 			$('#dg').edatagrid('load',{  
-				status: $('#acpro_inp6').val(),
+				status: $("input[name=searchStatus]").val(),
 				dtFrom: $('#acpro_inp1').val(),
 				dtTo: $('#acpro_inp4').val(),
 			}); 
 		}
 		
-		function getRequisition() {
-			
+		function getResult(target) {
+			var tr = $(target).closest('tr.datagrid-row');
+			var rowIndex = parseInt(tr.attr('datagrid-row-index'));
+			$('#dg').datagrid('selectRow', rowIndex);
+			var row = $('#dg').datagrid('getSelected'); 
+			if (row){  
+				var order_id = row.procedure_order_id;
+				window.location.assign("./getlabresult?order_id=" + order_id);
+			}
 		}
+		
+		function getRequisition(target) {
+			var tr = $(target).closest('tr.datagrid-row');
+			var rowIndex = parseInt(tr.attr('datagrid-row-index'));
+			$('#dg').datagrid('selectRow', rowIndex);
+			var row = $('#dg').datagrid('getSelected'); 
+			if (row){  
+				var order_id = row.procedure_order_id;
+				window.location.assign("./getlabrequisition?order_id=" + order_id);
+			}
+			
+			/* $.ajax({
+				type: "POST",
+				url: "./getlabrequisition",
+				data: {
+					order_id: order_id,
+					},
+				success: function(data) {
+					//alert('ok');
+				},
+				error: function(data){
+					alert("Ajax Fail");
+				}
+			});	 */		
+		}
+
 </script>
 	
 	<table id="dg" title="Pending Review"  style="width:auto;height:450px"
 			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq, procedure_report_id"
 			rownumbers="true" fitColumns="true" singleSelect="true">
-			
-		<thead>
+
+			<thead>
 			<tr>
-				<th colspan="2"><?php echo xlt('Order'); ?></th>
+				<th colspan="5"><?php echo xlt('Order'); ?></th>
 				<th colspan="4"><?php echo xlt('Report'); ?></th>
 				<th colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
 				<th colspan="1"><?php echo xlt('Action'); ?></th>
 			</tr>
 			
 			<tr>
+			
 			<!-- Start Order -->
-				<th data-options="field:'date_ordered',width:50"><?php echo xlt('Date'); ?></th> 
-				<!--<th field="date_ordered" width="50" editor="{type:'validatebox',options:{required:true}}">Date</th>-->
-				<!--<th field="procedure_name" width="80" editor="{type:'validatebox',options:{required:true}}"><?php echo xlt('Procedure Name'); ?></th>-->
+				<th data-options="field:'date_ordered',width:50"><?php echo xlt('Date'); ?></th>
 				<th data-options="field:'procedure_name',width:80"><?php echo xlt('Procedure Name'); ?></th> 
+				<th data-options="field:'order_id',width:35, align:'center'"><?php echo xlt('Ord'); ?></th> 
+				<th data-options="field:'patient_name',width:50"><?php echo xlt('Patient'); ?></th><th data-options="field:'encounter_id',width:50, align:'center'"><?php echo xlt('Encounter'); ?></th>
 			<!-- End Order -->
 			
 			<!-- Start Report -->
 				<th field="date_report" width="70" editor="datebox"><?php echo xlt('Reported'); ?></th>
 				<th field="date_collected" width="70" editor="datebox"><?php echo xlt('Ext Time Collected'); ?></th>
 				<th field="specimen_num" width="40" editor="text"><?php echo xlt('Specimen'); ?></th>
-				<!--<th field="report_status" width="30" editor="combobox" ><?php echo xlt('Status'); ?></th>-->
 				<th data-options="field:'report_status',width:50,  
 							formatter:function(value,row){  
 								return row.report_status;  
@@ -65,7 +98,6 @@
 			<!-- Start Results and Recommendations -->
 				<th field="result_code" width="40" editor="text"><?php echo xlt('Code'); ?></th>
 				<th field="result_text" width="80" editor="text"><?php echo xlt('Name'); ?></th>
-				<!--<th field="abnormal" width="40" editor="combobox">Abn</th>-->
 				<th data-options="field:'abnormal',width:40,  
 							formatter:function(value,row){  
 								return row.abnormal;  
@@ -82,9 +114,6 @@
 				<th field="result" width="40" editor="text"><?php echo xlt('Value'); ?></th>
 				<th field="pt2_units" width="50" editor="text"><?php echo xlt('Units'); ?></th>
 				<th field="pt2_range" width="50" editor="text"><?php echo xlt('Range'); ?></th>
-				<!--<th data-options="field:'comments',width:50">
-					<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()"></a>
-				</th>-->
 				<th data-options="field:'comments',title:'',width:50,align:'center',
 							formatter:function(value,row,index){
 								if (row.editing){
@@ -98,53 +127,20 @@
 								}
 							}">Comments</th>
 
-				<!--<th field="comments" width="50" editor="text">
-				&#63;
-				<a href="javascript:void(0)" class="easyui-linkbutton" onclick="$('#w').window('open')">Open</a>
-				</th>-->
-				
 			<!-- End Results and Recommendations -->
-
-			<!-- Start Action -->
-				<!--<th data-options="field:'result',title:'',width:100,align:'center',
-									formatter:function(value,row,index){
-										if (row.editing){
-											var s = '<a></a> ';
-											var c = '<a></a>';
-											return s+c;
-										} else {
-											var e = '';
-											var d = '<a><img src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Requisition'); ?> /></a>';
-											return e+d;
-										}
-									}"><?php echo xlt('Result'); ?></th>
-															
-															
-				<th data-options="field:'result',title:'',width:100,align:'center',
-									formatter:function(value,row,index){
-										if (row.editing){
-											var s = '<a></a> ';
-											var c = '<a></a>';
-											return s+c;
-										} else {
-											var m = '';
-											var n = '<a><img src=http://192.168.1.241<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> /></a>';
-											return m+n;
-										}
-									}"><?php echo xlt('Requisition'); ?></th>-->
-				<th data-options="field:'requisition',title:'',width:80,align:'left',
+				<th data-options="field:'action',title:'',width:80,align:'left',
 							formatter:function(value,row,index){
 								if (row.editing){
 									var s = '<a></a> ';
 									var c = '<a></a>';
 									return s+c;
 								} else {
-									var e = '<a href=\'./getlabresult\' style=padding-left:10px; ><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a><span style=padding-right:30px;>&nbsp;</span>';
-									var d = '<a href=\'./getlabrequisition \' ><img src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+									var e = '<a href=\'#\' onClick=\'getResult(this);\'  style=padding-left:10px; ><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a><span style=padding-right:30px;>&nbsp;</span>';
+									var d = '<a href=\'#\' onClick=\'getRequisition(this);\' ><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
 									return e+d;
 								}
 							}">
-							
+
 							<span  style="width: 20px; border-right: 1px dotted #444;">
 							<?php echo xlt('Result'); ?>
 							</span>
@@ -152,8 +148,7 @@
 							<?php echo xlt('Requisition'); ?></span>
 							
 							</th>
-			
-				
+		
 			<!-- End Action -->
 			</tr>
 		</thead>
@@ -167,7 +162,7 @@
 			Date From: <input class="easyui-datebox" style="width:80px" >
 			To: <input class="easyui-datebox" style="width:80px" >
 			Status: 
-			<select class="easyui-combobox"  panelHeight="auto" style="width:100px" >
+			<select class="easyui-combobox"  panelHeight="auto" style="width:100px" name='searchStatus'>
 				<option value="">--Select--</option>
 				<option value="final">Final</option>
 				<option value="review">Reviewed</option>

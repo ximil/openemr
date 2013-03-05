@@ -23,17 +23,18 @@ class LabTable extends AbstractTableGateway
 	public function listLabResult($data)
 	{	global $pid;
 		$flagSearch = 0;
-		if (isset($data['status']) && $data['status'] != '--Select--') { 
+//$data['status'] = '--Select--';
+//$data['dtFrom'] = '2013-02-26';
+//$data['dtTo'] = '2013-03-01';
+		if (isset($data['status']) && $data['status'] != '--Select--') {
 			$stats = $data['status'];
 			$flagSearch = 1;
 		}
-		if (isset($data['dtFrom'])) { 
+		if (isset($data['dtFrom'])) {
 			$dtFrom = $data['dtFrom'];
-			$flagSearch = 1;
 		}
-		if (isset($data['dtTo'])) { 
+		if (isset($data['dtTo'])) {
 			$dtTo = $data['dtTo'];
-			$flagSearch = 1;
 		}
 		
 		if (isset($data['dtFrom']) && $data['dtTo'] == '') {
@@ -51,7 +52,7 @@ class LabTable extends AbstractTableGateway
 		$facilities = array();
 		//$pid = 1;
 		$selects =
-			"po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
+			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
 			"pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
 			"pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
 			"pr.report_status, pr.review_status";
@@ -60,10 +61,11 @@ class LabTable extends AbstractTableGateway
 			"JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
 			"LEFT JOIN procedure_type AS pt1 ON pt1.lab_id = po.lab_id AND pt1.procedure_code = pc.procedure_code " .
 			"LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
-			"pr.procedure_order_seq = pc.procedure_order_seq";
+			"pr.procedure_order_seq = pc.procedure_order_seq 
+			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id";
 		$groupby = '';
 		if ($flagSearch == 1) {
-			$groupby = "GROUP By po.procedure_order_id";
+			//$groupby = "GROUP By po.procedure_order_id";
 		}
 		
 		$orderby =
@@ -75,10 +77,10 @@ class LabTable extends AbstractTableGateway
 			$where .= " AND pr.report_status='$stats'";
 		}
 		if ($dtFrom) {
-			$where .= " AND DATE(po.date_ordered) BETWEEN '$dtFrom' AND '$dtTo'";
+			$where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
 		}
 
-		$sql = "SELECT DISTINCT $selects " .
+		$sql = "SELECT $selects " .
 					  "FROM procedure_order AS po " .
 					  "$joins " .
 					  "WHERE po.patient_id = '$pid' AND $where " .
@@ -107,12 +109,12 @@ class LabTable extends AbstractTableGateway
 			}
 			
 			$selects = "pt2.procedure_type, pt2.procedure_code, pt2.units AS pt2_units, " .
-				"pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
-				"pt2.name AS name, pt2.description, pt2.seq AS seq, " .
-				"ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
-				"ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
+						"pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
+						"pt2.name AS name, pt2.description, pt2.seq AS seq, " .
+						"ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
+						"ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
 			$pt2cond = "pt2.parent = $order_type_id AND " .
-				"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
+						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
 			$pscond = "ps.procedure_report_id = $report_id";
 
 			$joincond = "ps.result_code = pt2.procedure_code";
@@ -125,9 +127,9 @@ class LabTable extends AbstractTableGateway
 							"LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
 							"WHERE $pscond) " .
 							"ORDER BY seq, name, procedure_type_id, result_code";
-
+//echo "\r\n>>>>>>>>>>>>".$query."<<<<<<<<<<<<<\r\n";
 			$rres = sqlStatement($query);
-			
+
 			while ($rrow = sqlFetchArray($rres)) {
 				$restyp_code      = empty($rrow['procedure_code'  ]) ? '' : $rrow['procedure_code'];
 				$restyp_type      = empty($rrow['procedure_type'  ]) ? '' : $rrow['procedure_type'];
@@ -155,6 +157,9 @@ class LabTable extends AbstractTableGateway
 					$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
 					$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
 					$arr1[$i]['report_status'] = $report_status ? $report_status: '';
+					$arr1[$i]['order_id'] = $order_id ? $order_id: '';
+					$arr1[$i]['patient_name'] = $row['patient_name'];
+					$arr1[$i]['encounter_id'] = $row['encounter_id'];
 				}
 				$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
 				$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
@@ -182,7 +187,7 @@ class LabTable extends AbstractTableGateway
 		}
 		//$arr = array_merge($arr1, $arr2);
 		//$arr = array_merge_recursive($arr1, $arr2);
-		//print_r($arr1);//print_r($arr2);
+		//echo '<pre>'; print_r($arr1);//print_r($arr2);
 		return $arr1;
 	}
 	
@@ -470,9 +475,7 @@ class LabTable extends AbstractTableGateway
 	* Vipin
 	*/
 	public function getColumns($result)
-    {
-            //print_r($result);
-            
+        {
             $result_columns	= array();
             foreach($result as $res)
             {			
@@ -485,7 +488,7 @@ class LabTable extends AbstractTableGateway
                 break;
             }
             return $result_columns;
-    }
+        }
     
     public function columnMapping($column_map,$result_col)
     {
@@ -1323,6 +1326,25 @@ class LabTable extends AbstractTableGateway
         $writer->toFile("module/Lab/".$xmlfile,$config);
         
         return $xmlfile;
+        
+    }
+    
+    public function getClientCredentials($proc_order_id)
+    {
+        $sql_proc   = "SELECT lab_id FROM procedure_order WHERE procedure_order_id = ? ";
+          
+        $proc_value_arr = array();
+        
+        $proc_value_arr['procedure_order_id']   = $proc_order_id;
+        
+        $res_proc   = sqlQuery($sql_proc,$proc_value_arr);
+        
+        //$lab_id     = $res_proc['lab_id'];
+        
+        $sql_cred   = "SELECT  login, password  FROM procedure_providers WHERE ppid = ? ";
+        $res_cred   = sqlQuery($sql_cred,$res_proc);
+        
+        return $res_cred;
         
     }
 }
