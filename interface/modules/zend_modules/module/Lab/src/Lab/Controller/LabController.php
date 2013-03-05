@@ -37,9 +37,34 @@ class LabController extends AbstractActionController
             $form->setData($request->getPost());
             if ($form->isValid()) {
 		$Lab->exchangeArray($form->getData());
-                $this->getLabTable()->saveLab($Lab);
+                $clientorder_id = $this->getLabTable()->saveLab($Lab);
+	    /////////////////////////////////////////////////////////////////////////////////////////////////////
+            $xmlfile = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
+        //print_r($xmlfile);
+        
+        $fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
             
-                return $this->redirect()->toRoute('result');
+        $xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
+        
+        //return false;
+    
+        ini_set("soap.wsdl_cache_enabled","0");
+	
+	ini_set('memory_limit', '-1');
+        
+        $options = array(
+                            'location' => "http://192.168.1.139/webserver/lab_server.php",
+                            'uri'      => "urn://zhhealthcare/lab"
+                        );
+
+	$client = new Client(null,$options);
+        
+        $client_id      = "1";
+        $lab_id         = $request->getPost('lab_id');
+        
+        $result = $client->importOrder($client_id,$clientorder_id,$lab_id,$xmlstring);
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //return $this->redirect()->toRoute('result');
             }
 	    else {
 		echo 'invalid ..';
@@ -326,7 +351,7 @@ class LabController extends AbstractActionController
 
 	$client = new Client(null,$options);
         //echo "<br>REQUISITION RESULT <br>";
-        $result = $client->getLabRequisition(1,1);       //CLIENT ID, CLIENT ORDER ID   
+        $result = $client->getLabRequisition(1,101);       //CLIENT ID, CLIENT ORDER ID   
         
         //echo $result;
         
@@ -361,7 +386,7 @@ class LabController extends AbstractActionController
 
 	$client = new Client(null,$options);
         //echo "<br>LAB RESULT <br>";
-        $result = $client->getLabResult(1,1);  //CLIENT ID, CLIENT ORDER ID     
+        $result = $client->getLabResult(1,101);  //CLIENT ID, CLIENT ORDER ID     
         
         //print_r($result);
         
