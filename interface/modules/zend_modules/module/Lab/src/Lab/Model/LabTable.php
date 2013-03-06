@@ -382,994 +382,987 @@ class LabTable extends AbstractTableGateway
 
     public function getColumns($result)
     {
-	//print_r($result);
+	$result_columns	= array();
+	foreach($result as $res)
+	{			
+	    foreach($res as $key => $val)
+	    {
+		if(is_numeric($key))
+		    continue;
+		$result_columns[] = $key;							
+	    }
+	    break;
+	}
+	return $result_columns;
+    }
+
+    public function columnMapping($column_map,$result_col)
+    {
+	//print_r($result_columns);
+	//print_r($column_map);		
 	
-	/**
-	* Vipin
-	*/
-	 public function getColumns($result)
-        {
-            $result_columns	= array();
-            foreach($result as $res)
-            {			
-                foreach($res as $key => $val)
-                {
-                    if(is_numeric($key))
-                        continue;
-                    $result_columns[] = $key;							
-                }
-                break;
-            }
-            return $result_columns;
-        }
-    
-        public function columnMapping($column_map,$result_col)
-        {
-            //print_r($result_columns);
-            //print_r($column_map);		
-            
-            $table_sql	= array();
-            
-            foreach($result_col as $col)
-            {
-                if(($column_map[$col]['colconfig']['table'] <> "")&&($column_map[$col]['colconfig']['column'] <> ""))
-                {
-                    $table 		= $column_map[$col]['colconfig']['table'];
-                    $column 	= $column_map[$col]['colconfig']['column'];
-                    
-                    $table_sql[$table][$col]	= $column;				
-                }
-                //echo "<br>";
-            }
-            return $table_sql;		
-        }
+	$table_sql	= array();
+	
+	foreach($result_col as $col)
+	{
+	    if(($column_map[$col]['colconfig']['table'] <> "")&&($column_map[$col]['colconfig']['column'] <> ""))
+	    {
+		$table 		= $column_map[$col]['colconfig']['table'];
+		$column 	= $column_map[$col]['colconfig']['column'];
+		
+		$table_sql[$table][$col]	= $column;				
+	    }
+	    //echo "<br>";
+	}
+	return $table_sql;		
+    }
         
-        function importData($result,$column_map)
-        {
-                
-            $result_col	= $this->getColumns($result);
-            
-            $mapped_tables	= $this->columnMapping($column_map,$result_col);
-            
-            //$count = 0;
-            //$insert = 0;
-            foreach($result as $res)
-            {
-                foreach($result_col as $col)
-                {
-                    ${$col}	= $res[$col];//GETTING IMPORTED VALUES
-                }
-                //echo "<br>";
-                foreach($mapped_tables as $table => $columns)
-                {
-                    //echo $key." => ".$val;
-                    //$table_name	= $table;
-                    
-                    $value_arr	= array();
-                    foreach($columns as $servercol => $column)
-                    {
-                        if($column_map[$servercol]['colconfig']['insert_id'] == "1")
-                        {
-                            $$servercol = $insert_id;
-                        }
-                        if($column_map[$servercol]['colconfig']['value_map'] == "1")
-                        {
-                            //$value_map['test_status_indicator'] 	= array('A' => "1", 'I' => "0");
-                            $$servercol = $column_map[$servercol]['valconfig'][$$servercol];
-                        }
-                        $value_arr[] =  ${$servercol};
-                    }
-                    
-                    $fields		= implode(",",$columns);
-                    $col_count	= count($columns);
-                    $field_vars	= "$".implode(",$",$columns);
-                    $params		= rtrim(str_repeat("?,",$col_count),",");
-                    
-                    echo "<br>".$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
-                    echo "<br>".$insert_id 	= sqlInsert($sql,$value_arr);
-                    print_r($value_arr);
-                }
-                //echo "<br>";
-                $count++;
-                
-                if($count > 5)
-                {
-                    break;
-                }
-            }
-        }
-    
-        function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
-        {
-                
-            $result_col	= $this->getColumns($result);
-            
-            $mapped_tables	= $this->columnMapping($column_map,$result_col);
-            
-            //$count = 0;
-            //$insert = 0;
-            foreach($result as $res)
-            {
-                foreach($result_col as $col)
-                {
-                    ${$col}	= $res[$col];//GETTING IMPORTED VALUES
-                }
-                //echo "<br>";
-                foreach($mapped_tables as $table => $columns)
-                {
-                    //echo $key." => ".$val;
-                    //$table_name	= $table;
-                    
-                    $value_arr	= array();
-                    foreach($columns as $servercol => $column)
-                    {
-                        if($column_map[$servercol]['colconfig']['insert_id'] == "1")
-                        {
-                            $$servercol = $insert_id;
-                        }
-                        if($column_map[$servercol]['colconfig']['value_map'] == "1")
-                        {
-                            //$value_map['test_status_indicator'] 	= array('A' => "1", 'I' => "0");
-                            $$servercol = $column_map[$servercol]['valconfig'][$$servercol];
-                        }
-                        $value_arr[$column] =  ${$servercol};
-                    }
-                    
-                    $fields	= implode(",",$columns);
-                    $col_count	= count($columns);
-                    $field_vars	= "$".implode(",$",$columns);
-                    $params	= rtrim(str_repeat("?,",$col_count),",");
-                    
-                    
-                    /*
-                     $column_map['contraints']   = array('procedure_type' => array(
-                                                                            'primary_key' => array(
-                                                                                                    '0'     => "lab_id",
-                                                                                                    '1'     => "procedure_code"))); 
-                    */
-                    //$sql_check  = "SELECT COUNT(*) FROM ".$table." WHERE  ";
-                   //print_r($constraint_arr);
-                    $primary_key_arr = $column_map['contraints'][$table]['primary_key'];
-                    if(count($primary_key_arr) > 0)
-                    {
-                        //print_r($primary_key_arr);
-                        $index      = 0;
-                        $condition  = "";
-                        $check_value_arr    = array();
-                        foreach($primary_key_arr as $pkey)
-                        {
-                            if($index > 0)
-                            {
-                                $condition.=" AND ";
-                            }
-                            $condition.=" ".$pkey." = ? ";
-                            $index++;
-                            $check_value_arr[$pkey] = $value_arr[$pkey];
-                        }
-                        
-                        $update_arr = array();
-                        foreach($value_arr as $key => $val)
-                        {
-                            if(! in_array($key,$primary_key_arr))
-                            {                            
-                                $update_arr[$key] = $val;
-                            }
-                        }
-                        //echo "<br>PK Array :";
-                        //print_r($primary_key_arr);
-                        //echo "<br>Update Array :";
-                        //print_r($update_arr);
-                        //echo "<br>Check Array :";
-                        //print_r($check_value_arr);
-                        
-                        $update_combined_arr    = array_merge($update_arr,$check_value_arr);
-                        //echo "<br>Merged Array :";
-                        //print_r($update_combined_arr);
-                        //echo "------------------------------------------------------------------------------------------------";
-                        $index      = 0;
-                        //$condition  = "";
-                        $update_key_arr    = array();
-                        
-                        foreach($update_arr as $upkey => $upval)
-                        {
-                            $update_key_arr[]   = $upkey;
-                        }
-                        
-                        $update_expr    = implode(" = ? ,",$update_key_arr);
-                        $update_expr.=" = ? ";
-                        
-                        
-                        /*echo "<br>".*/$sql_check  = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
-                        $pat_data_check         = sqlQuery($sql_check,$check_value_arr);
-                        //print_r($check_value_arr);
-                       
-                        //echo "<br>";
-                        //print_r($update_combined_arr);
-                        if($pat_data_check['data_exists'])
-                        {
-                            /*echo "<br>".*/$sqlup	= "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
-                            $pat_data_check         = sqlQuery($sqlup,$update_combined_arr);
-                            
-                        }
-                        else
-                        {
-                            /*echo "<br>".*/$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
-                            /*echo "<br>".*/$insert_id 	= sqlInsert($sql,$value_arr);
-                        }
-                    }
-                    
-                    
-                    //print_r($value_arr);
-                }
-                //echo "<br>";
-                $count++;
-                
-                //if($count > 5)
-                //{
-                //    break;
-                //}
-            }
-        }
-    
-        //$constraint_arr
-        
-        public function pullCompandianTestConfig()
-        {
-            /*$column_map['test_id'] 		        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "procedure_type_id",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));*/
-            
-            $column_map['test_lab_id']	                = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "lab_id",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_lab_entity'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "seccol",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "1"));
-            $column_map['test_code'] 		        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "procedure_code",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_specimen_state'] 	        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "specimen",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_unit_code'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_status_indicator'] 	= array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "activity",
-                                                                                'value_map' => "1",
-                                                                                'insert_id' => "0"),
-                                                            'valconfig' => array(
-                                                                                'A'         => "1",
-                                                                                'I'         => "0"));
-            
-            $column_map['test_insert_datetime'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_description'] 	        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "description",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_specimen_type'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_service_code'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_lab_site'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_update_datetime'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_update_user'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_code_suffix'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_is_profile'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_is_select'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_performing_site'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_flag'] 		        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_is_not_billed'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_is_billed_only'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_reflex_count'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_conforming_indicator']    = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_alternate_temp'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_pap_indicator'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['test_last_updatetime'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            
-            
-            $column_map['contraints']   = array('procedure_type' => array(
-                                                                            'primary_key' => array(
-                                                                                                    '0'     => "lab_id",
-                                                                                                    '1'     => "procedure_code"))); 
-            
-            return $column_map;
-        }
-        
-        //    public function listLabLocation($inputString)
-        //    {
-        //	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
-        //	$result = sqlStatement($sql);
-        //	$i = 0;
-        //	
-        //	while($row=sqlFetchArray($res)) {
-        //		$rows[$i] = array (
-        //			'value' => $row['ppid'],
-        //			'label' => $row['name'],
-        //		);
-        //		$i++;
-        //	}
-        //	return $rows;
-        //
-        //    }
-        
-        
+    function importData($result,$column_map)
+    {
+	    
+	$result_col	= $this->getColumns($result);
+	
+	$mapped_tables	= $this->columnMapping($column_map,$result_col);
+	
+	//$count = 0;
+	//$insert = 0;
+	foreach($result as $res)
+	{
+	    foreach($result_col as $col)
+	    {
+		${$col}	= $res[$col];//GETTING IMPORTED VALUES
+	    }
+	    //echo "<br>";
+	    foreach($mapped_tables as $table => $columns)
+	    {
+		//echo $key." => ".$val;
+		//$table_name	= $table;
+		
+		$value_arr	= array();
+		foreach($columns as $servercol => $column)
+		{
+		    if($column_map[$servercol]['colconfig']['insert_id'] == "1")
+		    {
+			$$servercol = $insert_id;
+		    }
+		    if($column_map[$servercol]['colconfig']['value_map'] == "1")
+		    {
+			//$value_map['test_status_indicator'] 	= array('A' => "1", 'I' => "0");
+			$$servercol = $column_map[$servercol]['valconfig'][$$servercol];
+		    }
+		    $value_arr[] =  ${$servercol};
+		}
+		
+		$fields		= implode(",",$columns);
+		$col_count	= count($columns);
+		$field_vars	= "$".implode(",$",$columns);
+		$params		= rtrim(str_repeat("?,",$col_count),",");
+		
+		echo "<br>".$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
+		echo "<br>".$insert_id 	= sqlInsert($sql,$value_arr);
+		print_r($value_arr);
+	    }
+	    //echo "<br>";
+	    $count++;
+	    
+	    if($count > 5)
+	    {
+		break;
+	    }
+	}
+    }
 
-        public function pullCompandianAoeConfig()
-        {
-            /*$column_map['aoe_id'] 		        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "procedure_type_id",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));*/
-            
-            $column_map['aoe_lab_id']	                = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "lab_id",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_lab_entity'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "seccol",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "1"));
-            $column_map['aoe_performing_site'] 		        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "procedure_code",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_unit_code'] 	        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "specimen",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_test_code'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_analyte_code'] 	= array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "activity",
-                                                                                'value_map' => "1",
-                                                                                'insert_id' => "0"),
-                                                            'valconfig' => array(
-                                                                                'A'         => "1",
-                                                                                'I'         => "0"));            
-            
-            $column_map['aoe_question'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_status_indicator'] 	        = array('colconfig' => array(
-                                                                                'table'     => "procedure_type",
-                                                                                'column'    => "description",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_profile_component'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_insert_datetime'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_question_description'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_suffix'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_result_filter'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_test_code_mneumonic'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_test_flag'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            
-            $column_map['aoe_upadate_datetime'] 		= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_update_user'] 	= array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_component_name'] 		        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            $column_map['aoe_last_updatetime'] 	        = array('colconfig' => array(
-                                                                                'table'     => "",
-                                                                                'column'    => "",
-                                                                                'value_map' => "0",
-                                                                                'insert_id' => "0"));
-            
-            
-            $column_map['contraints']   = array('procedure_type' => array(
-                                                                            'primary_key' => array(
-                                                                                                    '0'     => "lab_id",
-                                                                                                    '1'     => "procedure_code"))); 
-            
-            return $column_map;
-        }
-        
-        
-        public function mapcolumntoxml()
-        {
-            $xmlconfig['patient_data']          = array(                      
-                                                    'column_map'    => array(
-                                                                            'pid'           => 'pid',
-                                                                            'fname'         => 'patient_fname',
-                                                                            'DOB'           => 'patient_dob',
-                                                                            'sex'           => 'patient_sex',
-                                                                            'lname'         => 'patient_lname',
-                                                                            'street'        => 'patient_street_address',
-                                                                            'city'          => 'patient_city',
-                                                                            'state'         => 'patient_state',
-                                                                            'postal_code'   => 'patient_postal_code',
-                                                                            'country_code'  => 'patient_country',
-                                                                            'phone_contact' => 'patient_phone_no',
-                                                                            'ss'            => 'patient_ss_no' 
-                                                                             ),
-                                                    'primary_key'   => array('pid'),
-                                                    'match_value'   => array('pid'));
-            
-            
-            $xmlconfig['insurance_data']        = array(
-                                                    'column_map'    => array(
-                                                                            'type'                      => '#type',
-                                                                            'provider'                  => '#provider',
-                                                                            'subscriber_street'         => '$type_insurance_address',
-                                                                            'subscriber_city'           => '$type_insurance_city',
-                                                                            'subscriber_state'          => '$type_insurance_state',
-                                                                            'subscriber_postal_code'    => '$type_insurance_postal_code',
-                                                                            'subscriber_lname'          => '$type_insurance_person_lname',
-                                                                            'subscriber_fname'          => '$type_insurance_person_fname',
-                                                                            'subscriber_relationship'   => '$type_insurance_person_relationship',
-                                                                            'policy_number'             => '$type_insurance_policy_no',
-                                                                                                                           
-                                                                            'group_number'              => '$type_insurance_group_no',
-                                                                            'subscriber_mname'          => '$type_insurance_person_mname',
-                                                                            
-                                                                            ),
-                                                    'primary_key'   => array('pid'),
-                                                    'match_value'   => array('pid'),
-                                                    'child_table'   => 'insurance_companies');
-            
-            $xmlconfig['insurance_companies']    = array(
-                                                    'column_map'    => array(
-                                                                            'name'  => '$type_insurance_name'                                                
-                                                                            ),
-                                                    'primary_key'   => array('id'),
-                                                    'match_value'   => array('provider'),
-                                                    'parent_table'  => 'insurance_data'
-                                                    );            
-            return $xmlconfig;
-        }
-    
-    
-    
-        public function mapxmltocolumn()
-        {
-            
-        }
-    
-    
-        /*public function generateOrderXml($patient_id,$xmlfile)
-        {
-            $sql1   = "SELECT pid, fname, DOB, sex, lname, street, city, state, postal_code, country_code, phone_contact, ss FROM patient_data WHERE pid = ?";
-            
-            $sql2   = "SELECT type,  provider,subscriber_street,subscriber_city,subscriber_state,subscriber_postal_code,group_number,subscriber_lname,
-                        subscriber_mname,subscriber_fname,subscriber_relationship,policy_number FROM insurance_data WHERE pid = ?";
-            
-            $sql3   = "SELECT name FROM insurance_companies WHERE id = ? ";//id = '$provider'
-            
-            $pat_data   = sqlQuery($sql1,array($patient_id));
-            
-            $pid                        = $pat_data['pid'];
-            $patient_fname              = $pat_data['fname'];
-            $patient_dob                = $pat_data['DOB'];
-            $patient_sex                = $pat_data['sex'];
-            $patient_lname              = $pat_data['lname'];
-            $patient_street_address     = $pat_data['street'];
-            $patient_city               = $pat_data['city'];
-            $patient_state              = $pat_data['state'];
-            $patient_postal_code        = $pat_data['postal_code'];
-            $patient_country            = $pat_data['country_code'];
-            $patient_phone_no           = $pat_data['phone_contact'];
-            $patient_ss_no              = $pat_data['ss'];
-            
-            $patient_internal_comments  = "";
-            
-            $ins_res    = sqlStatement($sql2,array($patient_id));
-            
-            while($ins_data = sqlFetchArray($ins_res))
-            {
-                if($ins_data['type'] == "primary")
-                {
-                    $provider   = $ins_data['provider'];
-                    $comp_data  = sqlQuery($sql3,array($provider));
-                    
-                    $primary_insurance_name                     = $comp_data['name'];
-                    
-                    $primary_insurance_address                  = $ins_data['subscriber_street'];
-                    $primary_insurance_city                     = $ins_data['subscriber_city'];
-                    $primary_insurance_state                    = $ins_data['subscriber_state'];
-                    $primary_insurance_postal_code              = $ins_data['subscriber_postal_code'];
-                    $primary_insurance_person_lname             = $ins_data['subscriber_lname'];
-                    $primary_insurance_person_fname             = $ins_data['subscriber_fname'];
-                    $primary_insurance_person_relationship      = $ins_data['subscriber_relationship'];
-                    $primary_insurance_policy_no                = $ins_data['policy_number'];
-                    
-                    $primary_insurance_coverage_type            = "";
-                }
-                if($ins_data['type'] == "secondary")
-                {
-                    $provider   = $ins_data['provider'];
-                    $comp_data  = sqlQuery($sql3,array($provider));
-                    
-                    $secondary_insurance_name                   = $comp_data['name'];
-                    
-                    $secondary_insurance_address                = $ins_data['subscriber_street'];
-                    $secondary_insurance_city                   = $ins_data['subscriber_city'];
-                    $secondary_insurance_state                  = $ins_data['subscriber_state'];
-                    $secondary_insurance_postal_code            = $ins_data['subscriber_postal_code'];
-                    $secondary_insurance_group_no               = $ins_data['group_number'];
-                    $secondary_insurance_person_lname           = $ins_data['subscriber_lname'];
-                    $secondary_insurance_person_fname           = $ins_data['subscriber_fname'];
-                    $secondary_insurance_person_mname           = $ins_data['subscriber_mname'];
-                    $secondary_insurance_person_relationship    = $ins_data['subscriber_relationship'];
-                    $secondary_insurance_policy_no              = $ins_data['policy_number'];
-                    
-                    $secondary_insurance_coverage_type        = "";       
-                }
-            }
-            
-            $primary_insurance_person_address       = "";    
-            $primary_insurance_person_city          = "";    
-            $primary_insurance_person_state         = "";    
-            $primary_insurance_person_postal_code   = "";    
-            
-            $guarantor_lname                        = "";    
-            $guarantor_fname                        = "";    
-            $guarantor_address                      = "";    
-            $guarantor_city                         = "";    
-            $guarantor_state                        = "";    
-            $guarantor_postal_code                  = "";    
-            $guarantor_phone_no                     = "";    
-            $guarantor_mname                        = "";    
-            $ordering_provider_id                   = "";    
-            $ordering_provider_lname                = "";    
-            $ordering_provider_fname                = "";    
-            $observation_request_comments           = "";
-            
-            $xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
-                                "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
-                                "primary_insurance_name","primary_insurance_address","primary_insurance_city","primary_insurance_state",
-                                "primary_insurance_postal_code","primary_insurance_person_lname","primary_insurance_person_fname",
-                                "primary_insurance_person_relationship","primary_insurance_policy_no","primary_insurance_coverage_type",
-                                "secondary_insurance_name","secondary_insurance_address","secondary_insurance_city","secondary_insurance_state",
-                                "secondary_insurance_postal_code","secondary_insurance_group_no","secondary_insurance_person_lname",
-                                "secondary_insurance_person_fname","secondary_insurance_person_relationship","secondary_insurance_policy_no",
-                                "secondary_insurance_coverage_type", "primary_insurance_person_address","primary_insurance_person_city",
-                                "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
-                                "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
-                                "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-                                "ordering_provider_fname","observation_request_comments");
-            
-            $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_".gmdate('YmdHis').".xml";
-            
-            $config = new Config\Config(array(), true);
-            $config->Order = array();
-            
-            foreach($xmltag_arr as $tag)
-            {
-                $tag_val = (${$tag} <> "") ? ${$tag} : "";
-                $config->Order->$tag = $tag_val;            
-            }
-            
-            $writer = new Config\Writer\Xml();
-            //echo $writer->toString($config);
-            $writer->toFile("module/Lab/".$xmlfile,$config);
-            
-            return $xmlfile;
-        }*/
-        
-        
-        public function generateSQLSelect($pid,$cofig_arr,$table)
-        {
-            //echo "hi".$pid." ,".$table;
-            
-           // $cofig_arr11  = $this->mapcolumntoxml();
-           //print_r($cofig_arr);
-            
-            //echo "<br>...";
-            //continue;
-            //print_r($cofig_arr[$table]);
-            
-            global $type;
-            global $provider;
-         
-            $table_name         = $table;
-                
-            $col_map_arr        = $cofig_arr[$table]['column_map'];        
-            $primary_key_arr    = $cofig_arr[$table]['primary_key'];        
-            $match_value_arr    = $cofig_arr[$table]['match_value'];
-            
-            $index  = 0;
-            $condition  = "";
-            foreach($primary_key_arr as $pkey)
-            {
-                if($index > 0)
-                {
-                    $condition.=" AND ";
-                }
-                $condition.=" ".$pkey." = ? ";
-                $index++;
-            }
-            
-            $index  = 0;
-            foreach($match_value_arr as $param)
-            {
-                $match_value_arr[$index] = ${$match_value_arr[$index]};
-                $index++;
-            }
-            
-            $col_arr        = array();
-            foreach($col_map_arr as $col => $tag)
-            {
-                $col_arr[]  = $col;
-            }
-            $cols   = implode(",",$col_arr);
-            
-            /*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
-            //echo "<br>Param :";
-            //print_r($match_value_arr);
-            $res   = sqlStatement($sql,$match_value_arr);
-            
-            return $res;    
-        }
-        
-        
-        public function generateSQLInsert($pid,$cofig_arr,$table)
-        {
-            global $type;
-            global $provider;
-         
-            $table_name         = $table;
-                
-            $col_map_arr        = $cofig_arr[$table]['column_map'];        
-            $primary_key_arr    = $cofig_arr[$table]['primary_key'];        
-            $match_value_arr    = $cofig_arr[$table]['match_value'];
-            
-            $index  = 0;
-            $condition  = "";
-            foreach($primary_key_arr as $pkey)
-            {
-                if($index > 0)
-                {
-                    $condition.=" AND ";
-                }
-                $condition.=" ".$pkey." = ? ";
-                $index++;
-            }
-            
-            $index  = 0;
-            foreach($match_value_arr as $param)
-            {
-                $match_value_arr[$index] = ${$match_value_arr[$index]};
-                $index++;
-            }
-            $col_arr        = array();
-            foreach($col_map_arr as $col => $tag)
-            {
-                $col_arr[]  = $col;
-            }
-            $cols   = implode(",",$col_arr);
-            /*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
-            $res   = sqlStatement($sql,$match_value_arr);
-            return $res;    
-        }
-        
-        
-        
-        public function generateOrderXml($pid,$lab_id,$xmlfile)
-        {
-            //echo $pid;
-            global $type;
-            global $provider;
-            //exit;
-            //XML TAGS NOT CONFIGURED YET
-            $primary_insurance_coverage_type        = "";
-            $secondary_insurance_coverage_type      = "";       
-            $primary_insurance_person_address       = "";    
-            $primary_insurance_person_city          = "";    
-            $primary_insurance_person_state         = "";    
-            $primary_insurance_person_postal_code   = "";    
-            
-            $guarantor_lname                        = "";    
-            $guarantor_fname                        = "";    
-            $guarantor_address                      = "";    
-            $guarantor_city                         = "";    
-            $guarantor_state                        = "";    
-            $guarantor_postal_code                  = "";    
-            $guarantor_phone_no                     = "";    
-            $guarantor_mname                        = "";    
-            $ordering_provider_id                   = "1122334455";    
-            $ordering_provider_lname                = "Allan";    
-            $ordering_provider_fname                = "Joseph";    
-            $observation_request_comments           = "";
-            
-            $xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
-                                "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
-                                "primary_insurance_name","primary_insurance_address","primary_insurance_city","primary_insurance_state",
-                                "primary_insurance_postal_code","primary_insurance_person_lname","primary_insurance_person_fname",
-                                "primary_insurance_person_relationship","primary_insurance_policy_no","primary_insurance_coverage_type",
-                                "secondary_insurance_name","secondary_insurance_address","secondary_insurance_city","secondary_insurance_state",
-                                "secondary_insurance_postal_code","secondary_insurance_group_no","secondary_insurance_person_lname",
-                                "secondary_insurance_person_fname","secondary_insurance_person_relationship","secondary_insurance_policy_no",
-                                "secondary_insurance_coverage_type", "primary_insurance_person_address","primary_insurance_person_city",
-                                "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
-                                "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
-                                "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-                                "ordering_provider_fname","observation_request_comments");
-            
-            $cofig_arr  = $this->mapcolumntoxml();
-           
-            $sl = 0;
-            foreach($cofig_arr as $table => $config)
-            {
-              
-                //SKIP THE DATA FETCHING OF CHILD TABLE ROWS , WHICH WILL AUTOMATICALLY FETCH IF IT IS CONFIGURED, IT HAS PARENT TABLE
-                if($config['parent_table'] <> "")
-                {
-                    continue;
-                }            
-                $col_map_arr    = $cofig_arr[$table]['column_map'];
-                $res            = $this->generateSQLSelect($pid,$cofig_arr,$table);
-                
-                while($data = sqlFetchArray($res))
-                {
-                    $global_arr  = array();                
-                    $check_arr   = array();
-                    
-                    foreach($col_map_arr as $col => $tag)
-                    {   
-						if(substr($tag,0,1)== "#")
-						{
-							$tag            = substr($tag,1,strlen($tag));
-							$check_arr[]    = "$".$tag;
-						}
-						foreach($check_arr as $check)
-						{
-							if(strstr($tag,$check))
-							{
-								$tag = str_replace($check,${ltrim($check,"$")},$tag);                               
-							}
-						}
-						
-						$$tag   = $data[$col];
-                    }
+    function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
+    {
+	    
+	$result_col	= $this->getColumns($result);
+	
+	$mapped_tables	= $this->columnMapping($column_map,$result_col);
+	
+	//$count = 0;
+	//$insert = 0;
+	foreach($result as $res)
+	{
+	    foreach($result_col as $col)
+	    {
+		${$col}	= $res[$col];//GETTING IMPORTED VALUES
+	    }
+	    //echo "<br>";
+	    foreach($mapped_tables as $table => $columns)
+	    {
+		//echo $key." => ".$val;
+		//$table_name	= $table;
+		
+		$value_arr	= array();
+		foreach($columns as $servercol => $column)
+		{
+		    if($column_map[$servercol]['colconfig']['insert_id'] == "1")
+		    {
+			$$servercol = $insert_id;
+		    }
+		    if($column_map[$servercol]['colconfig']['value_map'] == "1")
+		    {
+			//$value_map['test_status_indicator'] 	= array('A' => "1", 'I' => "0");
+			$$servercol = $column_map[$servercol]['valconfig'][$$servercol];
+		    }
+		    $value_arr[$column] =  ${$servercol};
+		}
+		
+		$fields	= implode(",",$columns);
+		$col_count	= count($columns);
+		$field_vars	= "$".implode(",$",$columns);
+		$params	= rtrim(str_repeat("?,",$col_count),",");
+		
+		
+		/*
+		 $column_map['contraints']   = array('procedure_type' => array(
+									'primary_key' => array(
+												'0'     => "lab_id",
+												'1'     => "procedure_code"))); 
+		*/
+		//$sql_check  = "SELECT COUNT(*) FROM ".$table." WHERE  ";
+	       //print_r($constraint_arr);
+		$primary_key_arr = $column_map['contraints'][$table]['primary_key'];
+		if(count($primary_key_arr) > 0)
+		{
+		    //print_r($primary_key_arr);
+		    $index      = 0;
+		    $condition  = "";
+		    $check_value_arr    = array();
+		    foreach($primary_key_arr as $pkey)
+		    {
+			if($index > 0)
+			{
+			    $condition.=" AND ";
+			}
+			$condition.=" ".$pkey." = ? ";
+			$index++;
+			$check_value_arr[$pkey] = $value_arr[$pkey];
+		    }
+		    
+		    $update_arr = array();
+		    foreach($value_arr as $key => $val)
+		    {
+			if(! in_array($key,$primary_key_arr))
+			{                            
+			    $update_arr[$key] = $val;
+			}
+		    }
+		    //echo "<br>PK Array :";
+		    //print_r($primary_key_arr);
+		    //echo "<br>Update Array :";
+		    //print_r($update_arr);
+		    //echo "<br>Check Array :";
+		    //print_r($check_value_arr);
+		    
+		    $update_combined_arr    = array_merge($update_arr,$check_value_arr);
+		    //echo "<br>Merged Array :";
+		    //print_r($update_combined_arr);
+		    //echo "------------------------------------------------------------------------------------------------";
+		    $index      = 0;
+		    //$condition  = "";
+		    $update_key_arr    = array();
+		    
+		    foreach($update_arr as $upkey => $upval)
+		    {
+			$update_key_arr[]   = $upkey;
+		    }
+		    
+		    $update_expr    = implode(" = ? ,",$update_key_arr);
+		    $update_expr.=" = ? ";
+		    
+		    
+		    /*echo "<br>".*/$sql_check  = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
+		    $pat_data_check         = sqlQuery($sql_check,$check_value_arr);
+		    //print_r($check_value_arr);
+		   
+		    //echo "<br>";
+		    //print_r($update_combined_arr);
+		    if($pat_data_check['data_exists'])
+		    {
+			/*echo "<br>".*/$sqlup	= "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
+			$pat_data_check         = sqlQuery($sqlup,$update_combined_arr);
+			
+		    }
+		    else
+		    {
+			/*echo "<br>".*/$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
+			/*echo "<br>".*/$insert_id 	= sqlInsert($sql,$value_arr);
+		    }
+		}
+		
+		
+		//print_r($value_arr);
+	    }
+	    //echo "<br>";
+	    $count++;
+	    
+	    //if($count > 5)
+	    //{
+	    //    break;
+	    //}
+	}
+    }
 
-                    if($config['child_table'] <> "")
-                    {
-                        $res2    = $this->generateSQLSelect($pid,$cofig_arr,$config['child_table']);
-                        $fetch2_count    = 0; 
-                        while($data1 = sqlFetchArray($res2))
-                        {
-                            $col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
-                            
-                            foreach($col_map_arr2 as $col => $tag)
-                            {   
-								foreach($check_arr as $check)
-								{
-									if(strstr($tag,$check))
-									{
-										$tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
-									}
-								}
-								
-								if(substr($tag,0,1)== "#")
-								{
-									$tag = substr($tag,1,strlen($tag));                        
-								}
-								
-								$$tag   = $data1[$col];
-                            }
-                        }                    
-                    }
-                }
-            }
-            
-            //GETTING VALUES OF ADDITIONAL XML TAGS
-            $sql_misc   = "SELECT  tb1.procedure_order_id, diagnoses, procedure_code,  procedure_suffix
-                                FROM procedure_order tb1 LEFT JOIN procedure_order_code tb2 ON tb1.procedure_order_id = tb2.procedure_order_id 
-                            WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
-              
-            $misc_value_arr = array();
-            
-            $misc_value_arr['patient_id']   = $pid;
-            $misc_value_arr['order_status'] = "pending";
-            $misc_value_arr['lab_id']       = $lab_id;
-            
-            $res_misc   = sqlStatement($sql_misc,$misc_value_arr);
-            
-            $test_count = 0;
-            $diag_count = 0;       
-            
-            $return_arr = array();
-            $i=0;
-            
-            while($data_misc = sqlFetchArray($res_misc))
-            {
-                $result_xml = "";
-                $test_id    = "";
-                $diagnosis  = "";
-            
-                $i++;
-                if(($data_misc['procedure_code'] <> "") && ($data_misc['procedure_suffix'] <> ""))
-                {
-                    $test_id    .= $data_misc['procedure_code']."#!#".$data_misc['procedure_suffix'];                                
-                    $test_count++;
-                }
-                
-                $test_id.="#--#";
-                
-                if($data_misc['diagnoses'] <> "")
-                {
-                    $diag_arr    =  explode(";",$data_misc['diagnoses']);
-                    
-                    foreach($diag_arr as $diag)
-                    {
-                        $diag_array     =  explode(":",$diag,2);
-                        $diagnosis     .= $diag_array[1];
-                        $diagnosis     .= "#@#";
-                    }                
-                    $diag_count++;
-                }
-                $diagnosis.="#~@~#";
-                
-                $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_new_".gmdate('YmdHis')."_".$data_misc['procedure_order_id'].".xml";
-                $result_xml	= '<?xml version="1.0" encoding="UTF-8"?><Order>';
-                
-                foreach($xmltag_arr as $tag)
-                {
-                    $tag_val = (trim(${$tag}) <> "") ? ${$tag} : "";
-                    $config->Order->$tag    = $tag_val;
-                    $result_xml.= '<'.$tag.'>'.$tag_val.'</'.$tag.'>';
-                }
-                
-                $result_xml.= '<test_id>'.$test_id.'</test_id>';
-                $result_xml.= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
-                $result_xml.= '<test_aoe>'.$test_aoe.'</test_aoe>';
-                
-                $result_xml.= '</Order>';
-                
-                $return_arr[]   = array (
-                                         'order_id'     => $data_misc['procedure_order_id'],
-                                         'xmlstring'    => $result_xml
-                                        );
-            }
-            return $return_arr;        
-        }
-        
-        public function getClientCredentials($proc_order_id)
-        {
-            $sql_proc   = "SELECT lab_id FROM procedure_order 
-									WHERE procedure_order_id = ? ";
-            $proc_value_arr = array();
-            $proc_value_arr['procedure_order_id']   = $proc_order_id;
-            $res_proc   = sqlQuery($sql_proc,$proc_value_arr);
-            $sql_cred   = "SELECT  login, password  
-									FROM procedure_providers 
-									WHERE ppid = ? ";
-            $res_cred   = sqlQuery($sql_cred,$res_proc);
-            return $res_cred;        
-        }
+    //$constraint_arr
+    
+    public function pullCompandianTestConfig()
+    {
+	/*$column_map['test_id'] 		        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "procedure_type_id",
+									    'value_map' => "0",
+									    'insert_id' => "0"));*/
+	
+	$column_map['test_lab_id']	                = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "lab_id",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_lab_entity'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "seccol",
+									    'value_map' => "0",
+									    'insert_id' => "1"));
+	$column_map['test_code'] 		        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "procedure_code",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_specimen_state'] 	        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "specimen",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_unit_code'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_status_indicator'] 	= array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "activity",
+									    'value_map' => "1",
+									    'insert_id' => "0"),
+							'valconfig' => array(
+									    'A'         => "1",
+									    'I'         => "0"));
+	
+	$column_map['test_insert_datetime'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_description'] 	        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "description",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_specimen_type'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_service_code'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_lab_site'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_update_datetime'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_update_user'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_code_suffix'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_is_profile'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_is_select'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_performing_site'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_flag'] 		        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_is_not_billed'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_is_billed_only'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_reflex_count'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_conforming_indicator']    = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_alternate_temp'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_pap_indicator'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['test_last_updatetime'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	
+	
+	$column_map['contraints']   = array('procedure_type' => array(
+									'primary_key' => array(
+												'0'     => "lab_id",
+												'1'     => "procedure_code"))); 
+	
+	return $column_map;
+    }
+    
+    //    public function listLabLocation($inputString)
+    //    {
+    //	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
+    //	$result = sqlStatement($sql);
+    //	$i = 0;
+    //	
+    //	while($row=sqlFetchArray($res)) {
+    //		$rows[$i] = array (
+    //			'value' => $row['ppid'],
+    //			'label' => $row['name'],
+    //		);
+    //		$i++;
+    //	}
+    //	return $rows;
+    //
+    //    }
+    
+    
+
+    public function pullCompandianAoeConfig()
+    {
+	/*$column_map['aoe_id'] 		        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "procedure_type_id",
+									    'value_map' => "0",
+									    'insert_id' => "0"));*/
+	
+	$column_map['aoe_lab_id']	                = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "lab_id",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_lab_entity'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "seccol",
+									    'value_map' => "0",
+									    'insert_id' => "1"));
+	$column_map['aoe_performing_site'] 		        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "procedure_code",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_unit_code'] 	        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "specimen",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_test_code'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_analyte_code'] 	= array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "activity",
+									    'value_map' => "1",
+									    'insert_id' => "0"),
+							'valconfig' => array(
+									    'A'         => "1",
+									    'I'         => "0"));            
+	
+	$column_map['aoe_question'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_status_indicator'] 	        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "description",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_profile_component'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_insert_datetime'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_question_description'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_suffix'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_result_filter'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_test_code_mneumonic'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_test_flag'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	
+	$column_map['aoe_upadate_datetime'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_update_user'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_component_name'] 		        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_last_updatetime'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	
+	
+	$column_map['contraints']   = array('procedure_type' => array(
+									'primary_key' => array(
+												'0'     => "lab_id",
+												'1'     => "procedure_code"))); 
+	
+	return $column_map;
+    }
+    
+    
+    public function mapcolumntoxml()
+    {
+	$xmlconfig['patient_data']          = array(                      
+						'column_map'    => array(
+									'pid'           => 'pid',
+									'fname'         => 'patient_fname',
+									'DOB'           => 'patient_dob',
+									'sex'           => 'patient_sex',
+									'lname'         => 'patient_lname',
+									'street'        => 'patient_street_address',
+									'city'          => 'patient_city',
+									'state'         => 'patient_state',
+									'postal_code'   => 'patient_postal_code',
+									'country_code'  => 'patient_country',
+									'phone_contact' => 'patient_phone_no',
+									'ss'            => 'patient_ss_no' 
+									 ),
+						'primary_key'   => array('pid'),
+						'match_value'   => array('pid'));
+	
+	
+	$xmlconfig['insurance_data']        = array(
+						'column_map'    => array(
+									'type'                      => '#type',
+									'provider'                  => '#provider',
+									'subscriber_street'         => '$type_insurance_address',
+									'subscriber_city'           => '$type_insurance_city',
+									'subscriber_state'          => '$type_insurance_state',
+									'subscriber_postal_code'    => '$type_insurance_postal_code',
+									'subscriber_lname'          => '$type_insurance_person_lname',
+									'subscriber_fname'          => '$type_insurance_person_fname',
+									'subscriber_relationship'   => '$type_insurance_person_relationship',
+									'policy_number'             => '$type_insurance_policy_no',
+														       
+									'group_number'              => '$type_insurance_group_no',
+									'subscriber_mname'          => '$type_insurance_person_mname',
+									
+									),
+						'primary_key'   => array('pid'),
+						'match_value'   => array('pid'),
+						'child_table'   => 'insurance_companies');
+	
+	$xmlconfig['insurance_companies']    = array(
+						'column_map'    => array(
+									'name'  => '$type_insurance_name'                                                
+									),
+						'primary_key'   => array('id'),
+						'match_value'   => array('provider'),
+						'parent_table'  => 'insurance_data'
+						);            
+	return $xmlconfig;
+    }
+
+
+
+    public function mapxmltocolumn()
+    {
+	
+    }
+
+
+    /*public function generateOrderXml($patient_id,$xmlfile)
+    {
+	$sql1   = "SELECT pid, fname, DOB, sex, lname, street, city, state, postal_code, country_code, phone_contact, ss FROM patient_data WHERE pid = ?";
+	
+	$sql2   = "SELECT type,  provider,subscriber_street,subscriber_city,subscriber_state,subscriber_postal_code,group_number,subscriber_lname,
+		    subscriber_mname,subscriber_fname,subscriber_relationship,policy_number FROM insurance_data WHERE pid = ?";
+	
+	$sql3   = "SELECT name FROM insurance_companies WHERE id = ? ";//id = '$provider'
+	
+	$pat_data   = sqlQuery($sql1,array($patient_id));
+	
+	$pid                        = $pat_data['pid'];
+	$patient_fname              = $pat_data['fname'];
+	$patient_dob                = $pat_data['DOB'];
+	$patient_sex                = $pat_data['sex'];
+	$patient_lname              = $pat_data['lname'];
+	$patient_street_address     = $pat_data['street'];
+	$patient_city               = $pat_data['city'];
+	$patient_state              = $pat_data['state'];
+	$patient_postal_code        = $pat_data['postal_code'];
+	$patient_country            = $pat_data['country_code'];
+	$patient_phone_no           = $pat_data['phone_contact'];
+	$patient_ss_no              = $pat_data['ss'];
+	
+	$patient_internal_comments  = "";
+	
+	$ins_res    = sqlStatement($sql2,array($patient_id));
+	
+	while($ins_data = sqlFetchArray($ins_res))
+	{
+	    if($ins_data['type'] == "primary")
+	    {
+		$provider   = $ins_data['provider'];
+		$comp_data  = sqlQuery($sql3,array($provider));
+		
+		$primary_insurance_name                     = $comp_data['name'];
+		
+		$primary_insurance_address                  = $ins_data['subscriber_street'];
+		$primary_insurance_city                     = $ins_data['subscriber_city'];
+		$primary_insurance_state                    = $ins_data['subscriber_state'];
+		$primary_insurance_postal_code              = $ins_data['subscriber_postal_code'];
+		$primary_insurance_person_lname             = $ins_data['subscriber_lname'];
+		$primary_insurance_person_fname             = $ins_data['subscriber_fname'];
+		$primary_insurance_person_relationship      = $ins_data['subscriber_relationship'];
+		$primary_insurance_policy_no                = $ins_data['policy_number'];
+		
+		$primary_insurance_coverage_type            = "";
+	    }
+	    if($ins_data['type'] == "secondary")
+	    {
+		$provider   = $ins_data['provider'];
+		$comp_data  = sqlQuery($sql3,array($provider));
+		
+		$secondary_insurance_name                   = $comp_data['name'];
+		
+		$secondary_insurance_address                = $ins_data['subscriber_street'];
+		$secondary_insurance_city                   = $ins_data['subscriber_city'];
+		$secondary_insurance_state                  = $ins_data['subscriber_state'];
+		$secondary_insurance_postal_code            = $ins_data['subscriber_postal_code'];
+		$secondary_insurance_group_no               = $ins_data['group_number'];
+		$secondary_insurance_person_lname           = $ins_data['subscriber_lname'];
+		$secondary_insurance_person_fname           = $ins_data['subscriber_fname'];
+		$secondary_insurance_person_mname           = $ins_data['subscriber_mname'];
+		$secondary_insurance_person_relationship    = $ins_data['subscriber_relationship'];
+		$secondary_insurance_policy_no              = $ins_data['policy_number'];
+		
+		$secondary_insurance_coverage_type        = "";       
+	    }
+	}
+	
+	$primary_insurance_person_address       = "";    
+	$primary_insurance_person_city          = "";    
+	$primary_insurance_person_state         = "";    
+	$primary_insurance_person_postal_code   = "";    
+	
+	$guarantor_lname                        = "";    
+	$guarantor_fname                        = "";    
+	$guarantor_address                      = "";    
+	$guarantor_city                         = "";    
+	$guarantor_state                        = "";    
+	$guarantor_postal_code                  = "";    
+	$guarantor_phone_no                     = "";    
+	$guarantor_mname                        = "";    
+	$ordering_provider_id                   = "";    
+	$ordering_provider_lname                = "";    
+	$ordering_provider_fname                = "";    
+	$observation_request_comments           = "";
+	
+	$xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
+			    "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
+			    "primary_insurance_name","primary_insurance_address","primary_insurance_city","primary_insurance_state",
+			    "primary_insurance_postal_code","primary_insurance_person_lname","primary_insurance_person_fname",
+			    "primary_insurance_person_relationship","primary_insurance_policy_no","primary_insurance_coverage_type",
+			    "secondary_insurance_name","secondary_insurance_address","secondary_insurance_city","secondary_insurance_state",
+			    "secondary_insurance_postal_code","secondary_insurance_group_no","secondary_insurance_person_lname",
+			    "secondary_insurance_person_fname","secondary_insurance_person_relationship","secondary_insurance_policy_no",
+			    "secondary_insurance_coverage_type", "primary_insurance_person_address","primary_insurance_person_city",
+			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
+			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
+			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
+			    "ordering_provider_fname","observation_request_comments");
+	
+	$xmlfile = ($xmlfile <> "") ? $xmlfile : "order_".gmdate('YmdHis').".xml";
+	
+	$config = new Config\Config(array(), true);
+	$config->Order = array();
+	
+	foreach($xmltag_arr as $tag)
+	{
+	    $tag_val = (${$tag} <> "") ? ${$tag} : "";
+	    $config->Order->$tag = $tag_val;            
+	}
+	
+	$writer = new Config\Writer\Xml();
+	//echo $writer->toString($config);
+	$writer->toFile("module/Lab/".$xmlfile,$config);
+	
+	return $xmlfile;
+    }*/
+    
+    
+    public function generateSQLSelect($pid,$cofig_arr,$table)
+    {
+	//echo "hi".$pid." ,".$table;
+	
+       // $cofig_arr11  = $this->mapcolumntoxml();
+       //print_r($cofig_arr);
+	
+	//echo "<br>...";
+	//continue;
+	//print_r($cofig_arr[$table]);
+	
+	global $type;
+	global $provider;
+     
+	$table_name         = $table;
+	    
+	$col_map_arr        = $cofig_arr[$table]['column_map'];        
+	$primary_key_arr    = $cofig_arr[$table]['primary_key'];        
+	$match_value_arr    = $cofig_arr[$table]['match_value'];
+	
+	$index  = 0;
+	$condition  = "";
+	foreach($primary_key_arr as $pkey)
+	{
+	    if($index > 0)
+	    {
+		$condition.=" AND ";
+	    }
+	    $condition.=" ".$pkey." = ? ";
+	    $index++;
+	}
+	
+	$index  = 0;
+	foreach($match_value_arr as $param)
+	{
+	    $match_value_arr[$index] = ${$match_value_arr[$index]};
+	    $index++;
+	}
+	
+	$col_arr        = array();
+	foreach($col_map_arr as $col => $tag)
+	{
+	    $col_arr[]  = $col;
+	}
+	$cols   = implode(",",$col_arr);
+	
+	/*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
+	//echo "<br>Param :";
+	//print_r($match_value_arr);
+	$res   = sqlStatement($sql,$match_value_arr);
+	
+	return $res;    
+    }
+    
+    
+    public function generateSQLInsert($pid,$cofig_arr,$table)
+    {
+	global $type;
+	global $provider;
+     
+	$table_name         = $table;
+	    
+	$col_map_arr        = $cofig_arr[$table]['column_map'];        
+	$primary_key_arr    = $cofig_arr[$table]['primary_key'];        
+	$match_value_arr    = $cofig_arr[$table]['match_value'];
+	
+	$index  = 0;
+	$condition  = "";
+	foreach($primary_key_arr as $pkey)
+	{
+	    if($index > 0)
+	    {
+		$condition.=" AND ";
+	    }
+	    $condition.=" ".$pkey." = ? ";
+	    $index++;
+	}
+	
+	$index  = 0;
+	foreach($match_value_arr as $param)
+	{
+	    $match_value_arr[$index] = ${$match_value_arr[$index]};
+	    $index++;
+	}
+	$col_arr        = array();
+	foreach($col_map_arr as $col => $tag)
+	{
+	    $col_arr[]  = $col;
+	}
+	$cols   = implode(",",$col_arr);
+	/*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
+	$res   = sqlStatement($sql,$match_value_arr);
+	return $res;    
+    }
+    
+    
+    
+    public function generateOrderXml($pid,$lab_id,$xmlfile)
+    {
+	//echo $pid;
+	global $type;
+	global $provider;
+	//exit;
+	//XML TAGS NOT CONFIGURED YET
+	$primary_insurance_coverage_type        = "";
+	$secondary_insurance_coverage_type      = "";       
+	$primary_insurance_person_address       = "";    
+	$primary_insurance_person_city          = "";    
+	$primary_insurance_person_state         = "";    
+	$primary_insurance_person_postal_code   = "";    
+	
+	$guarantor_lname                        = "";    
+	$guarantor_fname                        = "";    
+	$guarantor_address                      = "";    
+	$guarantor_city                         = "";    
+	$guarantor_state                        = "";    
+	$guarantor_postal_code                  = "";    
+	$guarantor_phone_no                     = "";    
+	$guarantor_mname                        = "";    
+	$ordering_provider_id                   = "1122334455";    
+	$ordering_provider_lname                = "Allan";    
+	$ordering_provider_fname                = "Joseph";    
+	$observation_request_comments           = "";
+	
+	$xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
+			    "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
+			    "primary_insurance_name","primary_insurance_address","primary_insurance_city","primary_insurance_state",
+			    "primary_insurance_postal_code","primary_insurance_person_lname","primary_insurance_person_fname",
+			    "primary_insurance_person_relationship","primary_insurance_policy_no","primary_insurance_coverage_type",
+			    "secondary_insurance_name","secondary_insurance_address","secondary_insurance_city","secondary_insurance_state",
+			    "secondary_insurance_postal_code","secondary_insurance_group_no","secondary_insurance_person_lname",
+			    "secondary_insurance_person_fname","secondary_insurance_person_relationship","secondary_insurance_policy_no",
+			    "secondary_insurance_coverage_type", "primary_insurance_person_address","primary_insurance_person_city",
+			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
+			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
+			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
+			    "ordering_provider_fname","observation_request_comments");
+	
+	$cofig_arr  = $this->mapcolumntoxml();
+       
+	$sl = 0;
+	foreach($cofig_arr as $table => $config)
+	{
+	  
+	    //SKIP THE DATA FETCHING OF CHILD TABLE ROWS , WHICH WILL AUTOMATICALLY FETCH IF IT IS CONFIGURED, IT HAS PARENT TABLE
+	    if($config['parent_table'] <> "")
+	    {
+		continue;
+	    }            
+	    $col_map_arr    = $cofig_arr[$table]['column_map'];
+	    $res            = $this->generateSQLSelect($pid,$cofig_arr,$table);
+	    
+	    while($data = sqlFetchArray($res))
+	    {
+		$global_arr  = array();                
+		$check_arr   = array();
+		
+		foreach($col_map_arr as $col => $tag)
+		{   
+					    if(substr($tag,0,1)== "#")
+					    {
+						    $tag            = substr($tag,1,strlen($tag));
+						    $check_arr[]    = "$".$tag;
+					    }
+					    foreach($check_arr as $check)
+					    {
+						    if(strstr($tag,$check))
+						    {
+							    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+						    }
+					    }
+					    
+					    $$tag   = $data[$col];
+		}
+
+		if($config['child_table'] <> "")
+		{
+		    $res2    = $this->generateSQLSelect($pid,$cofig_arr,$config['child_table']);
+		    $fetch2_count    = 0; 
+		    while($data1 = sqlFetchArray($res2))
+		    {
+			$col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
+			
+			foreach($col_map_arr2 as $col => $tag)
+			{   
+							    foreach($check_arr as $check)
+							    {
+								    if(strstr($tag,$check))
+								    {
+									    $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+								    }
+							    }
+							    
+							    if(substr($tag,0,1)== "#")
+							    {
+								    $tag = substr($tag,1,strlen($tag));                        
+							    }
+							    
+							    $$tag   = $data1[$col];
+			}
+		    }                    
+		}
+	    }
+	}
+	
+	//GETTING VALUES OF ADDITIONAL XML TAGS
+	$sql_misc   = "SELECT  tb1.procedure_order_id, diagnoses, procedure_code,  procedure_suffix
+			    FROM procedure_order tb1 LEFT JOIN procedure_order_code tb2 ON tb1.procedure_order_id = tb2.procedure_order_id 
+			WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
+	  
+	$misc_value_arr = array();
+	
+	$misc_value_arr['patient_id']   = $pid;
+	$misc_value_arr['order_status'] = "pending";
+	$misc_value_arr['lab_id']       = $lab_id;
+	
+	$res_misc   = sqlStatement($sql_misc,$misc_value_arr);
+	
+	$test_count = 0;
+	$diag_count = 0;       
+	
+	$return_arr = array();
+	$i=0;
+	
+	while($data_misc = sqlFetchArray($res_misc))
+	{
+	    $result_xml = "";
+	    $test_id    = "";
+	    $diagnosis  = "";
+	
+	    $i++;
+	    if(($data_misc['procedure_code'] <> "") && ($data_misc['procedure_suffix'] <> ""))
+	    {
+		$test_id    .= $data_misc['procedure_code']."#!#".$data_misc['procedure_suffix'];                                
+		$test_count++;
+	    }
+	    
+	    $test_id.="#--#";
+	    
+	    if($data_misc['diagnoses'] <> "")
+	    {
+		$diag_arr    =  explode(";",$data_misc['diagnoses']);
+		
+		foreach($diag_arr as $diag)
+		{
+		    $diag_array     =  explode(":",$diag,2);
+		    $diagnosis     .= $diag_array[1];
+		    $diagnosis     .= "#@#";
+		}                
+		$diag_count++;
+	    }
+	    $diagnosis.="#~@~#";
+	    
+	    $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_new_".gmdate('YmdHis')."_".$data_misc['procedure_order_id'].".xml";
+	    $result_xml	= '<?xml version="1.0" encoding="UTF-8"?><Order>';
+	    
+	    foreach($xmltag_arr as $tag)
+	    {
+		$tag_val = (trim(${$tag}) <> "") ? ${$tag} : "";
+		$config->Order->$tag    = $tag_val;
+		$result_xml.= '<'.$tag.'>'.$tag_val.'</'.$tag.'>';
+	    }
+	    
+	    $result_xml.= '<test_id>'.$test_id.'</test_id>';
+	    $result_xml.= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
+	    $result_xml.= '<test_aoe>'.$test_aoe.'</test_aoe>';
+	    
+	    $result_xml.= '</Order>';
+	    
+	    $return_arr[]   = array (
+				     'order_id'     => $data_misc['procedure_order_id'],
+				     'xmlstring'    => $result_xml
+				    );
+	}
+	return $return_arr;        
+    }
+    
+    public function getClientCredentials($proc_order_id)
+    {
+	$sql_proc   = "SELECT lab_id FROM procedure_order 
+								    WHERE procedure_order_id = ? ";
+	$proc_value_arr = array();
+	$proc_value_arr['procedure_order_id']   = $proc_order_id;
+	$res_proc   = sqlQuery($sql_proc,$proc_value_arr);
+	$sql_cred   = "SELECT  login, password  
+								    FROM procedure_providers 
+								    WHERE ppid = ? ";
+	$res_cred   = sqlQuery($sql_cred,$res_proc);
+	return $res_cred;        
+    }
 }
 ?>
 
