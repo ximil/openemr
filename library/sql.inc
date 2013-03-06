@@ -147,9 +147,33 @@ $GLOBALS['dbh'] = $database->_connectionID;
 if (!$disable_utf8_flag) {
  $success_flag = $database->Execute("SET NAMES 'utf8'");
   if (!$success_flag) {
-   error_log("PHP custom error: from openemr library/sql.inc  - Unable to set up UTF8 encoding with mysql database: ".getSqlLastError(), 0);
+   error_log("PHP custom error: from openemr library/sql.inc  - Unable to set up UTF8 encoding with mysql database: ".$database->ErrorMsg(), 0);
   }
-}
+    $recordset=$database->Execute("select * from globals where gl_name='time_zone'");
+    $rez = $recordset->FetchRow();
+    if($rez && $rez['gl_value'] !='server_default'){
+    try{
+    $dtz=new DateTimeZone($rez['gl_value']);
+    date_default_timezone_set($rez['gl_value']);
+    }
+    catch(Exception $e) {
+        error_log(" Cannot create DatetimeZone".$e->getMessage());
+    }
+    
+    $dateTimeLocale = new DateTime("now",$dtz);
+    $offSet=$dateTimeLocale->getOffset();
+    if(abs($offSet)!=0){
+    $tmp=gmdate("H:i",abs($offSet));
+    if($offSet < 0) $tmp="-".$tmp;
+    else $tmp="+".$tmp;
+    $success_flag = $database->Execute("SET time_zone='$tmp'");    
+    }
+  
+    if (!$success_flag && $offSet!=0){
+    error_log("PHP custom error: from openemr library/sql.inc  - Unable to set up session timeZone for mysql database: ".$database->ErrorMsg(), 0);
+    }
+  }
+ }
 
 // set up associations in adodb calls (not sure why above define
 //  command does not work)
