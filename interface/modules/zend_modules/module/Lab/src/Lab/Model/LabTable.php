@@ -10,6 +10,10 @@ use Zend\Db\Sql\Select;
 use Zend\Config;
 use Zend\Config\Writer;
 use Zend\Soap\Client;
+use Zend\InputFilter\Factory as InputFactory;
+use Zend\InputFilter\InputFilter;
+use Zend\InputFilter\InputFilterAwareInterface;
+use Zend\InputFilter\InputFilterInterface;
 
 class LabTable extends AbstractTableGateway
 {
@@ -416,14 +420,24 @@ class LabTable extends AbstractTableGateway
 			}
 		}
 	}
-    public function saveLab(Lab $lab)
+    public function saveLab(Lab $lab,$aoe)
     {
-        $procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
+	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
 		  diagnoses,patient_instructions,lab_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
 		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
 			"ICD9:".$lab->diagnoses,$lab->patient_instructions,$lab->lab_id));
-	sqlStatement("INSERT INTO procedure_order_code (procedure_order_id,procedure_order_seq,procedure_code,procedure_name,procedure_suffix)
-		     VALUES (?,?,?,?,?)",array($procedure_type_id,1,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
+	$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
+		     VALUES (?,?,?,?)",array($procedure_type_id,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
+	$fh = fopen("D:/AAOOEE.txt","a");
+	fwrite($fh,print_r($aoe,1));
+	foreach($aoe as $ProcedureOrder=>$QuestionArr){
+	    if($ProcedureOrder==$lab->procedurecode){
+		foreach($QuestionArr as $Question=>$Answer){
+		    sqlStatement("INSERT INTO procedure_answers (procedure_order_id,procedure_order_seq,question_code,answer) VALUES (?,?,?,?)",
+		    array($procedure_type_id,$seq,$Question,$Answer));
+		}
+	    }
+	}
 	return $procedure_type_id;
     }
     
@@ -450,41 +464,45 @@ class LabTable extends AbstractTableGateway
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
-	    $arr[$tmp['procedure_type_id']] = $tmp['name'] . '-' . $tmp['procedure_code']. '-' . $tmp['suffix'];
+	    $arr[] =  htmlspecialchars($tmp['procedure_type_id'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['procedure_code'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['suffix'],ENT_QUOTES).'|-|'.htmlspecialchars($tmp['name'],ENT_QUOTES);
 	}
 	return $arr;
     }
     
     public function listAOE($procedureCode,$labId){
-	$sql = "SELECT * FROM procedure_questions WHERE lab_id=? AND procedure_code=? AND activity=1";
+	$sql = "SELECT * FROM procedure_questions WHERE lab_id=? AND procedure_code=? AND activity=1 ORDER BY seq ASC";
 	$result = sqlStatement($sql,array($labId,$procedureCode));
 	$arr = array();
 	$i = 0;
+	//$inputFilter = new InputFilter();
+	//$factory     = new InputFactory();
+
+    //$form->setInputFilter($inputFilter);
 	while($tmp = sqlFetchArray($result)) {
-	    $arr[] = $tmp['question_text'];
+	//    $inputFilter->add($factory->createInput(array(
+	//	'name'     => 'AOE_'.$procedureCode."_".$tmp['question_code']
+	//    )));
+	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES);
 	}
 	return $arr;
     }
-	
-	/**
-	* Vipin
-	*/
-	public function getColumns($result)
+
+    public function getColumns($result)
     {
-            //print_r($result);
-            
-            $result_columns	= array();
-            foreach($result as $res)
-            {			
-                foreach($res as $key => $val)
-                {
-                    if(is_numeric($key))
-                        continue;
-                    $result_columns[] = $key;							
-                }
-                break;
-            }
-            return $result_columns;
+	//print_r($result);
+	
+	$result_columns	= array();
+	foreach($result as $res)
+	{			
+	    foreach($res as $key => $val)
+	    {
+		if(is_numeric($key))
+		    continue;
+		$result_columns[] = $key;							
+	    }
+	    break;
+	}
+	return $result_columns;
     }
     
     public function columnMapping($column_map,$result_col)

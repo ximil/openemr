@@ -23,9 +23,13 @@
 			<td><?php echo xlt('Order Date');?>:</td>
 			<td><?php echo $this->formRow($form->get('orderdate'));?></td>
 		</tr>
-		<tr>
+		<tr id="internaltime">
 			<td><?php echo xlt('Internal Time Collected');?>:</td>
 			<td><?php echo $this->formRow($form->get('timecollected'));?></td>
+		</tr>
+		<tr>
+			<td><?php echo xlt('Specimen Collected');?>:</td>
+			<td><?php echo $this->formRadio($form->get('specimencollected'), 'prepend');?></td>
 		</tr>
 		<tr>
 			<td><?php echo xlt('Priority');?>:</td>
@@ -50,6 +54,10 @@
 			<?php echo $this->formRow($form->get('procedure_code'));?>
 			<?php echo $this->formRow($form->get('procedure_suffix'));?>
 			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td id="AOE" style="display:none"></td>
 		</tr>
 		
 	</table>

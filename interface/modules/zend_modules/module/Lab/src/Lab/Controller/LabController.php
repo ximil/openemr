@@ -33,37 +33,32 @@ class LabController extends AbstractActionController
         $request = $this->getRequest();
         if ($request->isPost()) {
 	    $Lab = new Lab();
-	    //$form->setInputFilter($Lab->getInputFilter());
+	    $aoeArr = array();
+	    foreach($request->getPost() as $key=>$val){
+		if(substr($key,0,4)==='AOE_'){
+		    $NewArr = explode("_",$key);
+		    $aoeArr[$NewArr[1]][$NewArr[2]] = $val;
+		}
+	    }
             $form->setData($request->getPost());
-            if ($form->isValid()) {
+	    if ($form->isValid()) {
 		$Lab->exchangeArray($form->getData());
-                $clientorder_id = $this->getLabTable()->saveLab($Lab);
+                $clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
 	    /////////////////////////////////////////////////////////////////////////////////////////////////////
-            $xmlfile = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
-        //print_r($xmlfile);
-        
-        $fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
-            
-        $xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
-        
-        //return false;
-    
-        ini_set("soap.wsdl_cache_enabled","0");
-	
-	ini_set('memory_limit', '-1');
-        
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
-                            'uri'      => "urn://zhhealthcare/lab"
-                        );
-
-	$client = new Client(null,$options);
-        
-        $client_id      = "1";
-        $lab_id         = $request->getPost('lab_id');
-        
-        $result = $client->importOrder($client_id,$clientorder_id,$lab_id,$xmlstring);
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	    $xmlfile = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
+	    $fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
+	    $xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
+	    ini_set("soap.wsdl_cache_enabled","0");
+	    ini_set('memory_limit', '-1');
+	    $options = array(
+				'location' => "http://192.168.1.139/webserver/lab_server.php",
+				'uri'      => "urn://zhhealthcare/lab"
+			    );
+	    $client = new Client(null,$options);
+	    $client_id      = "1";
+	    $lab_id         = $request->getPost('lab_id');
+	    $result = $client->importOrder($client_id,$clientorder_id,$lab_id,$xmlstring);
+	    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //return $this->redirect()->toRoute('result');
             }
 	    else {
@@ -96,53 +91,24 @@ class LabController extends AbstractActionController
     public function searchAction()
     {	
 	$request 	= $this->getRequest();
+	$response = $this->getResponse();
 	$inputString 	= $request->getPost('inputValue');
 	$dependentId 	= $request->getPost('dependentId');
 	
 	if ($request->isPost()) {
 	    if($request->getPost('type') == 'getProcedures' ){ 
 		$procedures = $this->getProcedures($inputString,$dependentId);
-		$data = new JsonModel($procedures);
-		//$data = json_encode($procedures);
-		return $data;
+		$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'procedureArray' => $procedures)));
+		return $response;
 	    }
 	    if($request->getPost('type') == 'loadAOE'){
 		$AOE = $this->getAOE($inputString,$dependentId);
-		$data = new JsonModel($AOE);
-		return $data;
+		$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'aoeArray' => $AOE)));
+		return $response;
 	    }
 	}
     }
-    public function search11Action()
-    {
-	//$fh = fopen("D:/AOE3.txt","a");
-	//fwrite($fh,"gfgzGGGGGGG\r\n");
-	$request 	= $this->getRequest();
-	$inputString 	= $request->getPost('inputValue');
-	$dependentId 	= $request->getPost('dependentId');
-	$viewModel = new ViewModel();
-    //$viewModel->setTemplate('module/controller/action');
-    $viewModel->setTerminal(true);
     
-	//$fh = fopen("D:/AOE.txt","a");
-		//fwrite($fh,"gfgzGGGGGGG\r\n");
-		//fwrite($fh,print_r($request->getPost(),1));
-	if ($request->isPost()) {
-	    if($request->getPost('type') == 'getProcedures' ){ 
-		$procedures = $this->getProcedures($inputString,$dependentId);
-		$data = new JsonModel($procedures);
-		//$data = json_encode($procedures);
-		return $data;
-	    }
-	    if($request->getPost('type') == 'loadAOE'){
-		//$fh = fopen("D:/AOE.txt","a");
-		//fwrite($fh,"gfgzG");
-		$AOE = $this->getAOE($inputString,$dependentId);
-		$data = new JsonModel($AOE);
-		return $data;
-	    }
-	}
-    }
     
     public function getProcedures($inputString,$labId)
     {
