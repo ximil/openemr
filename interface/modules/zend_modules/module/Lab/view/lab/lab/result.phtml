@@ -9,7 +9,7 @@
 			});
 		});
 		
-		function doSearch(){
+		function doSearch(){alert($('#acpro_inp1').val());
 			$('#dg').edatagrid('load',{  
 				status: $("input[name=searchStatus]").val(),
 				dtFrom: $('#acpro_inp1').val(),
@@ -77,19 +77,21 @@
 			<!-- End Order -->
 			
 			<!-- Start Report -->
-				<th field="date_report" width="70" editor="datebox"><?php echo xlt('Reported'); ?></th>
-				<th field="date_collected" width="70" editor="datebox"><?php echo xlt('Ext Time Collected'); ?></th>
+				<th field="date_report" width="70" editor="{type:'datebox',options:{required:true}}"><?php echo xlt('Reported'); ?></th>
+				<th field="date_collected" editor="{type:'datebox'}"  width="70" ><?php echo xlt('Ext Time Collected'); ?></th>
+				<!--<th class="easyui-datetimebox" name="birthday"   
+        data-options="field='date_collected',required:true,showSeconds:false" value="3/4/2010 2:3" style="width:150px"></th>-->
 				<th field="specimen_num" width="40" editor="text"><?php echo xlt('Specimen'); ?></th>
-				<th data-options="field:'report_status',width:50,  
+				<th data-options="field:'report_status',width:60,  
 							formatter:function(value,row){  
 								return row.report_status;  
 							},  
 							editor:{  
 								type:'combobox',  
 								options:{  
-									valueField:'status',  
-									textField:'status',  
-									url:'<?php echo $this->basePath(); ?>/../module/Lab/view/lab/lab/status.json',  
+									valueField:'option_id',  
+									textField:'title',  
+									url:'./getLabStatus',  
 									required:false  
 								} 
 							}"><?php echo xlt('Status'); ?></th>
@@ -105,9 +107,9 @@
 							editor:{  
 								type:'combobox',  
 								options:{  
-									valueField:'abnid',  
-									textField:'abn',  
-									url:'<?php echo $this->basePath(); ?>/../module/Lab/view/lab/lab/abn.json',  
+									valueField:'option_id',  
+									textField:'title',  
+									url:'./getLabAbnormal',  
 									required:false  
 								} 
 							}"><?php echo xlt('Abn'); ?></th>
@@ -162,16 +164,8 @@
 			Date From: <input class="easyui-datebox" style="width:80px" >
 			To: <input class="easyui-datebox" style="width:80px" >
 			Status: 
-			<select class="easyui-combobox"  panelHeight="auto" style="width:100px" name='searchStatus'>
-				<option value="">--Select--</option>
-				<option value="final">Final</option>
-				<option value="review">Reviewed</option>
-				<option value="prelim">Preliminary</option>
-				<option value="cancel">Canceled</option>
-				<option value="error">Error</option>
-				<option value="correct">Corrected</option>
-			</select>
-		  
+			<input id="cc" class="easyui-combobox" name="searchStatus" 
+    data-options="valueField:'option_id',textField:'title',url:'./getLabStatus?opt=s'" />
 			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">Search</a>
 
 		</div>
