@@ -329,3 +329,11 @@ CREATE TABLE IF NOT EXISTS `direct_message_log` (
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM;
 #EndIf
+
+#IfMissingColumn lists modifydate
+ALTER TABLE `lists` ADD COLUMN `modifydate` TIMESTAMP;
+#EndIf
+
+#IfMissingColumn code_types ct_problem
+ALTER TABLE `code_types` ADD COLUMN `ct_problem` TINYINT(1) DEFAULT '0';
+#EndIf

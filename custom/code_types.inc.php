@@ -32,6 +32,8 @@
  *             9 for storing codes in external SNOMED (RF1) Procedure Term tables
  *             10 for storing codes in external SNOMED (RF2) Procedure Term tables (for future)
  *  term     - 1 if this code type is used as a clinical term
+ *  problem  - 1 for ICD9, ICD10, SNOMED, else 0
+ *  
  *  </pre>
  *
  * Copyright (C) 2006-2010 Rod Roark <rod@sunsetsystems.com>
@@ -74,7 +76,8 @@ while ($ctrow = sqlFetchArray($ctres)) {
     'external'=> $ctrow['ct_external'],
     'claim' => $ctrow['ct_claim'],
     'proc' => $ctrow['ct_proc'],
-    'term' => $ctrow['ct_term']
+    'term' => $ctrow['ct_term'],
+    'problem'=> $ctrow['ct_problem']
   );
   if ($default_search_type === '') $default_search_type = $ctrow['ct_key'];
 }
@@ -168,6 +171,7 @@ $cd_external_options = array(
   '1' => xl('ICD10 Diagnosis'),
   '6' => xl('ICD10 Procedure/Service'),
   '2' => xl('SNOMED (RF1) Diagnosis'),
+  '3' => xl('SNOMED (RF2) Diagnosis'),
   '7' => xl('SNOMED (RF1) Clinical Term'),
   '9' => xl('SNOMED (RF1) Procedure')    
 );
@@ -272,6 +276,11 @@ function collect_codetypes($category,$return_format="array") {
   }
   else if ($category == "active") {
    if ($ct_arr['active']) {
+    array_push($return,$ct_key);
+   }
+  }
+  else if ($category == "medical_problem") {
+   if ($ct_arr['problem']) {
     array_push($return,$ct_key);
    }
   }
