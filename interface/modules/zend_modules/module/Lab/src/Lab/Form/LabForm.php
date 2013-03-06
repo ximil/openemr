@@ -52,7 +52,8 @@ class LabForm extends Form
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
 		'id' => 'lab_id',
-		'required' => 'required'
+		'required' => 'required',
+		'onchange' => 'checkLab(this.value)',
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -89,6 +90,7 @@ class LabForm extends Form
             'name' => 'timecollected',
             'attributes' => array(
                 'type'  => 'text',
+		'id' => 'timecollected',
 		'class' => 'easyui-datetimebox',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d H:i:s"),
@@ -140,6 +142,19 @@ class LabForm extends Form
 		'style' => 'height:60px',
             ),
         ));
+	$this->add(array(
+	    'name' => 'specimencollected',
+	    'type' => 'Zend\Form\Element\Radio',
+	    'attributes' => array(
+		'required' => 'required'
+            ),
+	    'options' => array(
+		'value_options' => array(
+		    'onsite' => xlt('On Site'),
+		    'labsite' => xlt('Lab Site'),
+		),
+	    ),
+	));
         $this->add(array(
             'name' => 'procedures',
             'attributes' => array(
