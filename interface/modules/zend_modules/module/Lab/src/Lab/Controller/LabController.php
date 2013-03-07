@@ -45,7 +45,8 @@ class LabController extends AbstractActionController
             $form->setData($request->getPost());
 	    if ($form->isValid()) {
 		$Lab->exchangeArray($form->getData());
-                $clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
+                //$clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
+		$clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
 			
 			//Start Procedure Order Import 
             $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");

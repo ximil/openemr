@@ -31,6 +31,14 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
+            'name' => 'procedurecount',
+            'attributes' => array(
+                'type'  => 'hidden',
+		'id'	=> 'procedurecount',
+		'value'	=> 2,
+            ),
+        ));
+	$this->add(array(
             'name' => 'provider',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
@@ -53,7 +61,7 @@ class LabForm extends Form
 		'data-options' => 'required:true',
 		'id' => 'lab_id',
 		'required' => 'required',
-		'onchange' => 'checkLab(this.value)',
+		'onchange' => '/*checkLab(this.value)*/',
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -156,9 +164,9 @@ class LabForm extends Form
 	    ),
 	));
         $this->add(array(
-            'name' => 'procedures',
+            'name' => 'procedures[]',
             'attributes' => array(
-		'id' => 'procedures',
+		'id' => 'procedures_1',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
 		'data-options' => 'required:true',
@@ -167,17 +175,17 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
-            'name' => 'procedure_code',
+            'name' => 'procedure_code[]',
             'attributes' => array(
                 'type' => 'hidden',
-		'id' => 'procedure_code'
+		'id' => 'procedure_code_1'
             ),
         ));
 	$this->add(array(
-            'name' => 'procedure_suffix',
+            'name' => 'procedure_suffix[]',
             'attributes' => array(
                 'type' => 'hidden',
-		'id' => 'procedure_suffix'
+		'id' => 'procedure_suffix_1'
             ),
         ));
         $this->add(array(
@@ -186,6 +194,15 @@ class LabForm extends Form
                 'type'  => 'submit',
                 'value' => 'Go',
                 'id' => 'submitbutton',
+            ),
+        ));
+	$this->add(array(
+            'name' => 'addprocedure',
+            'attributes' => array(
+                'type'  => 'button',
+                'value' => 'Add Procedure',
+                'id' => 'addprocedure',
+		'onclick' => 'cloneRow()',
             ),
         ));
     }
