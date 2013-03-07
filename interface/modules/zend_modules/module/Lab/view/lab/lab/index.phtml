@@ -9,8 +9,9 @@
 	echo $this->form()->openTag($form);
 	echo $this->formRow($form->get('patient_id'));
 	echo $this->formRow($form->get('encounter_id'));
+	echo $this->formRow($form->get('procedurecount'));
 	?>
-	<table>
+	<table id="ordertable">
 		<tr>
 			<td><?php echo xlt('Ordering Provider');?>:</td>
 			<td><?php echo $this->formRow($form->get('provider'));?></td>
@@ -23,7 +24,7 @@
 			<td><?php echo xlt('Order Date');?>:</td>
 			<td><?php echo $this->formRow($form->get('orderdate'));?></td>
 		</tr>
-		<tr id="internaltime">
+		<tr id="internaltime" style="display:none">
 			<td><?php echo xlt('Internal Time Collected');?>:</td>
 			<td><?php echo $this->formRow($form->get('timecollected'));?></td>
 		</tr>
@@ -47,21 +48,22 @@
 			<td><?php echo xlt('Patient Instructions');?>:</td>
 			<td><?php echo $this->formRow($form->get('patient_instructions'));?></td>
 		</tr>
-		<tr>
+		<tr id="proceduretemplate_1">
 			<td><?php echo xlt('Procedure');?>:</td>
-			<td><?php echo $this->formRow($form->get('procedures'));?>
-			<div class="autocomplete-suggestions" id="prodiv" style="display:none;z-index:99999"></div>
-			<?php echo $this->formRow($form->get('procedure_code'));?>
-			<?php echo $this->formRow($form->get('procedure_suffix'));?>
+			<td><?php echo $this->formRow($form->get('procedures[]'));?>
+			<div class="autocomplete-suggestions" id="prodiv_1" style="display:none;z-index:99999;position:absolute;min-width:150px"></div>
+			<?php echo $this->formRow($form->get('procedure_code[]'));?>
+			<?php echo $this->formRow($form->get('procedure_suffix[]'));?>
 			</td>
 		</tr>
-		<tr>
+		<tr id="AOEtemplate_1"  style="display:none">
 			<td>&nbsp;</td>
-			<td id="AOE" style="display:none"></td>
+			<td id="AOE_1"></td>
 		</tr>
 		
 	</table>
 	<div style="text-align:center;padding:5px">
+		<?php echo $this->formRow($form->get('addprocedure'));?>
 	    <input type="submit" name="submit" class="easyui-linkbutton" value="Save">
 	    <input type="reset" name="clear" value="Clear">
 	</div>

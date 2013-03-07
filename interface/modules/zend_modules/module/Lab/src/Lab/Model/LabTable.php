@@ -24,26 +24,9 @@ class LabTable extends AbstractTableGateway
         $this->tableGateway = $tableGateway;
     }
 	
-	public function listLabOptions($data)
-	{
-		$sql = "SELECT option_id, title FROM list_options 
-						WHERE list_id='" . $data['optId'] . "' 
-						ORDER BY seq, title";
-		$result = sqlStatement($sql);
-		$arr = array();
-		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
-		}
-		while($row = sqlFetchArray($result)) {
-			$arr[] = $row;
-		}
-		return $arr;
-	}
-	
 	public function listLabStatus($data)
 	{
+		
 		$sql = "SELECT option_id, title FROM list_options 
 						WHERE list_id='proc_rep_status' 
 						ORDER BY seq, title";
@@ -252,7 +235,7 @@ class LabTable extends AbstractTableGateway
 		$date_report 	= $data['date_report'];
 		$date_collected = $data['date_collected'];
 		
-		$result_code			= $data['result_code'];
+		$result_code			= $data['$result_code'];
 		$procedure_report_id	= $data['procedure_report_id'];
 		$result_text			= $data['result_text'];
 		$abnormal				= $data['abnormal'];
@@ -260,8 +243,6 @@ class LabTable extends AbstractTableGateway
 		$range					= $data['range'];
 		$units					= $data['units'];
 		$result_status			= $data['result_status'];
-		$facility				= $data['facility'];
-		$comments				= $data['comments'];
 		 
 		/* $sets =
         "procedure_order_id = '$order_id', " .
@@ -309,15 +290,13 @@ class LabTable extends AbstractTableGateway
 			if ($result_id > 0) {
 				$sql = "UPDATE procedure_result 
 							SET procedure_report_id='$report_id', 
-								result_code='$', 
+								result_code='$result_code', 
 								result_text='$result_text', 
 								abnormal='$abnormal', 
 								result='$result', 
 								range='$range', 
 								units='$units', 
-								result_status='$result_status', 
-								facility='$facility', 
-								comments='$comments'								
+								result_status='$result_status' 
 								WHERE procedure_result_id = '$result_id'";
 				sqlStatement($sql);
 			} else {
@@ -329,33 +308,113 @@ class LabTable extends AbstractTableGateway
 								result='$result', 
 								`range`='$range', 
 								units='$units', 
-								result_status='$result_status', 
-								facility='$facility', 
-								comments='$comments'";
+								result_status='$result_status'";
 				sqlInsert($sql);
 			}
 		}
 	}
-
-    public function saveLab(Lab $lab,$aoe)
-    {
-	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
-		  diagnoses,patient_instructions,lab_id) VALUES(?,?,?,?,?,?,?,?,?,?)",
-		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
-			"ICD9:".$lab->diagnoses,$lab->patient_instructions,$lab->lab_id));
-	$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-		     VALUES (?,?,?,?)",array($procedure_type_id,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
-	$fh = fopen("D:/AAOOEE.txt","a");
-	fwrite($fh,print_r($aoe,1));
+//   public function saveLab(Lab $lab,$aoe)
+//    {
+//	$fh = fopen("D:/SAVELAB.txt","a");
+//	fwrite($fh,print_r($lab->procedures,1));
+//	fwrite($fh,print_r($lab->procedure_code,1));
+//	fwrite($fh,print_r($aoe,1));
+//	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
+//		  diagnoses,patient_instructions,lab_id,psc_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+//		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
+//			"ICD9:".$lab->diagnoses,$lab->patient_instructions,$lab->lab_id,$lab->specimencollected));
+//	$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
+//		     VALUES (?,?,?,?)",array($procedure_type_id,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
+//	$fh = fopen("D:/AAOOEE.txt","a");
+//	fwrite($fh,print_r($aoe,1));
+//	foreach($aoe as $ProcedureOrder=>$QuestionArr){
+//	    if($ProcedureOrder==$lab->procedurecode){
+//		foreach($QuestionArr as $Question=>$Answer){
+//		    sqlStatement("INSERT INTO procedure_answers (procedure_order_id,procedure_order_seq,question_code,answer) VALUES (?,?,?,?)",
+//		    array($procedure_type_id,$seq,$Question,$Answer));
+//		}
+//	    }
+//	}
+//	return $procedure_type_id;
+//    }
+    public function insertAoe($procedure_type_id,$seq,$aoe,$procedure_code_i){
 	foreach($aoe as $ProcedureOrder=>$QuestionArr){
-	    if($ProcedureOrder==$lab->procedurecode){
+	    if($ProcedureOrder==$procedure_code_i){
 		foreach($QuestionArr as $Question=>$Answer){
 		    sqlStatement("INSERT INTO procedure_answers (procedure_order_id,procedure_order_seq,question_code,answer) VALUES (?,?,?,?)",
 		    array($procedure_type_id,$seq,$Question,$Answer));
 		}
 	    }
 	}
+    }
+    public function insertProcedureMaster(){
+	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
+		    diagnoses,patient_instructions,lab_id,psc_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
+		    $post['status'],"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected']));
 	return $procedure_type_id;
+    }
+    public function saveLab($post,$aoe)
+    {
+	$fh = fopen("D:/SAVELAB.txt","a");
+	fwrite($fh,print_r($post,1));
+	fwrite($fh,print_r($aoe,1));
+	$papArray = array();
+	$specimenState = array();
+	$procedure_type_id_arr = array();
+	for($i=0;$i<sizeof($post['procedures']);$i++){
+	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=?",
+			     array($post['procedure_code'][$i],$post['procedure_suffix'][$i]));
+	    if($PRow['pap_indicator']=="P"){
+		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['procedure'] = $PRow['name'];
+	    }
+	    else{
+		$specimenState[$PRow['specimen_state']][]['procedure_code'] = $PRow['procedure_code'];
+		$specimenState[$PRow['specimen_state']][]['procedure'] = $PRow['name'];
+		$specimenState[$PRow['specimen_state']][]['procedure_suffix'] = $PRow['suffix'];
+	    }
+	}
+	if(sizeof($papArray)>0){
+	    foreach($papArray as $procode_suffix=>$proname ){
+	    	$PSArray = explode("|-|",$procode_suffix);
+		$procode = $PSArray[0];
+		$prosuffix = $PSArray[1];
+		$PAPprocedure_type_id = insertProcedureMaster();
+		$procedure_type_id_arr[] = $PAPprocedure_type_id;
+		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
+		     VALUES (?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix));
+		insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
+	    }
+	}
+	if($post['specimencollected']=="onsite"){
+	    if(sizeof($specimenState)>0){
+		foreach($specimenState as $k=>$vArray){
+		    $SPEprocedure_type_id = insertProcedureMaster();
+		    $procedure_type_id_arr[] = $SPEprocedure_type_id;
+		    for($i=0;$i<sizeof($vArray);$i++){
+			$procode = $vArray['procedure_code'];
+			$proname = $vArray['procedure'];
+			$prosuffix = $vArray['procedure_suffix'];
+			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
+					VALUES (?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix));
+			insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
+		    }
+		}
+	    }
+	}
+	else{
+	    for($i=0;$i<sizeof($post['procedures']);$i++){
+		$procedure_code = $post['procedure_code'][$i];
+		$procedure_suffix = $post['procedure_suffix'][$i];
+		if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
+		$procedure_type_id = insertProcedureMaster();
+		$procedure_type_id_arr[] = $procedure_type_id;
+		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
+		    VALUES (?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
+		insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i]);
+	    }
+	}
+	return $procedure_type_id_arr;
     }
     
 //    public function listLabLocation($inputString)
@@ -403,11 +462,7 @@ class LabTable extends AbstractTableGateway
 	}
 	return $arr;
     }
-	
-	/**
-	* Vipin
-	**/
-	
+
     public function getColumns($result)
     {
 	$result_columns	= array();
@@ -502,24 +557,20 @@ class LabTable extends AbstractTableGateway
 
     function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
     {
-	    //print_r($result);
-            //exit;
+	    
 	$result_col	= $this->getColumns($result);
 	
 	$mapped_tables	= $this->columnMapping($column_map,$result_col);
-	//print_r($mapped_tables);
-        //exit;
+	
 	//$count = 0;
 	//$insert = 0;
 	foreach($result as $res)
 	{
 	    foreach($result_col as $col)
 	    {
-                //echo "<br>$".$col."= ";
 		${$col}	= $res[$col];//GETTING IMPORTED VALUES
 	    }
 	    //echo "<br>";
-            //exit;
 	    foreach($mapped_tables as $table => $columns)
 	    {
 		//echo $key." => ".$val;
@@ -538,14 +589,12 @@ class LabTable extends AbstractTableGateway
 			$$servercol = $column_map[$servercol]['valconfig'][$$servercol];
 		    }
 		    $value_arr[$column] =  ${$servercol};
-                    //echo "<br>$"."value_arr[".$column."] = ".${$servercol};
-                    //echo "<br>HI $".$servercol." = ".${$servercol};
 		}
-		//continue;
-		$fields	        = implode(",",$columns);
+		
+		$fields	= implode(",",$columns);
 		$col_count	= count($columns);
 		$field_vars	= "$".implode(",$",$columns);
-		$params	        = rtrim(str_repeat("?,",$col_count),",");
+		$params	= rtrim(str_repeat("?,",$col_count),",");
 		
 		
 		/*
@@ -622,7 +671,6 @@ class LabTable extends AbstractTableGateway
 		    {
 			/*echo "<br>".*/$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
 			/*echo "<br>".*/$insert_id 	= sqlInsert($sql,$value_arr);
-                        //print_r($value_arr);
 		    }
 		}
 		
@@ -654,7 +702,7 @@ class LabTable extends AbstractTableGateway
 									    'column'    => "lab_id",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-	$column_map['test_lab_entity'] 		        = array('colconfig' => array(
+	$column_map['test_lab_entity'] 		= array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "seccol",
 									    'value_map' => "0",
@@ -666,7 +714,7 @@ class LabTable extends AbstractTableGateway
 									    'insert_id' => "0"));
 	$column_map['test_specimen_state'] 	        = array('colconfig' => array(
 									    'table'     => "procedure_type",
-									    'column'    => "specimen_state",
+									    'column'    => "specimen",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['test_unit_code'] 		= array('colconfig' => array(
@@ -769,8 +817,8 @@ class LabTable extends AbstractTableGateway
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['test_pap_indicator'] 	        = array('colconfig' => array(
-									    'table'     => "procedure_type",
-									    'column'    => "pap_indicator",
+									    'table'     => "",
+									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['test_last_updatetime'] 	= array('colconfig' => array(
@@ -816,92 +864,80 @@ class LabTable extends AbstractTableGateway
 									    'insert_id' => "0"));*/
 	
 	$column_map['aoe_lab_id']	                = array('colconfig' => array(
-									    'table'     => "procedure_questions",
+									    'table'     => "procedure_type",
 									    'column'    => "lab_id",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_lab_entity'] 		        = array('colconfig' => array(
+	$column_map['aoe_lab_entity'] 		= array('colconfig' => array(
 									    'table'     => "",
-									    'column'    => "",
+									    'column'    => "seccol",
 									    'value_map' => "0",
-									    'insert_id' => "0"));
-        
-	$column_map['aoe_performing_site'] 		= array('colconfig' => array(
-									    'table'     => "",
-									    'column'    => "",
-									    'value_map' => "0",
-									    'insert_id' => "0"));
-        
-	$column_map['aoe_unit_code'] 	                = array('colconfig' => array(
-									    'table'     => "",
-									    'column'    => "",
-									    'value_map' => "0",
-									    'insert_id' => "0"));
-        
-	$column_map['aoe_test_code'] 		        = array('colconfig' => array(
-									    'table'     => "procedure_questions",
+									    'insert_id' => "1"));
+	$column_map['aoe_performing_site'] 		        = array('colconfig' => array(
+									    'table'     => "procedure_type",
 									    'column'    => "procedure_code",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_analyte_code'] 	        = array('colconfig' => array(
-									    'table'     => "procedure_questions",
-									    'column'    => "question_code",
+	$column_map['aoe_unit_code'] 	        = array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "specimen",
 									    'value_map' => "0",
-									    'insert_id' => "0"));            
+									    'insert_id' => "0"));
+	$column_map['aoe_test_code'] 		= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
+	$column_map['aoe_analyte_code'] 	= array('colconfig' => array(
+									    'table'     => "procedure_type",
+									    'column'    => "activity",
+									    'value_map' => "1",
+									    'insert_id' => "0"),
+							'valconfig' => array(
+									    'A'         => "1",
+									    'I'         => "0"));            
 	
-	$column_map['aoe_question'] 	                = array('colconfig' => array(
+	$column_map['aoe_question'] 	= array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['aoe_status_indicator'] 	        = array('colconfig' => array(
-									    'table'     => "procedure_questions",
-									    'column'    => "activity",
-									    'value_map' => "1",
-									    'insert_id' => "0"),
-                                                                'valconfig' => array(
-									    'A'         => "1",
-									    'I'         => "0"));
-        
-	$column_map['aoe_profile_component'] 	        = array('colconfig' => array(
-									    'table'     => "procedure_questions",
-									    'column'    => "options",
+									    'table'     => "procedure_type",
+									    'column'    => "description",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
+	$column_map['aoe_profile_component'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
 	$column_map['aoe_insert_datetime'] 	        = array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_question_description'] 	= array('colconfig' => array(
-									    'table'     => "procedure_questions",
-									    'column'    => "question_text",
-									    'value_map' => "0",
-									    'insert_id' => "0"));
-        
-	$column_map['aoe_suffix'] 	                = array('colconfig' => array(
+	$column_map['aoe_question_description'] 		= array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_result_filter'] 	        = array('colconfig' => array(
-									    'table'     => "procedure_questions",
-									    'column'    => "tips",
+	$column_map['aoe_suffix'] 	= array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
+	$column_map['aoe_result_filter'] 	        = array('colconfig' => array(
+									    'table'     => "",
+									    'column'    => "",
+									    'value_map' => "0",
+									    'insert_id' => "0"));
 	$column_map['aoe_test_code_mneumonic'] 	        = array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_test_flag'] 		        = array('colconfig' => array(
+	$column_map['aoe_test_flag'] 		= array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
@@ -912,19 +948,16 @@ class LabTable extends AbstractTableGateway
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_update_user'] 	                = array('colconfig' => array(
+	$column_map['aoe_update_user'] 	= array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
-	$column_map['aoe_component_name'] 		= array('colconfig' => array(
+	$column_map['aoe_component_name'] 		        = array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
-        
 	$column_map['aoe_last_updatetime'] 	        = array('colconfig' => array(
 									    'table'     => "",
 									    'column'    => "",
@@ -932,7 +965,7 @@ class LabTable extends AbstractTableGateway
 									    'insert_id' => "0"));
 	
 	
-	$column_map['contraints']   = array('procedure_questions' => array(
+	$column_map['contraints']   = array('procedure_type' => array(
 									'primary_key' => array(
 												'0'     => "lab_id",
 												'1'     => "procedure_code"))); 
@@ -983,39 +1016,14 @@ class LabTable extends AbstractTableGateway
 						'match_value'   => array('pid'),
 						'child_table'   => 'insurance_companies');
 	
-	$xmlconfig['insurance_companies']   = array(
+	$xmlconfig['insurance_companies']    = array(
 						'column_map'    => array(
 									'name'  => '$type_insurance_name'                                                
 									),
 						'primary_key'   => array('id'),
 						'match_value'   => array('provider'),
 						'parent_table'  => 'insurance_data'
-						);
-       
-        $xmlconfig['procedure_providers']   = array(                      
-						'column_map'    => array(
-									'send_app_id'       => 'send_app_id',
-                                                                        'recv_app_id'       => 'recv_app_id',    
-									'send_fac_id'       => 'send_fac_id',
-									'recv_fac_id'       => 'recv_fac_id',
-									'DorP'              => 'DorP'
-									 ),
-						'primary_key'   => array('ppid'),
-						'match_value'   => array('lab_id'));
-        
-        $xmlconfig['procedure_order']       = array(                      
-						'column_map'    => array(
-                                                                         'psc_hold'         => 'recv_app_id'
-									 ),
-                                                'value_map'     => array(
-                                                                        'psc_hold'          => array(
-                                                                                                        'onsite'    => 'MSC',
-                                                                                                        'labsite'   => 'PSC'
-                                                                                                    )
-                                                                         ),
-						'primary_key'   => array('procedure_order_id'),
-						'match_value'   => array('order_id'));
-               
+						);            
 	return $xmlconfig;
     }
 
@@ -1148,7 +1156,7 @@ class LabTable extends AbstractTableGateway
     }*/
     
     
-    public function generateSQLSelect($pid,$lab_id,$order_id,$cofig_arr,$table)
+    public function generateSQLSelect($pid,$cofig_arr,$table)
     {
 	//echo "hi".$pid." ,".$table;
 	
@@ -1164,8 +1172,7 @@ class LabTable extends AbstractTableGateway
      
 	$table_name         = $table;
 	    
-	$col_map_arr        = $cofig_arr[$table]['column_map'];
-       
+	$col_map_arr        = $cofig_arr[$table]['column_map'];        
 	$primary_key_arr    = $cofig_arr[$table]['primary_key'];        
 	$match_value_arr    = $cofig_arr[$table]['match_value'];
 	
@@ -1202,6 +1209,49 @@ class LabTable extends AbstractTableGateway
 	
 	return $res;    
     }
+    
+    
+    public function generateSQLInsert($pid,$cofig_arr,$table)
+    {
+	global $type;
+	global $provider;
+     
+	$table_name         = $table;
+	    
+	$col_map_arr        = $cofig_arr[$table]['column_map'];        
+	$primary_key_arr    = $cofig_arr[$table]['primary_key'];        
+	$match_value_arr    = $cofig_arr[$table]['match_value'];
+	
+	$index  = 0;
+	$condition  = "";
+	foreach($primary_key_arr as $pkey)
+	{
+	    if($index > 0)
+	    {
+		$condition.=" AND ";
+	    }
+	    $condition.=" ".$pkey." = ? ";
+	    $index++;
+	}
+	
+	$index  = 0;
+	foreach($match_value_arr as $param)
+	{
+	    $match_value_arr[$index] = ${$match_value_arr[$index]};
+	    $index++;
+	}
+	$col_arr        = array();
+	foreach($col_map_arr as $col => $tag)
+	{
+	    $col_arr[]  = $col;
+	}
+	$cols   = implode(",",$col_arr);
+	/*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
+	$res   = sqlStatement($sql,$match_value_arr);
+	return $res;    
+    }
+    
+    
     
     public function generateOrderXml($pid,$lab_id,$xmlfile)
     {
@@ -1242,18 +1292,80 @@ class LabTable extends AbstractTableGateway
 			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
 			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
 			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-			    "ordering_provider_fname","observation_request_comments","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP");
-     
+			    "ordering_provider_fname","observation_request_comments");
 	
 	$cofig_arr  = $this->mapcolumntoxml();
        
+	$sl = 0;
+	foreach($cofig_arr as $table => $config)
+	{
+	  
+	    //SKIP THE DATA FETCHING OF CHILD TABLE ROWS , WHICH WILL AUTOMATICALLY FETCH IF IT IS CONFIGURED, IT HAS PARENT TABLE
+	    if($config['parent_table'] <> "")
+	    {
+		continue;
+	    }            
+	    $col_map_arr    = $cofig_arr[$table]['column_map'];
+	    $res            = $this->generateSQLSelect($pid,$cofig_arr,$table);
+	    
+	    while($data = sqlFetchArray($res))
+	    {
+		$global_arr  = array();                
+		$check_arr   = array();
+		
+		foreach($col_map_arr as $col => $tag)
+		{   
+					    if(substr($tag,0,1)== "#")
+					    {
+						    $tag            = substr($tag,1,strlen($tag));
+						    $check_arr[]    = "$".$tag;
+					    }
+					    foreach($check_arr as $check)
+					    {
+						    if(strstr($tag,$check))
+						    {
+							    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+						    }
+					    }
+					    
+					    $$tag   = $data[$col];
+		}
+
+		if($config['child_table'] <> "")
+		{
+		    $res2    = $this->generateSQLSelect($pid,$cofig_arr,$config['child_table']);
+		    $fetch2_count    = 0; 
+		    while($data1 = sqlFetchArray($res2))
+		    {
+			$col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
+			
+			foreach($col_map_arr2 as $col => $tag)
+			{   
+							    foreach($check_arr as $check)
+							    {
+								    if(strstr($tag,$check))
+								    {
+									    $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+								    }
+							    }
+							    
+							    if(substr($tag,0,1)== "#")
+							    {
+								    $tag = substr($tag,1,strlen($tag));                        
+							    }
+							    
+							    $$tag   = $data1[$col];
+			}
+		    }                    
+		}
+	    }
+	}
 	
 	//GETTING VALUES OF ADDITIONAL XML TAGS
-	$sql_misc   = "SELECT  tb1.procedure_order_id, diagnoses, procedure_code,  procedure_suffix, tb2.procedure_order_seq
-			    FROM procedure_order tb1
-                            LEFT JOIN procedure_order_code tb2 ON tb1.procedure_order_id = tb2.procedure_order_id 
+	$sql_misc   = "SELECT  tb1.procedure_order_id, diagnoses, procedure_code,  procedure_suffix
+			    FROM procedure_order tb1 LEFT JOIN procedure_order_code tb2 ON tb1.procedure_order_id = tb2.procedure_order_id 
 			WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
-	
+	  
 	$misc_value_arr = array();
 	
 	$misc_value_arr['patient_id']   = $pid;
@@ -1268,100 +1380,20 @@ class LabTable extends AbstractTableGateway
 	$return_arr = array();
 	$i=0;
 	
-        
-        
-        
 	while($data_misc = sqlFetchArray($res_misc))
 	{
-            
-            /* ------------------------------------GENERATING XML FROM CONFIGURATION FOR EACH ORDER----------------------------------------*/
-            $sl = 0;
-            foreach($cofig_arr as $table => $config)
-            {
-              
-                //SKIP THE DATA FETCHING OF CHILD TABLE ROWS , WHICH WILL AUTOMATICALLY FETCH IF IT IS CONFIGURED, IT HAS PARENT TABLE
-                if($config['parent_table'] <> "")
-                {
-                    continue;
-                }            
-                $col_map_arr    = $cofig_arr[$table]['column_map'];
-                $res            = $this->generateSQLSelect($pid,$lab_id,$data_misc['procedure_order_id'],$cofig_arr,$table);
-                
-                while($data = sqlFetchArray($res))
-                {
-                    $global_arr  = array();                
-                    $check_arr   = array();
-                    
-                    foreach($col_map_arr as $col => $tag)
-                    {   
-                        if(substr($tag,0,1)== "#")
-                        {
-                                $tag            = substr($tag,1,strlen($tag));
-                                $check_arr[]    = "$".$tag;
-                        }
-                        foreach($check_arr as $check)
-                        {
-                                if(strstr($tag,$check))
-                                {
-                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
-                                }
-                        }
-                        if($cofig_arr[$table]['value_map'] <> "")
-                        {
-                            $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
-                        }
-                        else
-                        {
-                            $$tag   = $data[$col];
-                        }    
-                    }
-    
-                    if($config['child_table'] <> "")
-                    {
-                        $res2    = $this->generateSQLSelect($pid,$lab_id,$data_misc['procedure_order_id'],$cofig_arr,$config['child_table']);
-                        $fetch2_count    = 0; 
-                        while($data1 = sqlFetchArray($res2))
-                        {
-                            $col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
-                            
-                            foreach($col_map_arr2 as $col => $tag)
-                            {   
-                                foreach($check_arr as $check)
-                                {
-                                        if(strstr($tag,$check))
-                                        {
-                                                $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
-                                        }
-                                }
-                                
-                                if(substr($tag,0,1)== "#")
-                                {
-                                        $tag = substr($tag,1,strlen($tag));                        
-                                }
-                                
-                                $$tag   = $data1[$col];
-                            }
-                        }                    
-                    }
-                }
-            }	
-            /*-----------------------------------------------------------------------------------------------------------------------------*/
-            
 	    $result_xml = "";
 	    $test_id    = "";
 	    $diagnosis  = "";
-            
-            $test_aoe   = "";
 	
 	    $i++;
 	    if(($data_misc['procedure_code'] <> "") && ($data_misc['procedure_suffix'] <> ""))
 	    {
 		$test_id    .= $data_misc['procedure_code']."#!#".$data_misc['procedure_suffix'];                                
 		$test_count++;
-                $test_id.="#--#";
 	    }
 	    
-	   
+	    $test_id.="#--#";
 	    
 	    if($data_misc['diagnoses'] <> "")
 	    {
@@ -1372,12 +1404,10 @@ class LabTable extends AbstractTableGateway
 		    $diag_array     =  explode(":",$diag,2);
 		    $diagnosis     .= $diag_array[1];
 		    $diagnosis     .= "#@#";
-		}
-                $diagnosis  = rtrim($diagnosis,"#@#");
+		}                
 		$diag_count++;
-                $diagnosis.="#~@~#";
 	    }
-	    
+	    $diagnosis.="#~@~#";
 	    
 	    $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_new_".gmdate('YmdHis')."_".$data_misc['procedure_order_id'].".xml";
 	    $result_xml	= '<?xml version="1.0" encoding="UTF-8"?><Order>';
@@ -1388,20 +1418,6 @@ class LabTable extends AbstractTableGateway
 		$config->Order->$tag    = $tag_val;
 		$result_xml.= '<'.$tag.'>'.$tag_val.'</'.$tag.'>';
 	    }
-            
-            $sql_aoe        = "SELECT question_code,answer_seq,answer FROM procedure_answers
-                                WHERE procedure_order_id = ? AND procedure_order_seq = ? ";
-            $aoe_value_arr  = array();
-	
-            $aoe_value_arr['procedure_order_id']    = $data_misc['procedure_order_id'];
-            $aoe_value_arr['procedure_order_seq']   = $data_misc['procedure_order_seq'];
-           
-            
-            $res_aoe        = sqlStatement($sql_aoe,$aoe_value_arr);
-            while($data_aoe = sqlFetchArray($res_aoe))
-            {
-                $test_aoe   .= $data_aoe['question_code']."!@!".$data_aoe['answer']."!-#@#-!";
-            }
 	    
 	    $result_xml.= '<test_id>'.$test_id.'</test_id>';
 	    $result_xml.= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
@@ -1419,78 +1435,16 @@ class LabTable extends AbstractTableGateway
     
     public function getClientCredentials($proc_order_id)
     {
-	$sql_proc   = "SELECT lab_id FROM procedure_order WHERE procedure_order_id = ? ";
+	$sql_proc   = "SELECT lab_id FROM procedure_order 
+								    WHERE procedure_order_id = ? ";
 	$proc_value_arr = array();
 	$proc_value_arr['procedure_order_id']   = $proc_order_id;
 	$res_proc   = sqlQuery($sql_proc,$proc_value_arr);
-	$sql_cred   = "SELECT  login, password FROM procedure_providers WHERE ppid = ? ";
+	$sql_cred   = "SELECT  login, password  
+								    FROM procedure_providers 
+								    WHERE ppid = ? ";
 	$res_cred   = sqlQuery($sql_cred,$res_proc);
 	return $res_cred;        
-    }
-    
-    public function changeOrderRequisitionStatus($proc_order_id,$status,$file_name)
-    {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, requisition_file_url = ? WHERE procedure_order_id = ? ";
-        
-	$status_value_arr   = array();
-        
-        $status_value_arr['status']               = $status;
-        $status_value_arr['requisition_file_url'] = $file_name;
-	$status_value_arr['procedure_order_id']   = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status;        
-    }
-    
-    public function changeOrderResultStatus($proc_order_id,$status,$file_name)
-    {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";
-        
-	$status_value_arr   = array();
-        
-        $status_value_arr['status']             = $status;
-        $status_value_arr['result_file_url']    = $file_name;
-	$status_value_arr['procedure_order_id'] = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status;        
-    }
-    
-    
-    public function getOrderStatus($proc_order_id)
-    {
-	$sql_status         = "SELECT order_status FROM procedure_order WHERE procedure_order_id = ? ";
-        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['order_status'];        
-    }
-    
-    public function getOrderRequisitionFile($proc_order_id)
-    {
-	$sql_status         = "SELECT requisition_file_url FROM procedure_order WHERE procedure_order_id = ? ";
-        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['requisition_file_url'];        
-    }
-    
-    public function getOrderResultFile($proc_order_id)
-    {
-	$sql_status         = "SELECT result_file_url FROM procedure_order WHERE procedure_order_id = ? ";
-        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['result_file_url'];        
     }
 }
 ?>
