@@ -155,15 +155,45 @@ class LabController extends AbstractActionController
 		
     }
 	
+	 public function getLabOptionsAction()
+    {
+		$request = $this->getRequest();
+	    $data =array();
+		if($request->getQuery('opt')){
+			switch ($request->getQuery('opt')) {
+				case 's':
+					$data['opt'] = 'search';
+					break;
+				case a:
+					$data['opt'] = 'abn';
+					break;
+			}
+		}
+		if($request->getQuery('optId')){
+			switch ($request->getQuery('opt')) {
+				case 's':
+					$data['optId'] = 'proc_rep_status';
+					break;
+				case a:
+					$data['optId'] = 'proc_res_abnormal';
+					break;
+			}
+		}
+	    $labOptions = $this->getLabTable()->listLabOptions($data);
+	    $data = new JsonModel($labOptions);
+	    return $data;
+    }
+	
     public function getLabStatusAction()
     {
-	    $request = $this->getRequest();
+		//$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+
+
+		$request = $this->getRequest();
 	    $data =array();
-	    if($request->isGet()){
 		if($request->getQuery('opt')){
 		    $data['opt'] = 'search';
 		}
-	    }
 	    $labStatus = $this->getLabTable()->listLabStatus($data);
 	    $data = new JsonModel($labStatus);
 	    return $data;
@@ -200,8 +230,13 @@ class LabController extends AbstractActionController
     
     public function resultUpdateAction()
     {
-	    $request = $this->getRequest();
-    if ($request->isPost()) {
+		$request = $this->getRequest();
+		if ($request->isPost()) {
+			$arr = explode('|', $request->getPost('comments'));
+			$comments = '';
+			if ($arr[3] != '') {
+				$comments = $arr[2] .= "\n" . $arr[3];
+			}
 		    $data = array(
 				    'procedure_report_id'	=> $request->getPost('procedure_report_id'),
 				    'procedure_result_id'	=> $request->getPost('procedure_result_id'),
@@ -218,18 +253,14 @@ class LabController extends AbstractActionController
 				    'result'				=> $request->getPost('result'),
 				    'range'					=> $request->getPost('range'),
 				    'units'					=> $request->getPost('units'),
-				    'result_status'			=> $request->getPost('result_status'),
+				    'result_status'			=> $arr[0],
+					'facility'				=> $arr[1],
+					'comments'				=> $comments,
 		    );
-
 		    $this->getLabTable()->saveResult($data);
 		    return $this->redirect()->toRoute('result');
-    }
-    return $this->redirect()->toRoute('result');
-    }
-    
-    public function formCommentsAction()
-    {
-
+		}
+		return $this->redirect()->toRoute('result');
     }
     
     /**
@@ -238,6 +269,7 @@ class LabController extends AbstractActionController
     
     public function pullcompandiantestAction()
     {
+        
 	ini_set("soap.wsdl_cache_enabled","0");
 	
 	ini_set('memory_limit', '-1');
@@ -271,76 +303,193 @@ class LabController extends AbstractActionController
 	return $this->redirect()->toRoute('result');
     }
 
+    /*
+    //THIS ACTION IS MOVED INTO INDEX ACTION
+    public function generateorderAction()
+    {
+        //$xmlfileurl = "ordernew.xml";
+        //$xmlfile = $this->getLabTable()->generateOrderXml(5,$xmlfileurl);//Pateint ID, Lab ID, File Name to be created
+        //print_r($xmlfile);
+        
+        $lab_id     = 1;//HARD CODED
+        $patient_id = 7962;//HARD CODED
+        
+        $xmlresult_arr = $this->getLabTable()->generateOrderXml($patient_id,$lab_id,$xmlfileurl);
+        
+        
+        //print_r($xmlresult_arr);
+        //exit;
+        //$fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
+            
+        //$xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
+        
+        //return false;
+        
+        //$request = $this->getRequest();
+        //if($request->isGet())
+        //{
+        //    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+        //}
+        
+        
+        //$data['procedure_order_id'] = 4; //HARD CODED FOR TESTING
+        //print_r($data);
+        
+        ini_set("soap.wsdl_cache_enabled","0");
+        
+        ini_set('memory_limit', '-1');
+        
+        $options = array(
+                            'location' => "http://192.168.1.139/webserver/lab_server.php",
+                            'uri'      => "urn://zhhealthcare/lab"
+                        );
+
+        $client = new Client(null,$options);
+        $i=0;
+        foreach($xmlresult_arr as $xmlresult)
+        {
+            $i++;
+            $order_id   = $xmlresult['order_id'];
+            $xmlstring  = $xmlresult['xmlstring'];
+            
+            $fd = fopen("module/Lab/vipi$i.xml","w") or die("can't open xml file");
+            
+            $xmlstring  = fwrite($fd,$xmlstring);
+            continue;
+            $cred = $this->getLabTable()->getClientCredentials($order_id);
+        
+            $username   = $cred['login'];
+            $password   = $cred['password'];        
+            $site_dir   = $GLOBALS['OE_SITE_DIR'];
+            
+            //$client_id      = "1";
+            //$clientorder_id = "1";
+            //$lab_id         = "1";//HARD CODED
+            
+            $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
+            //echo "Result <br>";
+            //print_r($result);
+        }
+        
+    }
+    */    
+
     public function getlabrequisitionAction()
     {
-	$request = $this->getRequest();
+        $site_dir           = $GLOBALS['OE_SITE_DIR'];            
+        $requisition_dir    = $site_dir."/lab/requisition/";
+            
+        $request = $this->getRequest();
 	if($request->isGet())
 	{
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
-	$cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
-	
-	$username   = $cred['login'];
-	$password   = $cred['password'];        
-	$site_dir   = $_SESSION['site_id'];
+        
+        //$data['procedure_order_id'] = 3; //HARD CODED FOR TESTING
+        
+        
+        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+        
+        if(($curr_status == "requisitionpulled")||($curr_status == "final"))
+        {
+            $labrequisitionfile    = $this->getLabTable()->getOrderRequisitionFile($data['procedure_order_id']);            
+        }
+	else
+        {
+            $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+                    
+            $username   = $cred['login'];
+            $password   = $cred['password'];        
+            $site_dir   = $_SESSION['site_id'];
+           
+            ini_set("soap.wsdl_cache_enabled","0");	
+            ini_set('memory_limit', '-1');
+            
+            $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
+                                'uri'      => "urn://zhhealthcare/lab"
+                                );
+            $client     = new Client(null,$options);
+            $result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID   
        
-	ini_set("soap.wsdl_cache_enabled","0");	
-	ini_set('memory_limit', '-1');
-	
-	$options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
-			    'uri'      => "urn://zhhealthcare/lab"
-			    );
-	$client     = new Client(null,$options);
-	$result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID   
-    
-	$labresultfile  = "labrequisition_".gmdate('YmdHis').".pdf";
-	
-	$fp = fopen("module/Lab/".$labresultfile,"wb");
-	fwrite($fp,base64_decode($result));
+            $labrequisitionfile  = "labrequisition_".gmdate('YmdHis').".pdf";           
+            
+            if (!is_dir($requisition_dir))
+            {
+                mkdir($requisition_dir,0777,true);
+            }
+            
+            $fp = fopen($requisition_dir.$labrequisitionfile,"wb");
+            fwrite($fp,base64_decode($result));
+            
+            $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
+        }
+        
 	while(ob_get_level()){
 	    ob_get_clean();
 	}
-	header('Content-Disposition: attachment; filename='.$labresultfile );
+	header('Content-Disposition: attachment; filename='.$labrequisitionfile );
 	header("Content-Type: application/octet-stream" );
-	header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );		
-	readfile( "module/Lab/".$labresultfile );         
+	header("Content-Length: " . filesize( $requisition_dir.$labrequisitionfile ) );		
+	readfile( $requisition_dir.$labrequisitionfile );         
     }
 
     public function getlabresultAction()
     {
+        $site_dir   = $GLOBALS['OE_SITE_DIR'];        
+        $result_dir    = $site_dir."/lab/result/";
+        
 	$request = $this->getRequest();
 	if($request->isGet())
 	{
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
 	
-	$cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
-	    
-	$username   = $cred['login'];
-	$password   = $cred['password'];        
-	$site_dir   = $_SESSION['site_id'];
-	    
-	ini_set("soap.wsdl_cache_enabled","0");	
-	ini_set('memory_limit', '-1');
-	
-	$options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
-			    'uri'      => "urn://zhhealthcare/lab"
-			    );
-
-	$client     = new Client(null,$options);
-	$result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
-	//print_r($result);
-	
-	$labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
-	$fp = fopen("module/Lab/".$labresultfile,"wb");
-	fwrite($fp,base64_decode($result));
+        //$data['procedure_order_id'] = 3; //HARD CODED FOR TESTING
+        
+        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+        
+        if($curr_status == "final")
+        {
+            $labresultfile    = $this->getLabTable()->getOrderResultFile($data['procedure_order_id']);            
+        }
+	else
+        {
+            $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+                
+            $username   = $cred['login'];
+            $password   = $cred['password'];        
+            $site_dir   = $_SESSION['site_id'];
+                
+            ini_set("soap.wsdl_cache_enabled","0");	
+            ini_set('memory_limit', '-1');
+            
+            $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
+                                'uri'      => "urn://zhhealthcare/lab"
+                                );
+    
+            $client     = new Client(null,$options);
+            $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
+            //print_r($result);
+            //exit;
+            $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";        
+            
+            if (!is_dir($result_dir))
+            {
+                mkdir($result_dir,0777,true);
+            }
+            $fp = fopen($result_dir.$labresultfile,"wb");
+            fwrite($fp,base64_decode($result));
+            
+            $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+        }
+        
 	while(ob_get_level()){
 	    ob_get_clean();
 	}
 	header('Content-Disposition: attachment; filename='.$labresultfile );
 	header("Content-Type: application/octet-stream" );
-	header("Content-Length: " . filesize( "module/Lab/".$labresultfile ) );
-	readfile( "module/Lab/".$labresultfile );         
+	header("Content-Length: " . filesize( $result_dir.$labresultfile ) );
+	readfile( $result_dir.$labresultfile );         
     }
     
     public function getlabresultdetailsAction()

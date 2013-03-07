@@ -156,7 +156,7 @@ class LabForm extends Form
 	    ),
 	));
         $this->add(array(
-            'name' => 'procedures',
+            'name' => 'procedures[]',
             'attributes' => array(
 		'id' => 'procedures',
                 'type'  => 'text',
