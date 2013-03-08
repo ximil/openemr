@@ -437,7 +437,14 @@ $GLOBALS_METADATA = array(
       '$',                              // default
       xl('Code or symbol to indicate currency')
     ),
-
+    'age_display_format'=>array(xl('Age Display Format'),
+        array(
+            '0'=>xl('Years or months'),
+            '1'=>xl('Years, months and days')
+            ),
+            '0',
+            xl('Format for age display')
+    )
   ),
 
   // Features Tab
@@ -1544,7 +1551,22 @@ $GLOBALS_METADATA = array(
       'pass',                           // data type
       '',
       xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_notify' => array(
+      xl('phiMail notification user'),
+      'text',                           // data type
+      'admin',
+      xl('This user will receive notification of new incoming Direct messages')
+    ),
+
+    'phimail_interval' => array(
+      xl('phiMail Message Check Interval (minutes)'),
+      'num',                           // data type
+      '5',
+      xl('Interval between message checks (set to zero for manual checks only)')
     )
+
   ),
   
   'Rx' => array(
