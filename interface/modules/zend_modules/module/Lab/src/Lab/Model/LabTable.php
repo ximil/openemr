@@ -467,8 +467,8 @@ class LabTable extends AbstractTableGateway
 //    }
     public function listProcedures($inputString,$labId)
     {
-	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND NAME LIKE ? AND pt.activity=1";
-	$result = sqlStatement($sql,array($labId,$inputString."%"));
+	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND (name LIKE ? OR procedure_code LIKE ?) AND pt.activity=1";
+	$result = sqlStatement($sql,array($labId,$inputString."%",$inputString."%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
@@ -490,7 +490,7 @@ class LabTable extends AbstractTableGateway
 	//    $inputFilter->add($factory->createInput(array(
 	//	'name'     => 'AOE_'.$procedureCode."_".$tmp['question_code']
 	//    )));
-	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES);
+	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['tips'],ENT_QUOTES);
 	}
 	return $arr;
     }
