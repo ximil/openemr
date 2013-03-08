@@ -28,10 +28,11 @@ document.onclick=HideTheAjaxDivs;
 function HideTheAjaxDivs(){
 	$(".autocomplete-suggestions").css('display','none');
 }
-function loadAoeQuest(labval,ProcedureCode,procedure,count){
+function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix){
 	//alert(ProcedureCode+"-"+procedure+"-"+count);
 	$('#procedures_' + count).val(procedure);
-	$('#procedure_code_'+count).val(ProcedureCode)
+	$('#procedure_code_'+count).val(ProcedureCode);
+	$('#procedure_suffix_'+count).val(suffix);
 	//alert($('#procedure_' + count).val());
 	$.post("./search",{
             type: "loadAOE",
@@ -125,7 +126,7 @@ function getProcedures(inputString,thisID,labID) {
 		    for(var procedure in procedureArray){
 			    splitArr = procedureArray[procedure].split("|-|");
 			    //alert('"'+splitArr[3]+'"');
-			    j +="<li><a href='#' onclick=loadAoeQuest('"+labval+"','"+splitArr[1].replace(/\s+/gi,"&#160;")+"','"+splitArr[3].replace(/\s+/gi,"&#160;")+"','"+count+"')>"+splitArr[3]+"</a></li>";
+			    j +="<li><a href='#' onclick=loadAoeQuest('"+labval+"','"+splitArr[1].replace(/\s+/gi,"&#160;")+"','"+splitArr[3].replace(/\s+/gi,"&#160;")+"','"+count+"','"+splitArr[2].replace(/\s+/gi,"&#160;")+"')>"+splitArr[3]+"</a></li>";
 		    }
 		    j+="</ul>";
 		    //alert(j);

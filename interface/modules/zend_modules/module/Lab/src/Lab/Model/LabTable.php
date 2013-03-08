@@ -178,7 +178,7 @@ class LabTable extends AbstractTableGateway
 							"LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
 							"WHERE $pscond) " .
 							"ORDER BY seq, name, procedure_type_id, result_code";
-
+//echo $query."<<<<<<";
 			$rres = sqlStatement($query);
 
 			while ($rrow = sqlFetchArray($rres)) {
@@ -370,57 +370,64 @@ class LabTable extends AbstractTableGateway
 	    }
 	}
     }
-    public function insertProcedureMaster(){
+    public function insertProcedureMaster($post){
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
 		    diagnoses,patient_instructions,lab_id,psc_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
-		    $post['status'],"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected']));
+		    'pending',"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected']));
 	return $procedure_type_id;
     }
     public function saveLab($post,$aoe)
     {
-	$fh = fopen("D:/SAVELAB.txt","a");
-	fwrite($fh,print_r($post,1));
-	fwrite($fh,print_r($aoe,1));
 	$papArray = array();
 	$specimenState = array();
 	$procedure_type_id_arr = array();
+	$j=0;
+	$prevState = '';
 	for($i=0;$i<sizeof($post['procedures']);$i++){
-	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=?",
+	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
 			     array($post['procedure_code'][$i],$post['procedure_suffix'][$i]));
+	    if(!isset(${$PRow['specimen_state']."_j"}))
+	    ${$PRow['specimen_state']."_j"} = 0;
 	    if($PRow['pap_indicator']=="P"){
 		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['procedure'] = $PRow['name'];
 	    }
 	    else{
-		$specimenState[$PRow['specimen_state']][]['procedure_code'] = $PRow['procedure_code'];
-		$specimenState[$PRow['specimen_state']][]['procedure'] = $PRow['name'];
-		$specimenState[$PRow['specimen_state']][]['procedure_suffix'] = $PRow['suffix'];
+		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_code'] = $PRow['procedure_code'];
+		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure'] = $PRow['name'];
+		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		${$PRow['specimen_state']."_j"}++;
 	    }
 	}
+	//$fh = fopen("D:/SAVELAB.txt","a");
+	//fwrite($fh,print_r($post,1));
+	//fwrite($fh,print_r($papArray,1));
+	//fwrite($fh,print_r($specimenState,1));
 	if(sizeof($papArray)>0){
-	    foreach($papArray as $procode_suffix=>$proname ){
+	    foreach($papArray as $procode_suffix=>$pronameArr ){
 	    	$PSArray = explode("|-|",$procode_suffix);
 		$procode = $PSArray[0];
 		$prosuffix = $PSArray[1];
-		$PAPprocedure_type_id = insertProcedureMaster();
+		$proname = $pronameArr['procedure'];
+		$PAPprocedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $PAPprocedure_type_id;
 		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
 		     VALUES (?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix));
-		insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
+		$this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
 	    }
 	}
 	if($post['specimencollected']=="onsite"){
 	    if(sizeof($specimenState)>0){
 		foreach($specimenState as $k=>$vArray){
-		    $SPEprocedure_type_id = insertProcedureMaster();
+		    $SPEprocedure_type_id = $this->insertProcedureMaster($post);
 		    $procedure_type_id_arr[] = $SPEprocedure_type_id;
 		    for($i=0;$i<sizeof($vArray);$i++){
-			$procode = $vArray['procedure_code'];
-			$proname = $vArray['procedure'];
-			$prosuffix = $vArray['procedure_suffix'];
+			$procode = $vArray[$i]['procedure_code'];
+			$proname = $vArray[$i]['procedure'];
+			$prosuffix = $vArray[$i]['procedure_suffix'];
 			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
 					VALUES (?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix));
-			insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
+			$this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
 		    }
 		}
 	    }
@@ -430,11 +437,13 @@ class LabTable extends AbstractTableGateway
 		$procedure_code = $post['procedure_code'][$i];
 		$procedure_suffix = $post['procedure_suffix'][$i];
 		if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
-		$procedure_type_id = insertProcedureMaster();
+		if($i==0){
+		$procedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $procedure_type_id;
+		}
 		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
 		    VALUES (?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
-		insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i]);
+		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i]);
 	    }
 	}
 	return $procedure_type_id_arr;
@@ -719,11 +728,13 @@ class LabTable extends AbstractTableGateway
 	    //    break;
 	    //}
 	}
+	sqlStatement("UPDATE procedure_type SET parent=procedure_type_id");
+	sqlStatement("UPDATE procedure_type SET name=description");
     }
 
     //$constraint_arr
     
-    public function pullCompandianTestConfig()
+    public function pullcompendiumTestConfig()
     {
 	/*$column_map['test_id'] 		        = array('colconfig' => array(
 									    'table'     => "procedure_type",
@@ -801,8 +812,8 @@ class LabTable extends AbstractTableGateway
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['test_code_suffix'] 	        = array('colconfig' => array(
-									    'table'     => "",
-									    'column'    => "",
+									    'table'     => "procedure_type",
+									    'column'    => "suffix",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
 	$column_map['test_is_profile'] 		= array('colconfig' => array(
@@ -865,7 +876,8 @@ class LabTable extends AbstractTableGateway
 	$column_map['contraints']   = array('procedure_type' => array(
 									'primary_key' => array(
 												'0'     => "lab_id",
-												'1'     => "procedure_code"))); 
+												'1'     => "procedure_code",
+												'2'	=> "suffix"))); 
 	
 	return $column_map;
     }
@@ -889,7 +901,7 @@ class LabTable extends AbstractTableGateway
     
     
 
-    public function pullCompandianAoeConfig()
+    public function pullcompendiumAoeConfig()
     {
 	/*$column_map['aoe_id'] 		        = array('colconfig' => array(
 									    'table'     => "procedure_type",
@@ -949,7 +961,7 @@ class LabTable extends AbstractTableGateway
         
 	$column_map['aoe_profile_component'] 	        = array('colconfig' => array(
 									    'table'     => "procedure_questions",
-									    'column'    => "options",
+									    'column'    => "question_component",
 									    'value_map' => "0",
 									    'insert_id' => "0"));
         
@@ -1017,7 +1029,8 @@ class LabTable extends AbstractTableGateway
 	$column_map['contraints']   = array('procedure_questions' => array(
 									'primary_key' => array(
 												'0'     => "lab_id",
-												'1'     => "procedure_code"))); 
+												'1'     => "procedure_code",
+												'2'     => "question_code"))); 
 	
 	return $column_map;
     }

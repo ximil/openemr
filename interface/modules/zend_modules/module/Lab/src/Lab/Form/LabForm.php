@@ -125,11 +125,11 @@ class LabForm extends Form
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
-		'required' => 'required'
+		'required' => 'required',
             ),
 	    'options' => array(
 		'value_options' => array(
-		    '' => xlt('Unassigned'),
+		    '' => xlt('Unassigend'),
 		),
 	    ),
         ));

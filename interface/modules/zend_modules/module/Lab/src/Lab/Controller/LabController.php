@@ -28,7 +28,7 @@ class LabController extends AbstractActionController
 	$priority = $helper->getList("ord_priority");
 	$form->get('priority')->setValueOptions($priority);
 	
-	$status = $helper->getList("ord_status");
+	$status = $helper->getList1("ord_status");
 	$form->get('status')->setValueOptions($status);
 	//$form->get('submit')->setValue('Add');
 
@@ -268,7 +268,7 @@ class LabController extends AbstractActionController
     * Vipin
     */
     
-    public function pullcompandiantestAction()
+    public function pullcompendiumtestAction()
     {
         
 	ini_set("soap.wsdl_cache_enabled","0");
@@ -284,12 +284,12 @@ class LabController extends AbstractActionController
 	
 	$result = $client->check_for_tests();
 	
-	$testconfig_arr = $this->getLabTable()->pullCompandianTestConfig();
+	$testconfig_arr = $this->getLabTable()->pullcompendiumTestConfig();
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
     
-    public function pullcompandianaoeAction()
+    public function pullcompendiumaoeAction()
     {
 	ini_set("soap.wsdl_cache_enabled","0");
 	ini_set('memory_limit', '-1');
@@ -299,7 +299,7 @@ class LabController extends AbstractActionController
 			);
 	$client = new Client(null,$options);
 	$result = $client->check_for_aoe();
-	$testconfig_arr = $this->getLabTable()->pullCompandianAoeConfig();
+	$testconfig_arr = $this->getLabTable()->pullcompendiumAoeConfig();
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
