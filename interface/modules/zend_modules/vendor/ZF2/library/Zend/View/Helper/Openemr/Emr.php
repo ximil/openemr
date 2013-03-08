@@ -24,6 +24,26 @@ class Emr extends AbstractHelper
 	}
 	return $rows;
     }
+    public function getList1($list_id)
+    {
+        $res = sqlStatement("SELECT * FROM list_options WHERE list_id=? ORDER BY seq, title",array($list_id));
+        $rows[0] = array (
+		'value' => 'pending',
+		'label' => xlt('Pending'),
+		'selected' => TRUE,
+		'disabled' => FALSE
+	);
+	$i = 1;
+	
+	while($row=sqlFetchArray($res)) {
+		$rows[$i] = array (
+			'value' => htmlspecialchars($row['option_id'],ENT_QUOTES),
+			'label' => xlt($row['title']),
+		);
+		$i++;
+	}
+	return $rows;
+    }
     
     public function getProviders()
     {
