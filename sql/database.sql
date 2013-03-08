@@ -3612,6 +3612,7 @@ CREATE TABLE `lists` (
   `external_allergyid` INT(11) DEFAULT NULL,
   `erx_source` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-OpenEMR 1-External',
   `erx_uploaded` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-Pending NewCrop upload 1-Uploaded TO NewCrop',
+  `modifydate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`),
   KEY `type` (`type`)
@@ -5546,6 +5547,7 @@ CREATE TABLE code_types (
   ct_claim tinyint(1) NOT NULL default 0 COMMENT '1 if this is used in claims',
   ct_proc tinyint(1) NOT NULL default 0 COMMENT '1 if this is a procedure type',
   ct_term tinyint(1) NOT NULL default 0 COMMENT '1 if this is a clinical term',
+  ct_problem tinyint(4) NOT NULL default 0 COMMENT '1 if this code type is used as a medical problem',
   PRIMARY KEY (ct_key)
 ) ENGINE=MyISAM;
 
