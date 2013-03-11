@@ -35,8 +35,8 @@ CREATE TABLE `amc_misc_data` (
   `pid` bigint(20) default NULL,
   `map_category` varchar(255) NOT NULL default '' COMMENT 'Maps to an object category (such as prescriptions etc.)',
   `map_id` bigint(20) NOT NULL default '0' COMMENT 'Maps to an object id (such as prescription id etc.)',
-  `date_created` datetime default NULL,
-  `date_completed` datetime default NULL,
+  `date_created` timestamp NULL DEFAULT NULL,
+  `date_completed` timestamp NULL DEFAULT NULL,
   KEY  (`amc_id`,`pid`,`map_id`)
 ) ENGINE=MyISAM;
 
@@ -66,7 +66,7 @@ CREATE TABLE `audit_master` (
   `approval_status` tinyint(4) NOT NULL COMMENT '1-Pending,2-Approved,3-Denied,4-Appointment directly updated to calendar table,5-Cancelled appointment',
   `comments` text NOT NULL,
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified_time` datetime NOT NULL,
+  `modified_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ip_address` varchar(100) NOT NULL,
   `type` tinyint(4) NOT NULL COMMENT '1-new patient,2-existing patient,3-change is only in the document,4-Patient upload,5-random key,10-Appointment',
   PRIMARY KEY (`id`)
@@ -126,7 +126,7 @@ CREATE TABLE `batchcom` (
   `msg_type` varchar(60) default NULL,
   `msg_subject` varchar(255) default NULL,
   `msg_text` mediumtext,
-  `msg_date_sent` datetime NOT NULL default '0000-00-00 00:00:00',
+  `msg_date_sent` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
@@ -139,7 +139,7 @@ CREATE TABLE `batchcom` (
 DROP TABLE IF EXISTS `billing`;
 CREATE TABLE `billing` (
   `id` int(11) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `code_type` varchar(15) default NULL,
   `code` varchar(20) default NULL,
   `pid` int(11) default NULL,
@@ -153,8 +153,8 @@ CREATE TABLE `billing` (
   `activity` tinyint(1) default NULL,
   `payer_id` int(11) default NULL,
   `bill_process` tinyint(2) NOT NULL default '0',
-  `bill_date` datetime default NULL,
-  `process_date` datetime default NULL,
+  `bill_date` timestamp NULL DEFAULT NULL,
+  `process_date` timestamp NULL DEFAULT NULL,
   `process_file` varchar(255) default NULL,
   `modifier` varchar(12) default NULL,
   `units` tinyint(3) default NULL,
@@ -250,8 +250,8 @@ CREATE TABLE `claims` (
   `status` tinyint(2) NOT NULL default '0',
   `payer_type` tinyint(4) NOT NULL default '0',
   `bill_process` tinyint(2) NOT NULL default '0',
-  `bill_time` datetime default NULL,
-  `process_time` datetime default NULL,
+  `bill_time` timestamp NULL DEFAULT NULL,
+  `process_time` timestamp NULL DEFAULT NULL,
   `process_file` varchar(255) default NULL,
   `target` varchar(30) default NULL,
   `x12_partner_id` int(11) NOT NULL default '0',
@@ -542,7 +542,7 @@ DROP TABLE IF EXISTS `syndromic_surveillance`;
 CREATE TABLE `syndromic_surveillance` (
   `id` bigint(20) NOT NULL auto_increment,
   `lists_id` bigint(20) NOT NULL,
-  `submission_date` datetime NOT NULL,
+  `submission_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `filename` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`),
   KEY (`lists_id`)
@@ -596,7 +596,7 @@ CREATE TABLE `dated_reminders` (
   `dr_id` int(11) NOT NULL AUTO_INCREMENT,
   `dr_from_ID` int(11) NOT NULL,
   `dr_message_text` varchar(160) NOT NULL,
-  `dr_message_sent_date` datetime NOT NULL,
+  `dr_message_sent_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `dr_message_due_date` date NOT NULL,
   `pid` int(11) NOT NULL,
   `message_priority` tinyint(1) NOT NULL,
@@ -658,7 +658,7 @@ CREATE TABLE `documents` (
   `id` int(11) NOT NULL default '0',
   `type` enum('file_url','blob','web_url') default NULL,
   `size` int(11) default NULL,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `url` varchar(255) default NULL,
   `mimetype` varchar(255) default NULL,
   `pages` int(11) default NULL,
@@ -723,7 +723,7 @@ CREATE TABLE `documents_legal_master` (
   `dlm_sign_height` double NOT NULL,
   `dlm_sign_width` double NOT NULL,
   `dlm_filename` varchar(45) NOT NULL,
-  `dlm_effective_date` datetime NOT NULL,
+  `dlm_effective_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `dlm_version` int(10) unsigned NOT NULL,
   `content` varchar(255) NOT NULL,
   `dlm_savedsign` varchar(255) DEFAULT NULL COMMENT '0-Yes 1-No',
@@ -879,7 +879,7 @@ CREATE TABLE `eligibility_verification` (
   `verification_id` bigint(20) NOT NULL auto_increment,
   `response_id` bigint(20) default NULL,
   `insurance_id` bigint(20) default NULL,
-  `eligibility_check_date` datetime default NULL,
+  `eligibility_check_date` timestamp NULL DEFAULT NULL,
   `copay` int(11) default NULL,
   `deductible` int(11) default NULL,
   `deductiblemet` enum('Y','N') default 'Y',
@@ -903,7 +903,7 @@ CREATE TABLE `employer_data` (
   `city` varchar(255) default NULL,
   `state` varchar(255) default NULL,
   `country` varchar(255) default NULL,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
@@ -985,10 +985,10 @@ INSERT INTO `enc_category_map` ( `rule_enc_id`, `main_cat_id` ) VALUES ('enc_inf
 DROP TABLE IF EXISTS `standardized_tables_track`;
 CREATE TABLE `standardized_tables_track` (
   `id` int(11) NOT NULL auto_increment,
-  `imported_date` datetime default NULL,
+  `imported_date` timestamp NULL DEFAULT NULL,
   `name` varchar(255) NOT NULL default '' COMMENT 'name of standardized tables such as RXNORM',
   `revision_version` varchar(255) NOT NULL default '' COMMENT 'revision of standardized tables that were imported',
-  `revision_date` datetime default NULL COMMENT 'revision of standardized tables that were imported',
+  `revision_date` timestamp NULL DEFAULT NULL COMMENT 'revision of standardized tables that were imported',
   `file_checksum` varchar(32) NOT NULL DEFAULT '',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -1088,7 +1088,7 @@ INSERT INTO `fee_sheet_options` VALUES ('2Established Patient', '5Comprehensive'
 DROP TABLE IF EXISTS `form_dictation`;
 CREATE TABLE `form_dictation` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) default NULL,
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -1108,13 +1108,13 @@ CREATE TABLE `form_dictation` (
 DROP TABLE IF EXISTS `form_encounter`;
 CREATE TABLE `form_encounter` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `reason` longtext,
   `facility` longtext,
   `facility_id` int(11) NOT NULL default '0',
   `pid` bigint(20) default NULL,
   `encounter` bigint(20) default NULL,
-  `onset_date` datetime default NULL,
+  `onset_date` timestamp NULL DEFAULT NULL,
   `sensitivity` varchar(30) default NULL,
   `billing_note` text,
   `pc_catid` int(11) NOT NULL default '5' COMMENT 'event category from openemr_postcalendar_categories',
@@ -1140,7 +1140,7 @@ CREATE TABLE `form_encounter` (
 DROP TABLE IF EXISTS `form_misc_billing_options`;
 CREATE TABLE `form_misc_billing_options` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) default NULL,
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -1176,7 +1176,7 @@ CREATE TABLE `form_misc_billing_options` (
 DROP TABLE IF EXISTS `form_reviewofs`;
 CREATE TABLE `form_reviewofs` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) default NULL,
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -1304,7 +1304,7 @@ CREATE TABLE `form_ros` (
   `id` int(11) NOT NULL auto_increment,
   `pid` int(11) NOT NULL,
   `activity` int(11) NOT NULL default '1',
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `weight_change` varchar(3) default NULL,
   `weakness` varchar(3) default NULL,
   `fatigue` varchar(3) default NULL,
@@ -1455,7 +1455,7 @@ CREATE TABLE `form_ros` (
 DROP TABLE IF EXISTS `form_soap`;
 CREATE TABLE `form_soap` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) default '0',
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -1477,7 +1477,7 @@ CREATE TABLE `form_soap` (
 DROP TABLE IF EXISTS `form_vitals`;
 CREATE TABLE `form_vitals` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) default '0',
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -1510,7 +1510,7 @@ CREATE TABLE `form_vitals` (
 DROP TABLE IF EXISTS `forms`;
 CREATE TABLE `forms` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `encounter` bigint(20) default NULL,
   `form_name` longtext,
   `form_id` bigint(20) default NULL,
@@ -1949,16 +1949,16 @@ CREATE TABLE `history_data` (
   `relatives_epilepsy` longtext,
   `relatives_mental_illness` longtext,
   `relatives_suicide` longtext,
-  `cataract_surgery` datetime default NULL,
-  `tonsillectomy` datetime default NULL,
-  `cholecystestomy` datetime default NULL,
-  `heart_surgery` datetime default NULL,
-  `hysterectomy` datetime default NULL,
-  `hernia_repair` datetime default NULL,
-  `hip_replacement` datetime default NULL,
-  `knee_replacement` datetime default NULL,
-  `appendectomy` datetime default NULL,
-  `date` datetime default NULL,
+  `cataract_surgery` timestamp NULL DEFAULT NULL,
+  `tonsillectomy` timestamp NULL DEFAULT NULL,
+  `cholecystestomy` timestamp NULL DEFAULT NULL,
+  `heart_surgery` timestamp NULL DEFAULT NULL,
+  `hysterectomy` timestamp NULL DEFAULT NULL,
+  `hernia_repair` timestamp NULL DEFAULT NULL,
+  `hip_replacement` timestamp NULL DEFAULT NULL,
+  `knee_replacement` timestamp NULL DEFAULT NULL,
+  `appendectomy` timestamp NULL DEFAULT NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) NOT NULL default '0',
   `name_1` varchar(255) default NULL,
   `value_1` varchar(255) default NULL,
@@ -2232,7 +2232,7 @@ CREATE TABLE `immunizations` (
   `education_date` date default NULL,
   `vis_date` date default NULL COMMENT 'Date of VIS Statement', 
   `note` text,
-  `create_date` datetime default NULL,
+  `create_date` timestamp NULL DEFAULT NULL,
   `update_date` timestamp NOT NULL,
   `created_by` bigint(20) default NULL,
   `updated_by` bigint(20) default NULL,
@@ -3586,7 +3586,7 @@ insert into list_options (list_id, option_id, title, seq, option_value, mapping,
 DROP TABLE IF EXISTS `lists`;
 CREATE TABLE `lists` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `type` varchar(255) default NULL,
   `title` varchar(255) default NULL,
   `begdate` date default NULL,
@@ -3627,7 +3627,7 @@ DROP TABLE IF EXISTS `lists_touch`;
 CREATE TABLE `lists_touch` (
   `pid` bigint(20) default NULL,
   `type` varchar(255) default NULL,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   PRIMARY KEY  (`pid`,`type`)
 ) ENGINE=MyISAM ;
 
@@ -3640,7 +3640,7 @@ CREATE TABLE `lists_touch` (
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `event` varchar(255) default NULL,
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -3666,7 +3666,7 @@ CREATE TABLE `notes` (
   `foreign_id` int(11) NOT NULL default '0',
   `note` varchar(255) default NULL,
   `owner` int(11) default NULL,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `revision` timestamp NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `foreign_id` (`owner`),
@@ -3683,7 +3683,7 @@ CREATE TABLE `notes` (
 DROP TABLE IF EXISTS `onotes`;
 CREATE TABLE `onotes` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `body` longtext,
   `user` varchar(255) default NULL,
   `groupname` varchar(255) default NULL,
@@ -3815,7 +3815,7 @@ CREATE TABLE `openemr_postcalendar_events` (
   `pc_aid` varchar(30) default NULL,
   `pc_pid` varchar(11) default NULL,
   `pc_title` varchar(150) default NULL,
-  `pc_time` datetime default NULL,
+  `pc_time` timestamp NULL DEFAULT NULL,
   `pc_hometext` text,
   `pc_comments` int(11) default '0',
   `pc_counter` mediumint(8) unsigned default '0',
@@ -3960,7 +3960,7 @@ CREATE TABLE `patient_data` (
   `pharmacy_id` int(11) NOT NULL default '0',
   `status` varchar(255) NOT NULL default '',
   `contact_relationship` varchar(255) NOT NULL default '',
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `sex` varchar(255) NOT NULL default '',
   `referrer` varchar(255) NOT NULL default '',
   `referrerID` varchar(255) NOT NULL default '',
@@ -3975,7 +3975,7 @@ CREATE TABLE `patient_data` (
   `family_size` varchar(255) NOT NULL default '',
   `monthly_income` varchar(255) NOT NULL default '',
   `homeless` varchar(255) NOT NULL default '',
-  `financial_review` datetime default NULL,
+  `financial_review` timestamp NULL DEFAULT NULL,
   `pubpid` varchar(255) NOT NULL default '',
   `pid` bigint(20) NOT NULL default '0',
   `genericname1` varchar(255) NOT NULL default '',
@@ -4018,7 +4018,7 @@ CREATE TABLE `patient_data` (
   `allow_imm_info_share` varchar(255) NOT NULL DEFAULT '',
   `allow_health_info_ex` varchar(255) NOT NULL DEFAULT '',
   `allow_patient_portal` varchar(31) NOT NULL DEFAULT '',
-  `deceased_date` datetime default NULL,
+  `deceased_date` timestamp NULL DEFAULT NULL,
   `deceased_reason` varchar(255) NOT NULL default '',
   `soap_import_status` TINYINT(4) DEFAULT NULL COMMENT '1-Prescription Press 2-Prescription Import 3-Allergy Press 4-Allergy Import',
   UNIQUE KEY `pid` (`pid`),
@@ -4035,14 +4035,14 @@ DROP TABLE IF EXISTS `patient_reminders`;
 CREATE TABLE `patient_reminders` (
   `id` bigint(20) NOT NULL auto_increment,
   `active` tinyint(1) NOT NULL default 1 COMMENT '1 if active and 0 if not active',
-  `date_inactivated` datetime DEFAULT NULL,
+  `date_inactivated` timestamp NULL DEFAULT NULL,
   `reason_inactivated` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to list_options list rule_reminder_inactive_opt',
   `due_status` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to list_options list rule_reminder_due_opt',
   `pid` bigint(20) NOT NULL COMMENT 'id from patient_data table',
   `category` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to the category item in the rule_action_item table',
   `item` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to the item column in the rule_action_item table',
-  `date_created` datetime DEFAULT NULL,
-  `date_sent` datetime DEFAULT NULL,
+  `date_created` timestamp NULL DEFAULT NULL,
+  `date_sent` timestamp NULL DEFAULT NULL,
   `voice_status` tinyint(1) NOT NULL default 0 COMMENT '0 if not sent and 1 if sent',
   `sms_status` tinyint(1) NOT NULL default 0 COMMENT '0 if not sent and 1 if sent',
   `email_status` tinyint(1) NOT NULL default 0 COMMENT '0 if not sent and 1 if sent',
@@ -4078,7 +4078,7 @@ DROP TABLE IF EXISTS `payments`;
 CREATE TABLE `payments` (
   `id` bigint(20) NOT NULL auto_increment,
   `pid` bigint(20) NOT NULL default '0',
-  `dtime` datetime NOT NULL,
+  `dtime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `encounter` bigint(20) NOT NULL default '0',
   `user` varchar(255) default NULL,
   `method` varchar(255) default NULL,
@@ -4274,7 +4274,7 @@ CREATE TABLE `pma_table_info` (
 DROP TABLE IF EXISTS `pnotes`;
 CREATE TABLE `pnotes` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `body` longtext,
   `pid` bigint(20) default NULL,
   `user` varchar(255) default NULL,
@@ -4323,7 +4323,7 @@ CREATE TABLE `prescriptions` (
   `medication` int(11) default NULL,
   `note` text,
   `active` int(11) NOT NULL default '1',
-  `datetime` DATETIME DEFAULT NULL,
+  `datetime` timestamp NULL DEFAULT NULL,
   `user` VARCHAR(50) DEFAULT NULL,
   `site` VARCHAR(50) DEFAULT NULL,
   `prescriptionguid` VARCHAR(50) DEFAULT NULL,
@@ -4363,7 +4363,7 @@ CREATE TABLE `registry` (
   `id` bigint(20) NOT NULL auto_increment,
   `sql_run` tinyint(4) default NULL,
   `unpackaged` tinyint(4) default NULL,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `priority` int(11) default '0',
   `category` varchar(255) default NULL,
   `nickname` varchar(255) default NULL,
@@ -4810,7 +4810,7 @@ INSERT INTO `rule_filter` ( `id`, `include_flag`, `required_flag`, `method`, `me
 DROP TABLE IF EXISTS `rule_patient_data`;
 CREATE TABLE `rule_patient_data` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime DEFAULT NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) NOT NULL,
   `category` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to the category item in the rule_action_item table',
   `item` varchar(31) NOT NULL DEFAULT '' COMMENT 'Maps to the item column in the rule_action_item table',
@@ -5069,7 +5069,7 @@ INSERT INTO `supported_external_dataloads` (`load_type`, `load_source`, `load_re
 DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `id`                      bigint(20)   NOT NULL auto_increment,
-  `date`                    datetime     default NULL,
+  `date`                    timestamp    NULL DEFAULT NULL,
   `title`                   varchar(255) NOT NULL DEFAULT '',
   `body`                    longtext     NOT NULL DEFAULT '',
   `pid`                     bigint(20)   default NULL,
@@ -5251,7 +5251,7 @@ CREATE TABLE `automatic_notification` (
   `email_sender` varchar(100) NOT NULL,
   `email_subject` varchar(100) NOT NULL,
   `type` enum('SMS','Email') NOT NULL default 'SMS',
-  `notification_sent_date` datetime NOT NULL,
+  `notification_sent_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY  (`notification_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 ;
 
@@ -5284,7 +5284,7 @@ CREATE TABLE `notification_log` (
   `pc_endDate` date NOT NULL,
   `pc_startTime` time NOT NULL,
   `pc_endTime` time NOT NULL,
-  `dSentDateTime` datetime NOT NULL,
+  `dSentDateTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY  (`iLogId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 ;
 
@@ -5316,7 +5316,7 @@ INSERT INTO `notification_settings` (`SettingsId`, `Send_SMS_Before_Hours`, `Sen
 
 CREATE TABLE chart_tracker (
   ct_pid            int(11)       NOT NULL,
-  ct_when           datetime      NOT NULL,
+  ct_when           timestamp     NOT NULL DEFAULT '0000-00-00 00:00:00',
   ct_userid         bigint(20)    NOT NULL DEFAULT 0,
   ct_location       varchar(31)   NOT NULL DEFAULT '',
   PRIMARY KEY (ct_pid, ct_when)
@@ -5332,7 +5332,7 @@ CREATE TABLE ar_session (
   deposit_date   date          DEFAULT NULL,
   pay_total      decimal(12,2) NOT NULL DEFAULT 0,
   created_time timestamp NOT NULL default CURRENT_TIMESTAMP,
-  modified_time datetime NOT NULL,
+  modified_time  timestamp     NOT NULL DEFAULT '0000-00-00 00:00:00',
   global_amount decimal( 12, 2 ) NOT NULL ,
   payment_type varchar( 50 ) NOT NULL ,
   description text NOT NULL ,
@@ -5353,13 +5353,13 @@ CREATE TABLE ar_activity (
   code           varchar(20)   NOT NULL            COMMENT 'empty means claim level',
   modifier       varchar(12)   NOT NULL DEFAULT '',
   payer_type     int           NOT NULL            COMMENT '0=pt, 1=ins1, 2=ins2, etc',
-  post_time      datetime      NOT NULL,
+  post_time      timestamp     NOT NULL DEFAULT '0000-00-00 00:00:00',
   post_user      int(11)       NOT NULL            COMMENT 'references users.id',
   session_id     int unsigned  NOT NULL            COMMENT 'references ar_session.session_id',
   memo           varchar(255)  NOT NULL DEFAULT '' COMMENT 'adjustment reasons go here',
   pay_amount     decimal(12,2) NOT NULL DEFAULT 0  COMMENT 'either pay or adj will always be 0',
   adj_amount     decimal(12,2) NOT NULL DEFAULT 0,
-  modified_time datetime NOT NULL,
+  modified_time  timestamp     NOT NULL DEFAULT '0000-00-00 00:00:00',
   follow_up char(1) NOT NULL,
   follow_up_note text NOT NULL,
   account_code varchar(15) NOT NULL,
@@ -5453,7 +5453,7 @@ CREATE TABLE `procedure_order` (
   `provider_id`            bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references users.id, the ordering provider',
   `patient_id`             bigint(20)   NOT NULL            COMMENT 'references patient_data.pid',
   `encounter_id`           bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references form_encounter.encounter',
-  `date_collected`         datetime     DEFAULT NULL        COMMENT 'time specimen collected',
+  `date_collected`         timestamp    NULL DEFAULT NULL,
   `date_ordered`           date         DEFAULT NULL,
   `order_priority`         varchar(31)  NOT NULL DEFAULT '',
   `order_status`           varchar(31)  NOT NULL DEFAULT '' COMMENT 'pending,routed,complete,canceled',
@@ -5492,7 +5492,7 @@ CREATE TABLE `procedure_report` (
   `procedure_report_id` bigint(20)     NOT NULL AUTO_INCREMENT,
   `procedure_order_id`  bigint(20)     DEFAULT NULL   COMMENT 'references procedure_order.procedure_order_id',
   `procedure_order_seq` int(11)        NOT NULL DEFAULT 1  COMMENT 'references procedure_order_code.procedure_order_seq',
-  `date_collected`      datetime       DEFAULT NULL,
+  `date_collected`      timestamp      NULL DEFAULT NULL,
   `date_report`         date           DEFAULT NULL,
   `source`              bigint(20)     NOT NULL DEFAULT 0  COMMENT 'references users.id, who entered this data',
   `specimen_num`        varchar(63)    NOT NULL DEFAULT '',
@@ -5509,7 +5509,7 @@ CREATE TABLE `procedure_result` (
   `result_data_type`    char(1)      NOT NULL DEFAULT 'S' COMMENT 'N=Numeric, S=String, F=Formatted, E=External, L=Long text as first line of comments',
   `result_code`         varchar(31)  NOT NULL DEFAULT '' COMMENT 'LOINC code, might match a procedure_type.procedure_code',
   `result_text`         varchar(255) NOT NULL DEFAULT '' COMMENT 'Description of result_code',
-  `date`                datetime     DEFAULT NULL        COMMENT 'lab-provided date specific to this result',
+  `date`                timestamp    NULL DEFAULT NULL   COMMENT 'lab-provided date specific to this result',
   `facility`            varchar(255) NOT NULL DEFAULT '' COMMENT 'lab-provided testing facility ID',
   `units`               varchar(31)  NOT NULL DEFAULT '',
   `result`              varchar(255) NOT NULL DEFAULT '',
@@ -5603,7 +5603,7 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 DROP TABLE IF EXISTS `extended_log`;
 CREATE TABLE `extended_log` (
   `id` bigint(20) NOT NULL auto_increment,
-  `date` datetime default NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `event` varchar(255) default NULL,
   `user` varchar(255) default NULL,
   `recipient` varchar(255) default NULL,

@@ -226,6 +226,9 @@ if (!empty($glrow)) {
       $GLOBALS[$gl_name] = $gl_value;
     }
   }
+  if($GLOBALS['time_zone']!='server_default'){
+  if($GLOBALS['time_zone']) date_default_timezone_set($GLOBALS['time_zone']);
+  }
   // Language cleanup stuff.
   $GLOBALS['language_menu_login'] = false;
   if ((count($GLOBALS['language_menu_show']) >= 1) || $GLOBALS['language_menu_showall']) {

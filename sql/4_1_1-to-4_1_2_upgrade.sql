@@ -329,3 +329,263 @@ CREATE TABLE IF NOT EXISTS `direct_message_log` (
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM;
 #EndIf
+
+#IfNotColumnType amc_misc_data date_created TIMESTAMP 
+Alter table `amc_misc_data` MODIFY `date_created` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType amc_misc_data date_completed TIMESTAMP 
+Alter table `amc_misc_data` MODIFY `date_completed` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType ar_activity post_time TIMESTAMP  
+Alter table `ar_activity` MODIFY `post_time` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType ar_activity modified_time TIMESTAMP  
+Alter table `ar_activity` MODIFY `modified_time` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType ar_session modified_time TIMESTAMP  
+Alter table `ar_session` MODIFY `modified_time` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType audit_master modified_time TIMESTAMP  
+Alter table `audit_master` MODIFY `modified_time` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType automatic_notification notification_sent_date TIMESTAMP  
+Alter table `automatic_notification` MODIFY `notification_sent_date` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType batchcom msg_date_sent TIMESTAMP  
+Alter table `batchcom` MODIFY `msg_date_sent` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType billing date TIMESTAMP 
+Alter table `billing` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType billing bill_date TIMESTAMP 
+Alter table `billing` MODIFY `bill_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType billing process_date TIMESTAMP 
+Alter table `billing` MODIFY `process_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType chart_tracker ct_when TIMESTAMP 
+ Alter table `chart_tracker` MODIFY `ct_when` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType claims bill_time TIMESTAMP 
+Alter table `claims` MODIFY `bill_time` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType claims process_time TIMESTAMP 
+Alter table `claims` MODIFY `process_time` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType dated_reminders dr_message_sent_date TIMESTAMP  
+Alter table `dated_reminders` MODIFY `dr_message_sent_date` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType documents date TIMESTAMP 
+Alter table `documents` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType documents_legal_master dlm_effective_date TIMESTAMP  
+Alter table `documents_legal_master` MODIFY `dlm_effective_date` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType eligibility_verification eligibility_check_date TIMESTAMP 
+Alter table `eligibility_verification` MODIFY `eligibility_check_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType employer_data date TIMESTAMP
+Alter table `employer_data` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType extended_log date TIMESTAMP
+Alter table `extended_log` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_dictation date TIMESTAMP
+Alter table `form_dictation` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_encounter date TIMESTAMP
+Alter table `form_encounter` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_encounter onset_date TIMESTAMP
+Alter table `form_encounter` MODIFY `onset_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_misc_billing_options date TIMESTAMP
+Alter table `form_misc_billing_options` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_reviewofs date TIMESTAMP
+Alter table `form_reviewofs` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_ros date TIMESTAMP
+Alter table `form_ros` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_soap date TIMESTAMP
+Alter table `form_soap` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType form_vitals date TIMESTAMP
+Alter table `form_vitals` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType forms date TIMESTAMP
+Alter table `forms` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data cataract_surgery TIMESTAMP
+Alter table `history_data` MODIFY `cataract_surgery` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data tonsillectomy TIMESTAMP
+Alter table `history_data` MODIFY `tonsillectomy` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data cholecystestomy TIMESTAMP
+Alter table `history_data` MODIFY `cholecystestomy` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data heart_surgery TIMESTAMP
+Alter table `history_data` MODIFY `heart_surgery` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data hysterectomy TIMESTAMP
+Alter table `history_data` MODIFY `hysterectomy` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data hernia_repair TIMESTAMP
+Alter table `history_data` MODIFY `hernia_repair` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data hip_replacement TIMESTAMP
+Alter table `history_data` MODIFY `hip_replacement` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data knee_replacement TIMESTAMP
+Alter table `history_data` MODIFY `knee_replacement` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data appendectomy TIMESTAMP
+Alter table `history_data` MODIFY `appendectomy` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType history_data date TIMESTAMP
+Alter table `history_data` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType immunizations create_date TIMESTAMP
+Alter table `immunizations` MODIFY `create_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType lists date TIMESTAMP
+Alter table `lists` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType lists_touch date TIMESTAMP
+Alter table `lists_touch` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType log date TIMESTAMP
+Alter table `log` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType notes date TIMESTAMP
+Alter table `notes` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType notification_log dSentDateTime TIMESTAMP  
+Alter table `notification_log` MODIFY `dSentDateTime` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType onotes date TIMESTAMP
+Alter table `onotes` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType openemr_postcalendar_events pc_time TIMESTAMP
+Alter table `openemr_postcalendar_events` MODIFY `pc_time` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_data date TIMESTAMP
+Alter table `patient_data` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_data financial_review TIMESTAMP
+Alter table `patient_data` MODIFY `financial_review` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_data deceased_date TIMESTAMP
+Alter table `patient_data` MODIFY `deceased_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_reminders date_inactivated TIMESTAMP
+Alter table `patient_reminders` MODIFY `date_inactivated` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_reminders date_created TIMESTAMP
+Alter table `patient_reminders` MODIFY `date_created` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType patient_reminders date_sent TIMESTAMP
+Alter table `patient_reminders` MODIFY `date_sent` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType payments dtime TIMESTAMP  
+Alter table `payments` MODIFY `dtime` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType pnotes date TIMESTAMP
+Alter table `pnotes` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType prescriptions datetime TIMESTAMP
+Alter table `prescriptions` MODIFY `datetime` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType procedure_order date_collected TIMESTAMP
+Alter table `procedure_order` MODIFY `date_collected` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType procedure_report date_collected TIMESTAMP
+Alter table `procedure_report` MODIFY `date_collected` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType procedure_result date TIMESTAMP
+Alter table `procedure_result` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType registry date TIMESTAMP
+Alter table `registry` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType rule_patient_data date TIMESTAMP
+Alter table `rule_patient_data` MODIFY `date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType standardized_tables_track imported_date TIMESTAMP
+Alter table `standardized_tables_track` MODIFY `imported_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType standardized_tables_track revision_date TIMESTAMP
+Alter table `standardized_tables_track` MODIFY `revision_date` TIMESTAMP NULL;
+#EndIf
+
+#IfNotColumnType syndromic_surveillance submission_date TIMESTAMP  
+Alter table `syndromic_surveillance` MODIFY `submission_date` TIMESTAMP NOT NULL default '0000-00-00 00:00:00';
+#EndIf
+
+#IfNotColumnType transactions date TIMESTAMP
+Alter table `transactions` MODIFY `date` TIMESTAMP NULL;
+#EndIf
