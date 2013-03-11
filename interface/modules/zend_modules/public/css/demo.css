@@ -24,3 +24,15 @@ h2 {
 	margin-right:8px;
 	float:left;
 }
+fieldset
+{
+	border: solid 1px #95B8E7;
+	width: 400px;
+	padding: 20px;
+	padding-top: 0;
+}
+
+legend
+{
+	padding: 0 10px;
+}

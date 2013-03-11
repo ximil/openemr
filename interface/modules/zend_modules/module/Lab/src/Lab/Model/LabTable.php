@@ -372,9 +372,10 @@ class LabTable extends AbstractTableGateway
     }
     public function insertProcedureMaster($post){
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
-		    diagnoses,patient_instructions,lab_id,psc_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+		    diagnoses,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
-		    'pending',"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected']));
+		    'pending',"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
+		    $post['billto'],$post['internal_comments']));
 	return $procedure_type_id;
     }
     public function saveLab($post,$aoe)
@@ -399,10 +400,6 @@ class LabTable extends AbstractTableGateway
 		${$PRow['specimen_state']."_j"}++;
 	    }
 	}
-	//$fh = fopen("D:/SAVELAB.txt","a");
-	//fwrite($fh,print_r($post,1));
-	//fwrite($fh,print_r($papArray,1));
-	//fwrite($fh,print_r($specimenState,1));
 	if(sizeof($papArray)>0){
 	    foreach($papArray as $procode_suffix=>$pronameArr ){
 	    	$PSArray = explode("|-|",$procode_suffix);
@@ -1070,7 +1067,10 @@ class LabTable extends AbstractTableGateway
         
         $xmlconfig['procedure_order']       = array(                      
 						'column_map'    => array(
-                                                                         'psc_hold'         => 'recv_app_id'
+                                                                         'psc_hold'         	=> 'recv_app_id',
+									 'billto'	    	=> 'bill_to',
+									 'patient_instructions'	=> 'patient_internal_comments',
+									 'internal_comments'	=> 'observation_request_comments',
 									 ),
                                                 'value_map'     => array(
                                                                         'psc_hold'          => array(
@@ -1336,7 +1336,7 @@ class LabTable extends AbstractTableGateway
 			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
 			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
 			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-			    "ordering_provider_fname","observation_request_comments","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP");
+			    "ordering_provider_fname","observation_request_comments","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP","bill_to");
      
 	
 	$cofig_arr  = $this->mapcolumntoxml();
@@ -1380,13 +1380,19 @@ class LabTable extends AbstractTableGateway
                     continue;
                 }            
                 $col_map_arr    = $cofig_arr[$table]['column_map'];
+		//echo "<br>".$table;
                 $res            = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$table);
                 
+		
+		//print_r
+		
                 while($data = sqlFetchArray($res))
                 {
                     $global_arr  = array();                
                     $check_arr   = array();
-                    
+//                    echo "<br>";
+//		    print_r($col_map_arr);
+		    
                     foreach($col_map_arr as $col => $tag)
                     {   
                         if(substr($tag,0,1)== "#")
@@ -1396,20 +1402,26 @@ class LabTable extends AbstractTableGateway
                         }
                         foreach($check_arr as $check)
                         {
-                                if(strstr($tag,$check))
-                                {
-                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
-                                }
+			    if(strstr($tag,$check))
+			    {
+				    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+			    }
                         }
-                        if($cofig_arr[$table]['value_map'] <> "")
+                        if($cofig_arr[$table]['value_map'][$col] <> "")
                         {
                             $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
                         }
                         else
                         {
                             $$tag   = $data[$col];
-                        }    
+                        }
+			
+			//echo "<br>".$col." => $".$tag." = ".$$tag;
+			//echo "<br>$"."data[".$col."] = ".$data[$col];
                     }
+		    
+		    
+		    
     
                     if($config['child_table'] <> "")
                     {
@@ -1439,7 +1451,8 @@ class LabTable extends AbstractTableGateway
                         }                    
                     }
                 }
-            }	
+            }
+	    //exit;
             /*-----------------------------------------------------------------------------------------------------------------------------*/
             
 	    $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_new_".gmdate('YmdHis')."_".$data_order['procedure_order_id'].".xml";
@@ -1450,6 +1463,7 @@ class LabTable extends AbstractTableGateway
 		$tag_val = (trim(${$tag}) <> "") ? ${$tag} : "";
 		$config->Order->$tag    = $tag_val;
 		$result_xml.= '<'.$tag.'>'.$tag_val.'</'.$tag.'>';
+		
 	    }
 	    
 	    

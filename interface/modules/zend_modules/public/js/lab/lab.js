@@ -53,13 +53,14 @@ function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix){
 		    }
 		    j+="</table>";
 		    //alert(j);
+		    contents = "<fieldset><legend>"+procedure+"</legend>";
 		    if(j==='<table></table>'){
 			$("#AOEtemplate_"+count).css('display','none');
 			$("#AOE_"+count).html("");
 		    }
 		    else{
 			$("#AOEtemplate_"+count).css('display','');
-			$("#AOE_"+count).html(j);
+			$("#AOE_"+count).html(contents+j+"</fieldset>");
 		    }
 	    // print success message
 	    } else {

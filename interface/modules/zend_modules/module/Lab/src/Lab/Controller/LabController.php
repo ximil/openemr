@@ -28,7 +28,7 @@ class LabController extends AbstractActionController
 	$priority = $helper->getList("ord_priority");
 	$form->get('priority')->setValueOptions($priority);
 	
-	$status = $helper->getList1("ord_status");
+	$status = $helper->getList("ord_status",'pending');
 	$form->get('status')->setValueOptions($status);
 	//$form->get('submit')->setValue('Add');
 
@@ -59,11 +59,16 @@ class LabController extends AbstractActionController
             
             $lab_id     = $request->getPost('lab_id');            
             
+	  
             foreach($xmlresult_arr as $xmlresult)
             {
                 $order_id   = $xmlresult['order_id'];
                 $xmlstring  = $xmlresult['xmlstring'];
-                
+		
+		//print_r($xmlstring);
+		//echo "<br>";
+		//continue;
+               		
                 $cred = $this->getLabTable()->getClientCredentials($order_id);
             
                 $username   = $cred['login'];
@@ -74,6 +79,7 @@ class LabController extends AbstractActionController
                 //echo "Result <br>";
                 //print_r($result);
             }
+	    //exit;
 			// End Prodedure Order Import
 			
                 //return $this->redirect()->toRoute('result');
