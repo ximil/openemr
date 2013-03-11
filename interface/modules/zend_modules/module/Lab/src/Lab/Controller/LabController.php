@@ -279,7 +279,6 @@ class LabController extends AbstractActionController
 				    'date_report'			=> $request->getPost('date_report'),
 				    'date_collected'		=> $request->getPost('date_collected'),
 				    'result_code'			=> $request->getPost('result_code'),
-				    'procedure_report_id'	=> $request->getPost('procedure_report_id'),
 				    'result_text'			=> $request->getPost('result_text'),
 				    'abnormal'				=> $request->getPost('abnormal'),
 				    'result'				=> $request->getPost('result'),

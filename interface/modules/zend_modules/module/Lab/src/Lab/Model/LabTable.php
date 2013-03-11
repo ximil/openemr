@@ -26,8 +26,11 @@ class LabTable extends AbstractTableGateway
 	
 	public function listLabOptions($data)
 	{
+		if (isset($data['option_id'])) { 
+			$where = " AND option_id='$data[option_id]'";
+		}
 		$sql = "SELECT option_id, title FROM list_options 
-						WHERE list_id='" . $data['optId'] . "' 
+						WHERE list_id='" . $data['optId'] . "' $where 
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
@@ -40,7 +43,6 @@ class LabTable extends AbstractTableGateway
 			);
 			$i++;
 		}
-		
 		
 		while($row = sqlFetchArray($result)) {
 			$arr[$i] = array (
@@ -105,11 +107,14 @@ class LabTable extends AbstractTableGateway
 			}
 			$result_comments = trim($result_comments);
 			$string = $row['result_status'] . '|' . $row['facility'] . '|' . $result_comments . '|' . $result_notes;
+			$title = $this->listLabOptions(array('option_id'=> $row['result_status'], 'optId'=> 'proc_res_status'));
+			$arr[0]['title'] = $title[0]['title'];
 			$arr[0]['result_status'] = trim($row['result_status']);
 			$arr[0]['facility'] = $row['facility'];
 			$arr[0]['comments'] = $result_comments;
 			$arr[0]['notes'] = $result_notes;
 			$arr[0]['selected'] = true;
+			
 		}
 		return $arr;
 	}
@@ -195,7 +200,7 @@ class LabTable extends AbstractTableGateway
 		if ($data['page'] == 1) {
 			$start = $data['page'] - 1;
 		} elseif ($data['page'] > 1) {
-			$start = (($data['page'] - 1) * $rows) + 1;
+			$start = (($data['page'] - 1) * $rows);
 		}
 
 		$sql = "SELECT $selects " .
@@ -288,7 +293,9 @@ class LabTable extends AbstractTableGateway
 				if ($lastpoid != $order_id || $lastpcid != $order_seq) {
 					$lastprid = -1;
 					if ($lastpoid != $order_id) {
-					  $arr1[$i]['date_ordered'] = $row['date_ordered'];
+						if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
+							$arr1[$i]['date_ordered'] = $row['date_ordered'];
+						}
 					}
 				}
 				/* if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
@@ -298,12 +305,21 @@ class LabTable extends AbstractTableGateway
 					$arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
 					$arr1[$i]['date_report'] = $date_report;
 					$arr1[$i]['date_collected'] = $date_collected;
-					$arr1[$i]['specimen_num'] = xlt($specimen_num);
-					$arr1[$i]['report_status'] = xlt($report_status);
+					
 					$arr1[$i]['order_id'] = $order_id;
 					$arr1[$i]['patient_name'] = xlt($row['patient_name']);
 					$arr1[$i]['encounter_id'] = $row['encounter_id'];
+
+					$title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
+					//$arr1[$i]['order_title'] = isset($title) ? xlt($title[0]['title']) : '';
+					$arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
+					//$arr1[$i]['order_status'] = xlt($row['order_status']);
 				}
+				$arr1[$i]['specimen_num'] = xlt($specimen_num);
+				$title = $this->listLabOptions(array('option_id'=> $report_status, 'optId'=> 'proc_rep_status'));
+				//$arr1[$i]['report_status'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['report_status'] = xlt($report_status);
+				$arr1[$i]['report_title'] = isset($title) ? xlt($title[0]['title']) : '';
 				$arr1[$i]['order_type_id'] = $order_type_id ;
 				$arr1[$i]['procedure_order_id'] = $order_id;
 				$arr1[$i]['procedure_order_seq'] = $order_seq;
@@ -317,14 +333,18 @@ class LabTable extends AbstractTableGateway
 				$arr1[$i]['procedure_result_id'] = $result_id;
 				$arr1[$i]['result_code'] = xlt($result_code);
 				$arr1[$i]['result_text'] = xlt($result_text);
+				
+				$title = $this->listLabOptions(array('option_id'=> $result_abnormal, 'optId'=> 'proc_res_abnormal'));
+				
+				$arr1[$i]['abnormal_title'] = isset($title) ? xlt($title[0]['title']) : '';
 				$arr1[$i]['abnormal'] = xlt($result_abnormal);
+				
 				$arr1[$i]['result'] = xlt($result_result);
 				$arr1[$i]['units'] = xlt($result_units);
 				$arr1[$i]['facility'] = xlt($facility);
 				$arr1[$i]['comments'] = xlt($result_comments);
 				$arr1[$i]['range'] = xlt($result_range);
 				$arr1[$i]['result_status'] = xlt($result_status);
-				$arr1[$i]['order_status'] = xlt($row['order_status']);
 				$arr1[$i]['editor'] = $editor;
 				$i++;
 				
@@ -411,11 +431,11 @@ class LabTable extends AbstractTableGateway
 			if ($result_id > 0) {
 				$sql = "UPDATE procedure_result 
 							SET procedure_report_id='$report_id', 
-								result_code='$', 
+								result_code='$result_code', 
 								result_text='$result_text', 
 								abnormal='$abnormal', 
 								result='$result', 
-								range='$range', 
+								`range`='$range', 
 								units='$units', 
 								result_status='$result_status', 
 								facility='$facility', 
