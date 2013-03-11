@@ -162,20 +162,29 @@ class LabController extends AbstractActionController
 	    $data =array();
 		if($request->getQuery('opt')){
 			switch ($request->getQuery('opt')) {
-				case 's':
+				case 'search':
 					$data['opt'] = 'search';
 					break;
-				case a:
-					$data['opt'] = 'abn';
+				case 'status':
+					$data['opt'] = 'status';
+					break;
+				case 'abnormal':
+					$data['opt'] = 'abnormal';
 					break;
 			}
 		}
 		if($request->getQuery('optId')){
-			switch ($request->getQuery('opt')) {
-				case 's':
+			switch ($request->getQuery('optId')) {
+				case 'order':
+					$data['optId'] = 'ord_status';
+					break;
+				case 'report':
 					$data['optId'] = 'proc_rep_status';
 					break;
-				case a:
+				case 'result':
+					$data['optId'] = 'proc_res_status';
+					break;
+				case 'abnormal':
 					$data['optId'] = 'proc_res_abnormal';
 					break;
 			}
@@ -212,18 +221,39 @@ class LabController extends AbstractActionController
 	    $labResult = $this->getLabTable()->listLabResult($data);
 	    return $labResult;
     }
-    
+
+	public function getResultCommentsAction()
+	{
+		$request = $this->getRequest();
+	    $data =array();
+		if($request->getPost('prid')){
+		    $data['procedure_result_id'] = $request->getPost('prid');
+		}
+		//$fh = fopen("D:/test.txt","a");
+		//fwrite($fh,print_r($request->getPost(),1));
+	    //$data['procedure_result_id'] = 5;
+		$comments = $this->getLabTable()->listResultComment($data);
+	    $data = new JsonModel($comments);
+		return $data;
+	}
+	
     public function resultShowAction()
     {
 	    $request = $this->getRequest();
 	    $data =array();
-	    if($request->getPost('status')){
+	    if($request->isPost()){
 		    $data = array(
-			    'status'	=> $request->getPost('status'),
-			    'dtFrom'	=> $request->getPost('dtFrom'),
-			    'dtTo'	=> $request->getPost('dtTo'),
+			    'statusReport'	=> $request->getPost('statusReport'),
+				'statusOrder'	=> $request->getPost('statusOrder'),
+				'statusResult'	=> $request->getPost('statusResult'),
+			    'dtFrom'		=> $request->getPost('dtFrom'),
+			    'dtTo'			=> $request->getPost('dtTo'),
+				'page'			=> $request->getPost('page'),
+				'rows'			=> $request->getPost('rows'),
 		    ); 
 	    }
+		//$fh = fopen("D:/test.txt","a");
+		//fwrite($fh,print_r($request->getPost(),1));
 	    $labResult = $this->getLabResult($data);
 	    $data = new JsonModel($labResult);
 	    return $data;
@@ -235,8 +265,9 @@ class LabController extends AbstractActionController
 		if ($request->isPost()) {
 			$arr = explode('|', $request->getPost('comments'));
 			$comments = '';
+			$comments = $arr[2];
 			if ($arr[3] != '') {
-				$comments = $arr[2] .= "\n" . $arr[3];
+				$comments .=  "\n" . $arr[3];
 			}
 		    $data = array(
 				    'procedure_report_id'	=> $request->getPost('procedure_report_id'),
@@ -258,6 +289,7 @@ class LabController extends AbstractActionController
 					'facility'				=> $arr[1],
 					'comments'				=> $comments,
 		    );
+
 		    $this->getLabTable()->saveResult($data);
 		    return $this->redirect()->toRoute('result');
 		}
