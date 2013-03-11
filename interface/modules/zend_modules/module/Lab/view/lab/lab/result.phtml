@@ -91,7 +91,7 @@
 							$('#formResultComments').val(entry['comments']);
 							$('#formResultNotes').val(entry['notes']);
 							$('#cc').combobox('setValue',$.trim(entry['result_status']));
-							$('#acpro_inp19').val(entry['result_status']);
+							$('#acpro_inp19').val(entry['title']);
 							/* $("#cc option").filter(function() {
 								return $(this).val() == entry['result_status'];
 							}).get(0).selected = true; */
@@ -127,7 +127,11 @@
 				$('#rem').html(row.procedure_name + '|' + rowIndex);
 				var fieldValue = $.trim(rowData.procedure_name);
 				var editor = rowData.editor;
-				
+				if (editor == 1) {
+					alert('Disabled');
+					$('#dg').edatagrid('cancelRow');
+					$('#dg').edatagrid('cancelEdit')
+				}
 				if (rowIndex == 0) {
 					$('#datagrid-row-r2-2-0').focus();
 				}
@@ -236,11 +240,12 @@
 			},
 		});
 	});
+  
 </script>
 <span id='rem'></span>
 	<table id="dg" title="Pending Review"  style="width:auto;height:600px"
 			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq, procedure_report_id, editor"
-			rownumbers="true" fitColumns="true" singleSelect="true" data-options="pageSize: '20'">
+			rownumbers="true" pageSize="20" fitColumns="true" singleSelect="true">
 			<thead data-options="frozen:true">
 				<tr>
 					<th colspan="6"><?php echo xlt('Order'); ?></th>
@@ -277,7 +282,7 @@
 				<th field="specimen_num" editor="text"><?php echo xlt('Specimen'); ?></th>
 				<th data-options="field:'report_status',  
 							formatter:function(value,row){  
-								return row.report_status;  
+								return row.report_title;  
 							},  
 							editor:{  
 								type:'combobox',  
@@ -297,7 +302,7 @@
 				<th data-options="field:'result_text', align:'left'"><?php echo xlt('Name'); ?></th>
 				<th data-options="field:'abnormal',  
 							formatter:function(value,row){  
-								return row.abnormal;  
+								return row.abnormal_title;  
 							},  
 							editor:{  
 								type:'combobox',  
