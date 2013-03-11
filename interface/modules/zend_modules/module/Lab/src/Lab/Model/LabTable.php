@@ -31,13 +31,27 @@ class LabTable extends AbstractTableGateway
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i] = array (
+				'option_id' => 'all',
+				'title' => xlt('All'),
+				'selected' => TRUE,
+			);
+			$i++;
 		}
+		
+		
 		while($row = sqlFetchArray($result)) {
-			$arr[] = $row;
+			$arr[$i] = array (
+				'option_id' => htmlspecialchars($row['option_id'],ENT_QUOTES),
+				'title' => xlt($row['title']),
+			);
+			if ($data['optId'] == 'ord_status' && $row['option_id'] == 'pending') {
+				$arr[$i]['selected'] = true;
+			}
+			$i++;
+			
 		}
 		return $arr;
 	}
@@ -49,10 +63,11 @@ class LabTable extends AbstractTableGateway
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i]['option_id'] = 'all';
+			$arr[$i]['title'] = 'All';
+			$arr[$i]['selected'] = true;
 		}
 		while($row = sqlFetchArray($result)) {
 			$arr[] = $row;
@@ -73,13 +88,52 @@ class LabTable extends AbstractTableGateway
 		return $arr;
 	}
 	
+	public function listResultComment($data)
+	{
+		$sql = "SELECT result_status, facility, comments FROM procedure_result 
+						WHERE procedure_result_id='" . $data['procedure_result_id'] . "'";
+		$result = sqlStatement($sql);
+		$string = '';
+		$arr = array();
+		while($row = sqlFetchArray($result)) {
+			
+			$result_notes = '';
+			$i = strpos($row['comments'], "\n");
+			if ($i !== FALSE) {
+				$result_notes = trim(substr($row['comments'], $i + 1));
+				$result_comments = substr($row['comments'], 0, $i);
+			}
+			$result_comments = trim($result_comments);
+			$string = $row['result_status'] . '|' . $row['facility'] . '|' . $result_comments . '|' . $result_notes;
+			$arr[0]['result_status'] = trim($row['result_status']);
+			$arr[0]['facility'] = $row['facility'];
+			$arr[0]['comments'] = $result_comments;
+			$arr[0]['notes'] = $result_notes;
+			$arr[0]['selected'] = true;
+		}
+		return $arr;
+	}
+	
 	public function listLabResult($data)
 	{	global $pid;
 		$flagSearch = 0;
-
-		if (isset($data['status']) && $data['status'] != 'all') {
-			$stats = $data['status'];
+//$data['statusOrder'] = 'complete';
+//$data['statusReport'] = 'final';
+		if (isset($data['statusReport']) && $data['statusReport'] != 'all') {
+			$statusReport = $data['statusReport'];
 			$flagSearch = 1;
+		}
+		if (isset($data['statusOrder']) && $data['statusOrder'] == 'pending') {
+			$statusOrder = $data['statusOrder'];
+		} elseif (isset($data['statusOrder'])){
+			if ($data['statusOrder'] != 'all') {
+				$statusOrder = $data['statusOrder'];
+			}
+			$flagSearch = 1;
+		} 
+		
+		if (isset($data['statusResult']) && $data['statusResult'] != 'all') {
+			$statsResult = $data['statusResult'];
 		}
 		if (isset($data['dtFrom'])) {
 			$dtFrom = $data['dtFrom'];
@@ -103,7 +157,7 @@ class LabTable extends AbstractTableGateway
 		$facilities = array();
 		//$pid = 1;
 		$selects =
-			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
+			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
 			"pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
 			"pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
 			"pr.report_status, pr.review_status";
@@ -113,7 +167,8 @@ class LabTable extends AbstractTableGateway
 			"LEFT JOIN procedure_type AS pt1 ON pt1.lab_id = po.lab_id AND pt1.procedure_code = pc.procedure_code " .
 			"LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
 			"pr.procedure_order_seq = pc.procedure_order_seq 
-			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id";
+			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id 
+			LEFT JOIN procedure_providers AS pp ON pp.ppid=po.lab_id";
 		$groupby = '';
 		if ($flagSearch == 1) {
 			$groupby = "GROUP By po.procedure_order_id";
@@ -124,25 +179,38 @@ class LabTable extends AbstractTableGateway
 			"pc.procedure_order_seq, pr.procedure_report_id";
 
 		$where = "1 = 1";
-		if($stats) {
-			$where .= " AND pr.report_status='$stats'";
+		if($statusReport) {
+			$where .= " AND pr.report_status='$statusReport'";
 		}
+		if($statusOrder) {
+			$where .= " AND po.order_status='$statusOrder'";
+		}
+		
 		if ($dtFrom) {
 			$where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
+		}
+		//$data['page'] = 2;
+		//$data['rows'] = 20;
+		$rows = $data['rows'];
+		if ($data['page'] == 1) {
+			$start = $data['page'] - 1;
+		} elseif ($data['page'] > 1) {
+			$start = (($data['page'] - 1) * $rows) + 1;
 		}
 
 		$sql = "SELECT $selects " .
 					  "FROM procedure_order AS po " .
 					  "$joins " .
 					  "WHERE po.patient_id = '$pid' AND $where " .
-					  "$groupby ORDER BY $orderby";
-
+					  "$groupby ORDER BY $orderby";// LIMIT $start, $rows";
+//echo $sql;
       	$result = sqlStatement($sql);
+		$total = 0;
 		$arr1 = array();
 		$i = 0;
 		while($row = sqlFetchArray($result)) {
-			$order_type_id  = empty($row['order_type_id'      ]) ? 0 : ($row['order_type_id' ] + 0);
-			$order_id       = empty($row['procedure_order_id' ]) ? 0 : ($row['procedure_order_id' ] + 0);
+			$order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
+			$order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
 			$order_seq      = empty($row['procedure_order_seq']) ? 0 : ($row['procedure_order_seq'] + 0);
 			$report_id      = empty($row['procedure_report_id']) ? 0 : ($row['procedure_report_id'] + 0);
 			$date_report    = empty($row['date_report'     ]) ? '' : $row['date_report'];
@@ -150,7 +218,10 @@ class LabTable extends AbstractTableGateway
 			$specimen_num   = empty($row['specimen_num'    ]) ? '' : $row['specimen_num'];
 			$report_status  = empty($row['report_status'   ]) ? '' : $row['report_status']; 
 			$review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
-		
+			$remoteHost		= empty($row['remote_host'      ]) ? '' : $row['remote_host' ];
+			$remoteUser		= empty($row['login']) ? '' : $row['login' ];
+			$remotePass		= empty($row['password']) ? '' : $row['password' ];
+			
 			if ($flagSearch == 0) {
 				if ($form_review) {
 					if ($review_status == "reviewed") continue;
@@ -164,12 +235,27 @@ class LabTable extends AbstractTableGateway
 						"pt2.name AS name, pt2.description, pt2.seq AS seq, " .
 						"ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
 						"ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
-			$pt2cond = "pt2.parent = $order_type_id AND " .
+			
+			// Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
+			$pt2cond = '';
+			$editor = 0;
+			if ($remoteHost != '' && $remoteUser != '' && $remotePass != '') {
+				$pt2cond = "pt2.parent = $order_type_id ";
+				$editor = 1;
+			} else {
+				$pt2cond = "pt2.parent = $order_type_id AND " .
 						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
+			}
+			
+			/* $pt2cond = "pt2.parent = $order_type_id AND " .
+						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')"; */
 			$pscond = "ps.procedure_report_id = $report_id";
 
 			$joincond = "ps.result_code = pt2.procedure_code";
-
+			if($statusResult) {
+				$where .= " AND ps.result_status='$statusResult'";
+			}
+			
 			$query = "(SELECT $selects FROM procedure_type AS pt2 " .
 							"LEFT JOIN procedure_result AS ps ON $pscond AND $joincond " .
 							"WHERE $pt2cond" .
@@ -178,7 +264,7 @@ class LabTable extends AbstractTableGateway
 							"LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
 							"WHERE $pscond) " .
 							"ORDER BY seq, name, procedure_type_id, result_code";
-//echo $query."<<<<<<";
+
 			$rres = sqlStatement($query);
 
 			while ($rrow = sqlFetchArray($rres)) {
@@ -199,43 +285,59 @@ class LabTable extends AbstractTableGateway
 				$result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
 				$result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
 				
-				if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
-					$arr1[$i]['date_ordered'] = $row['date_ordered'];
+				if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+					$lastprid = -1;
+					if ($lastpoid != $order_id) {
+					  $arr1[$i]['date_ordered'] = $row['date_ordered'];
+					}
 				}
+				/* if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
+					$arr1[$i]['date_ordered'] = $row['date_ordered'];
+				} */
 				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
-					$arr1[$i]['procedure_name'] = $row['procedure_name'];
-					$arr1[$i]['date_report'] = $date_report ? $date_report: '';
-					$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
-					$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
-					$arr1[$i]['report_status'] = $report_status ? $report_status: '';
-					$arr1[$i]['order_id'] = $order_id ? $order_id: '';
-					$arr1[$i]['patient_name'] = $row['patient_name'];
+					$arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+					$arr1[$i]['date_report'] = $date_report;
+					$arr1[$i]['date_collected'] = $date_collected;
+					$arr1[$i]['specimen_num'] = xlt($specimen_num);
+					$arr1[$i]['report_status'] = xlt($report_status);
+					$arr1[$i]['order_id'] = $order_id;
+					$arr1[$i]['patient_name'] = xlt($row['patient_name']);
 					$arr1[$i]['encounter_id'] = $row['encounter_id'];
 				}
-				$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
-				$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
-				$arr1[$i]['procedure_order_seq'] = $order_seq ? $order_seq: '';
-				$arr1[$i]['procedure_report_id'] = $report_id ? $report_id: '';
-				$arr1[$i]['review_status'] = $review_status ? $review_status: '';
-				$arr1[$i]['procedure_code'] = $restyp_code;
-				$arr1[$i]['procedure_type'] = $restyp_type;
-				$arr1[$i]['name'] = $restyp_name;
-				$arr1[$i]['pt2_units'] = $restyp_units;
-				$arr1[$i]['pt2_range'] = $restyp_range;
+				$arr1[$i]['order_type_id'] = $order_type_id ;
+				$arr1[$i]['procedure_order_id'] = $order_id;
+				$arr1[$i]['procedure_order_seq'] = $order_seq;
+				$arr1[$i]['procedure_report_id'] = $report_id;
+				$arr1[$i]['review_status'] = xlt($review_status);
+				$arr1[$i]['procedure_code'] = xlt($restyp_code);
+				$arr1[$i]['procedure_type'] = xlt($restyp_type);
+				$arr1[$i]['name'] = xlt($restyp_name);
+				$arr1[$i]['pt2_units'] = xlt($restyp_units);
+				$arr1[$i]['pt2_range'] = xlt($restyp_range);
 				$arr1[$i]['procedure_result_id'] = $result_id;
-				$arr1[$i]['result_code'] = $result_code;
-				$arr1[$i]['result_text'] = $result_text;
-				$arr1[$i]['abnormal'] = $result_abnormal;
-				$arr1[$i]['result'] = $result_result;
-				$arr1[$i]['units'] = $result_units;
-				$arr1[$i]['facility'] = $facility;
-				$arr1[$i]['comments'] = $result_comments;
-				$arr1[$i]['range'] = $result_range;
-				$arr1[$i]['result_status'] = $result_status;
+				$arr1[$i]['result_code'] = xlt($result_code);
+				$arr1[$i]['result_text'] = xlt($result_text);
+				$arr1[$i]['abnormal'] = xlt($result_abnormal);
+				$arr1[$i]['result'] = xlt($result_result);
+				$arr1[$i]['units'] = xlt($result_units);
+				$arr1[$i]['facility'] = xlt($facility);
+				$arr1[$i]['comments'] = xlt($result_comments);
+				$arr1[$i]['range'] = xlt($result_range);
+				$arr1[$i]['result_status'] = xlt($result_status);
+				$arr1[$i]['order_status'] = xlt($row['order_status']);
+				$arr1[$i]['editor'] = $editor;
 				$i++;
+				
+				$lastpoid = $order_id;
+				$lastpcid = $order_seq;
+				$lastprid = $report_id;
 			}
-			
+			//$total++;
+			//$arr1[$i]['total'] = $total;
+			//$arr1[$i]['rows'] = $rows;
+			//$arr1[$i]['page'] = $data['page'];
 		}
+		//echo '<pre>'; print_r($arr1); echo '</pre>';
 		return $arr1;
 	}
 	
