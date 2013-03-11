@@ -127,9 +127,30 @@ class LabForm extends Form
 		'data-options' => 'required:true',
 		'required' => 'required',
             ),
+        ));
+	$this->add(array(
+            'name' => 'billto',
+	    'type'  => 'Zend\Form\Element\Select',
+            'attributes' => array(
+		'class' => '/*easyui-combobox*/ combo',
+		'data-options' => 'required:true',
+		'required' => 'required',
+            ),
 	    'options' => array(
 		'value_options' => array(
-		    '' => xlt('Unassigend'),
+		    array(
+			  'value' => "P",
+			  'label' => xlt('Patient'),
+			  'selected' => TRUE
+			 ),
+		    array(
+			  'value' => "T",
+			  'label' => xlt('Third Party')
+			 ),
+		    array(
+			  'value' => "C",
+			  'label' => xlt('Facility')
+			 ),
 		),
 	    ),
         ));
@@ -148,6 +169,16 @@ class LabForm extends Form
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
 		'style' => 'height:60px',
+		'id' => 'patient_instructions',
+            ),
+        ));
+	$this->add(array(
+	    'type' => 'Zend\Form\Element\Textarea',
+            'name' => 'internal_comments',
+	    'attributes' => array(
+                'class' => 'easyui-validatebox combo',
+		'style' => 'height:60px',
+		'id' => 'internal_comments',
             ),
         ));
 	$this->add(array(
