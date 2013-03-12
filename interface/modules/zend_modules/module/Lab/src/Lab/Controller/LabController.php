@@ -288,7 +288,8 @@ class LabController extends AbstractActionController
 					'facility'				=> $arr[1],
 					'comments'				=> $comments,
 		    );
-
+			//$fh = fopen("D:/test.txt","a");
+			//fwrite($fh,print_r($data,1));
 		    $this->getLabTable()->saveResult($data);
 		    return $this->redirect()->toRoute('result');
 		}
