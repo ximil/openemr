@@ -118,19 +118,36 @@
 
 	// Freezing cells 
 	$(function(){ 
-		$('#dg').edatagrid({ 
-			onSelect:function(rowIndex, rowData){
+		$('#dg').edatagrid({
+			rowStyler: function(index,row){
+				if (row.editor == 1) {
+					return 'background-color:#E0ECFF;color:#0E2D5F;';
+					//$('#dg').edatagrid('cancelRow');
+					//$('#dg').edatagrid('cancelEdit')
+					//$('#dg').datagrid('unselectAll');
+				}
+			},
+			onLoadSuccess: function() {
+				var lastIndex = $('#dg').datagrid('getRows').length-1;
+				if (lastIndex > 0) {
+					//$('#dg').datagrid('deleteRow', lastIndex);
+					$("#datagrid-row-r2-1-" + lastIndex).hide();
+					$("#datagrid-row-r2-2-" + lastIndex).hide();
+				}
+				
+			},
+			 onSelect:function(rowIndex, rowData){
 				//$('#dg').edatagrid('cancelRow');
 				//var curRow = $('#dg').datagrid('selectRow', rowIndex);
 				//$('#dg').datagrid('unselectAll');
 				var row = $('#dg').datagrid('getSelected');
-				$('#rem').html(row.procedure_name + '|' + rowIndex);
 				var fieldValue = $.trim(rowData.procedure_name);
 				var editor = rowData.editor;
 				if (editor == 1) {
-					alert('Disabled');
+					//alert('Disabled');
 					$('#dg').edatagrid('cancelRow');
-					$('#dg').edatagrid('cancelEdit')
+					$('#dg').edatagrid('cancelEdit');
+					$('#dg').focus();
 				}
 				if (rowIndex == 0) {
 					$('#datagrid-row-r2-2-0').focus();
@@ -237,16 +254,18 @@
 				}
 				fieldValue = '';
 				//$('#dg').datagrid('unselectRow',rowIndex);
-			},
+				return;
+			}, 
 		});
 	});
-  
+
+
 </script>
-<span id='rem'></span>
+
 	<table id="dg" title="Pending Review"  style="width:auto;height:600px"
 			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq, procedure_report_id, editor"
 			rownumbers="true" pageSize="20" fitColumns="true" singleSelect="true">
-			<thead data-options="frozen:true">
+			<thead data-options="frozen:true" >
 				<tr>
 					<th colspan="6"><?php echo xlt('Order'); ?></th>
 				</tr>
@@ -275,10 +294,17 @@
 			
 			<!-- Start Report -->
 				<th field="date_report" editor="{type:'datebox',options:{required:true}}"><?php echo xlt('Reported'); ?><span style="margin-left: 30px;"></span></th>
-				<th field="date_collected" editor="{type:'datebox'}" ><?php echo xlt('Ext Time Collected'); ?><span style="margin-left: 30px;"></span></th>
-							
-				<!--<th class="easyui-datetimebox" name="birthday"   
-        data-options="field='date_collected',required:true,showSeconds:false" value="3/4/2010 2:3" style="width:150px"></th>-->
+				<th field="date_collected" editor="{
+												type:'datebox',
+													options:{
+														class: 'easyui-datetimebox',
+													}
+												}">
+												<?php echo xlt('Ext Time Collected'); ?>
+												<span style="margin-left: 30px;"></span>
+												</th>
+
+		
 				<th field="specimen_num" editor="text"><?php echo xlt('Specimen'); ?></th>
 				<th data-options="field:'report_status',  
 							formatter:function(value,row){  
@@ -296,8 +322,6 @@
 			<!-- End Report -->
 			
 			<!-- Start Results and Recommendations -->
-				<!--<th field="result_code" width="40" editor="text"><?php echo xlt('Code'); ?></th>
-				<th field="result_text" width="80" editor="text"><?php echo xlt('Name'); ?></th>-->
 				<th data-options="field:'result_code', align:'center'"><?php echo xlt('Code'); ?></th>
 				<th data-options="field:'result_text', align:'left'"><?php echo xlt('Name'); ?></th>
 				<th data-options="field:'abnormal',  
@@ -330,6 +354,8 @@
 							}"><?php echo xlt('Comments'); ?></th>
 
 			<!-- End Results and Recommendations -->
+			
+			<!-- Start Action -->
 				<th data-options="field:'action',title:'',align:'left',
 							formatter:function(value,row,index){
 								if (row.editing){
@@ -353,23 +379,46 @@
 			</tr>
 		</thead>
 	</table>
+<style type="text/css">
+
+.extlab {
+    border: 1px solid black;
+	padding: 1px;
+	background: #E0ECFF;
+}
+
+.local {
+    border: 1px solid black;
+	padding: 1px;
+	background: #fff;
+}
+
+</style>
 
 	<div id="toolbar">
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
 
 		<div style="text-align: right;">
+
 		<div style="text-align: left;">
 			<span style="text-align: left; font-weight: bold; margin-left: 220px;"><?php echo xlt('Date'); ?></span>
 			<span style="text-align: left; font-weight: bold; margin-left: 270px;"><?php echo xlt('Status'); ?></span>
 		</div>
+		<span style="text-align: left; padding-right: 50px;">
+		<span class="extlab">&nbsp;&nbsp;</span>
+		<span> Ext Labs</span>
+		<span class="local">&nbsp;&nbsp;</span>
+		<span> Local Labs</span>
+		</span>
+		
 			<span style="text-align: left; padding-right: 30px;">
 			<?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" >
 			</span>
 			<span style="text-align: left; padding-right: 50px;">
 			<?php echo xlt('To'); ?>: <input class="easyui-datebox" style="width:80px" >
 			</span>
-			<?php //echo xlt('Status'); ?>
+
 			<span style="text-align: left; padding-right: 10px;">
 			<?php echo xlt('Order'); ?>
 			<input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
@@ -417,6 +466,8 @@
     <div id="dlg-buttons">  
         <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()"><?php echo xlt('Close'); ?></a>  
     </div> 
+ 
+  
 
   
 	
