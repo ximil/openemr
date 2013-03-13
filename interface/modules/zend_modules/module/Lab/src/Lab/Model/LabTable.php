@@ -26,18 +26,34 @@ class LabTable extends AbstractTableGateway
 	
 	public function listLabOptions($data)
 	{
+		if (isset($data['option_id'])) { 
+			$where = " AND option_id='$data[option_id]'";
+		}
 		$sql = "SELECT option_id, title FROM list_options 
-						WHERE list_id='" . $data['optId'] . "' 
+						WHERE list_id='" . $data['optId'] . "' $where 
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i] = array (
+				'option_id' => 'all',
+				'title' => xlt('All'),
+				'selected' => TRUE,
+			);
+			$i++;
 		}
+		
 		while($row = sqlFetchArray($result)) {
-			$arr[] = $row;
+			$arr[$i] = array (
+				'option_id' => htmlspecialchars($row['option_id'],ENT_QUOTES),
+				'title' => xlt($row['title']),
+			);
+			if ($data['optId'] == 'ord_status' && $row['option_id'] == 'pending') {
+				$arr[$i]['selected'] = true;
+			}
+			$i++;
+			
 		}
 		return $arr;
 	}
@@ -49,10 +65,11 @@ class LabTable extends AbstractTableGateway
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i]['option_id'] = 'all';
+			$arr[$i]['title'] = 'All';
+			$arr[$i]['selected'] = true;
 		}
 		while($row = sqlFetchArray($result)) {
 			$arr[] = $row;
@@ -73,13 +90,55 @@ class LabTable extends AbstractTableGateway
 		return $arr;
 	}
 	
+	public function listResultComment($data)
+	{
+		$sql = "SELECT result_status, facility, comments FROM procedure_result 
+						WHERE procedure_result_id='" . $data['procedure_result_id'] . "'";
+		$result = sqlStatement($sql);
+		$string = '';
+		$arr = array();
+		while($row = sqlFetchArray($result)) {
+			
+			$result_notes = '';
+			$i = strpos($row['comments'], "\n");
+			if ($i !== FALSE) {
+				$result_notes = trim(substr($row['comments'], $i + 1));
+				$result_comments = substr($row['comments'], 0, $i);
+			}
+			$result_comments = trim($result_comments);
+			$string = $row['result_status'] . '|' . $row['facility'] . '|' . $result_comments . '|' . $result_notes;
+			$title = $this->listLabOptions(array('option_id'=> $row['result_status'], 'optId'=> 'proc_res_status'));
+			$arr[0]['title'] = $title[0]['title'];
+			$arr[0]['result_status'] = trim($row['result_status']);
+			$arr[0]['facility'] = $row['facility'];
+			$arr[0]['comments'] = $result_comments;
+			$arr[0]['notes'] = $result_notes;
+			$arr[0]['selected'] = true;
+			
+		}
+		return $arr;
+	}
+	
 	public function listLabResult($data)
 	{	global $pid;
 		$flagSearch = 0;
-
-		if (isset($data['status']) && $data['status'] != 'all') {
-			$stats = $data['status'];
+//$data['statusOrder'] = 'complete';
+//$data['statusReport'] = 'final';
+		if (isset($data['statusReport']) && $data['statusReport'] != 'all') {
+			$statusReport = $data['statusReport'];
 			$flagSearch = 1;
+		}
+		if (isset($data['statusOrder']) && $data['statusOrder'] == 'pending') {
+			$statusOrder = $data['statusOrder'];
+		} elseif (isset($data['statusOrder'])){
+			if ($data['statusOrder'] != 'all') {
+				$statusOrder = $data['statusOrder'];
+			}
+			$flagSearch = 1;
+		} 
+		
+		if (isset($data['statusResult']) && $data['statusResult'] != 'all') {
+			$statsResult = $data['statusResult'];
 		}
 		if (isset($data['dtFrom'])) {
 			$dtFrom = $data['dtFrom'];
@@ -103,7 +162,7 @@ class LabTable extends AbstractTableGateway
 		$facilities = array();
 		//$pid = 1;
 		$selects =
-			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
+			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
 			"pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
 			"pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
 			"pr.report_status, pr.review_status";
@@ -113,10 +172,11 @@ class LabTable extends AbstractTableGateway
 			"LEFT JOIN procedure_type AS pt1 ON pt1.lab_id = po.lab_id AND pt1.procedure_code = pc.procedure_code " .
 			"LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
 			"pr.procedure_order_seq = pc.procedure_order_seq 
-			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id";
+			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id 
+			LEFT JOIN procedure_providers AS pp ON pp.ppid=po.lab_id";
 		$groupby = '';
 		if ($flagSearch == 1) {
-			$groupby = "GROUP By po.procedure_order_id";
+			//$groupby = "GROUP By po.procedure_order_id";
 		}
 		
 		$orderby =
@@ -124,25 +184,39 @@ class LabTable extends AbstractTableGateway
 			"pc.procedure_order_seq, pr.procedure_report_id";
 
 		$where = "1 = 1";
-		if($stats) {
-			$where .= " AND pr.report_status='$stats'";
+		if($statusReport) {
+			$where .= " AND pr.report_status='$statusReport'";
 		}
+		if($statusOrder) {
+			$where .= " AND po.order_status='$statusOrder'";
+		}
+		
 		if ($dtFrom) {
 			$where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
+		}
+		
+		$start = isset($data['page']) ? $data['page'] :  0;
+		$rows = isset($data['rows']) ? $data['rows'] : 20;
+
+		if ($data['page'] == 1) {
+			$start = $data['page'] - 1;
+		} elseif ($data['page'] > 1) {
+			$start = (($data['page'] - 1) * $rows);
 		}
 
 		$sql = "SELECT $selects " .
 					  "FROM procedure_order AS po " .
 					  "$joins " .
 					  "WHERE po.patient_id = '$pid' AND $where " .
-					  "$groupby ORDER BY $orderby";
-
+					  "$groupby ORDER BY $orderby LIMIT $start, $rows";
+//echo $sql;
       	$result = sqlStatement($sql);
 		$arr1 = array();
+		
 		$i = 0;
 		while($row = sqlFetchArray($result)) {
-			$order_type_id  = empty($row['order_type_id'      ]) ? 0 : ($row['order_type_id' ] + 0);
-			$order_id       = empty($row['procedure_order_id' ]) ? 0 : ($row['procedure_order_id' ] + 0);
+			$order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
+			$order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
 			$order_seq      = empty($row['procedure_order_seq']) ? 0 : ($row['procedure_order_seq'] + 0);
 			$report_id      = empty($row['procedure_report_id']) ? 0 : ($row['procedure_report_id'] + 0);
 			$date_report    = empty($row['date_report'     ]) ? '' : $row['date_report'];
@@ -150,7 +224,10 @@ class LabTable extends AbstractTableGateway
 			$specimen_num   = empty($row['specimen_num'    ]) ? '' : $row['specimen_num'];
 			$report_status  = empty($row['report_status'   ]) ? '' : $row['report_status']; 
 			$review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
-		
+			$remoteHost		= empty($row['remote_host'      ]) ? '' : $row['remote_host' ];
+			$remoteUser		= empty($row['login']) ? '' : $row['login' ];
+			$remotePass		= empty($row['password']) ? '' : $row['password' ];
+			
 			if ($flagSearch == 0) {
 				if ($form_review) {
 					if ($review_status == "reviewed") continue;
@@ -158,18 +235,33 @@ class LabTable extends AbstractTableGateway
 					if ($review_status == "received") continue;
 				}
 			}
-			
+
 			$selects = "pt2.procedure_type, pt2.procedure_code, pt2.units AS pt2_units, " .
 						"pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
 						"pt2.name AS name, pt2.description, pt2.seq AS seq, " .
 						"ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
 						"ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
-			$pt2cond = "pt2.parent = $order_type_id AND " .
+			
+			// Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
+			$pt2cond = '';
+			$editor = 0;
+			if ($remoteHost != '' && $remoteUser != '' && $remotePass != '') {
+				$pt2cond = "pt2.parent = $order_type_id ";
+				$editor = 1;
+			} else {
+				$pt2cond = "pt2.parent = $order_type_id AND " .
 						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
+			}
+			
+			/* $pt2cond = "pt2.parent = $order_type_id AND " .
+						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')"; */
 			$pscond = "ps.procedure_report_id = $report_id";
 
 			$joincond = "ps.result_code = pt2.procedure_code";
-
+			if($statusResult) {
+				$where .= " AND ps.result_status='$statusResult'";
+			}
+			
 			$query = "(SELECT $selects FROM procedure_type AS pt2 " .
 							"LEFT JOIN procedure_result AS ps ON $pscond AND $joincond " .
 							"WHERE $pt2cond" .
@@ -178,7 +270,7 @@ class LabTable extends AbstractTableGateway
 							"LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
 							"WHERE $pscond) " .
 							"ORDER BY seq, name, procedure_type_id, result_code";
-//echo $query."<<<<<<";
+
 			$rres = sqlStatement($query);
 
 			while ($rrow = sqlFetchArray($rres)) {
@@ -199,50 +291,75 @@ class LabTable extends AbstractTableGateway
 				$result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
 				$result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
 				
-				if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
+				if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+					$lastprid = -1;
+					if ($lastpoid != $order_id) {
+						if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+							$arr1[$i]['date_ordered'] = $row['date_ordered'];
+						}
+					}
+				}
+				/* if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
 					$arr1[$i]['date_ordered'] = $row['date_ordered'];
-				}
-				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
-					$arr1[$i]['procedure_name'] = $row['procedure_name'];
-					$arr1[$i]['date_report'] = $date_report ? $date_report: '';
-					$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
-					$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
-					$arr1[$i]['report_status'] = $report_status ? $report_status: '';
-					$arr1[$i]['order_id'] = $order_id ? $order_id: '';
-					$arr1[$i]['patient_name'] = $row['patient_name'];
+				} */
+				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+					$arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+					$arr1[$i]['date_report'] = $date_report;
+					$arr1[$i]['date_collected'] = $date_collected;
+					
+					$arr1[$i]['order_id'] = $order_id;
+					$arr1[$i]['patient_name'] = xlt($row['patient_name']);
 					$arr1[$i]['encounter_id'] = $row['encounter_id'];
+
+					$title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
+					//$arr1[$i]['order_title'] = isset($title) ? xlt($title[0]['title']) : '';
+					$arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
+					//$arr1[$i]['order_status'] = xlt($row['order_status']);
 				}
-				$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
-				$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
-				$arr1[$i]['procedure_order_seq'] = $order_seq ? $order_seq: '';
-				$arr1[$i]['procedure_report_id'] = $report_id ? $report_id: '';
-				$arr1[$i]['review_status'] = $review_status ? $review_status: '';
-				$arr1[$i]['procedure_code'] = $restyp_code;
-				$arr1[$i]['procedure_type'] = $restyp_type;
-				$arr1[$i]['name'] = $restyp_name;
-				$arr1[$i]['pt2_units'] = $restyp_units;
-				$arr1[$i]['pt2_range'] = $restyp_range;
+				$arr1[$i]['specimen_num'] = xlt($specimen_num);
+				$title = $this->listLabOptions(array('option_id'=> $report_status, 'optId'=> 'proc_rep_status'));
+				//$arr1[$i]['report_status'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['report_status'] = xlt($report_status);
+				$arr1[$i]['report_title'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['order_type_id'] = $order_type_id ;
+				$arr1[$i]['procedure_order_id'] = $order_id;
+				$arr1[$i]['procedure_order_seq'] = $order_seq;
+				$arr1[$i]['procedure_report_id'] = $report_id;
+				$arr1[$i]['review_status'] = xlt($review_status);
+				$arr1[$i]['procedure_code'] = xlt($restyp_code);
+				$arr1[$i]['procedure_type'] = xlt($restyp_type);
+				$arr1[$i]['name'] = xlt($restyp_name);
+				$arr1[$i]['pt2_units'] = xlt($restyp_units);
+				$arr1[$i]['pt2_range'] = xlt($restyp_range);
 				$arr1[$i]['procedure_result_id'] = $result_id;
-				$arr1[$i]['result_code'] = $result_code;
-				$arr1[$i]['result_text'] = $result_text;
-				$arr1[$i]['abnormal'] = $result_abnormal;
-				$arr1[$i]['result'] = $result_result;
-				$arr1[$i]['units'] = $result_units;
-				$arr1[$i]['facility'] = $facility;
-				$arr1[$i]['comments'] = $result_comments;
-				$arr1[$i]['range'] = $result_range;
-				$arr1[$i]['result_status'] = $result_status;
+				$arr1[$i]['result_code'] = xlt($result_code);
+				$arr1[$i]['result_text'] = xlt($result_text);
+				
+				$title = $this->listLabOptions(array('option_id'=> $result_abnormal, 'optId'=> 'proc_res_abnormal'));
+				
+				$arr1[$i]['abnormal_title'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['abnormal'] = xlt($result_abnormal);
+				
+				$arr1[$i]['result'] = xlt($result_result);
+				$arr1[$i]['units'] = xlt($result_units);
+				$arr1[$i]['facility'] = xlt($facility);
+				$arr1[$i]['comments'] = xlt($result_comments);
+				$arr1[$i]['range'] = xlt($result_range);
+				$arr1[$i]['result_status'] = xlt($result_status);
+				$arr1[$i]['editor'] = $editor;
 				$i++;
+				$lastpoid = $order_id;
+				$lastpcid = $order_seq;
+				$lastprid = $report_id;
 			}
-			
 		}
+		$arr1[$i]['total'] = $i-1;
+		//echo '<pre>'; print_r($arr1); echo '</pre>';
 		return $arr1;
 	}
 	
 	public function saveResult($data)
-	{	//$result_id, $report_id, $specimen_num
-		//$sql = "SELECT procedure_report_id FROM procedure_report WHERE procedure_report_id='$report_id'";
-		//$result = sqlStatement($query);
+	{	
 		$report_id		= $data['procedure_report_id'];
 		$order_id 		= $data['procedure_order_id'];
 		$result_id 		= $data['procedure_result_id'];
@@ -263,65 +380,84 @@ class LabTable extends AbstractTableGateway
 		$facility				= $data['facility'];
 		$comments				= $data['comments'];
 		 
-		/* $sets =
-        "procedure_order_id = '$order_id', " .
-        "procedure_order_seq = '$order_seq', " .
-        "date_report = '$date_report', " .
-        "date_collected = " . QuotedOrNull(oresData("form_date_collected", $lino)) . ", " .
-        "specimen_num = '" . oresData("form_specimen_num", $lino) . "', " .
-        "report_status = '" . oresData("form_report_status", $lino) . "'"; */
 		if (!empty($date_report)) {
 			if ($report_id > 0) {
-				$sql = "UPDATE procedure_report 
+				$arr = array(
+					$order_id,
+					$specimen_num,
+					$report_status,
+					$order_seq,
+					$date_report,
+					$date_collected,
+					'reviewed',
+					$report_id,
+				);
+				
+				/* $sql = "UPDATE procedure_report 
 									SET procedure_order_id='$order_id', 
 									specimen_num='$specimen_num', 
 									report_status='$report_status', 
 									procedure_order_seq='$order_seq', 
 									date_report='$date_report', 
 									date_collected='$date_collected', 
-									review_status = 'reviewed' 								
+									review_status = ? 								
 									WHERE procedure_report_id = '$report_id'";
-				sqlStatement($sql);
+				sqlStatement($sql); */
+				$sql = "UPDATE procedure_report 
+									SET procedure_order_id= ?, 
+									specimen_num= ?, 
+									report_status= ?, 
+									procedure_order_seq= ?, 
+									date_report= ?, 
+									date_collected= ?, 
+									review_status = ?  								
+									WHERE procedure_report_id = ?";
+				sqlQuery($sql, $arr);
 			} else {
-				$sql = "INSERT INTO procedure_report 
+				$arr = array(
+						$order_id,
+						$specimen_num,
+						$report_status,
+						$order_seq,
+						$date_report,
+						$date_collected,
+						'reviewed',
+					);
+				/* $sql = "INSERT INTO procedure_report 
 									SET procedure_order_id='$order_id', 
 									specimen_num='$specimen_num', 
 									report_status='$report_status',
 									procedure_order_seq='$order_seq', 
-									date_report='$date_report', 
-									review_status = 'reviewed', 
-									date_collected='$date_collected'";
-				$report_id = sqlInsert($sql);
+									date_report='$date_report',
+									date_collected='$date_collected' 								
+									review_status = 'reviewed'"; */
+				$sql = "INSERT INTO procedure_report 
+									SET procedure_order_id= ?, 
+									specimen_num= ?, 
+									report_status= ?,
+									procedure_order_seq= ?, 
+									date_report= ?,
+									date_collected= ?, 								
+									review_status = ?";
+				$report_id = sqlInsert($sql, $arr);
 			}
 		}
-		/* $sets =
-        "procedure_report_id = '$current_report_id', " .
-        "result_code = '" . oresData("form_result_code", $lino) . "', " .
-        "result_text = '" . oresData("form_result_text", $lino) . "', " .
-        "abnormal = '" . oresData("form_result_abnormal", $lino) . "', " .
-        "result = '" . oresData("form_result_result", $lino) . "', " .
-        "`range` = '" . oresData("form_result_range", $lino) . "', " .
-        "units = '" . oresData("form_result_units", $lino) . "', " .
-        "facility = '" . oresData("form_facility", $lino) . "', " .
-        "comments = '" . add_escape_custom($form_comments) . "', " .
-        "result_status = '" . oresData("form_result_status", $lino) . "'"; */
 		if (!empty($date_report)) {
 			if ($result_id > 0) {
-				$sql = "UPDATE procedure_result 
-							SET procedure_report_id='$report_id', 
-								result_code='$', 
-								result_text='$result_text', 
-								abnormal='$abnormal', 
-								result='$result', 
-								range='$range', 
-								units='$units', 
-								result_status='$result_status', 
-								facility='$facility', 
-								comments='$comments'								
-								WHERE procedure_result_id = '$result_id'";
-				sqlStatement($sql);
-			} else {
-				$sql = "INSERT INTO procedure_result 
+				$arr = array(
+					$report_id,
+					$result_code,
+					$result_text,
+					$abnormal,
+					$result,
+					$range,
+					$units,
+					$result_status,
+					$facility,
+					$comments,
+					$result_id,
+				);
+				/* $sql = "UPDATE procedure_result 
 							SET procedure_report_id='$report_id', 
 								result_code='$result_code', 
 								result_text='$result_text', 
@@ -331,8 +467,47 @@ class LabTable extends AbstractTableGateway
 								units='$units', 
 								result_status='$result_status', 
 								facility='$facility', 
-								comments='$comments'";
-				sqlInsert($sql);
+								comments='$comments'								
+								WHERE procedure_result_id = '$result_id'";
+				sqlStatement($sql); */
+				$sql = "UPDATE procedure_result 
+							SET procedure_report_id= ?, 
+								result_code= ?, 
+								result_text= ?, 
+								abnormal= ?, 
+								result= ?, 
+								`range`= ?, 
+								units= ?, 
+								result_status= ?, 
+								facility= ?, 
+								comments= ?							
+								WHERE procedure_result_id = ?";
+				sqlQuery($sql, $arr);
+			} else {
+				$arr = array(
+					$report_id,
+					$result_code,
+					$result_text,
+					$abnormal,
+					$result,
+					$range,
+					$units,
+					$result_status,
+					$facility,
+					$comments,
+				);
+				$sql = "INSERT INTO procedure_result 
+							SET procedure_report_id= ?, 
+								result_code= ?, 
+								result_text= ?, 
+								abnormal= ?, 
+								result= ?, 
+								`range`= ?, 
+								units= ?, 
+								result_status= ?, 
+								facility= ?, 
+								comments= ?";
+				sqlInsert($sql, $arr);
 			}
 		}
 	}
@@ -371,10 +546,10 @@ class LabTable extends AbstractTableGateway
 	}
     }
     public function insertProcedureMaster($post){
-	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
-		    diagnoses,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
+				       order_status,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
-		    'pending',"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
+		    'pending',$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
 		    $post['billto'],$post['internal_comments']));
 	return $procedure_type_id;
     }
@@ -392,11 +567,13 @@ class LabTable extends AbstractTableGateway
 	    ${$PRow['specimen_state']."_j"} = 0;
 	    if($PRow['pap_indicator']=="P"){
 		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['procedure'] = $PRow['name'];
+		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['diagnoses'] = $post['diagnoses'][$i];
 	    }
 	    else{
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_code'] = $PRow['procedure_code'];
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure'] = $PRow['name'];
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['diagnoses'] = $post['diagnoses'][$i];
 		${$PRow['specimen_state']."_j"}++;
 	    }
 	}
@@ -406,10 +583,11 @@ class LabTable extends AbstractTableGateway
 		$procode = $PSArray[0];
 		$prosuffix = $PSArray[1];
 		$proname = $pronameArr['procedure'];
+		$diagnoses = $pronameArr['diagnoses'];
 		$PAPprocedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $PAPprocedure_type_id;
-		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-		     VALUES (?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix));
+		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+		     VALUES (?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
 		$this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
 	    }
 	}
@@ -422,8 +600,9 @@ class LabTable extends AbstractTableGateway
 			$procode = $vArray[$i]['procedure_code'];
 			$proname = $vArray[$i]['procedure'];
 			$prosuffix = $vArray[$i]['procedure_suffix'];
-			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-					VALUES (?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix));
+			$diagnoses = $vArray[$i]['diagnoses'];
+			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+					VALUES (?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
 			$this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
 		    }
 		}
@@ -438,9 +617,9 @@ class LabTable extends AbstractTableGateway
 		$procedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $procedure_type_id;
 		}
-		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-		    VALUES (?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
-		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i]);
+		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+		    VALUES (?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
+		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i],$post['diagnoses'][$i]);
 	    }
 	}
 	return $procedure_type_id_arr;
@@ -1137,12 +1316,12 @@ class LabTable extends AbstractTableGateway
        
 	
 	//GETTING VALUES OF ADDITIONAL XML TAGS
-	$sql_order   	= "SELECT procedure_order_id, diagnoses FROM procedure_order WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
+	$sql_order   	= "SELECT procedure_order_id FROM procedure_order WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
 	    
 	$misc_value_arr = array();
 	
 	$order_value_arr['patient_id']   = $pid;
-	$order_value_arr['order_status'] = "pending";
+	$order_value_arr['order_status'] = "pending";//hard coded//
 	$order_value_arr['lab_id']       = $lab_id;
 	
 	$res_order   = sqlStatement($sql_order,$order_value_arr);

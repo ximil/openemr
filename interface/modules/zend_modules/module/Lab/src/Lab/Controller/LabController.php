@@ -170,20 +170,29 @@ class LabController extends AbstractActionController
 	    $data =array();
 		if($request->getQuery('opt')){
 			switch ($request->getQuery('opt')) {
-				case 's':
+				case 'search':
 					$data['opt'] = 'search';
 					break;
-				case a:
-					$data['opt'] = 'abn';
+				case 'status':
+					$data['opt'] = 'status';
+					break;
+				case 'abnormal':
+					$data['opt'] = 'abnormal';
 					break;
 			}
 		}
 		if($request->getQuery('optId')){
-			switch ($request->getQuery('opt')) {
-				case 's':
+			switch ($request->getQuery('optId')) {
+				case 'order':
+					$data['optId'] = 'ord_status';
+					break;
+				case 'report':
 					$data['optId'] = 'proc_rep_status';
 					break;
-				case a:
+				case 'result':
+					$data['optId'] = 'proc_res_status';
+					break;
+				case 'abnormal':
 					$data['optId'] = 'proc_res_abnormal';
 					break;
 			}
@@ -208,6 +217,79 @@ class LabController extends AbstractActionController
 	    return $data;
     }
     
+    public function sendimagetextAction($orderId) {
+	if(!$orderId)
+	$orderId = $_GET['order'];
+  // Set font size
+  $font_size = 2;
+//$text = "Client: ".$client_id."\nLab Ref: ".$lab_ref."\nPat Name: ".$pat_name;
+$row = sqlQuery("SELECT send_fac_id,CONCAT_WS('-',login,procedure_order_id) AS labref,CONCAT_WS(',',lname,fname) AS pname FROM procedure_order LEFT OUTER JOIN procedure_providers ON lab_id=ppid LEFT OUTER JOIN
+patient_data ON pid=patient_id WHERE procedure_order_id=?",array($orderId));
+$text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name: ".$row['pname'];
+
+  $ts=explode("\n",$text);
+  $total_lines = count($ts);
+  $width=0;
+  foreach ($ts as $k=>$string) { //compute width
+    $width=max($width,strlen($string));
+  }
+
+  // Create image width dependant on width of the string
+  //$width  = imagefontwidth($font_size)*$width;
+  $width  = 168;
+  // Set height to that of the font
+  //$height = imagefontheight($font_size)*count($ts);
+  $height = 72;
+  $el=imagefontheight($font_size);
+  $em=imagefontwidth($font_size);
+  // Create the image pallette
+  $img = imagecreatetruecolor($width,$height);
+  // Dark red background
+  $bg = imagecolorallocate($img, 255, 255, 255);
+  imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
+  // White font color
+  $color = imagecolorallocate($img, 0, 0, 0);
+  
+  foreach ($ts as $k=>$string) {
+    // Length of the string
+    $len = strlen($string);
+    // Y-coordinate of character, X changes, Y is static
+    $ypos = 0;
+    // Loop through the string
+    for($i=0;$i<$len;$i++){
+      // Position of the character horizontally
+      $xpos = $i * $em;
+      $ypos = $k * $el;
+	  
+	  $center_x = ceil( ( ( imagesx($img) - ( $em * $len ) ) / 2 ) + ( $i * $em ) );
+	  $center_y = ceil( ( ( imagesy($img) - ( $el * $total_lines ) ) / 2)  + ( $k * $el ) );
+	  
+	  //error_log("aa:$xpos, $ypos---$center_x, $center_y");
+	  
+      // Draw character
+      imagechar($img, $font_size, $center_x, $center_y, $string, $color);
+      // Remove character from string
+      $string = substr($string, 1);
+    }
+  }
+  // Return the image
+  //$IMGING = imagepng($img);
+  //header("Content-Type: image/png");
+  //header('Content-Disposition: attachment; filename=Specimen Label.png' );
+  //  header("Content-Type: application/octet-stream" );
+  //  header("Content-Length: " . filesize( $IMGING ) );
+  ob_end_clean();
+    ob_start();
+  imagepng($img);
+  $IMGING = ob_get_contents();
+  header("Content-Type: image/png");
+  header('Content-Disposition: attachment; filename=SpecimenLabel.png' );
+    header("Content-Type: application/octet-stream" );
+    header("Content-Length: " . filesize( $IMGING ) );
+  // Remove image
+  imagedestroy($img);
+}
+    
     public function getLabAbnormalAction()
     {
 	    $labAbnormal = $this->getLabTable()->listLabAbnormal();
@@ -220,18 +302,39 @@ class LabController extends AbstractActionController
 	    $labResult = $this->getLabTable()->listLabResult($data);
 	    return $labResult;
     }
-    
+
+	public function getResultCommentsAction()
+	{
+		$request = $this->getRequest();
+	    $data =array();
+		if($request->getPost('prid')){
+		    $data['procedure_result_id'] = $request->getPost('prid');
+		}
+		//$fh = fopen("D:/test.txt","a");
+		//fwrite($fh,print_r($request->getPost(),1));
+	    //$data['procedure_result_id'] = 5;
+		$comments = $this->getLabTable()->listResultComment($data);
+	    $data = new JsonModel($comments);
+		return $data;
+	}
+	
     public function resultShowAction()
     {
 	    $request = $this->getRequest();
 	    $data =array();
-	    if($request->getPost('status')){
+	    if($request->isPost()){
 		    $data = array(
-			    'status'	=> $request->getPost('status'),
-			    'dtFrom'	=> $request->getPost('dtFrom'),
-			    'dtTo'	=> $request->getPost('dtTo'),
+			    'statusReport'	=> $request->getPost('statusReport'),
+				'statusOrder'	=> $request->getPost('statusOrder'),
+				'statusResult'	=> $request->getPost('statusResult'),
+			    'dtFrom'		=> $request->getPost('dtFrom'),
+			    'dtTo'			=> $request->getPost('dtTo'),
+				'page'			=> $request->getPost('page'),
+				'rows'			=> $request->getPost('rows'),
 		    ); 
 	    }
+		//$fh = fopen("D:/test.txt","a");
+		//fwrite($fh,print_r($request->getPost(),1));
 	    $labResult = $this->getLabResult($data);
 	    $data = new JsonModel($labResult);
 	    return $data;
@@ -243,8 +346,9 @@ class LabController extends AbstractActionController
 		if ($request->isPost()) {
 			$arr = explode('|', $request->getPost('comments'));
 			$comments = '';
+			$comments = $arr[2];
 			if ($arr[3] != '') {
-				$comments = $arr[2] .= "\n" . $arr[3];
+				$comments .=  "\n" . $arr[3];
 			}
 		    $data = array(
 				    'procedure_report_id'	=> $request->getPost('procedure_report_id'),
@@ -256,7 +360,6 @@ class LabController extends AbstractActionController
 				    'date_report'			=> $request->getPost('date_report'),
 				    'date_collected'		=> $request->getPost('date_collected'),
 				    'result_code'			=> $request->getPost('result_code'),
-				    'procedure_report_id'	=> $request->getPost('procedure_report_id'),
 				    'result_text'			=> $request->getPost('result_text'),
 				    'abnormal'				=> $request->getPost('abnormal'),
 				    'result'				=> $request->getPost('result'),
@@ -266,6 +369,8 @@ class LabController extends AbstractActionController
 					'facility'				=> $arr[1],
 					'comments'				=> $comments,
 		    );
+			//$fh = fopen("D:/test.txt","a");
+			//fwrite($fh,print_r($data,1));
 		    $this->getLabTable()->saveResult($data);
 		    return $this->redirect()->toRoute('result');
 		}

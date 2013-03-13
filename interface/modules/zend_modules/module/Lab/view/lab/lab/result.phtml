@@ -1,217 +1,56 @@
-
-<script type="text/javascript">
-		$(function(){
-			$('#dg').edatagrid({
-				url: './resultShow', // show all the pending results
-				saveUrl: './resultUpdate', // save the result 
-				updateUrl: './resultUpdate',
-				//destroyUrl: 'destroy_user.php'
-			});
-		});
-		
-		// Search options, Status and Ordered Date
-		function doSearch(){
-			$('#dg').edatagrid('load',{  
-				status: $("input[name=searchStatus]").val(),
-				dtFrom: $('#acpro_inp1').val(),
-				dtTo: $('#acpro_inp4').val(),
-			}); 
-		}
-		
-		// Result request with ordser id
-		function getResult(target) {
-			var tr = $(target).closest('tr.datagrid-row');
-			var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-			$('#dg').datagrid('selectRow', rowIndex);
-			var row = $('#dg').datagrid('getSelected'); 
-			if (row){  
-				var order_id = row.procedure_order_id;
-				window.location.assign("./getlabresult?order_id=" + order_id);
-			}
-		}
-		
-		// Requisition request with ordser id
-		function getRequisition(target) {
-			var tr = $(target).closest('tr.datagrid-row');
-			var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-			$('#dg').datagrid('selectRow', rowIndex);
-			var row = $('#dg').datagrid('getSelected'); 
-			if (row){  
-				var order_id = row.procedure_order_id;
-				window.location.assign("./getlabrequisition?order_id=" + order_id);
-			}
-		}
-		
-		/**
-		* Show Popup and edit Result Status, Fecility, Comments and Notes
-		*/
-		var url;  
-        function editComments(){  
-            var row = $('#dg').datagrid('getSelected');  
-			if (row){  
-                $('#dlg').dialog('open').dialog('setTitle','Result');
-				$('#titleShow').html(row.result_text);				
-                $('#fm').form('load',row); 
-                url = '';  
-            } 
-        } 
-		// Save the Popup form details to field comments
-		function saveComments() {
-			var row = $('#dg').datagrid('getSelected');
-			if (row){
-				row.comments = $("input[name=formResultStatus]").val() + '|' + $("input[name=formResultFacility]").val() + '|' + $("#formResultComments").val() + '|' + $("#formResultNotes").val();
-				
-			}
-			$('#dlg').dialog('close');
-		}
-		
-		// Freezing cells 
-		/* $(function(){
-			//var tr = $(target).closest('tr.datagrid-row');
-			//var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-			//$('#dg').datagrid('selectRow', rowIndex);
-			var row = $('#dg').datagrid('getSelected'); 
-			if (row){  
-				var order_id = row.procedure_order_id;
-				if (order_id!= '') {
-					var opts = $('#dg').datagrid('getColumnOption', 'specimen_num');
-					opts.editor = {
-						type:'',
-					
-					};
-				}
-			}
-		}); */
-		
-		$(function(){
-			$('#dg').edatagrid({ 
-				onSelect:function(rowIndex, rowData){ 
-					var fieldValue = $.trim(rowData.procedure_name);
-					
-					if (rowIndex == 0) {
-						$('#datagrid-row-r2-2-0').focus();
-					}
-					//alert(rowIndex + '|' + fieldValue.length);
-					//$('#rem').html(rowIndex + '|' + fieldValue.length);
-					if (fieldValue.length == 0) {
-						var opts1 = $('#dg').datagrid('getColumnOption', 'date_report');
-						opts1.editor = {
-							type:'',
-						
-						};
-						/* var opts2 = $('#dg').datagrid('getColumnOption', 'date_collected');
-						opts2.editor = {
-							type:'',
-						
-						};
-						var opts3 = $('#dg').datagrid('getColumnOption', 'specimen_num');
-						opts3.editor = {
-							type:'',
-						
-						};
-						var opts4 = $('#dg').datagrid('getColumnOption', 'report_status');
-						opts4.editor = {
-							type:'',
-						
-						}; */
-					} else {
-						var opts5 = $('#dg').datagrid('getColumnOption', 'date_report');
-						opts5.editor = {
-							type:'datebox',
-							options:{
-								required:true
-							}
-						};
-					}
-					fieldValue = '';
-					
-					/* if (fieldValue.length != 0 && rowIndex > 0) {
-						var opts5 = $('#dg').datagrid('getColumnOption', 'date_report');
-						opts5.editor = {
-							type:'',
-						
-						};
-					} */
-					
-					
-
-					/* var preRowIndex = rowIndex - 1; alert('here'+preRowIndex);
-					alert(rowData.procedure_order_id);
-					$('#dg').datagrid('selectRow', preRowIndex);
-					var row = $('#dg').datagrid('getSelected'); */
-					//alert(row.procedure_order_id);
-					
-					//alert(rowData.procedure_order_id);
-				}
-			});
-			
-			/* $('#dg').edatagrid({ 
-				onLoadSuccess:function(){  
-					$('#dg').datagrid('selectRow', 1);
-					//var row = $('#dg').datagrid('getSelected'); 
-					//alert(row.procedure_order_id);
-					//var myData = $('#dg').datagrid('getData');
-					//alert('myData : ' + JSON.stringify(myData));
-
-				}  
-			}); */
-		});
-		
-		$('#dg').edatagrid({ 
-			onLoadSuccess:function(){  
-				
-			}  
-		});
-
-		
-		
-		/* $('#dg').edatagrid({ 
-			onLoadSuccess:function(){  
-				var merges = [{  
-					index:2,  
-					rowspan:10  
-				}];  
-				for(var i=0; i<merges.length; i++)  
-					$('#dg').datagrid('mergeCells',{
-						index:merges[i].index,  
-						field:'date_ordered',  
-						rowspan:merges[i].rowspan  
-					});  
-			}  
-		}); */  
-
-</script>
-<span id='rem'></span>
-	<table id="dg" title="Pending Review"  style="width:auto;height:450px"
-			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq, procedure_report_id"
-			rownumbers="true" fitColumns="true" singleSelect="true">
+	<table id="dg" title="Pending Review"  style="width:auto;height:600px"
+			toolbar="#toolbar" pagination="true" idField="procedure_order_id, procedure_result_id, procedure_order_seq, procedure_report_id, editor"
+			rownumbers="true" pageSize="20" fitColumns="true" singleSelect="true">
+			<thead data-options="frozen:true" >
+				<tr>
+					<th colspan="6"><?php echo xlt('Order'); ?></th>
+				</tr>
+			</thead>
 
 			<thead>
 			<tr>
-				<th colspan="5"><?php echo xlt('Order'); ?></th>
 				<th colspan="4"><?php echo xlt('Report'); ?></th>
 				<th colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
 				<th colspan="1"><?php echo xlt('Action'); ?></th>
 			</tr>
+			</thead>
+			<thead>
+
+			</thead>
+		
+			<thead data-options="frozen:true">
+				<tr>
+					<!-- Start Order -->
+					<th data-options="field:'date_ordered'"><?php echo xlt('Date'); ?></th>
+					<th data-options="field:'procedure_name'"><?php echo xlt('Procedure Name'); ?></th> 
+					<th data-options="field:'order_id', align:'center'"><?php echo xlt('Ord'); ?></th> 
+					<th data-options="field:'patient_name'"><?php echo xlt('Patient'); ?></th>
+					<th data-options="field:'encounter_id', align:'center'"><?php echo xlt('Encounter'); ?></th>
+					<th data-options="field:'order_status'"><?php echo xlt('Status'); ?></th>
+					<!-- End Order -->
+				</tr>
+			</thead>
+			<thead>
 			
 			<tr>
 			
-			<!-- Start Order -->
-				<th data-options="field:'date_ordered',width:50"><?php echo xlt('Date'); ?></th>
-				<th data-options="field:'procedure_name',width:80"><?php echo xlt('Procedure Name'); ?></th> 
-				<th data-options="field:'order_id',width:35, align:'center'"><?php echo xlt('Ord'); ?></th> 
-				<th data-options="field:'patient_name',width:50"><?php echo xlt('Patient'); ?></th><th data-options="field:'encounter_id',width:50, align:'center'"><?php echo xlt('Encounter'); ?></th>
-			<!-- End Order -->
-			
 			<!-- Start Report -->
-				<th field="date_report" width="70" editor="{type:'datebox',options:{required:true}}"><?php echo xlt('Reported'); ?></th>
-				<th field="date_collected" editor="{type:'datebox'}"  width="70" ><?php echo xlt('Ext Time Collected'); ?></th>
-				<!--<th class="easyui-datetimebox" name="birthday"   
-        data-options="field='date_collected',required:true,showSeconds:false" value="3/4/2010 2:3" style="width:150px"></th>-->
-				<th field="specimen_num" width="40" editor="text"><?php echo xlt('Specimen'); ?></th>
-				<th data-options="field:'report_status',width:60,  
+				<th field="date_report" editor="{type:'datebox',options:{required:true}}"><?php echo xlt('Reported'); ?><span style="margin-left: 30px;"></span></th>
+				<th field="date_collected" editor="{
+												type:'datebox',
+													options:{
+														class: 'easyui-datetimebox',
+													}
+												}">
+												<?php echo xlt('Ext Time Collected'); ?>
+												<span style="margin-left: 30px;"></span>
+												</th>
+
+		
+				<th field="specimen_num" editor="text"><?php echo xlt('Specimen'); ?></th>
+				<th data-options="field:'report_status',  
 							formatter:function(value,row){  
-								return row.report_status;  
+								return row.report_title;  
 							},  
 							editor:{  
 								type:'combobox',  
@@ -221,17 +60,15 @@
 									url:'./getLabStatus',  
 									required:false  
 								} 
-							}"><?php echo xlt('Status'); ?></th>
+							}"><?php echo xlt('Status'); ?><span style="margin-left: 30px;"></span></th>
 			<!-- End Report -->
 			
 			<!-- Start Results and Recommendations -->
-				<!--<th field="result_code" width="40" editor="text"><?php echo xlt('Code'); ?></th>
-				<th field="result_text" width="80" editor="text"><?php echo xlt('Name'); ?></th>-->
-				<th data-options="field:'result_code',width:40, align:'center'"><?php echo xlt('Code'); ?></th>
-				<th data-options="field:'result_text',width:80, align:'left'"><?php echo xlt('Name'); ?></th>
-				<th data-options="field:'abnormal',width:40,  
+				<th data-options="field:'result_code', align:'center'"><?php echo xlt('Code'); ?></th>
+				<th data-options="field:'result_text', align:'left'"><?php echo xlt('Name'); ?></th>
+				<th data-options="field:'abnormal',  
 							formatter:function(value,row){  
-								return row.abnormal;  
+								return row.abnormal_title;  
 							},  
 							editor:{  
 								type:'combobox',  
@@ -241,45 +78,49 @@
 									url:'./getLabAbnormal',  
 									required:false  
 								} 
-							}"><?php echo xlt('Abn'); ?></th>
-				<th field="result" width="40" editor="text"><?php echo xlt('Value'); ?></th>
-				<th field="pt2_units" width="50" editor="text"><?php echo xlt('Units'); ?></th>
-				<th field="pt2_range" width="50" editor="text"><?php echo xlt('Range'); ?></th>
-				<th data-options="field:'comments',title:'',width:50,align:'center',
+							}"><?php echo xlt('Abn'); ?><span style="margin-left: 10px;"></span></th>
+				<th field="result" editor="text"><?php echo xlt('Value'); ?></th>
+				<th field="pt2_units" editor="text"><?php echo xlt('Units'); ?></th>
+				<th field="pt2_range" editor="text"><?php echo xlt('Range'); ?></th>
+				<th data-options="field:'comments',title:'',align:'center',
 							formatter:function(value,row,index){
 								if (row.editing){
 									var s = '<a></a> ';
 									var c = '<a></a>';
 									return s+c;
 								} else {
-									var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments()><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png /></a>';
+									var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments(this)><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png /></a>';
 									var q = '';
 									return r+q;
 								}
 							}"><?php echo xlt('Comments'); ?></th>
 
 			<!-- End Results and Recommendations -->
-				<th data-options="field:'action',title:'',width:80,align:'left',
+			
+			<!-- Start Action -->
+				<th data-options="field:'action',title:'',align:'left',
 							formatter:function(value,row,index){
 								if (row.editing){
 									var s = '<a></a> ';
 									var c = '<a></a>';
 									return s+c;
 								} else {
-									var e = '<a href=\'#\' onClick=\'getResult(this);\'  style=padding-left:10px; ><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a><span style=padding-right:30px;>&nbsp;</span>';
-									var d = '<a href=\'#\' onClick=\'getRequisition(this);\' ><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
-									return e+d;
+									var f = '<a href=\'#\' onClick=\'getLabelDownload(this);\' style=padding-left:10px;><img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+									var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:40px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+									var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:50px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
+									return f+d+e;
 								}
 							}">
-
-							<span  style="width: 20px; border-right: 1px dotted #444;">
+							<span class="datagrid-cell" style="border-right: 1px dotted #444;">
+							<?php echo xlt('Label'); ?>
+							</span>
+							<span class="datagrid-cell" style="border-right: 1px dotted #444;">
+							<?php echo xlt('Requisition'); ?>
+							</span>
+							<span style="padding-left: 10px;">
 							<?php echo xlt('Result'); ?>
 							</span>
-							<span class="datagrid-cell" style="width: 54px;">
-							<?php echo xlt('Requisition'); ?></span>
-							
 							</th>
-		
 			<!-- End Action -->
 			</tr>
 		</thead>
@@ -288,12 +129,43 @@
 	<div id="toolbar">
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
+
 		<div style="text-align: right;">
-			<?php echo xlt('Date From'); ?>: <input class="easyui-datebox" style="width:80px" >
+
+		<div style="text-align: left;">
+			<span style="text-align: left; font-weight: bold; margin-left: 220px;"><?php echo xlt('Date'); ?></span>
+			<span style="text-align: left; font-weight: bold; margin-left: 270px;"><?php echo xlt('Status'); ?></span>
+		</div>
+		<span style="text-align: left; padding-right: 50px;">
+		<span class="extlab">&nbsp;&nbsp;</span>
+		<span> Ext Labs</span>
+		<span class="local">&nbsp;&nbsp;</span>
+		<span> Local Labs</span>
+		</span>
+		
+			<span style="text-align: left; padding-right: 30px;">
+			<?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" >
+			</span>
+			<span style="text-align: left; padding-right: 50px;">
 			<?php echo xlt('To'); ?>: <input class="easyui-datebox" style="width:80px" >
-			<?php echo xlt('Status'); ?>: 
-			<input id="cc" class="easyui-combobox" name="searchStatus" 
-    data-options="valueField:'option_id',textField:'title',url:'./getLabStatus?opt=s'" />
+			</span>
+
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Order'); ?>
+			<input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
+    data-options="valueField:'option_id',textField:'title',url:'./getLabOptions?opt=search&optId=order'" />
+			</span>
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Report'); ?>
+			<input id="cc" class="easyui-combobox" name="searchStatusReport" 
+    data-options="valueField:'option_id',textField:'title',url:'./getLabOptions?opt=search&optId=report'" />
+			</span>
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Result'); ?>
+			<input id="searchStatusResult" class="easyui-combobox" name="searchStatusResult" 
+    data-options="valueField:'option_id',textField:'title',url:'./getLabOptions?opt=search&optId=result'" />
+			</span>
+
 			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()"><?php echo xlt('Search'); ?></a>
 
 		</div>
@@ -306,7 +178,7 @@
             <div class="fitem">  
                 <label><?php echo xlt('Status'); ?>:</label>  
 			<input id="cc" class="easyui-combobox" name="formResultStatus" 
-    data-options="valueField:'option_id',textField:'title',url:'./getLabStatus'" />
+    data-options="valueField:'option_id',textField:'title', url:'./getLabOptions?opt=status&optId=result'" />
             </div>  
             <div class="fitem">  
                 <label><?php echo xlt('Facility'); ?>:</label>  
@@ -325,30 +197,8 @@
     <div id="dlg-buttons">  
         <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()"><?php echo xlt('Close'); ?></a>  
     </div> 
-	
-	<script type="text/javascript">  
-         
+ 
+  
 
-    </script>  
-    <style type="text/css">  
-        #fm{  
-            margin:0;  
-            padding:10px 30px;  
-        }  
-        .ftitle{  
-            font-size:14px;  
-            font-weight:bold;  
-            padding:5px 0;  
-            margin-bottom:10px;  
-            border-bottom:1px solid #ccc;  
-        }  
-        .fitem{  
-            margin-bottom:5px;  
-        }  
-        .fitem label{  
-            display:inline-block;  
-            width:80px;  
-        }  
-    </style>
-
+  
 	
