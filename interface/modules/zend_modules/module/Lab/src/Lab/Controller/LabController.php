@@ -28,7 +28,7 @@ class LabController extends AbstractActionController
 	$priority = $helper->getList("ord_priority");
 	$form->get('priority')->setValueOptions($priority);
 	
-	$status = $helper->getList1("ord_status");
+	$status = $helper->getList("ord_status",'pending');
 	$form->get('status')->setValueOptions($status);
 	//$form->get('submit')->setValue('Add');
 
@@ -54,19 +54,21 @@ class LabController extends AbstractActionController
             ini_set("soap.wsdl_cache_enabled","0");            
             ini_set('memory_limit', '-1');
             
-            $options = array(
-                                'location' => "http://192.168.1.139/webserver/lab_server.php",
-                                'uri'      => "urn://zhhealthcare/lab"
-                            );    
-            $client = new Client(null,$options);
+            $options    = $this->getLabTable()->getWebserviceOptions();   
+            $client     = new Client(null,$options);
             
-            $lab_id         = $request->getPost('lab_id');            
+            $lab_id     = $request->getPost('lab_id');            
             
+	  
             foreach($xmlresult_arr as $xmlresult)
             {
                 $order_id   = $xmlresult['order_id'];
                 $xmlstring  = $xmlresult['xmlstring'];
-                
+		
+		//print_r($xmlstring);
+		//echo "<br>";
+		//continue;
+               		
                 $cred = $this->getLabTable()->getClientCredentials($order_id);
             
                 $username   = $cred['login'];
@@ -77,6 +79,7 @@ class LabController extends AbstractActionController
                 //echo "Result <br>";
                 //print_r($result);
             }
+	    //exit;
 			// End Prodedure Order Import
 			
                 //return $this->redirect()->toRoute('result');
@@ -209,6 +212,79 @@ class LabController extends AbstractActionController
 	    return $data;
     }
     
+    public function sendimagetextAction($orderId) {
+	if(!$orderId)
+	$orderId = $_GET['order'];
+  // Set font size
+  $font_size = 2;
+//$text = "Client: ".$client_id."\nLab Ref: ".$lab_ref."\nPat Name: ".$pat_name;
+$row = sqlQuery("SELECT send_fac_id,CONCAT_WS('-',login,procedure_order_id) AS labref,CONCAT_WS(',',lname,fname) AS pname FROM procedure_order LEFT OUTER JOIN procedure_providers ON lab_id=ppid LEFT OUTER JOIN
+patient_data ON pid=patient_id WHERE procedure_order_id=?",array($orderId));
+$text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name: ".$row['pname'];
+
+  $ts=explode("\n",$text);
+  $total_lines = count($ts);
+  $width=0;
+  foreach ($ts as $k=>$string) { //compute width
+    $width=max($width,strlen($string));
+  }
+
+  // Create image width dependant on width of the string
+  //$width  = imagefontwidth($font_size)*$width;
+  $width  = 168;
+  // Set height to that of the font
+  //$height = imagefontheight($font_size)*count($ts);
+  $height = 72;
+  $el=imagefontheight($font_size);
+  $em=imagefontwidth($font_size);
+  // Create the image pallette
+  $img = imagecreatetruecolor($width,$height);
+  // Dark red background
+  $bg = imagecolorallocate($img, 255, 255, 255);
+  imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
+  // White font color
+  $color = imagecolorallocate($img, 0, 0, 0);
+  
+  foreach ($ts as $k=>$string) {
+    // Length of the string
+    $len = strlen($string);
+    // Y-coordinate of character, X changes, Y is static
+    $ypos = 0;
+    // Loop through the string
+    for($i=0;$i<$len;$i++){
+      // Position of the character horizontally
+      $xpos = $i * $em;
+      $ypos = $k * $el;
+	  
+	  $center_x = ceil( ( ( imagesx($img) - ( $em * $len ) ) / 2 ) + ( $i * $em ) );
+	  $center_y = ceil( ( ( imagesy($img) - ( $el * $total_lines ) ) / 2)  + ( $k * $el ) );
+	  
+	  //error_log("aa:$xpos, $ypos---$center_x, $center_y");
+	  
+      // Draw character
+      imagechar($img, $font_size, $center_x, $center_y, $string, $color);
+      // Remove character from string
+      $string = substr($string, 1);
+    }
+  }
+  // Return the image
+  //$IMGING = imagepng($img);
+  //header("Content-Type: image/png");
+  //header('Content-Disposition: attachment; filename=Specimen Label.png' );
+  //  header("Content-Type: application/octet-stream" );
+  //  header("Content-Length: " . filesize( $IMGING ) );
+  ob_end_clean();
+    ob_start();
+  imagepng($img);
+  $IMGING = ob_get_contents();
+  header("Content-Type: image/png");
+  header('Content-Disposition: attachment; filename=SpecimenLabel.png' );
+    header("Content-Type: application/octet-stream" );
+    header("Content-Length: " . filesize( $IMGING ) );
+  // Remove image
+  imagedestroy($img);
+}
+    
     public function getLabAbnormalAction()
     {
 	    $labAbnormal = $this->getLabTable()->listLabAbnormal();
@@ -301,22 +377,16 @@ class LabController extends AbstractActionController
     */
     
     public function pullcompendiumtestAction()
-    {
-        
-	ini_set("soap.wsdl_cache_enabled","0");
-	
+    {        
+	ini_set("soap.wsdl_cache_enabled","0");	
 	ini_set('memory_limit', '-1');
 	
-	$options = array(
-			    'location' => "http://192.168.1.139/webserver/lab_server.php",
-			    'uri'      => "urn://zhhealthcare/lab"
-			);
-
-	$client = new Client(null,$options);
-	
-	$result = $client->check_for_tests();
+	$options    = $this->getLabTable()->getWebserviceOptions();
+	$client     = new Client(null,$options);	
+	$result     = $client->check_for_tests();
 	
 	$testconfig_arr = $this->getLabTable()->pullcompendiumTestConfig();
+        
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
@@ -325,13 +395,13 @@ class LabController extends AbstractActionController
     {
 	ini_set("soap.wsdl_cache_enabled","0");
 	ini_set('memory_limit', '-1');
-	$options = array(
-			    'location' => "http://192.168.1.139/webserver/lab_server.php",
-			    'uri'      => "urn://zhhealthcare/lab"
-			);
-	$client = new Client(null,$options);
-	$result = $client->check_for_aoe();
+	
+        $options    = $this->getLabTable()->getWebserviceOptions();        
+	$client     = new Client(null,$options);
+	$result     = $client->check_for_aoe();
+                
 	$testconfig_arr = $this->getLabTable()->pullcompendiumAoeConfig();
+        
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
@@ -345,13 +415,10 @@ class LabController extends AbstractActionController
         //print_r($xmlfile);
         
         $lab_id     = 1;//HARD CODED
-        $patient_id = 7962;//HARD CODED
+        $patient_id = 2;//HARD CODED
         
         $xmlresult_arr = $this->getLabTable()->generateOrderXml($patient_id,$lab_id,$xmlfileurl);
-        
-        
-        //print_r($xmlresult_arr);
-        //exit;
+       
         //$fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
             
         //$xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
@@ -365,19 +432,16 @@ class LabController extends AbstractActionController
         //}
         
         
-        //$data['procedure_order_id'] = 4; //HARD CODED FOR TESTING
+        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
         //print_r($data);
         
         ini_set("soap.wsdl_cache_enabled","0");
         
         ini_set('memory_limit', '-1');
         
-        $options = array(
-                            'location' => "http://192.168.1.139/webserver/lab_server.php",
-                            'uri'      => "urn://zhhealthcare/lab"
-                        );
-
-        $client = new Client(null,$options);
+        
+        $options    = $this->getLabTable()->getWebserviceOptions();
+        $client     = new Client(null,$options);
         $i=0;
         foreach($xmlresult_arr as $xmlresult)
         {
@@ -385,6 +449,7 @@ class LabController extends AbstractActionController
             $order_id   = $xmlresult['order_id'];
             $xmlstring  = $xmlresult['xmlstring'];
             
+                    
             $fd = fopen("module/Lab/vipi$i.xml","w") or die("can't open xml file");
             
             $xmlstring  = fwrite($fd,$xmlstring);
@@ -405,7 +470,7 @@ class LabController extends AbstractActionController
         }
         
     }
-    */    
+    */ 
 
     public function getlabrequisitionAction()
     {
@@ -418,7 +483,7 @@ class LabController extends AbstractActionController
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
         
-        //$data['procedure_order_id'] = 3; //HARD CODED FOR TESTING
+        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
         
         
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
@@ -438,9 +503,7 @@ class LabController extends AbstractActionController
             ini_set("soap.wsdl_cache_enabled","0");	
             ini_set('memory_limit', '-1');
             
-            $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
-                                'uri'      => "urn://zhhealthcare/lab"
-                                );
+            $options    = $this->getLabTable()->getWebserviceOptions();
             $client     = new Client(null,$options);
             $result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID   
        
@@ -477,7 +540,7 @@ class LabController extends AbstractActionController
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
 	
-        //$data['procedure_order_id'] = 3; //HARD CODED FOR TESTING
+        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
         
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
         
@@ -496,10 +559,7 @@ class LabController extends AbstractActionController
             ini_set("soap.wsdl_cache_enabled","0");	
             ini_set('memory_limit', '-1');
             
-            $options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
-                                'uri'      => "urn://zhhealthcare/lab"
-                                );
-    
+            $options    = $this->getLabTable()->getWebserviceOptions();    
             $client     = new Client(null,$options);
             $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
             //print_r($result);
@@ -527,35 +587,53 @@ class LabController extends AbstractActionController
     
     public function getlabresultdetailsAction()
     {
+        $site_dir               = $GLOBALS['OE_SITE_DIR'];        
+        $resultdetails_dir      = $site_dir."/lab/resultdetails/";
+        
 	$request = $this->getRequest();
 	if($request->isGet())
 	{
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
+        
+	$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
 	
-	$cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+        $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
 	   
 	$username   = $cred['login'];
 	$password   = $cred['password'];        
-	$site_dir   = $GLOBALS['OE_SITE_DIR'];
+	$site_dir   = $GLOBALS['site_id'];
 	    
 	ini_set("soap.wsdl_cache_enabled","0");	
 	ini_set('memory_limit', '-1');
 	
-	$options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
-			    'uri'      => "urn://zhhealthcare/lab"
-			    );
-
+	$options    = $this->getLabTable()->getWebserviceOptions();
 	$client     = new Client(null,$options);
 	$result     = $client->getLabResultDetails($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
 	
-	$labresultdetailsfile  = "labresultdetails_".gmdate('YmdHis').".xml";
-	    
-	$fp = fopen("module/Lab/".$labresultdetailsfile,"wb");
-	fwrite($fp,base64_decode($result));
+        $labresultdetailsfile  = "labresultdetails_".gmdate('YmdHis').".xml";
 	
+        if (!is_dir($resultdetails_dir))
+        {
+            mkdir($resultdetails_dir,0777,true);
+        }
+            
+	$fp = fopen($resultdetails_dir.$labresultdetailsfile,"wb");
+	fwrite($fp,$result);	
 	
 	$reader = new Config\Reader\Xml();
-	$data   = $reader->fromFile("module/Lab/".$labresultdetailsfile);
+	$data   = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
+        //print_r($data);
+        
+        $result_config_arr = $this->getLabTable()->mapResultXmlToColumn();
+        
+	$this->getLabTable()->importResultDetails($result_config_arr,$result);
+        
+        
+    }
+    
+    public function testAction()
+    {
+        
     }
 }

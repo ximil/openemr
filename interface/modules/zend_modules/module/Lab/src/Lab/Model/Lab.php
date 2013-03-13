@@ -30,6 +30,8 @@ class Lab implements InputFilterAwareInterface
 	$this->procedurecode  		= (isset($data['procedure_code'])) 	? $data['procedure_code'] 	: null;
 	$this->proceduresuffix 		= (isset($data['procedure_suffix'])) 	? $data['procedure_suffix']	: null;
 	$lab->specimencollected		= (isset($data['specimencollected']))	? $data['specimencollected']	: null;
+	$lab->billto			= (isset($data['billto']))		? $data['billto']		: null;
+	$lab->internal_comments		= (isset($data['internal_comments']))	? $data['internal_comments']	: null;
     }
     public function getArrayCopy()
     {

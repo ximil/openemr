@@ -4,43 +4,24 @@ use Zend\View\Helper\AbstractHelper;
 
 class Emr extends AbstractHelper
 {
-    public function getList($list_id)
+    public function getList($list_id,$selected='')
     {
         $res = sqlStatement("SELECT * FROM list_options WHERE list_id=? ORDER BY seq, title",array($list_id));
         $rows[0] = array (
 		'value' => '',
 		'label' => xlt('Unassigned'),
-		'selected' => TRUE,
 		'disabled' => FALSE
 	);
 	$i = 1;
 	
 	while($row=sqlFetchArray($res)) {
-		$rows[$i] = array (
-			'value' => htmlspecialchars($row['option_id'],ENT_QUOTES),
-			'label' => xlt($row['title']),
-		);
-		$i++;
-	}
-	return $rows;
-    }
-    public function getList1($list_id)
-    {
-        $res = sqlStatement("SELECT * FROM list_options WHERE list_id=? ORDER BY seq, title",array($list_id));
-        $rows[0] = array (
-		'value' => 'pending',
-		'label' => xlt('Pending'),
-		'selected' => TRUE,
-		'disabled' => FALSE
-	);
-	$i = 1;
-	
-	while($row=sqlFetchArray($res)) {
-		$rows[$i] = array (
-			'value' => htmlspecialchars($row['option_id'],ENT_QUOTES),
-			'label' => xlt($row['title']),
-		);
-		$i++;
+            $sel = ($row['option_id']==$selected) ? TRUE : FALSE;
+            $rows[$i] = array (
+                    'value' => htmlspecialchars($row['option_id'],ENT_QUOTES),
+                    'label' => xlt($row['title']),
+                    'selected' => $sel,
+            );
+            $i++;
 	}
 	return $rows;
     }
