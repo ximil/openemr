@@ -155,7 +155,7 @@ class LabForm extends Form
 	    ),
         ));
 	$this->add(array(
-            'name' => 'diagnoses',
+            'name' => 'diagnoses[]',
             'attributes' => array(
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
