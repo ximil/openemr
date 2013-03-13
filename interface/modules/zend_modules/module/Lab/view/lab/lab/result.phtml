@@ -6,6 +6,7 @@
 					<th colspan="6"><?php echo xlt('Order'); ?></th>
 				</tr>
 			</thead>
+
 			<thead>
 			<tr>
 				<th colspan="4"><?php echo xlt('Report'); ?></th>
@@ -13,6 +14,10 @@
 				<th colspan="1"><?php echo xlt('Action'); ?></th>
 			</tr>
 			</thead>
+			<thead>
+
+			</thead>
+		
 			<thead data-options="frozen:true">
 				<tr>
 					<!-- Start Order -->
@@ -24,6 +29,7 @@
 					<th data-options="field:'order_status'"><?php echo xlt('Status'); ?></th>
 					<!-- End Order -->
 				</tr>
+			</thead>
 			<thead>
 			
 			<tr>
@@ -99,18 +105,22 @@
 									var c = '<a></a>';
 									return s+c;
 								} else {
-									var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:30px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
-									var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:40px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
-									return d+e;
+									var f = '<a href=\'#\' onClick=\'getLabelDownload(this);\' style=padding-left:10px;><img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+									var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:40px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+									var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:50px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
+									return f+d+e;
 								}
 							}">
 							<span class="datagrid-cell" style="border-right: 1px dotted #444;">
-							<?php echo xlt('Requisition'); ?></span>
-							<span>
+							<?php echo xlt('Label'); ?>
+							</span>
+							<span class="datagrid-cell" style="border-right: 1px dotted #444;">
+							<?php echo xlt('Requisition'); ?>
+							</span>
+							<span style="padding-left: 10px;">
 							<?php echo xlt('Result'); ?>
 							</span>
 							</th>
-		
 			<!-- End Action -->
 			</tr>
 		</thead>

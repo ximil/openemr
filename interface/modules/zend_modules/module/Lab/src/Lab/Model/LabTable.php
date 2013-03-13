@@ -116,7 +116,7 @@ class LabTable extends AbstractTableGateway
 			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id";
 		$groupby = '';
 		if ($flagSearch == 1) {
-			$groupby = "GROUP By po.procedure_order_id";
+			//$groupby = "GROUP By po.procedure_order_id";
 		}
 		
 		$orderby =
