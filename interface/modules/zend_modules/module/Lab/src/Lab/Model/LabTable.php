@@ -371,10 +371,10 @@ class LabTable extends AbstractTableGateway
 	}
     }
     public function insertProcedureMaster($post){
-	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
-		    diagnoses,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
+				       order_status,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
-		    'pending',"ICD9:".$post['diagnoses'],$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
+		    'pending',$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
 		    $post['billto'],$post['internal_comments']));
 	return $procedure_type_id;
     }
@@ -392,11 +392,13 @@ class LabTable extends AbstractTableGateway
 	    ${$PRow['specimen_state']."_j"} = 0;
 	    if($PRow['pap_indicator']=="P"){
 		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['procedure'] = $PRow['name'];
+		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['diagnoses'] = $post['diagnoses'][$i];
 	    }
 	    else{
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_code'] = $PRow['procedure_code'];
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure'] = $PRow['name'];
 		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['diagnoses'] = $post['diagnoses'][$i];
 		${$PRow['specimen_state']."_j"}++;
 	    }
 	}
@@ -406,10 +408,11 @@ class LabTable extends AbstractTableGateway
 		$procode = $PSArray[0];
 		$prosuffix = $PSArray[1];
 		$proname = $pronameArr['procedure'];
+		$diagnoses = $pronameArr['diagnoses'];
 		$PAPprocedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $PAPprocedure_type_id;
-		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-		     VALUES (?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix));
+		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+		     VALUES (?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
 		$this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
 	    }
 	}
@@ -422,8 +425,9 @@ class LabTable extends AbstractTableGateway
 			$procode = $vArray[$i]['procedure_code'];
 			$proname = $vArray[$i]['procedure'];
 			$prosuffix = $vArray[$i]['procedure_suffix'];
-			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-					VALUES (?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix));
+			$diagnoses = $vArray[$i]['diagnoses'];
+			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+					VALUES (?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
 			$this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
 		    }
 		}
@@ -438,9 +442,9 @@ class LabTable extends AbstractTableGateway
 		$procedure_type_id = $this->insertProcedureMaster($post);
 		$procedure_type_id_arr[] = $procedure_type_id;
 		}
-		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-		    VALUES (?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
-		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i]);
+		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+		    VALUES (?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
+		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i],$post['diagnoses'][$i]);
 	    }
 	}
 	return $procedure_type_id_arr;
@@ -1343,7 +1347,7 @@ class LabTable extends AbstractTableGateway
        
 	
 	//GETTING VALUES OF ADDITIONAL XML TAGS
-	$sql_order   	= "SELECT procedure_order_id, diagnoses FROM procedure_order WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
+	$sql_order   	= "SELECT procedure_order_id FROM procedure_order WHERE patient_id = ? AND order_status = ? AND lab_id = ? ";
 	    
 	$misc_value_arr = array();
 	

@@ -159,7 +159,6 @@ class LabForm extends Form
             'attributes' => array(
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
-		'data-options' => 'required:true',
 		'required' => 'required'
             ),
         ));
@@ -200,7 +199,6 @@ class LabForm extends Form
 		'id' => 'procedures_1',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
-		'data-options' => 'required:true',
 		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")',
 		'required' => 'required'
             ),
