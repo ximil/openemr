@@ -1311,17 +1311,17 @@ class LabTable extends AbstractTableGateway
 	$primary_insurance_person_state         = "";    
 	$primary_insurance_person_postal_code   = "";    
 	
-	$guarantor_lname                        = "";    
-	$guarantor_fname                        = "";    
-	$guarantor_address                      = "";    
-	$guarantor_city                         = "";    
-	$guarantor_state                        = "";    
-	$guarantor_postal_code                  = "";    
-	$guarantor_phone_no                     = "";    
+	$guarantor_lname                        = "TEST";    
+	$guarantor_fname                        = "TC2";    
+	$guarantor_address                      = "2090 Concourse";    
+	$guarantor_city                         = "St. Louis";    
+	$guarantor_state                        = "MT";    
+	$guarantor_postal_code                  = "63146";    
+	$guarantor_phone_no                     = "314-872-3000";    
 	$guarantor_mname                        = "";    
-	$ordering_provider_id                   = "1122334455";    
-	$ordering_provider_lname                = "Allan";    
-	$ordering_provider_fname                = "Joseph";    
+	$ordering_provider_id                   = "1122334455";    //hard coded//
+	$ordering_provider_lname                = "Allan";    //hard coded//
+	$ordering_provider_fname                = "Joseph";    //hard coded//
 	$observation_request_comments           = "";
 	
 	$xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
@@ -1348,7 +1348,7 @@ class LabTable extends AbstractTableGateway
 	$misc_value_arr = array();
 	
 	$order_value_arr['patient_id']   = $pid;
-	$order_value_arr['order_status'] = "pending";
+	$order_value_arr['order_status'] = "pending";//hard coded//
 	$order_value_arr['lab_id']       = $lab_id;
 	
 	$res_order   = sqlStatement($sql_order,$order_value_arr);
@@ -1393,28 +1393,36 @@ class LabTable extends AbstractTableGateway
 //                    echo "<br>";
 //		    print_r($col_map_arr);
 		    
-                    foreach($col_map_arr as $col => $tag)
-                    {   
-                        if(substr($tag,0,1)== "#")
+                    foreach($col_map_arr as $col => $tagstr)
+                    {   //CHECKING FOR MAULTIPLE TAG MAPPING
+                        $tag_arr   = explode(",",$tagstr);
+                        
+                        foreach($tag_arr as $tag)
                         {
-                                $tag            = substr($tag,1,strlen($tag));
-                                $check_arr[]    = "$".$tag;
-                        }
-                        foreach($check_arr as $check)
-                        {
-			    if(strstr($tag,$check))
-			    {
-				    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+                            if(trim($tag) <> "")
+                            { 
+				if(substr($tag,0,1)== "#")
+				{
+					$tag            = substr($tag,1,strlen($tag));
+					$check_arr[]    = "$".$tag;
+				}
+				foreach($check_arr as $check)
+				{
+				    if(strstr($tag,$check))
+				    {
+					    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+				    }
+				}
+				if($cofig_arr[$table]['value_map'][$col] <> "")
+				{
+				    $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
+				}
+				else
+				{
+				    $$tag   = $data[$col];
+				}
 			    }
-                        }
-                        if($cofig_arr[$table]['value_map'][$col] <> "")
-                        {
-                            $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
-                        }
-                        else
-                        {
-                            $$tag   = $data[$col];
-                        }
+			}
 			
 			//echo "<br>".$col." => $".$tag." = ".$$tag;
 			//echo "<br>$"."data[".$col."] = ".$data[$col];
@@ -1431,22 +1439,37 @@ class LabTable extends AbstractTableGateway
                         {
                             $col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
                             
-                            foreach($col_map_arr2 as $col => $tag)
+                            foreach($col_map_arr2 as $col => $tagstr)
                             {   
-                                foreach($check_arr as $check)
+                                //CHECKING FOR MAULTIPLE TAG MAPPING
+                                $tag_arr   = explode(",",$tagstr);
+                                
+                                foreach($tag_arr as $tag)
                                 {
-                                        if(strstr($tag,$check))
+                                    if(trim($tag) <> "")
+                                    {
+                                        foreach($check_arr as $check)
                                         {
-                                                $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+                                                if(strstr($tag,$check))
+                                                {
+                                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+                                                }
                                         }
+                                        
+                                        if(substr($tag,0,1)== "#")
+                                        {
+                                                $tag = substr($tag,1,strlen($tag));                        
+                                        }
+                                        if($cofig_arr[$table]['value_map'][$col] <> "")
+                                        {
+                                            $$tag   = $cofig_arr[$table]['value_map'][$col][$data1[$col]];
+                                        }
+                                        else
+                                        {
+                                            $$tag   = $data1[$col];
+                                        }
+                                    }
                                 }
-                                
-                                if(substr($tag,0,1)== "#")
-                                {
-                                        $tag = substr($tag,1,strlen($tag));                        
-                                }
-                                
-                                $$tag   = $data1[$col];
                             }
                         }                    
                     }

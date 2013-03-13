@@ -49,7 +49,11 @@ function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix){
 			i++;
 			    splitArr = aoeArray[questioncode].split("|-|");
 			    tips = splitArr[3];
-			    j +='<tr><td>'+i+'</td><td>'+splitArr[0]+'</td><td><input title="'+tips+'" placeholder="'+tips+'" class="combo" type="text" name="AOE_'+ProcedureCode+"_"+splitArr[2]+'"></td></tr>';
+			    if(tips)
+			    cls = "personPopupTrigger";
+			    else
+			    cls = "";
+			    j +='<tr><td>'+i+'</td><td>'+splitArr[0]+'</td><td><input rel="'+tips+'" class="combo '+cls+'" type="text" name="AOE_'+ProcedureCode+"_"+splitArr[2]+'"></td></tr>';
 		    }
 		    j+="</table>";
 		    //alert(j);
@@ -83,6 +87,7 @@ function cloneRow()
 	var rowcount = document.getElementById('procedurecount').value;
 	var row = document.getElementById("proceduretemplate_1"); // find row to copy
 	var AOErow = document.getElementById("AOEtemplate_1"); // find row to copy
+	var Diagrow = document.getElementById("diagnosestemplate_1"); // find row to copy
 	var table = document.getElementById("ordertable"); // find table to append to
 	var clone = row.cloneNode(true); // copy children too
 	clone.id = "proceduretemplate"+rowcount;
@@ -107,6 +112,13 @@ function cloneRow()
 	$('#AOEtemplate_'+rowcount).css("display","none");
 	$('#AOEtemplate_'+rowcount+" > td:last").attr("id","AOE_"+rowcount);
 	$('#AOEtemplate_'+rowcount+" > td:last").html("");
+	var Diagclone = Diagrow.cloneNode(true); // copy children too
+	//clone.id = newrowid+""+rowcount; // change id or other attributes/contents
+	Diagclone.id = "diagnosestemplate_"+rowcount
+	table.appendChild(Diagclone); // add new row to end of table
+	//$('#AOEtemplate_'+rowcount).css("display","none");
+	//$('#AOEtemplate_'+rowcount+" > td:last").attr("id","AOE_"+rowcount);
+	//$('#AOEtemplate_'+rowcount+" > td:last").html("");
 	//$("#"+tableid+" tr:last select").val("");
 	$('#proceduretemplate'+rowcount+" > td:last input[type=text]").focus();
 	document.getElementById('procedurecount').value = parseInt(rowcount)+1;
