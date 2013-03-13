@@ -148,3 +148,53 @@ function getProcedures(inputString,thisID,labID) {
 	    }
 	}, 'json');
 }
+
+function pulldata(lab_id,type)
+{
+	//alert("hi pull :"+lab_id.value+" type :"+type );
+	var labVal = document.getElementById("lab_id").value;
+	var actionvar='';
+	if(type == 1)
+	{
+		actionvar = "pullcompendiumtest";
+	}
+	else if(type == 2)
+	{
+		actionvar = "pullcompendiumaoe";
+	}
+	else if(type == 3)
+	{			
+		actionvar = "pullcompendiumtestaoe";
+	}
+	
+	document.getElementById("ajaxload").innerHTML="<img src = '../images/pulling.gif' >";
+	
+	
+	$.post("pull/"+actionvar,{
+           lab_id : labVal
+        },
+	function(data){
+	    if(data.response == true){
+		    //alert("hi resp :"+data.response);
+		    //alert("hi resp :"+data.result);
+		    document.getElementById("ajaxload").innerHTML=data.result;
+//		    /*if(data.procedureArray.length>0){
+//		    
+//		    //alert(j);
+//		    //$("#prodiv_"+count).css('display','block');
+//		    //$("#prodiv_"+count).html(j);
+//		    }
+//		    else{
+//			//$("#prodiv_"+count).html("");
+//			//$("#prodiv_"+count).css('display','none');
+//		    }*/
+//	    // print success message
+	    } else {
+		document.getElementById("ajaxload").innerHTML="";
+		    alert("Failed");
+		// print error message
+		console.log('could not add');
+	    }
+	}, 'json');
+}
+

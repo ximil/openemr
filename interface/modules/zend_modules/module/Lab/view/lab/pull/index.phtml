@@ -1,0 +1,38 @@
+<div style="margin:10px 0;"></div>
+<div class="easyui-panel" title="<?php echo xlt('PULL TEST, AOE DATA');?>" style="width:600px;">
+	<div style="padding:10px 0 10px 60px">
+	<?php
+	$form = $this->form;
+	$form->setAttribute('action', $this->url('pull', array('action' => 'index')));
+	$form->prepare();
+	
+	echo $this->form()->openTag($form);
+	echo $this->formRow($form->get('patient_id'));
+	echo $this->formRow($form->get('encounter_id'));
+	echo $this->formRow($form->get('procedurecount'));
+	?>
+	<table id="ordertable" width="500">
+		<tr>
+			<td align="right"><?php echo xlt('Lab');?>:</td>
+			<td colspan="2"><?php echo $this->formRow($form->get('lab_id'));?></td>			
+		</tr>
+		<tr>
+		    <td colspan="3" align="center"><div id ="ajaxload"></div></td>
+		</tr>
+		<tr>
+			<td align="right"><?php echo $this->formRow($form->get('pulltest'));?></td>
+			<td align="center"><?php echo $this->formRow($form->get('pullaoe'));?></td>
+			<td align="left"><?php echo $this->formRow($form->get('pulltestaoe'));?></td>
+		</tr>
+		
+		
+	</table>
+	
+	
+	</div>
+</div>
+<?php
+echo $this->form()->closeTag();
+echo $this->headScript()->appendFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+			->appendFile($this->basePath() . '/js/lab/lab.js')			
+?>
