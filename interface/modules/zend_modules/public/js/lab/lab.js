@@ -209,6 +209,18 @@ function getRequisition(target) {
 	}
 }
 
+function getLabelDownload(target) {
+	var tr = $(target).closest('tr.datagrid-row');
+	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
+	$('#dg').datagrid('selectRow', rowIndex);
+	var row = $('#dg').datagrid('getSelected'); 
+	if (row){  
+		var order_id = row.procedure_order_id;
+		alert('Order Id is ..' + order_id);
+		//window.location.assign("./getLabelDownload?order_id=" + order_id);
+	}
+}
+
 /**
 * Show Popup and edit Result Status, Fecility, Comments and Notes
 */
