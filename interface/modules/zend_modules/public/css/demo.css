@@ -36,3 +36,14 @@ legend
 {
 	padding: 0 10px;
 }
+
+#ajaxload
+{
+	color:#0E2D5F;
+	font-family:helvetica,tahoma,verdana,sans-serif;
+    
+    font-size:13px;
+    font-weight:400;
+    font-style:italic;
+	
+}

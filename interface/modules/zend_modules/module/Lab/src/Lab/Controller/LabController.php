@@ -43,44 +43,49 @@ class LabController extends AbstractActionController
 		}
 	    }
             $form->setData($request->getPost());
-	    if ($form->isValid()) {
+	    if ($form->isValid())
+            {
 		$Lab->exchangeArray($form->getData());
                 //$clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
 		$clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
+                
 			
-			//Start Procedure Order Import 
-            $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
-            //print_r($xmlfile);        
-            ini_set("soap.wsdl_cache_enabled","0");            
-            ini_set('memory_limit', '-1');
-            
-            $options    = $this->getLabTable()->getWebserviceOptions();   
-            $client     = new Client(null,$options);
-            
-            $lab_id     = $request->getPost('lab_id');            
-            
-	  
-            foreach($xmlresult_arr as $xmlresult)
-            {
-                $order_id   = $xmlresult['order_id'];
-                $xmlstring  = $xmlresult['xmlstring'];
-		
-		//print_r($xmlstring);
-		//echo "<br>";
-		//continue;
-               		
-                $cred = $this->getLabTable()->getClientCredentials($order_id);
-            
-                $username   = $cred['login'];
-                $password   = $cred['password'];        
+                //Start Procedure Order Import 
+                $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
+                
+                ini_set("soap.wsdl_cache_enabled","0");            
+                ini_set('memory_limit', '-1');
+                
+                $cred           = $this->getLabTable()->getClientCredentials($clientorder_id[0]);
+                
+                $username       = $cred['login'];
+                $password       = $cred['password'];
+                $remote_host    = $cred['remote_host'];
+                
                 $site_dir   = $GLOBALS['OE_SITE_DIR'];
                 
-                $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
-                //echo "Result <br>";
-                //print_r($result);
-            }
-	    //exit;
-			// End Prodedure Order Import
+                $options    = array('location' => $remote_host,
+                                    'uri'      => "urn://zhhealthcare/lab"
+                                    );  
+                $client     = new Client(null,$options);
+                
+                $lab_id     = $request->getPost('lab_id');            
+                
+                $orderno    = 0;
+                foreach($xmlresult_arr as $xmlresult)
+                {
+                    $order_id   = $xmlresult['order_id'];
+                    $xmlstring  = $xmlresult['xmlstring'];
+                    
+                    $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);                    
+                }
+                
+                if($result == "1")
+                {
+                    $this->getLabTable()->setOrderStatus($clientorder_id[0],"routed");
+                }
+               
+                // End Prodedure Order Import
 			
                 //return $this->redirect()->toRoute('result');
             }
@@ -114,7 +119,7 @@ class LabController extends AbstractActionController
     public function searchAction()
     {	
 	$request 	= $this->getRequest();
-	$response = $this->getResponse();
+	$response       = $this->getResponse();
 	$inputString 	= $request->getPost('inputValue');
 	$dependentId 	= $request->getPost('dependentId');
 	
@@ -159,7 +164,7 @@ class LabController extends AbstractActionController
 		
     }
 	
-	 public function getLabOptionsAction()
+    public function getLabOptionsAction()
     {
 		$request = $this->getRequest();
 	    $data =array();
@@ -271,102 +276,6 @@ class LabController extends AbstractActionController
     * Vipin
     */
     
-    public function pullcompendiumtestAction()
-    {        
-	ini_set("soap.wsdl_cache_enabled","0");	
-	ini_set('memory_limit', '-1');
-	
-	$options    = $this->getLabTable()->getWebserviceOptions();
-	$client     = new Client(null,$options);	
-	$result     = $client->check_for_tests();
-	
-	$testconfig_arr = $this->getLabTable()->pullcompendiumTestConfig();
-        
-	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
-	return $this->redirect()->toRoute('result');
-    }
-    
-    public function pullcompendiumaoeAction()
-    {
-	ini_set("soap.wsdl_cache_enabled","0");
-	ini_set('memory_limit', '-1');
-	
-        $options    = $this->getLabTable()->getWebserviceOptions();        
-	$client     = new Client(null,$options);
-	$result     = $client->check_for_aoe();
-                
-	$testconfig_arr = $this->getLabTable()->pullcompendiumAoeConfig();
-        
-	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
-	return $this->redirect()->toRoute('result');
-    }
-
-    /*
-    //THIS ACTION IS MOVED INTO INDEX ACTION
-    public function generateorderAction()
-    {
-        //$xmlfileurl = "ordernew.xml";
-        //$xmlfile = $this->getLabTable()->generateOrderXml(5,$xmlfileurl);//Pateint ID, Lab ID, File Name to be created
-        //print_r($xmlfile);
-        
-        $lab_id     = 1;//HARD CODED
-        $patient_id = 2;//HARD CODED
-        
-        $xmlresult_arr = $this->getLabTable()->generateOrderXml($patient_id,$lab_id,$xmlfileurl);
-       
-        //$fd = fopen("module/Lab/".$xmlfile,"r") or die("can't open xml file");
-            
-        //$xmlstring  = fread($fd,filesize("module/Lab/".$xmlfile));
-        
-        //return false;
-        
-        //$request = $this->getRequest();
-        //if($request->isGet())
-        //{
-        //    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
-        //}
-        
-        
-        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
-        //print_r($data);
-        
-        ini_set("soap.wsdl_cache_enabled","0");
-        
-        ini_set('memory_limit', '-1');
-        
-        
-        $options    = $this->getLabTable()->getWebserviceOptions();
-        $client     = new Client(null,$options);
-        $i=0;
-        foreach($xmlresult_arr as $xmlresult)
-        {
-            $i++;
-            $order_id   = $xmlresult['order_id'];
-            $xmlstring  = $xmlresult['xmlstring'];
-            
-                    
-            $fd = fopen("module/Lab/vipi$i.xml","w") or die("can't open xml file");
-            
-            $xmlstring  = fwrite($fd,$xmlstring);
-            continue;
-            $cred = $this->getLabTable()->getClientCredentials($order_id);
-        
-            $username   = $cred['login'];
-            $password   = $cred['password'];        
-            $site_dir   = $GLOBALS['OE_SITE_DIR'];
-            
-            //$client_id      = "1";
-            //$clientorder_id = "1";
-            //$lab_id         = "1";//HARD CODED
-            
-            $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
-            //echo "Result <br>";
-            //print_r($result);
-        }
-        
-    }
-    */ 
-
     public function getlabrequisitionAction()
     {
         $site_dir           = $GLOBALS['OE_SITE_DIR'];            
@@ -378,9 +287,6 @@ class LabController extends AbstractActionController
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
         
-        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
-        
-        
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
         
         if(($curr_status == "requisitionpulled")||($curr_status == "final"))
@@ -391,14 +297,17 @@ class LabController extends AbstractActionController
         {
             $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
                     
-            $username   = $cred['login'];
-            $password   = $cred['password'];        
-            $site_dir   = $_SESSION['site_id'];
+            $username       = trim($cred['login']);
+            $password       = trim($cred['password']);
+            $remote_host    = trim($cred['remote_host']);
+            $site_dir       = $_SESSION['site_id'];
            
             ini_set("soap.wsdl_cache_enabled","0");	
             ini_set('memory_limit', '-1');
             
-            $options    = $this->getLabTable()->getWebserviceOptions();
+            $options    = array('location' => $remote_host,
+				'uri'      => "urn://zhhealthcare/lab"
+				);
             $client     = new Client(null,$options);
             $result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID   
        
@@ -412,7 +321,11 @@ class LabController extends AbstractActionController
             $fp = fopen($requisition_dir.$labrequisitionfile,"wb");
             fwrite($fp,base64_decode($result));
             
-            $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
+            // -1 => No Requisition data available,  -2 =>Order not send yet, -3 => Unauthorised Client Access
+            if(($result <> "-1")&&($result <> "-2")&&($result <> "-3"))
+            {
+                $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
+            }
         }
         
 	while(ob_get_level()){
@@ -434,8 +347,6 @@ class LabController extends AbstractActionController
 	{
 	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
-	
-        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
         
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
         
@@ -447,14 +358,17 @@ class LabController extends AbstractActionController
         {
             $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
                 
-            $username   = $cred['login'];
-            $password   = $cred['password'];        
-            $site_dir   = $_SESSION['site_id'];
+            $username       = trim($cred['login']);
+            $password       = trim($cred['password']);        
+            $site_dir       = $_SESSION['site_id'];
+            $remote_host    = trim($cred['remote_host']);
                 
             ini_set("soap.wsdl_cache_enabled","0");	
             ini_set('memory_limit', '-1');
             
-            $options    = $this->getLabTable()->getWebserviceOptions();    
+            $options    = array('location' => $remote_host,
+				'uri'      => "urn://zhhealthcare/lab"
+				);
             $client     = new Client(null,$options);
             $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
             //print_r($result);
@@ -467,8 +381,12 @@ class LabController extends AbstractActionController
             }
             $fp = fopen($result_dir.$labresultfile,"wb");
             fwrite($fp,base64_decode($result));
-            
-            $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+           
+            // -1 => No Result data available,  -2 =>Order not Processed yet, -3 => Unauthorised Client Access
+            if(($result <> "-1")&&($result <> "-2")&&($result <> "-3"))
+            {
+                $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+            }
         }
         
 	while(ob_get_level()){
@@ -525,10 +443,5 @@ class LabController extends AbstractActionController
 	$this->getLabTable()->importResultDetails($result_config_arr,$result);
         
         
-    }
-    
-    public function testAction()
-    {
-        
-    }
+    }      
 }
