@@ -48,39 +48,7 @@ class ResultTable extends AbstractTableGateway
         }
         return $arr;
     }
-    
-    public function listLabStatus($data)
-    {
-        $sql = "SELECT option_id, title FROM list_options 
-                                        WHERE list_id='proc_rep_status' 
-                                        ORDER BY seq, title";
-        $result = sqlStatement($sql);
-        $arr = array();
-        $i = 0;
-        if ($data['opt'] == 'search') {
-            $arr[$i]['option_id'] = 'all';
-            $arr[$i]['title'] = 'All';
-            $arr[$i]['selected'] = true;
-        }
-        while($row = sqlFetchArray($result)) {
-            $arr[] = $row;
-        }
-        return $arr;
-    }
-    
-    public function listLabAbnormal()
-    {
-        $sql = "SELECT option_id, title FROM list_options 
-                                        WHERE list_id='proc_res_abnormal' 
-                                        ORDER BY seq, title";
-        $result = sqlStatement($sql);
-        $arr = array();
-        while($row = sqlFetchArray($result)) {
-            $arr[] = $row;
-        }
-        return $arr;
-    }
-    
+        
     public function listResultComment($data)
     {
         $sql = "SELECT result_status, facility, comments FROM procedure_result 
@@ -146,7 +114,7 @@ class ResultTable extends AbstractTableGateway
         $extra_html     = '';
         $lastrcn        = '';
         $facilities     = array();
-        //$pid          = 1;
+
         $selects =
                 "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
                 "pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
@@ -162,7 +130,7 @@ class ResultTable extends AbstractTableGateway
                 LEFT JOIN procedure_providers AS pp ON pp.ppid=po.lab_id";
         $groupby = '';
         if ($flagSearch == 1) {
-            $groupby = "GROUP By po.procedure_order_id";
+            //$groupby = "GROUP By po.procedure_order_id";
         }
         $orderby =
                 "po.date_ordered, po.procedure_order_id, " .
@@ -191,7 +159,7 @@ class ResultTable extends AbstractTableGateway
                                   "$joins " .
                                   "WHERE po.patient_id = '$pid' AND $where " .
                                   "$groupby ORDER BY $orderby LIMIT $start, $rows";
-        //echo $sql;
+        
         $result = sqlStatement($sql);
         $arr1 = array();
         $i = 0;
@@ -234,8 +202,6 @@ class ResultTable extends AbstractTableGateway
                             "(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
             }
             
-            /* $pt2cond = "pt2.parent = $order_type_id AND " .
-                        "(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')"; */
             $pscond = "ps.procedure_report_id = $report_id";
 
             $joincond = "ps.result_code = pt2.procedure_code";
@@ -280,9 +246,7 @@ class ResultTable extends AbstractTableGateway
                         }
                     }
                 }
-                /* if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
-                        $arr1[$i]['date_ordered'] = $row['date_ordered'];
-                } */
+               
                 if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
                     $arr1[$i]['date_report'] = $date_report;
@@ -293,13 +257,10 @@ class ResultTable extends AbstractTableGateway
                     $arr1[$i]['encounter_id'] = $row['encounter_id'];
 
                     $title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
-                    //$arr1[$i]['order_title'] = isset($title) ? xlt($title[0]['title']) : '';
                     $arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
-                    //$arr1[$i]['order_status'] = xlt($row['order_status']);
                 }
                 $arr1[$i]['specimen_num'] = xlt($specimen_num);
                 $title = $this->listLabOptions(array('option_id'=> $report_status, 'optId'=> 'proc_rep_status'));
-                //$arr1[$i]['report_status'] = isset($title) ? xlt($title[0]['title']) : '';
                 $arr1[$i]['report_status'] = xlt($report_status);
                 $arr1[$i]['report_title'] = isset($title) ? xlt($title[0]['title']) : '';
                 $arr1[$i]['order_type_id'] = $order_type_id ;
@@ -335,7 +296,6 @@ class ResultTable extends AbstractTableGateway
             }
         }
         $arr1[$i]['total'] = $i-1;
-        //echo '<pre>'; print_r($arr1); echo '</pre>';
         return $arr1;
     }
     
