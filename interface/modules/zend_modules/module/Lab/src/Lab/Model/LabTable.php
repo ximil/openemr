@@ -41,18 +41,34 @@ class LabTable extends AbstractTableGateway
     
 	public function listLabOptions($data)
 	{
+		if (isset($data['option_id'])) { 
+			$where = " AND option_id='$data[option_id]'";
+		}
 		$sql = "SELECT option_id, title FROM list_options 
-						WHERE list_id='" . $data['optId'] . "' 
+						WHERE list_id='" . $data['optId'] . "' $where 
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i] = array (
+				'option_id' => 'all',
+				'title' => xlt('All'),
+				'selected' => TRUE,
+			);
+			$i++;
 		}
+		
 		while($row = sqlFetchArray($result)) {
-			$arr[] = $row;
+			$arr[$i] = array (
+				'option_id' => htmlspecialchars($row['option_id'],ENT_QUOTES),
+				'title' => xlt($row['title']),
+			);
+			if ($data['optId'] == 'ord_status' && $row['option_id'] == 'pending') {
+				$arr[$i]['selected'] = true;
+			}
+			$i++;
+			
 		}
 		return $arr;
 	}
@@ -64,10 +80,11 @@ class LabTable extends AbstractTableGateway
 						ORDER BY seq, title";
 		$result = sqlStatement($sql);
 		$arr = array();
+		$i = 0;
 		if ($data['opt'] == 'search') {
-			$arr[0]['option_id'] = 'all';
-			$arr[0]['title'] = 'All';
-			$arr[0]['selected'] = true;
+			$arr[$i]['option_id'] = 'all';
+			$arr[$i]['title'] = 'All';
+			$arr[$i]['selected'] = true;
 		}
 		while($row = sqlFetchArray($result)) {
 			$arr[] = $row;
@@ -88,14 +105,56 @@ class LabTable extends AbstractTableGateway
 		return $arr;
 	}
 	
+	public function listResultComment($data)
+	{
+		$sql = "SELECT result_status, facility, comments FROM procedure_result 
+						WHERE procedure_result_id='" . $data['procedure_result_id'] . "'";
+		$result = sqlStatement($sql);
+		$string = '';
+		$arr = array();
+		while($row = sqlFetchArray($result)) {
+			
+			$result_notes = '';
+			$i = strpos($row['comments'], "\n");
+			if ($i !== FALSE) {
+				$result_notes = trim(substr($row['comments'], $i + 1));
+				$result_comments = substr($row['comments'], 0, $i);
+			}
+			$result_comments = trim($result_comments);
+			$string = $row['result_status'] . '|' . $row['facility'] . '|' . $result_comments . '|' . $result_notes;
+			$title = $this->listLabOptions(array('option_id'=> $row['result_status'], 'optId'=> 'proc_res_status'));
+			$arr[0]['title'] = $title[0]['title'];
+			$arr[0]['result_status'] = trim($row['result_status']);
+			$arr[0]['facility'] = $row['facility'];
+			$arr[0]['comments'] = $result_comments;
+			$arr[0]['notes'] = $result_notes;
+			$arr[0]['selected'] = true;
+			
+		}
+		return $arr;
+	}
+	
 	public function listLabResult($data)
 	{
 	    global $pid;
 		$flagSearch = 0;
-
-		if (isset($data['status']) && $data['status'] != 'all') {
-			$stats = $data['status'];
+//$data['statusOrder'] = 'complete';
+//$data['statusReport'] = 'final';
+		if (isset($data['statusReport']) && $data['statusReport'] != 'all') {
+			$statusReport = $data['statusReport'];
 			$flagSearch = 1;
+		}
+		if (isset($data['statusOrder']) && $data['statusOrder'] == 'pending') {
+			$statusOrder = $data['statusOrder'];
+		} elseif (isset($data['statusOrder'])){
+			if ($data['statusOrder'] != 'all') {
+				$statusOrder = $data['statusOrder'];
+			}
+			$flagSearch = 1;
+		} 
+		
+		if (isset($data['statusResult']) && $data['statusResult'] != 'all') {
+			$statsResult = $data['statusResult'];
 		}
 		if (isset($data['dtFrom'])) {
 			$dtFrom = $data['dtFrom'];
@@ -119,7 +178,7 @@ class LabTable extends AbstractTableGateway
 		$facilities = array();
 		//$pid = 1;
 		$selects =
-			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
+			"CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
 			"pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
 			"pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
 			"pr.report_status, pr.review_status";
@@ -129,7 +188,8 @@ class LabTable extends AbstractTableGateway
 			"LEFT JOIN procedure_type AS pt1 ON pt1.lab_id = po.lab_id AND pt1.procedure_code = pc.procedure_code " .
 			"LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
 			"pr.procedure_order_seq = pc.procedure_order_seq 
-			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id";
+			LEFT JOIN patient_data AS pa ON pa.id=po.patient_id 
+			LEFT JOIN procedure_providers AS pp ON pp.ppid=po.lab_id";
 		$groupby = '';
 		if ($flagSearch == 1) {
 			//$groupby = "GROUP By po.procedure_order_id";
@@ -140,25 +200,39 @@ class LabTable extends AbstractTableGateway
 			"pc.procedure_order_seq, pr.procedure_report_id";
 
 		$where = "1 = 1";
-		if($stats) {
-			$where .= " AND pr.report_status='$stats'";
+		if($statusReport) {
+			$where .= " AND pr.report_status='$statusReport'";
 		}
+		if($statusOrder) {
+			$where .= " AND po.order_status='$statusOrder'";
+		}
+		
 		if ($dtFrom) {
 			$where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
+		}
+		
+		$start = isset($data['page']) ? $data['page'] :  0;
+		$rows = isset($data['rows']) ? $data['rows'] : 20;
+
+		if ($data['page'] == 1) {
+			$start = $data['page'] - 1;
+		} elseif ($data['page'] > 1) {
+			$start = (($data['page'] - 1) * $rows);
 		}
 
 		$sql = "SELECT $selects " .
 					  "FROM procedure_order AS po " .
 					  "$joins " .
 					  "WHERE po.patient_id = '$pid' AND $where " .
-					  "$groupby ORDER BY $orderby";
-
+					  "$groupby ORDER BY $orderby LIMIT $start, $rows";
+//echo $sql;
       	$result = sqlStatement($sql);
 		$arr1 = array();
+		
 		$i = 0;
 		while($row = sqlFetchArray($result)) {
-			$order_type_id  = empty($row['order_type_id'      ]) ? 0 : ($row['order_type_id' ] + 0);
-			$order_id       = empty($row['procedure_order_id' ]) ? 0 : ($row['procedure_order_id' ] + 0);
+			$order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
+			$order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
 			$order_seq      = empty($row['procedure_order_seq']) ? 0 : ($row['procedure_order_seq'] + 0);
 			$report_id      = empty($row['procedure_report_id']) ? 0 : ($row['procedure_report_id'] + 0);
 			$date_report    = empty($row['date_report'     ]) ? '' : $row['date_report'];
@@ -166,7 +240,10 @@ class LabTable extends AbstractTableGateway
 			$specimen_num   = empty($row['specimen_num'    ]) ? '' : $row['specimen_num'];
 			$report_status  = empty($row['report_status'   ]) ? '' : $row['report_status']; 
 			$review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
-		
+			$remoteHost		= empty($row['remote_host'      ]) ? '' : $row['remote_host' ];
+			$remoteUser		= empty($row['login']) ? '' : $row['login' ];
+			$remotePass		= empty($row['password']) ? '' : $row['password' ];
+			
 			if ($flagSearch == 0) {
 				if ($form_review) {
 					if ($review_status == "reviewed") continue;
@@ -174,18 +251,33 @@ class LabTable extends AbstractTableGateway
 					if ($review_status == "received") continue;
 				}
 			}
-			
+
 			$selects = "pt2.procedure_type, pt2.procedure_code, pt2.units AS pt2_units, " .
 						"pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
 						"pt2.name AS name, pt2.description, pt2.seq AS seq, " .
 						"ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
 						"ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
-			$pt2cond = "pt2.parent = $order_type_id AND " .
+			
+			// Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
+			$pt2cond = '';
+			$editor = 0;
+			if ($remoteHost != '' && $remoteUser != '' && $remotePass != '') {
+				$pt2cond = "pt2.parent = $order_type_id ";
+				$editor = 1;
+			} else {
+				$pt2cond = "pt2.parent = $order_type_id AND " .
 						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
+			}
+			
+			/* $pt2cond = "pt2.parent = $order_type_id AND " .
+						"(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')"; */
 			$pscond = "ps.procedure_report_id = $report_id";
 
 			$joincond = "ps.result_code = pt2.procedure_code";
-
+			if($statusResult) {
+				$where .= " AND ps.result_status='$statusResult'";
+			}
+			
 			$query = "(SELECT $selects FROM procedure_type AS pt2 " .
 							"LEFT JOIN procedure_result AS ps ON $pscond AND $joincond " .
 							"WHERE $pt2cond" .
@@ -194,7 +286,7 @@ class LabTable extends AbstractTableGateway
 							"LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
 							"WHERE $pscond) " .
 							"ORDER BY seq, name, procedure_type_id, result_code";
-//echo $query."<<<<<<";
+
 			$rres = sqlStatement($query);
 
 			while ($rrow = sqlFetchArray($rres)) {
@@ -215,50 +307,75 @@ class LabTable extends AbstractTableGateway
 				$result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
 				$result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
 				
-				if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
+				if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+					$lastprid = -1;
+					if ($lastpoid != $order_id) {
+						if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+							$arr1[$i]['date_ordered'] = $row['date_ordered'];
+						}
+					}
+				}
+				/* if ($arr1[$i - 1]['date_ordered'] != $row['date_ordered']) {
 					$arr1[$i]['date_ordered'] = $row['date_ordered'];
-				}
-				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name']) {
-					$arr1[$i]['procedure_name'] = $row['procedure_name'];
-					$arr1[$i]['date_report'] = $date_report ? $date_report: '';
-					$arr1[$i]['date_collected'] = $date_collected ? $date_collected: '';
-					$arr1[$i]['specimen_num'] = $specimen_num ? $specimen_num: '';
-					$arr1[$i]['report_status'] = $report_status ? $report_status: '';
-					$arr1[$i]['order_id'] = $order_id ? $order_id: '';
-					$arr1[$i]['patient_name'] = $row['patient_name'];
+				} */
+				if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+					$arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+					$arr1[$i]['date_report'] = $date_report;
+					$arr1[$i]['date_collected'] = $date_collected;
+					
+					$arr1[$i]['order_id'] = $order_id;
+					$arr1[$i]['patient_name'] = xlt($row['patient_name']);
 					$arr1[$i]['encounter_id'] = $row['encounter_id'];
+
+					$title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
+					//$arr1[$i]['order_title'] = isset($title) ? xlt($title[0]['title']) : '';
+					$arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
+					//$arr1[$i]['order_status'] = xlt($row['order_status']);
 				}
-				$arr1[$i]['order_type_id'] = $order_type_id ? $order_type_id: '';
-				$arr1[$i]['procedure_order_id'] = $order_id ? $order_id: '';
-				$arr1[$i]['procedure_order_seq'] = $order_seq ? $order_seq: '';
-				$arr1[$i]['procedure_report_id'] = $report_id ? $report_id: '';
-				$arr1[$i]['review_status'] = $review_status ? $review_status: '';
-				$arr1[$i]['procedure_code'] = $restyp_code;
-				$arr1[$i]['procedure_type'] = $restyp_type;
-				$arr1[$i]['name'] = $restyp_name;
-				$arr1[$i]['pt2_units'] = $restyp_units;
-				$arr1[$i]['pt2_range'] = $restyp_range;
+				$arr1[$i]['specimen_num'] = xlt($specimen_num);
+				$title = $this->listLabOptions(array('option_id'=> $report_status, 'optId'=> 'proc_rep_status'));
+				//$arr1[$i]['report_status'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['report_status'] = xlt($report_status);
+				$arr1[$i]['report_title'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['order_type_id'] = $order_type_id ;
+				$arr1[$i]['procedure_order_id'] = $order_id;
+				$arr1[$i]['procedure_order_seq'] = $order_seq;
+				$arr1[$i]['procedure_report_id'] = $report_id;
+				$arr1[$i]['review_status'] = xlt($review_status);
+				$arr1[$i]['procedure_code'] = xlt($restyp_code);
+				$arr1[$i]['procedure_type'] = xlt($restyp_type);
+				$arr1[$i]['name'] = xlt($restyp_name);
+				$arr1[$i]['pt2_units'] = xlt($restyp_units);
+				$arr1[$i]['pt2_range'] = xlt($restyp_range);
 				$arr1[$i]['procedure_result_id'] = $result_id;
-				$arr1[$i]['result_code'] = $result_code;
-				$arr1[$i]['result_text'] = $result_text;
-				$arr1[$i]['abnormal'] = $result_abnormal;
-				$arr1[$i]['result'] = $result_result;
-				$arr1[$i]['units'] = $result_units;
-				$arr1[$i]['facility'] = $facility;
-				$arr1[$i]['comments'] = $result_comments;
-				$arr1[$i]['range'] = $result_range;
-				$arr1[$i]['result_status'] = $result_status;
+				$arr1[$i]['result_code'] = xlt($result_code);
+				$arr1[$i]['result_text'] = xlt($result_text);
+				
+				$title = $this->listLabOptions(array('option_id'=> $result_abnormal, 'optId'=> 'proc_res_abnormal'));
+				
+				$arr1[$i]['abnormal_title'] = isset($title) ? xlt($title[0]['title']) : '';
+				$arr1[$i]['abnormal'] = xlt($result_abnormal);
+				
+				$arr1[$i]['result'] = xlt($result_result);
+				$arr1[$i]['units'] = xlt($result_units);
+				$arr1[$i]['facility'] = xlt($facility);
+				$arr1[$i]['comments'] = xlt($result_comments);
+				$arr1[$i]['range'] = xlt($result_range);
+				$arr1[$i]['result_status'] = xlt($result_status);
+				$arr1[$i]['editor'] = $editor;
 				$i++;
+				$lastpoid = $order_id;
+				$lastpcid = $order_seq;
+				$lastprid = $report_id;
 			}
-			
 		}
+		$arr1[$i]['total'] = $i-1;
+		//echo '<pre>'; print_r($arr1); echo '</pre>';
 		return $arr1;
 	}
 	
 	public function saveResult($data)
-	{	//$result_id, $report_id, $specimen_num
-		//$sql = "SELECT procedure_report_id FROM procedure_report WHERE procedure_report_id='$report_id'";
-		//$result = sqlStatement($query);
+	{	
 		$report_id		= $data['procedure_report_id'];
 		$order_id 		= $data['procedure_order_id'];
 		$result_id 		= $data['procedure_result_id'];
@@ -279,65 +396,84 @@ class LabTable extends AbstractTableGateway
 		$facility				= $data['facility'];
 		$comments				= $data['comments'];
 		 
-		/* $sets =
-        "procedure_order_id = '$order_id', " .
-        "procedure_order_seq = '$order_seq', " .
-        "date_report = '$date_report', " .
-        "date_collected = " . QuotedOrNull(oresData("form_date_collected", $lino)) . ", " .
-        "specimen_num = '" . oresData("form_specimen_num", $lino) . "', " .
-        "report_status = '" . oresData("form_report_status", $lino) . "'"; */
 		if (!empty($date_report)) {
 			if ($report_id > 0) {
-				$sql = "UPDATE procedure_report 
+				$arr = array(
+					$order_id,
+					$specimen_num,
+					$report_status,
+					$order_seq,
+					$date_report,
+					$date_collected,
+					'reviewed',
+					$report_id,
+				);
+				
+				/* $sql = "UPDATE procedure_report 
 									SET procedure_order_id='$order_id', 
 									specimen_num='$specimen_num', 
 									report_status='$report_status', 
 									procedure_order_seq='$order_seq', 
 									date_report='$date_report', 
 									date_collected='$date_collected', 
-									review_status = 'reviewed' 								
+									review_status = ? 								
 									WHERE procedure_report_id = '$report_id'";
-				sqlStatement($sql);
+				sqlStatement($sql); */
+				$sql = "UPDATE procedure_report 
+									SET procedure_order_id= ?, 
+									specimen_num= ?, 
+									report_status= ?, 
+									procedure_order_seq= ?, 
+									date_report= ?, 
+									date_collected= ?, 
+									review_status = ?  								
+									WHERE procedure_report_id = ?";
+				sqlQuery($sql, $arr);
 			} else {
-				$sql = "INSERT INTO procedure_report 
+				$arr = array(
+						$order_id,
+						$specimen_num,
+						$report_status,
+						$order_seq,
+						$date_report,
+						$date_collected,
+						'reviewed',
+					);
+				/* $sql = "INSERT INTO procedure_report 
 									SET procedure_order_id='$order_id', 
 									specimen_num='$specimen_num', 
 									report_status='$report_status',
 									procedure_order_seq='$order_seq', 
-									date_report='$date_report', 
-									review_status = 'reviewed', 
-									date_collected='$date_collected'";
-				$report_id = sqlInsert($sql);
+									date_report='$date_report',
+									date_collected='$date_collected' 								
+									review_status = 'reviewed'"; */
+				$sql = "INSERT INTO procedure_report 
+									SET procedure_order_id= ?, 
+									specimen_num= ?, 
+									report_status= ?,
+									procedure_order_seq= ?, 
+									date_report= ?,
+									date_collected= ?, 								
+									review_status = ?";
+				$report_id = sqlInsert($sql, $arr);
 			}
 		}
-		/* $sets =
-        "procedure_report_id = '$current_report_id', " .
-        "result_code = '" . oresData("form_result_code", $lino) . "', " .
-        "result_text = '" . oresData("form_result_text", $lino) . "', " .
-        "abnormal = '" . oresData("form_result_abnormal", $lino) . "', " .
-        "result = '" . oresData("form_result_result", $lino) . "', " .
-        "`range` = '" . oresData("form_result_range", $lino) . "', " .
-        "units = '" . oresData("form_result_units", $lino) . "', " .
-        "facility = '" . oresData("form_facility", $lino) . "', " .
-        "comments = '" . add_escape_custom($form_comments) . "', " .
-        "result_status = '" . oresData("form_result_status", $lino) . "'"; */
 		if (!empty($date_report)) {
 			if ($result_id > 0) {
-				$sql = "UPDATE procedure_result 
-							SET procedure_report_id='$report_id', 
-								result_code='$', 
-								result_text='$result_text', 
-								abnormal='$abnormal', 
-								result='$result', 
-								range='$range', 
-								units='$units', 
-								result_status='$result_status', 
-								facility='$facility', 
-								comments='$comments'								
-								WHERE procedure_result_id = '$result_id'";
-				sqlStatement($sql);
-			} else {
-				$sql = "INSERT INTO procedure_result 
+				$arr = array(
+					$report_id,
+					$result_code,
+					$result_text,
+					$abnormal,
+					$result,
+					$range,
+					$units,
+					$result_status,
+					$facility,
+					$comments,
+					$result_id,
+				);
+				/* $sql = "UPDATE procedure_result 
 							SET procedure_report_id='$report_id', 
 								result_code='$result_code', 
 								result_text='$result_text', 
@@ -347,8 +483,47 @@ class LabTable extends AbstractTableGateway
 								units='$units', 
 								result_status='$result_status', 
 								facility='$facility', 
-								comments='$comments'";
-				sqlInsert($sql);
+								comments='$comments'								
+								WHERE procedure_result_id = '$result_id'";
+				sqlStatement($sql); */
+				$sql = "UPDATE procedure_result 
+							SET procedure_report_id= ?, 
+								result_code= ?, 
+								result_text= ?, 
+								abnormal= ?, 
+								result= ?, 
+								`range`= ?, 
+								units= ?, 
+								result_status= ?, 
+								facility= ?, 
+								comments= ?							
+								WHERE procedure_result_id = ?";
+				sqlQuery($sql, $arr);
+			} else {
+				$arr = array(
+					$report_id,
+					$result_code,
+					$result_text,
+					$abnormal,
+					$result,
+					$range,
+					$units,
+					$result_status,
+					$facility,
+					$comments,
+				);
+				$sql = "INSERT INTO procedure_result 
+							SET procedure_report_id= ?, 
+								result_code= ?, 
+								result_text= ?, 
+								abnormal= ?, 
+								result= ?, 
+								`range`= ?, 
+								units= ?, 
+								result_status= ?, 
+								facility= ?, 
+								comments= ?";
+				sqlInsert($sql, $arr);
 			}
 		}
 	}
@@ -544,67 +719,11 @@ class LabTable extends AbstractTableGateway
 		$column 	= $column_map[$col]['colconfig']['column'];
 		
 		$table_sql[$table][$col]	= $column;				
-	    }
-	    //echo "<br>";
+	    }	    
 	}
 	return $table_sql;		
     }
-    /*    
-    function importData($result,$column_map)
-    {
-	    
-	$result_col	= $this->getColumns($result);
-	
-	$mapped_tables	= $this->columnMapping($column_map,$result_col);
-	
-	//$count = 0;
-	//$insert = 0;
-	foreach($result as $res)
-	{
-	    foreach($result_col as $col)
-	    {
-		${$col}	= $res[$col];//GETTING IMPORTED VALUES
-	    }
-	    //echo "<br>";
-	    foreach($mapped_tables as $table => $columns)
-	    {
-		//echo $key." => ".$val;
-		//$table_name	= $table;
-		
-		$value_arr	= array();
-		foreach($columns as $servercol => $column)
-		{
-		    if($column_map[$servercol]['colconfig']['insert_id'] == "1")
-		    {
-			$$servercol = $insert_id;
-		    }
-		    if($column_map[$servercol]['colconfig']['value_map'] == "1")
-		    {
-			//$value_map['test_status_indicator'] 	= array('A' => "1", 'I' => "0");
-			$$servercol = $column_map[$servercol]['valconfig'][$$servercol];
-		    }
-		    $value_arr[] =  ${$servercol};
-		}
-		
-		$fields		= implode(",",$columns);
-		$col_count	= count($columns);
-		$field_vars	= "$".implode(",$",$columns);
-		$params		= rtrim(str_repeat("?,",$col_count),",");
-		
-		echo "<br>".$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
-		echo "<br>".$insert_id 	= sqlInsert($sql,$value_arr);
-		print_r($value_arr);
-	    }
-	    //echo "<br>";
-	    $count++;
-	    
-	    if($count > 5)
-	    {
-		break;
-	    }
-	}
-    }*/
-
+   
     function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
     {
 	
@@ -678,41 +797,31 @@ class LabTable extends AbstractTableGateway
 		    }
 		    
 		    $update_expr    = implode(" = ? ,",$update_key_arr);
-		    $update_expr.=" = ? ";
+		    $update_expr   .= " = ? ";
 		    
-		    /*echo "<br>".*/$sql_check  = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
-		    $pat_data_check         = sqlQuery($sql_check,$check_value_arr);
-		    //print_r($check_value_arr);
-		   
-		    //echo "<br>";
-		    //print_r($update_combined_arr);
+		    $sql_check      = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
+		    $pat_data_check = sqlQuery($sql_check,$check_value_arr);
+		    
 		    if($pat_data_check['data_exists'])
 		    {
-			/*echo "<br>".*/$sqlup	= "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
-			$pat_data_check         = sqlQuery($sqlup,$update_combined_arr);			
+			$sqlup	        = "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
+			$pat_data_check = sqlQuery($sqlup,$update_combined_arr);			
 		    }
 		    else
 		    {
-			/*echo "<br>".*/$sql	= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
-			/*echo "<br>".*/$insert_id 	= sqlInsert($sql,$value_arr);
-                        //print_r($value_arr);
+			$sql	    = "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
+			$insert_id  = sqlInsert($sql,$value_arr);                        
 		    }
 		}		
 	    }
 	    
-	    $count++;
-	    
-	    //if($count > 5)
-	    //{
-	    //    break;
-	    //}
+	    $count++;	    
+	    //if($count > 5){ break;}
 	}
 	sqlStatement("UPDATE procedure_type SET parent=procedure_type_id");
 	sqlStatement("UPDATE procedure_type SET name=description");
     }
 
-    //$constraint_arr
-    
     public function getWebserviceOptions()
     {
 	$options    = array('location' => "http://192.168.1.139/webserver/lab_server.php",
@@ -723,12 +832,6 @@ class LabTable extends AbstractTableGateway
     
     public function pullcompendiumTestConfig()
     {
-	/*$column_map['test_id'] 		        = array('colconfig' => array(
-									    'table'     => "procedure_type",
-									    'column'    => "procedure_type_id",
-									    'value_map' => "0",
-									    'insert_id' => "0"));*/
-	
 	$column_map['test_lab_id']	                = array('colconfig' => array(
 									    'table'     => "procedure_type",
 									    'column'    => "lab_id",
@@ -869,33 +972,8 @@ class LabTable extends AbstractTableGateway
 	return $column_map;
     }
     
-    //    public function listLabLocation($inputString)
-    //    {
-    //	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
-    //	$result = sqlStatement($sql);
-    //	$i = 0;
-    //	
-    //	while($row=sqlFetchArray($res)) {
-    //		$rows[$i] = array (
-    //			'value' => $row['ppid'],
-    //			'label' => $row['name'],
-    //		);
-    //		$i++;
-    //	}
-    //	return $rows;
-    //
-    //    }
-    
-    
-
     public function pullcompendiumAoeConfig()
     {
-	/*$column_map['aoe_id'] 		        = array('colconfig' => array(
-									    'table'     => "procedure_type",
-									    'column'    => "procedure_type_id",
-									    'value_map' => "0",
-									    'insert_id' => "0"));*/
-	
 	$column_map['aoe_lab_id']	                = array('colconfig' => array(
 									    'table'     => "procedure_questions",
 									    'column'    => "lab_id",
@@ -1022,7 +1100,6 @@ class LabTable extends AbstractTableGateway
 	return $column_map;
     }
     
-    
     public function mapcolumntoxml()
     {
 	$xmlconfig['patient_data']          = array(                      
@@ -1039,7 +1116,7 @@ class LabTable extends AbstractTableGateway
 									'country_code'  => 'patient_country',
 									'phone_contact' => 'patient_phone_no',
 									'ss'            => 'patient_ss_no' 
-									 ),
+									),
 						'primary_key'   => array('pid'),
 						'match_value'   => array('pid'));
 	
@@ -1048,22 +1125,45 @@ class LabTable extends AbstractTableGateway
 						'column_map'    => array(
 									'type'                      => '#type',
 									'provider'                  => '#provider',
-									'subscriber_street'         => '$type_insurance_address',
-									'subscriber_city'           => '$type_insurance_city',
-									'subscriber_state'          => '$type_insurance_state',
-									'subscriber_postal_code'    => '$type_insurance_postal_code',
-									'subscriber_lname'          => '$type_insurance_person_lname',
-									'subscriber_fname'          => '$type_insurance_person_fname',
+									'subscriber_street'         => 'guarantor_address',
+									'subscriber_city'           => 'guarantor_city',
+									'subscriber_state'          => 'guarantor_state',
+									'subscriber_postal_code'    => 'guarantor_postal_code',
+									'subscriber_lname'          => '$type_insurance_person_lname,guarantor_lname',
+									'subscriber_fname'          => '$type_insurance_person_fname,guarantor_fname',
 									'subscriber_relationship'   => '$type_insurance_person_relationship',
 									'policy_number'             => '$type_insurance_policy_no',
 														       
 									'group_number'              => '$type_insurance_group_no',
-									'subscriber_mname'          => '$type_insurance_person_mname',
+									'subscriber_mname'          => '$type_insurance_person_mname,guarantor_mname',
 									
 									),
-						'primary_key'   => array('pid'),
-						'match_value'   => array('pid'),
-						'child_table'   => 'insurance_companies');
+						'primary_key'           => array('pid'),
+						'match_value'           => array('pid'),
+						'child_table'           => 'insurance_companies,addresses',
+                                                'tag_value_condition'   => array(
+                                                                                'guarantor_fname' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_mname' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_lname' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_address' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_city' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_state' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_postal_code' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary")
+                                                                                ));
 	
 	$xmlconfig['insurance_companies']   = array(
 						'column_map'    => array(
@@ -1073,6 +1173,22 @@ class LabTable extends AbstractTableGateway
 						'match_value'   => array('provider'),
 						'parent_table'  => 'insurance_data'
 						);
+	
+	/*-------- NEW CONFIGURATION FOR ADDRESSES ---------*/
+	//line1,    city,  state,  zip
+	
+	$xmlconfig['addresses']   	    = array(
+						'column_map'    => array(
+									'line1'  	=> '$type_insurance_address',
+									'city'  	=> '$type_insurance_city',
+									'state'  	=> '$type_insurance_state',
+									'zip'  		=> '$type_insurance_postal_code',   
+									),
+						'primary_key'   => array('foreign_id'),
+						'match_value'   => array('provider'),
+						'parent_table'  => 'insurance_data'
+						);
+	/*--------------------------------------------------*/
        
         $xmlconfig['procedure_providers']   = array(                      
 						'column_map'    => array(
@@ -1081,26 +1197,37 @@ class LabTable extends AbstractTableGateway
 									'send_fac_id'       => 'send_fac_id',
 									'recv_fac_id'       => 'recv_fac_id',
 									'DorP'              => 'DorP'
-									 ),
+									),
 						'primary_key'   => array('ppid'),
 						'match_value'   => array('lab_id'));
         
+        
         $xmlconfig['procedure_order']       = array(                      
 						'column_map'    => array(
-                                                                         'psc_hold'         	=> 'recv_app_id',
-									 'billto'	    	=> 'bill_to',
-									 'patient_instructions'	=> 'patient_internal_comments',
-									 'internal_comments'	=> 'observation_request_comments',
-									 ),
+                                                                        'provider_id'           => '#provider_id,ordering_provider_id',
+                                                                        'psc_hold'         	=> 'recv_app_id',
+									'billto'	    	=> 'bill_to',
+									'patient_instructions'	=> 'patient_internal_comments',
+									'internal_comments'	=> 'observation_request_comments'
+									),
                                                 'value_map'     => array(
-                                                                        'psc_hold'          => array(
+                                                                        'psc_hold'              => array(
                                                                                                         'onsite'    => '',
                                                                                                         'labsite'   => 'PSC'
                                                                                                     )
-                                                                         ),
+                                                                        ),
 						'primary_key'   => array('procedure_order_id'),
 						'match_value'   => array('order_id'));
-               
+        
+        $xmlconfig['users']                 = array(                      
+						'column_map'    => array(
+                                                                        'fname'                 => 'ordering_provider_fname',
+                                                                        'lname'         	=> 'ordering_provider_lname'
+									),
+                                                'primary_key'   => array('id'),
+						'match_value'   => array('provider_id'));
+        
+        
 	return $xmlconfig;
     }
 
@@ -1139,159 +1266,29 @@ class LabTable extends AbstractTableGateway
                
 	return $xmlconfig;
     }
-
-
-    /*public function generateOrderXml($patient_id,$xmlfile)
-    {
-	$sql1   = "SELECT pid, fname, DOB, sex, lname, street, city, state, postal_code, country_code, phone_contact, ss FROM patient_data WHERE pid = ?";
-	
-	$sql2   = "SELECT type,  provider,subscriber_street,subscriber_city,subscriber_state,subscriber_postal_code,group_number,subscriber_lname,
-		    subscriber_mname,subscriber_fname,subscriber_relationship,policy_number FROM insurance_data WHERE pid = ?";
-	
-	$sql3   = "SELECT name FROM insurance_companies WHERE id = ? ";//id = '$provider'
-	
-	$pat_data   = sqlQuery($sql1,array($patient_id));
-	
-	$pid                        = $pat_data['pid'];
-	$patient_fname              = $pat_data['fname'];
-	$patient_dob                = $pat_data['DOB'];
-	$patient_sex                = $pat_data['sex'];
-	$patient_lname              = $pat_data['lname'];
-	$patient_street_address     = $pat_data['street'];
-	$patient_city               = $pat_data['city'];
-	$patient_state              = $pat_data['state'];
-	$patient_postal_code        = $pat_data['postal_code'];
-	$patient_country            = $pat_data['country_code'];
-	$patient_phone_no           = $pat_data['phone_contact'];
-	$patient_ss_no              = $pat_data['ss'];
-	
-	$patient_internal_comments  = "";
-	
-	$ins_res    = sqlStatement($sql2,array($patient_id));
-	
-	while($ins_data = sqlFetchArray($ins_res))
-	{
-	    if($ins_data['type'] == "primary")
-	    {
-		$provider   = $ins_data['provider'];
-		$comp_data  = sqlQuery($sql3,array($provider));
-		
-		$primary_insurance_name                     = $comp_data['name'];
-		
-		$primary_insurance_address                  = $ins_data['subscriber_street'];
-		$primary_insurance_city                     = $ins_data['subscriber_city'];
-		$primary_insurance_state                    = $ins_data['subscriber_state'];
-		$primary_insurance_postal_code              = $ins_data['subscriber_postal_code'];
-		$primary_insurance_person_lname             = $ins_data['subscriber_lname'];
-		$primary_insurance_person_fname             = $ins_data['subscriber_fname'];
-		$primary_insurance_person_relationship      = $ins_data['subscriber_relationship'];
-		$primary_insurance_policy_no                = $ins_data['policy_number'];
-		
-		$primary_insurance_coverage_type            = "";
-	    }
-	    if($ins_data['type'] == "secondary")
-	    {
-		$provider   = $ins_data['provider'];
-		$comp_data  = sqlQuery($sql3,array($provider));
-		
-		$secondary_insurance_name                   = $comp_data['name'];
-		
-		$secondary_insurance_address                = $ins_data['subscriber_street'];
-		$secondary_insurance_city                   = $ins_data['subscriber_city'];
-		$secondary_insurance_state                  = $ins_data['subscriber_state'];
-		$secondary_insurance_postal_code            = $ins_data['subscriber_postal_code'];
-		$secondary_insurance_group_no               = $ins_data['group_number'];
-		$secondary_insurance_person_lname           = $ins_data['subscriber_lname'];
-		$secondary_insurance_person_fname           = $ins_data['subscriber_fname'];
-		$secondary_insurance_person_mname           = $ins_data['subscriber_mname'];
-		$secondary_insurance_person_relationship    = $ins_data['subscriber_relationship'];
-		$secondary_insurance_policy_no              = $ins_data['policy_number'];
-		
-		$secondary_insurance_coverage_type        = "";       
-	    }
-	}
-	
-	$primary_insurance_person_address       = "";    
-	$primary_insurance_person_city          = "";    
-	$primary_insurance_person_state         = "";    
-	$primary_insurance_person_postal_code   = "";    
-	
-	$guarantor_lname                        = "";    
-	$guarantor_fname                        = "";    
-	$guarantor_address                      = "";    
-	$guarantor_city                         = "";    
-	$guarantor_state                        = "";    
-	$guarantor_postal_code                  = "";    
-	$guarantor_phone_no                     = "";    
-	$guarantor_mname                        = "";    
-	$ordering_provider_id                   = "";    
-	$ordering_provider_lname                = "";    
-	$ordering_provider_fname                = "";    
-	$observation_request_comments           = "";
-	
-	$xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
-			    "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
-			    "primary_insurance_name","primary_insurance_address","primary_insurance_city","primary_insurance_state",
-			    "primary_insurance_postal_code","primary_insurance_person_lname","primary_insurance_person_fname",
-			    "primary_insurance_person_relationship","primary_insurance_policy_no","primary_insurance_coverage_type",
-			    "secondary_insurance_name","secondary_insurance_address","secondary_insurance_city","secondary_insurance_state",
-			    "secondary_insurance_postal_code","secondary_insurance_group_no","secondary_insurance_person_lname",
-			    "secondary_insurance_person_fname","secondary_insurance_person_relationship","secondary_insurance_policy_no",
-			    "secondary_insurance_coverage_type", "primary_insurance_person_address","primary_insurance_person_city",
-			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
-			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
-			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-			    "ordering_provider_fname","observation_request_comments");
-	
-	$xmlfile = ($xmlfile <> "") ? $xmlfile : "order_".gmdate('YmdHis').".xml";
-	
-	$config = new Config\Config(array(), true);
-	$config->Order = array();
-	
-	foreach($xmltag_arr as $tag)
-	{
-	    $tag_val = (${$tag} <> "") ? ${$tag} : "";
-	    $config->Order->$tag = $tag_val;            
-	}
-	
-	$writer = new Config\Writer\Xml();
-	//echo $writer->toString($config);
-	$writer->toFile("module/Lab/".$xmlfile,$config);
-	
-	return $xmlfile;
-    }*/
-    
     
     public function generateSQLSelect($pid,$lab_id,$order_id,$cofig_arr,$table)
     {
-	//echo "hi".$pid." ,".$table;
-	
-       // $cofig_arr11  = $this->mapcolumntoxml();
-       //print_r($cofig_arr);
-	
-	//echo "<br>...";
-	//continue;
-	//print_r($cofig_arr[$table]);
-	
 	global $type;
 	global $provider;
+        global $provider_id;
+        
      
 	$table_name         = $table;
 	    
-	$col_map_arr        = $cofig_arr[$table]['column_map'];
-       
+	$col_map_arr        = $cofig_arr[$table]['column_map'];       
 	$primary_key_arr    = $cofig_arr[$table]['primary_key'];        
 	$match_value_arr    = $cofig_arr[$table]['match_value'];
 	
-	$index  = 0;
+	$index      = 0;
 	$condition  = "";
 	foreach($primary_key_arr as $pkey)
 	{
 	    if($index > 0)
 	    {
-		$condition.=" AND ";
+		$condition .= " AND ";
 	    }
-	    $condition.=" ".$pkey." = ? ";
+	    $condition .= " ".$pkey." = ? ";
 	    $index++;
 	}
 	
@@ -1309,20 +1306,17 @@ class LabTable extends AbstractTableGateway
 	}
 	$cols   = implode(",",$col_arr);
 	
-	/*echo "<br>".*/$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
-	//echo "<br>Param :";
-	//print_r($match_value_arr);
-	$res   = sqlStatement($sql,$match_value_arr);
-	
+	$sql    = "SELECT ".$cols." FROM ".$table_name." WHERE ".$condition;
+	$res    = sqlStatement($sql,$match_value_arr);	
 	return $res;    
     }
     
     public function generateOrderXml($pid,$lab_id,$xmlfile)
     {
-	//echo $pid;
 	global $type;
 	global $provider;
-	//exit;
+        global $provider_id;
+	
 	//XML TAGS NOT CONFIGURED YET
 	$primary_insurance_coverage_type        = "";
 	$secondary_insurance_coverage_type      = "";       
@@ -1331,18 +1325,9 @@ class LabTable extends AbstractTableGateway
 	$primary_insurance_person_state         = "";    
 	$primary_insurance_person_postal_code   = "";    
 	
-	$guarantor_lname                        = "TEST";    
-	$guarantor_fname                        = "TC2";    
-	$guarantor_address                      = "2090 Concourse";    
-	$guarantor_city                         = "St. Louis";    
-	$guarantor_state                        = "MT";    
-	$guarantor_postal_code                  = "63146";    
-	$guarantor_phone_no                     = "314-872-3000";    
-	$guarantor_mname                        = "";    
-	$ordering_provider_id                   = "1122334455";    //hard coded//
-	$ordering_provider_lname                = "Allan";    //hard coded//
-	$ordering_provider_fname                = "Joseph";    //hard coded//
-	$observation_request_comments           = "";
+	$guarantor_phone_no                     = "";    
+	
+        $observation_request_comments           = "";
 	
 	$xmltag_arr = array("pid","patient_fname","patient_dob","patient_sex","patient_lname","patient_street_address","patient_city",
 			    "patient_state","patient_postal_code","patient_country","patient_phone_no","patient_ss_no","patient_internal_comments",
@@ -1400,103 +1385,112 @@ class LabTable extends AbstractTableGateway
                     continue;
                 }            
                 $col_map_arr    = $cofig_arr[$table]['column_map'];
-		//echo "<br>".$table;
-                $res            = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$table);
+		$res            = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$table);
                 
-		
-		//print_r
-		
                 while($data = sqlFetchArray($res))
                 {
                     $global_arr  = array();                
                     $check_arr   = array();
-//                    echo "<br>";
-//		    print_r($col_map_arr);
-		    
+
                     foreach($col_map_arr as $col => $tagstr)
-                    {   //CHECKING FOR MAULTIPLE TAG MAPPING
+                    {                        
+                        //CHECKING FOR MAULTIPLE TAG MAPPING
                         $tag_arr   = explode(",",$tagstr);
                         
                         foreach($tag_arr as $tag)
                         {
                             if(trim($tag) <> "")
-                            { 
-				if(substr($tag,0,1)== "#")
+                            {                        
+                                if(substr($tag,0,1)== "#")
+                                {
+                                    $tag            = substr($tag,1,strlen($tag));
+                                    $check_arr[]    = "$".$tag;
+                                }
+                                foreach($check_arr as $check)
+                                {
+                                    if(strstr($tag,$check))
+                                    {
+                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+                                    }
+                                }
+                                if($cofig_arr[$table]['value_map'][$col] <> "")
+                                {
+                                    $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
+                                }
+                                else
+                                {
+                                    if($cofig_arr[$table]['tag_value_condition'][$tag]['variable'] <> "")
+                                    {
+                                        if(${$cofig_arr[$table]['tag_value_condition'][$tag]['variable']} == $cofig_arr[$table]['tag_value_condition'][$tag]['value'])
+                                        {
+                                            $$tag   = $data[$col];
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $$tag   = $data[$col];
+                                    }
+                                }
+			
+                                //echo "<br>".$col." => $".$tag." = ".$$tag;
+                                //echo "<br>$"."data[".$col."] = ".$data[$col];
+                            }
+                        }
+                    }
+		        
+                    if($config['child_table'] <> "")
+                    {
+			$child_table_arr	= explode(",",$config['child_table']);
+			
+			foreach($child_table_arr as $child_table)
+			{
+			    if(trim($child_table) <> "")
+                            {		
+				$res2           = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$child_table);
+				$fetch2_count   = 0; 
+				while($data1 = sqlFetchArray($res2))
 				{
-					$tag            = substr($tag,1,strlen($tag));
-					$check_arr[]    = "$".$tag;
-				}
-				foreach($check_arr as $check)
-				{
-				    if(strstr($tag,$check))
+				    $col_map_arr2   = $cofig_arr[$child_table]['column_map'];
+				    
+				    foreach($col_map_arr2 as $col => $tagstr)
 				    {
-					    $tag = str_replace($check,${ltrim($check,"$")},$tag);                               
+					//CHECKING FOR MAULTIPLE TAG MAPPING
+					$tag_arr   = explode(",",$tagstr);
+					
+					foreach($tag_arr as $tag)
+					{
+					    if(trim($tag) <> "")
+					    {
+						foreach($check_arr as $check)
+						{
+							if(strstr($tag,$check))
+							{
+								$tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+							}
+						}
+						
+						if(substr($tag,0,1)== "#")
+						{
+							$tag = substr($tag,1,strlen($tag));                        
+						}
+						if($cofig_arr[$table]['value_map'][$col] <> "")
+						{
+						    $$tag   = $cofig_arr[$table]['value_map'][$col][$data1[$col]];
+						}
+						else
+						{
+						    $$tag   = $data1[$col];
+						}
+					    }
+					}
 				    }
-				}
-				if($cofig_arr[$table]['value_map'][$col] <> "")
-				{
-				    $$tag   = $cofig_arr[$table]['value_map'][$col][$data[$col]];
-				}
-				else
-				{
-				    $$tag   = $data[$col];
 				}
 			    }
 			}
-			
-			//echo "<br>".$col." => $".$tag." = ".$$tag;
-			//echo "<br>$"."data[".$col."] = ".$data[$col];
-                    }
-		    
-		    
-		    
-    
-                    if($config['child_table'] <> "")
-                    {
-                        $res2    = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$config['child_table']);
-                        $fetch2_count    = 0; 
-                        while($data1 = sqlFetchArray($res2))
-                        {
-                            $col_map_arr2        = $cofig_arr[$config['child_table']]['column_map'];
-                            
-                            foreach($col_map_arr2 as $col => $tagstr)
-                            {   
-                                //CHECKING FOR MAULTIPLE TAG MAPPING
-                                $tag_arr   = explode(",",$tagstr);
-                                
-                                foreach($tag_arr as $tag)
-                                {
-                                    if(trim($tag) <> "")
-                                    {
-                                        foreach($check_arr as $check)
-                                        {
-                                                if(strstr($tag,$check))
-                                                {
-                                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
-                                                }
-                                        }
-                                        
-                                        if(substr($tag,0,1)== "#")
-                                        {
-                                                $tag = substr($tag,1,strlen($tag));                        
-                                        }
-                                        if($cofig_arr[$table]['value_map'][$col] <> "")
-                                        {
-                                            $$tag   = $cofig_arr[$table]['value_map'][$col][$data1[$col]];
-                                        }
-                                        else
-                                        {
-                                            $$tag   = $data1[$col];
-                                        }
-                                    }
-                                }
-                            }
-                        }                    
                     }
                 }
             }
-	    //exit;
-            /*-----------------------------------------------------------------------------------------------------------------------------*/
+	    /*-----------------------------------------------------------------------------------------------------------------------------*/
             
 	    $xmlfile = ($xmlfile <> "") ? $xmlfile : "order_new_".gmdate('YmdHis')."_".$data_order['procedure_order_id'].".xml";
 	    $result_xml	= '<?xml version="1.0" encoding="UTF-8"?><Order>';
@@ -1507,17 +1501,16 @@ class LabTable extends AbstractTableGateway
 		$config->Order->$tag    = $tag_val;
 		$result_xml.= '<'.$tag.'>'.$tag_val.'</'.$tag.'>';
 		
-	    }
-	    
-	    
+	    }   
 	    
 	    /* ------------------ GETTING TEST DETAILS ------------------------*/
-	    $sql_test   = "SELECT procedure_code, procedure_suffix, procedure_order_seq FROM procedure_order_code WHERE procedure_order_id = ? ";
+	    $sql_test   = "SELECT procedure_code, procedure_suffix, procedure_order_seq, diagnoses FROM procedure_order_code
+                                WHERE procedure_order_id = ? ";
 	    
-	    $test_value_arr 	= array();	    
+	    $test_value_arr = array();	    
 	    $test_value_arr['procedure_order_id']   = $data_order['procedure_order_id'];
 	   
-	    $res_test  		= sqlStatement($sql_test,$test_value_arr);
+	    $res_test  	= sqlStatement($sql_test,$test_value_arr);
 	    while($data_test = sqlFetchArray($res_test))
             {
 		if(($data_test['procedure_code'] <> "") && ($data_test['procedure_suffix'] <> ""))
@@ -1526,9 +1519,9 @@ class LabTable extends AbstractTableGateway
 		}
 		
 		/*------------------- GETTING DIAGNOSES DETAILS -------------------*/
-		if($data_order['diagnoses'] <> "")
+		if($data_test['diagnoses'] <> "")
 		{
-		    $diag_arr    =  explode(";",$data_order['diagnoses']);
+		    $diag_arr    =  explode(";",$data_test['diagnoses']);
 		    
 		    foreach($diag_arr as $diag)
 		    {
@@ -1546,15 +1539,13 @@ class LabTable extends AbstractTableGateway
 			$diagnosis     .= "#@#";
 		    }
 		    $diagnosis  = rtrim($diagnosis,"#@#");
-		    $diag_count++;
-		    
+		    $diag_count++;		    
 		}
 		$diagnosis.="#~@~#";
 	    
 		/*------------------- GETTING AOE DETAILS -----------------*/
 		$sql_aoe        = "SELECT question_code,answer_seq,answer FROM procedure_answers
 				    WHERE procedure_order_id = ? AND procedure_order_seq = ? ";
-		/*$sql_aoe        = "SELECT question_code,answer_seq,answer FROM procedure_answers WHERE procedure_order_id = ?  ";*/
 		$aoe_value_arr  = array();
 	    
 		$aoe_value_arr['procedure_order_id']    = $data_order['procedure_order_id'];
@@ -1563,8 +1554,7 @@ class LabTable extends AbstractTableGateway
 		$res_aoe        = sqlStatement($sql_aoe,$aoe_value_arr);
 		$aoe_count	= 0; 
 		while($data_aoe = sqlFetchArray($res_aoe))
-		{
-		    //if(($data_aoe['question_code'] <> "")&&($data_aoe['answer'] <> ""))
+		{		    
 		    if($data_aoe['question_code'] <> "")
 		    {
 			$aoe_count++;
@@ -1572,15 +1562,9 @@ class LabTable extends AbstractTableGateway
 			{
 			    $test_aoe   .= "!#@#!";	
 			}
-			$test_aoe   .= $data_aoe['question_code']."!@!".$data_aoe['answer'];
-					  
-		    }
-		    
+			$test_aoe   .= $data_aoe['question_code']."!@!".$data_aoe['answer'];					  
+		    }		    
 		}
-		//if($aoe_count == 0)
-		//{
-		//    $test_aoe   .= "!#@#!";
-		//}
 		$test_aoe   .= "!-#@#-!";
             }	 
 	    
@@ -1588,11 +1572,11 @@ class LabTable extends AbstractTableGateway
 	    
 	    /*--------------------------------------------------------------*/
 	    
-	    $result_xml.= '<test_id>'.$test_id.'</test_id>';
-	    $result_xml.= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
-	    $result_xml.= '<test_aoe>'.$test_aoe.'</test_aoe>';
+	    $result_xml     .= '<test_id>'.$test_id.'</test_id>';
+	    $result_xml     .= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
+	    $result_xml     .= '<test_aoe>'.$test_aoe.'</test_aoe>';
 	    
-	    $result_xml.= '</Order>';
+	    $result_xml     .= '</Order>';
 	    
 	    $return_arr[]   = array (
 				     'order_id'     => $data_order['procedure_order_id'],
@@ -1604,19 +1588,18 @@ class LabTable extends AbstractTableGateway
     
     public function getClientCredentials($proc_order_id)
     {
-	$sql_proc   = "SELECT lab_id FROM procedure_order WHERE procedure_order_id = ? ";
+	$sql_proc       = "SELECT lab_id FROM procedure_order WHERE procedure_order_id = ? ";
 	$proc_value_arr = array();
 	$proc_value_arr['procedure_order_id']   = $proc_order_id;
 	$res_proc   = sqlQuery($sql_proc,$proc_value_arr);
-	$sql_cred   = "SELECT  login, password FROM procedure_providers WHERE ppid = ? ";
+	$sql_cred   = "SELECT  login, password, remote_host FROM procedure_providers WHERE ppid = ? ";
 	$res_cred   = sqlQuery($sql_cred,$res_proc);
 	return $res_cred;        
     }
     
     public function changeOrderRequisitionStatus($proc_order_id,$status,$file_name)
     {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, requisition_file_url = ? WHERE procedure_order_id = ? ";
-        
+	$sql_status         = "UPDATE procedure_order SET order_status = ?, requisition_file_url = ? WHERE procedure_order_id = ? ";        
 	$status_value_arr   = array();
         
         $status_value_arr['status']               = $status;
@@ -1629,8 +1612,7 @@ class LabTable extends AbstractTableGateway
     
     public function changeOrderResultStatus($proc_order_id,$status,$file_name)
     {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";
-        
+	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";        
 	$status_value_arr   = array();
         
         $status_value_arr['status']             = $status;
@@ -1644,36 +1626,42 @@ class LabTable extends AbstractTableGateway
     
     public function getOrderStatus($proc_order_id)
     {
-	$sql_status         = "SELECT order_status FROM procedure_order WHERE procedure_order_id = ? ";
-        
+	$sql_status         = "SELECT order_status FROM procedure_order WHERE procedure_order_id = ? ";        
 	$status_value_arr   = array();
         
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
-        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status['order_status'];        
     }
     
-    public function getOrderRequisitionFile($proc_order_id)
+    public function setOrderStatus($proc_order_id,$status)
     {
-	$sql_status         = "SELECT requisition_file_url FROM procedure_order WHERE procedure_order_id = ? ";
-        
+	$sql_status         = "UPDATE procedure_order SET order_status = ? WHERE procedure_order_id = ? ";        
 	$status_value_arr   = array();
         
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
+        $status_value_arr['status']             = $status;
+        $status_value_arr['procedure_order_id'] = $proc_order_id;
         
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status;        
+    }
+    
+    public function getOrderRequisitionFile($proc_order_id)
+    {
+	$sql_status         = "SELECT requisition_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status['requisition_file_url'];        
     }
     
     public function getOrderResultFile($proc_order_id)
     {
-	$sql_status         = "SELECT result_file_url FROM procedure_order WHERE procedure_order_id = ? ";
-        
+	$sql_status         = "SELECT result_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
 	$status_value_arr   = array();
         
-        $status_value_arr['procedure_order_id']   = $proc_order_id;
-        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status['result_file_url'];        
     }
@@ -1683,9 +1671,7 @@ class LabTable extends AbstractTableGateway
     {
 	//print_r($result_config_arr);
 	//echo "<br>";
-	//print_r($result);
-	
-	
+	//print_r($result);	
     }
 }
 ?>

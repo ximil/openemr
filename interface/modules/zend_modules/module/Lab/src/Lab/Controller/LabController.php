@@ -79,12 +79,15 @@ class LabController extends AbstractActionController
             
             $lab_id     = $request->getPost('lab_id');            
             
-	  
+	    //$order_no	= 0;
             foreach($xmlresult_arr as $xmlresult)
             {
                 $order_id   = $xmlresult['order_id'];
                 $xmlstring  = $xmlresult['xmlstring'];
 		
+		//$order_no++;
+		//$fp	= fopen("D:/order_".$order_no,"w");
+		//fwrite($fp,$xmlstring);
 		//print_r($xmlstring);
 		//echo "<br>";
 		//continue;
