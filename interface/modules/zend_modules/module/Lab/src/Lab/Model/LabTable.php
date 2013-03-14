@@ -1125,10 +1125,10 @@ class LabTable extends AbstractTableGateway
 						'column_map'    => array(
 									'type'                      => '#type',
 									'provider'                  => '#provider',
-									'subscriber_street'         => '$type_insurance_address,guarantor_address',
-									'subscriber_city'           => '$type_insurance_city,guarantor_city',
-									'subscriber_state'          => '$type_insurance_state,guarantor_state',
-									'subscriber_postal_code'    => '$type_insurance_postal_code,guarantor_postal_code',
+									'subscriber_street'         => 'guarantor_address',
+									'subscriber_city'           => 'guarantor_city',
+									'subscriber_state'          => 'guarantor_state',
+									'subscriber_postal_code'    => 'guarantor_postal_code',
 									'subscriber_lname'          => '$type_insurance_person_lname,guarantor_lname',
 									'subscriber_fname'          => '$type_insurance_person_fname,guarantor_fname',
 									'subscriber_relationship'   => '$type_insurance_person_relationship',
@@ -1140,7 +1140,7 @@ class LabTable extends AbstractTableGateway
 									),
 						'primary_key'           => array('pid'),
 						'match_value'           => array('pid'),
-						'child_table'           => 'insurance_companies',
+						'child_table'           => 'insurance_companies,addresses',
                                                 'tag_value_condition'   => array(
                                                                                 'guarantor_fname' => array(
                                                                                                            'variable'   => "type",
@@ -1173,6 +1173,22 @@ class LabTable extends AbstractTableGateway
 						'match_value'   => array('provider'),
 						'parent_table'  => 'insurance_data'
 						);
+	
+	/*-------- NEW CONFIGURATION FOR ADDRESSES ---------*/
+	//line1,    city,  state,  zip
+	
+	$xmlconfig['addresses']   	    = array(
+						'column_map'    => array(
+									'line1'  	=> '$type_insurance_address',
+									'city'  	=> '$type_insurance_city',
+									'state'  	=> '$type_insurance_state',
+									'zip'  		=> '$type_insurance_postal_code',   
+									),
+						'primary_key'   => array('foreign_id'),
+						'match_value'   => array('provider'),
+						'parent_table'  => 'insurance_data'
+						);
+	/*--------------------------------------------------*/
        
         $xmlconfig['procedure_providers']   = array(                      
 						'column_map'    => array(
@@ -1424,45 +1440,53 @@ class LabTable extends AbstractTableGateway
 		        
                     if($config['child_table'] <> "")
                     {
-                        $res2           = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$config['child_table']);
-                        $fetch2_count   = 0; 
-                        while($data1 = sqlFetchArray($res2))
-                        {
-                            $col_map_arr2   = $cofig_arr[$config['child_table']]['column_map'];
-                            
-                            foreach($col_map_arr2 as $col => $tagstr)
-                            {
-                                //CHECKING FOR MAULTIPLE TAG MAPPING
-                                $tag_arr   = explode(",",$tagstr);
-                                
-                                foreach($tag_arr as $tag)
-                                {
-                                    if(trim($tag) <> "")
-                                    {
-                                        foreach($check_arr as $check)
-                                        {
-                                                if(strstr($tag,$check))
-                                                {
-                                                        $tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
-                                                }
-                                        }
-                                        
-                                        if(substr($tag,0,1)== "#")
-                                        {
-                                                $tag = substr($tag,1,strlen($tag));                        
-                                        }
-                                        if($cofig_arr[$table]['value_map'][$col] <> "")
-                                        {
-                                            $$tag   = $cofig_arr[$table]['value_map'][$col][$data1[$col]];
-                                        }
-                                        else
-                                        {
-                                            $$tag   = $data1[$col];
-                                        }
-                                    }
-                                }
-                            }
-                        }                    
+			$child_table_arr	= explode(",",$config['child_table']);
+			
+			foreach($child_table_arr as $child_table)
+			{
+			    if(trim($child_table) <> "")
+                            {		
+				$res2           = $this->generateSQLSelect($pid,$lab_id,$data_order['procedure_order_id'],$cofig_arr,$child_table);
+				$fetch2_count   = 0; 
+				while($data1 = sqlFetchArray($res2))
+				{
+				    $col_map_arr2   = $cofig_arr[$child_table]['column_map'];
+				    
+				    foreach($col_map_arr2 as $col => $tagstr)
+				    {
+					//CHECKING FOR MAULTIPLE TAG MAPPING
+					$tag_arr   = explode(",",$tagstr);
+					
+					foreach($tag_arr as $tag)
+					{
+					    if(trim($tag) <> "")
+					    {
+						foreach($check_arr as $check)
+						{
+							if(strstr($tag,$check))
+							{
+								$tag = str_replace($check,${ltrim($check,"$")},$tag);                                       
+							}
+						}
+						
+						if(substr($tag,0,1)== "#")
+						{
+							$tag = substr($tag,1,strlen($tag));                        
+						}
+						if($cofig_arr[$table]['value_map'][$col] <> "")
+						{
+						    $$tag   = $cofig_arr[$table]['value_map'][$col][$data1[$col]];
+						}
+						else
+						{
+						    $$tag   = $data1[$col];
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
                     }
                 }
             }
