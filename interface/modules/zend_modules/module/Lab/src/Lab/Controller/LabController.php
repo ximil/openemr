@@ -14,7 +14,27 @@ use Zend\Config\Reader;
 class LabController extends AbstractActionController
 {
     protected $labTable;
+    
+    /**
+     * Lab Order Row wise
+     */
+    public function orderAction()
+    {
+
+    }
+    
+    public function getOrdersAction()
+    {
+	$labOrders = $this->getLabTable()->listLabOrders();
+        $data = new JsonModel($labOrders);
+        return $data;
+    }
+    
+    public function showFormAction()
+    {
 	
+    }
+    
     public function indexAction()
     {
         $form = new LabForm();
@@ -154,12 +174,12 @@ class LabController extends AbstractActionController
         return $this->labTable;
     }
 	
-    public function resultAction()
+   /* public function resultAction()
     {
 		
-    }
+    }*/
 	
-	 public function getLabOptionsAction()
+	/* public function getLabOptionsAction()
     {
 		$request = $this->getRequest();
 	    $data =array();
@@ -195,9 +215,9 @@ class LabController extends AbstractActionController
 	    $labOptions = $this->getLabTable()->listLabOptions($data);
 	    $data = new JsonModel($labOptions);
 	    return $data;
-    }
+    }*/
 	
-    public function getLabStatusAction()
+   /* public function getLabStatusAction()
     {
 		//$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 
@@ -210,7 +230,7 @@ class LabController extends AbstractActionController
 	    $labStatus = $this->getLabTable()->listLabStatus($data);
 	    $data = new JsonModel($labStatus);
 	    return $data;
-    }
+    }*/
     
     public function sendimagetextAction($orderId) {
 	if(!$orderId)
@@ -285,7 +305,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
   imagedestroy($img);
 }
     
-    public function getLabAbnormalAction()
+   /* public function getLabAbnormalAction()
     {
 	    $labAbnormal = $this->getLabTable()->listLabAbnormal();
 	    $data = new JsonModel($labAbnormal);
@@ -333,9 +353,9 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
 	    $labResult = $this->getLabResult($data);
 	    $data = new JsonModel($labResult);
 	    return $data;
-    }
+    }*/
     
-    public function resultUpdateAction()
+   /* public function resultUpdateAction()
     {
 		$request = $this->getRequest();
 		if ($request->isPost()) {
@@ -370,7 +390,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
 		    return $this->redirect()->toRoute('result');
 		}
 		return $this->redirect()->toRoute('result');
-    }
+    }*/
     
     /**
     * Vipin

@@ -2,7 +2,8 @@
 return array(
     'controllers' => array(
         'invokables' => array(
-            'Lab' => 'Lab\Controller\LabController',
+            'Lab'       => 'Lab\Controller\LabController',
+            'Result'    => 'Lab\Controller\ResultController',
         ),
     ),
 
@@ -22,19 +23,36 @@ return array(
                     ),
                 ),
             ),
+            
+            'result' => array(
+            'type' => 'segment',
+                'options' => array(
+                    //'route'    => '/lab/:controller[[/:action][/:id]]',
+                    'route'    => '/lab/result[/:action][/:id]',
+                    'constraints' => array(
+                        //'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id'     => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller'    => 'Result',
+                        'action'        => 'index',
+                    ),
+                ),
+            ),
         ),
     ),
 
     'view_manager' => array(
         'template_path_stack' => array(
-             'lab' => __DIR__ . '/../view/',
+            'lab' => __DIR__ . '/../view/',
         ),
         'template_map' => array(
-            'layout/layout'           => __DIR__ . '/../view/layout/layout.phtml',
+            'layout/layout' => __DIR__ . '/../view/layout/layout.phtml',
         ),
         'strategies' => array(
-                'ViewJsonStrategy',
-                'ViewFeedStrategy',
+            'ViewJsonStrategy',
+            'ViewFeedStrategy',
         ),
     ),
 );
