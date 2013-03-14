@@ -1,0 +1,201 @@
+    <table id="dg" title="Pending Review"  style="width:auto;height:600px"
+                    toolbar="#toolbar" pagination="true"
+                    idField="procedure_order_id, procedure_result_id,
+                        procedure_order_seq, procedure_report_id, editor"
+                    rownumbers="true" pageSize="20" fitColumns="true" singleSelect="true">
+            <thead data-options="frozen:true" >
+                <tr>
+                    <th colspan="6"><?php echo xlt('Order'); ?></th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <th colspan="4"><?php echo xlt('Report'); ?></th>
+                    <th colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
+                    <th colspan="1"><?php echo xlt('Action'); ?></th>
+                </tr>
+            </thead>
+            <thead data-options="frozen:true">
+                <tr>
+                <!-- Start Order -->
+                    <th data-options="field:'date_ordered'"><?php echo xlt('Date'); ?></th>
+                    <th data-options="field:'procedure_name'"><?php echo xlt('Procedure Name'); ?></th> 
+                    <th data-options="field:'order_id', align:'center'"><?php echo xlt('Ord'); ?></th> 
+                    <th data-options="field:'patient_name'"><?php echo xlt('Patient'); ?></th>
+                    <th data-options="field:'encounter_id', align:'center'"><?php echo xlt('Encounter'); ?></th>
+                    <th data-options="field:'order_status'"><?php echo xlt('Status'); ?></th>
+                <!-- End Order -->
+                </tr>
+            <thead>
+                <tr>
+                <!-- Start Report -->
+                    <th field="date_report" editor="{type:'datebox',options:{required:true}}">
+                        <?php echo xlt('Reported'); ?><span style="margin-left: 30px;"></span>
+                    </th>
+                    <th field="date_collected" editor="{
+                                                        type:'datebox',
+                                                                options:{
+                                                                    class: 'easyui-datetimebox',
+                                                                }
+                                                        }">
+                                                        <?php echo xlt('Ext Time Collected'); ?>
+                                                        <span style="margin-left: 30px;"></span>
+                                                        </th>
+                    <th field="specimen_num" editor="text"><?php echo xlt('Specimen'); ?></th>
+                    <th data-options="field:'report_status',  
+                                            formatter:function(value,row){  
+                                                return row.report_title;  
+                                            },  
+                                            editor:{  
+                                                    type:'combobox',  
+                                                    options:{  
+                                                            valueField:'option_id',  
+                                                            textField:'title',  
+                                                            url:'./result/getLabOptions?opt=status&optId=report',  
+                                                            required:false  
+                                                    } 
+                                            }"><?php echo xlt('Status'); ?><span style="margin-left: 30px;"></span></th>
+            <!-- End Report -->
+                
+            <!-- Start Results and Recommendations -->
+                    <th data-options="field:'result_code', align:'center'"><?php echo xlt('Code'); ?></th>
+                    <th data-options="field:'result_text', align:'left'"><?php echo xlt('Name'); ?></th>
+                    <th data-options="field:'abnormal',  
+                                            formatter:function(value,row){  
+                                                    return row.abnormal_title;  
+                                            },  
+                                            editor:{  
+                                                    type:'combobox',  
+                                                    options:{  
+                                                            valueField:'option_id',  
+                                                            textField:'title',  
+                                                            url:'./result/getLabOptions?opt=abnormal&optId=abnormal',  
+                                                            required:false  
+                                                    } 
+                                            }"><?php echo xlt('Abn'); ?><span style="margin-left: 10px;"></span></th>
+                    <th field="result" editor="text"><?php echo xlt('Value'); ?></th>
+                    <th field="pt2_units" editor="text"><?php echo xlt('Units'); ?></th>
+                    <th field="pt2_range" editor="text"><?php echo xlt('Range'); ?></th>
+                    <th data-options="field:'comments',title:'',align:'center',
+                                            formatter:function(value,row,index){
+                                                    if (row.editing){
+                                                            var s = '<a></a> ';
+                                                            var c = '<a></a>';
+                                                            return s+c;
+                                                    } else {
+                                                            var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments(this)><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png /></a>';
+                                                            var q = '';
+                                                            return r+q;
+                                                    }
+                                            }"><?php echo xlt('Comments'); ?></th>
+
+            <!-- End Results and Recommendations -->
+                
+            <!-- Start Action -->
+                    <th data-options="field:'action',title:'',align:'left',
+                                            formatter:function(value,row,index){
+                                                    if (row.editing){
+                                                            var s = '<a></a> ';
+                                                            var c = '<a></a>';
+                                                            return s+c;
+                                                    } else {
+                                                            var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:30px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+                                                            var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:40px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
+                                                            return d+e;
+                                                    }
+                                            }">
+                                            <span class="datagrid-cell" style="border-right: 1px dotted #444;">
+                                            <?php echo xlt('Requisition'); ?></span>
+                                            <span>
+                                            <?php echo xlt('Result'); ?>
+                                            </span>
+                                            </th>
+            <!-- End Action -->
+                </tr>
+            </thead>
+	</table>
+
+	<div id="toolbar">
+		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
+
+		<div style="text-align: right;">
+
+		<div style="text-align: left;">
+			<span style="text-align: left; font-weight: bold; margin-left: 220px;"><?php echo xlt('Date'); ?></span>
+			<span style="text-align: left; font-weight: bold; margin-left: 270px;"><?php echo xlt('Status'); ?></span>
+		</div>
+		<span style="text-align: left; padding-right: 50px;">
+		<span class="extlab">&nbsp;&nbsp;</span>
+		<span> Ext Labs</span>
+		<span class="local">&nbsp;&nbsp;</span>
+		<span> Local Labs</span>
+		</span>
+		
+			<span style="text-align: left; padding-right: 30px;">
+			<?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" >
+			</span>
+			<span style="text-align: left; padding-right: 50px;">
+			<?php echo xlt('To'); ?>: <input class="easyui-datebox" style="width:80px" >
+			</span>
+
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Order'); ?>
+			<input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
+                                data-options="valueField:'option_id',textField:'title',
+                                url:'./result/getLabOptions?opt=search&optId=order'" />
+			</span>
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Report'); ?>
+			<input id="cc" class="easyui-combobox" name="searchStatusReport" 
+                                data-options="valueField:'option_id',textField:'title',
+                                url:'./result/getLabOptions?opt=search&optId=report'" />
+			</span>
+			<span style="text-align: left; padding-right: 10px;">
+			<?php echo xlt('Result'); ?>
+			<input id="searchStatusResult" class="easyui-combobox" name="searchStatusResult" 
+                                data-options="valueField:'option_id',textField:'title',
+                                url:'./result/getLabOptions?opt=search&optId=result'" />
+			</span>
+
+			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
+                            <?php echo xlt('Search'); ?>
+                        </a>
+
+		</div>
+	</div>
+	
+	<div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
+            closed="true" buttons="#dlg-buttons">  
+        <div class="ftitle" id='titleShow'></div>  
+        <form id="fm" method="post" novalidate>  
+            <div class="fitem">  
+                <label><?php echo xlt('Status'); ?>:</label>  
+			<input id="cc" class="easyui-combobox" name="formResultStatus" 
+                                data-options="valueField:'option_id',textField:'title',
+                                url:'./result/getLabOptions?opt=status&optId=result'" />
+            </div>  
+            <div class="fitem">  
+                <label><?php echo xlt('Facility'); ?>:</label>  
+                <input name="formResultFacility" class="easyui-validatebox" style="width: 280px"; >  
+            </div>  
+            <div class="fitem">  
+                <label><?php echo xlt('Comments'); ?>:</label>  
+		    <textarea id='formResultComments' name="formResultComments" style="height:60px; width: 280px;"></textarea>  
+            </div>  
+            <div class="fitem">  
+                <label><?php echo xlt('Notes'); ?>:</label>  
+		    <textarea id='formResultNotes' name="formResultNotes" style="height:60px; width: 280px;"></textarea>
+            </div>  
+        </form>  
+    </div>  
+    <div id="dlg-buttons">  
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()">
+            <?php echo xlt('Close'); ?>
+        </a>  
+    </div> 
+ 
+  
+
+  
+	

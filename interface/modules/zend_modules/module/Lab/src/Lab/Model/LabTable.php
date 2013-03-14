@@ -23,7 +23,22 @@ class LabTable extends AbstractTableGateway
     {
         $this->tableGateway = $tableGateway;
     }
-	
+    /**
+     * Lab Order Row wise
+     */
+    
+    public function listLabOrders()
+    {
+	$sql = "SELECT * FROM procedure_order";
+	$result = sqlStatement($sql);
+	$arr = array();
+	while ($row = sqlFetchArray($result)) {
+	    $arr[] = $row;
+	}
+	//echo '<pre>'; print_r($arr); echo '</pre>';
+	return $arr;
+    }
+    
 	public function listLabOptions($data)
 	{
 		$sql = "SELECT option_id, title FROM list_options 
@@ -74,7 +89,8 @@ class LabTable extends AbstractTableGateway
 	}
 	
 	public function listLabResult($data)
-	{	global $pid;
+	{
+	    global $pid;
 		$flagSearch = 0;
 
 		if (isset($data['status']) && $data['status'] != 'all') {
