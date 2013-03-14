@@ -423,7 +423,6 @@ $(function(){
 	});
 });
 
-}
 
 function pulldata(lab_id,type)
 {
