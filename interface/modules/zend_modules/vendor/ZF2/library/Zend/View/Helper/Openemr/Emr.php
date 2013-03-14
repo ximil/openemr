@@ -4,16 +4,25 @@ use Zend\View\Helper\AbstractHelper;
 
 class Emr extends AbstractHelper
 {
-    public function getList($list_id,$selected='')
+    public function getList($list_id,$selected='',$opt='')
     {
         $res = sqlStatement("SELECT * FROM list_options WHERE list_id=? ORDER BY seq, title",array($list_id));
-        $rows[0] = array (
-		'value' => '',
-		'label' => xlt('Unassigned'),
-		'disabled' => FALSE
-	);
-	$i = 1;
-	
+        $i = 0;
+	if ($opt == 'search') {
+	    $rows[$i] = array (
+			'value' => 'all',
+			'label' => xlt('All'),
+			'selected' => TRUE,
+		    );
+	    $i++;
+	} elseif ($opt == '') {
+	    $rows[$i] = array (
+		    'value' => '',
+		    'label' => xlt('Unassigned'),
+		    'disabled' => FALSE
+	    );
+	    $i++;
+	}
 	while($row=sqlFetchArray($res)) {
             $sel = ($row['option_id']==$selected) ? TRUE : FALSE;
             $rows[$i] = array (

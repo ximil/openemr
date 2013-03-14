@@ -38,9 +38,6 @@ class ResultController extends AbstractActionController
                     'rows'          => $request->getPost('rows'),
             ); 
         }
-        //$data = array(1,2);
-        //$fh = fopen("D:/test.txt","a");
-        //fwrite($fh,print_r($data,1));
         $labResult = $this->getLabResult($data);
         $data = new JsonModel($labResult);
         return $data;
@@ -73,43 +70,29 @@ class ResultController extends AbstractActionController
                 switch ($request->getQuery('optId')) {
                     case 'order':
                         $data['optId'] = 'ord_status';
+                        $data['select'] = 'pending';
                         break;
                     case 'report':
                         $data['optId'] = 'proc_rep_status';
+                        $data['select'] = '';
                         break;
                     case 'result':
                         $data['optId'] = 'proc_res_status';
+                        $data['select'] = '';
                         break;
                     case 'abnormal':
                         $data['optId'] = 'proc_res_abnormal';
+                        $data['select'] = '';
                         break;
                 }
             }
-        $labOptions = $this->getLabTable()->listLabOptions($data);
+
+        $helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	$labOptions = $helper->getList($data['optId'],$data['select'],$data['opt']);
         $data = new JsonModel($labOptions);
         return $data;
     }
-    
-    /*public function getLabStatusAction()
-    {
-        //$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-        $request = $this->getRequest();
-        $data =array();
-            if($request->getQuery('opt')){
-                $data['opt'] = 'search';
-            }
-        $labStatus = $this->getLabTable()->listLabStatus($data);
-        $data = new JsonModel($labStatus);
-        return $data;
-    }
-    
-    public function getLabAbnormalAction()
-    {
-        $labAbnormal = $this->getLabTable()->listLabAbnormal();
-        $data = new JsonModel($labAbnormal);
-        return $data;
-    }
-    */
+
     public function getResultCommentsAction()
     {
         $request = $this->getRequest();
