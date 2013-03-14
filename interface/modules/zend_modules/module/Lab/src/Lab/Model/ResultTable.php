@@ -80,6 +80,13 @@ class ResultTable extends AbstractTableGateway
     {
         global $pid;
         $flagSearch = 0;
+        /*$data['statusReport'] = 'all';
+        $data['statusOrder'] = 'pending';
+        $data['statusResult'] = 'all';
+        $data['dtFrom'] = '2013-03-01';
+        $data['dtTo'] = '2013-03-10';
+        $data['page'] = 1;
+        $data['rows'] = 20;*/
         if (isset($data['statusReport']) && $data['statusReport'] != 'all') {
             $statusReport = $data['statusReport'];
             $flagSearch = 1;
@@ -133,7 +140,7 @@ class ResultTable extends AbstractTableGateway
             //$groupby = "GROUP By po.procedure_order_id";
         }
         $orderby =
-                "po.date_ordered, po.procedure_order_id, " .
+                "po.procedure_order_id DESC, po.date_ordered,  " .
                 "pc.procedure_order_seq, pr.procedure_report_id";
 
         $where = "1 = 1";
@@ -159,7 +166,7 @@ class ResultTable extends AbstractTableGateway
                                   "$joins " .
                                   "WHERE po.patient_id = '$pid' AND $where " .
                                   "$groupby ORDER BY $orderby LIMIT $start, $rows";
-        
+        //echo $sql;
         $result = sqlStatement($sql);
         $arr1 = array();
         $i = 0;
