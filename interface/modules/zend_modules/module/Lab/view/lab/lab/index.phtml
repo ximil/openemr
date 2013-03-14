@@ -1,7 +1,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
     $('#patient_instructions').bubbletip("#patient_instructions_tips", {
-	alert("dlskfjsd");
 	    deltaDirection: 'right',
 	    bindShow: 'focus',
 	    bindHide: 'blur'
@@ -101,6 +100,7 @@ $(document).ready(function() {
 <?php
 echo $this->form()->closeTag();
 echo $this->headScript()->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+			->prependFile($this->basePath() . '/js/lab/lab.js')
 			->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
 			->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
 			->prependFile($this->basePath() . '/js/lib/bubbles.js')
