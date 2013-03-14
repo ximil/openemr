@@ -7,7 +7,6 @@ $(function(){
 		url: './result/resultShow', // show all the pending results
 		saveUrl: './result/resultUpdate', // save the result 
 		updateUrl: './result/resultUpdate',
-		//destroyUrl: 'destroy_user.php'
 	});
 });
 
@@ -87,9 +86,6 @@ function editComments(target){
 						$('#formResultNotes').val(entry['notes']);
 						$('#cc').combobox('setValue',$.trim(entry['result_status']));
 						$('#acpro_inp19').val(entry['title']);
-						/* $("#cc option").filter(function() {
-							return $(this).val() == entry['result_status'];
-						}).get(0).selected = true; */
 					});
 				},
 				error: function(data){
@@ -117,24 +113,17 @@ $(function(){
 		rowStyler: function(index,row){
 			if (row.editor == 1) {
 				return 'background-color:#E0ECFF;color:#0E2D5F;';
-				//$('#dg').edatagrid('cancelRow');
-				//$('#dg').edatagrid('cancelEdit')
-				//$('#dg').datagrid('unselectAll');
 			}
 		},
 		onLoadSuccess: function() {
 			var lastIndex = $('#dg').datagrid('getRows').length-1;
 			if (lastIndex > 0) {
-				//$('#dg').datagrid('deleteRow', lastIndex);
 				$("#datagrid-row-r2-1-" + lastIndex).hide();
 				$("#datagrid-row-r2-2-" + lastIndex).hide();
 			}
 			
 		},
 		 onSelect:function(rowIndex, rowData){
-			//$('#dg').edatagrid('cancelRow');
-			//var curRow = $('#dg').datagrid('selectRow', rowIndex);
-			//$('#dg').datagrid('unselectAll');
 			var row = $('#dg').datagrid('getSelected');
 			var fieldValue = $.trim(rowData.procedure_name);
 			var editor = rowData.editor;
@@ -213,8 +202,8 @@ $(function(){
 				opts.editor = {
 					type:'combobox',
 					options:{  
-						valueField:'option_id',  
-						textField:'title',  
+						valueField:'value',  
+						textField:'label',  
 						url:'./result/getLabOptions?opt=status&optId=report',  
 						required:false  
 					} 
@@ -224,8 +213,8 @@ $(function(){
 						opts.editor = {
 						type:'combobox',
 						options:{  
-								valueField:'option_id',  
-								textField:'title',  
+								valueField:'value',  
+								textField:'label',  
 								url:'./result/getLabOptions?opt=abnormal&optId=abnormal',  
 								required:false  
 							} 

@@ -49,12 +49,15 @@
                                             editor:{  
                                                     type:'combobox',  
                                                     options:{  
-                                                            valueField:'option_id',  
-                                                            textField:'title',  
+                                                            valueField:'value',  
+                                                            textField:'label',  
                                                             url:'./result/getLabOptions?opt=status&optId=report',  
                                                             required:false  
                                                     } 
-                                            }"><?php echo xlt('Status'); ?><span style="margin-left: 30px;"></span></th>
+                                            }">
+                                            <?php echo xlt('Status'); ?>
+                                            <span style="margin-left: 30px;"></span>
+                                        </th>
             <!-- End Report -->
                 
             <!-- Start Results and Recommendations -->
@@ -72,7 +75,10 @@
                                                             url:'./result/getLabOptions?opt=abnormal&optId=abnormal',  
                                                             required:false  
                                                     } 
-                                            }"><?php echo xlt('Abn'); ?><span style="margin-left: 10px;"></span></th>
+                                            }">
+                                            <?php echo xlt('Abn'); ?>
+                                            <span style="margin-left: 10px;"></span>
+                                        </th>
                     <th field="result" editor="text"><?php echo xlt('Value'); ?></th>
                     <th field="pt2_units" editor="text"><?php echo xlt('Units'); ?></th>
                     <th field="pt2_range" editor="text"><?php echo xlt('Range'); ?></th>
@@ -83,7 +89,7 @@
                                                             var c = '<a></a>';
                                                             return s+c;
                                                     } else {
-                                                            var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments(this)><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png /></a>';
+                                                            var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments(this)><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> /></a>';
                                                             var q = '';
                                                             return r+q;
                                                     }
@@ -99,18 +105,23 @@
                                                             var c = '<a></a>';
                                                             return s+c;
                                                     } else {
-                                                            var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:30px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
-                                                            var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:40px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
-                                                            return d+e;
+                                                            var f = '<a href=\'#\' onClick=\'getLabelDownload(this);\' style=padding-left:25px;><img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> title=<?php echo xlt('Label'); ?> border=0 /></a>';
+                                                            var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:65px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
+                                                            var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:70px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
+                                                            return f+d+e;
                                                     }
                                             }">
                                             <span class="datagrid-cell" style="border-right: 1px dotted #444;">
-                                            <?php echo xlt('Requisition'); ?></span>
-                                            <span>
+                                            <?php echo xlt('Spec Label'); ?>
+                                            </span>
+                                            <span class="datagrid-cell" style="border-right: 1px dotted #444;">
+                                            <?php echo xlt('Abn Requisition'); ?>
+                                            </span>
+                                            <span style="padding-left: 10px;">
                                             <?php echo xlt('Result'); ?>
                                             </span>
                                             </th>
-            <!-- End Action -->
+	    <!-- End Action -->
                 </tr>
             </thead>
 	</table>
@@ -118,21 +129,19 @@
 	<div id="toolbar">
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
+                <span style="text-align: right; padding-left: 750px;">
+                    <span class="extlab">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="font-size: 10px;"> Ext Labs</span>
+                    <span class="local">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span style="font-size: 10px;"> Local Labs</span>
+                </span>
+		<div style="text-align: left; padding-left:20px;">
 
-		<div style="text-align: right;">
-
-		<div style="text-align: left;">
-			<span style="text-align: left; font-weight: bold; margin-left: 220px;"><?php echo xlt('Date'); ?></span>
-			<span style="text-align: left; font-weight: bold; margin-left: 270px;"><?php echo xlt('Status'); ?></span>
-		</div>
-		<span style="text-align: left; padding-right: 50px;">
-		<span class="extlab">&nbsp;&nbsp;</span>
-		<span> Ext Labs</span>
-		<span class="local">&nbsp;&nbsp;</span>
-		<span> Local Labs</span>
-		</span>
-		
-			<span style="text-align: left; padding-right: 30px;">
+                    <div style="text-align: left;">
+                        <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
+                        <span style="text-align: left; font-weight: bold; margin-left: 250px;"><?php echo xlt('Status'); ?></span>
+                    </div>
+			<span style="text-align: left; padding-right: 10px;">
 			<?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" >
 			</span>
 			<span style="text-align: left; padding-right: 50px;">
@@ -140,21 +149,21 @@
 			</span>
 
 			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Order'); ?>
+			<?php echo xlt('Order'); ?>:
 			<input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
-                                data-options="valueField:'option_id',textField:'title',
+                                data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=search&optId=order'" />
 			</span>
 			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Report'); ?>
+			<?php echo xlt('Report'); ?>:
 			<input id="cc" class="easyui-combobox" name="searchStatusReport" 
-                                data-options="valueField:'option_id',textField:'title',
+                                data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=search&optId=report'" />
 			</span>
 			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Result'); ?>
+			<?php echo xlt('Result'); ?>:
 			<input id="searchStatusResult" class="easyui-combobox" name="searchStatusResult" 
-                                data-options="valueField:'option_id',textField:'title',
+                                data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=search&optId=result'" />
 			</span>
 
@@ -172,7 +181,7 @@
             <div class="fitem">  
                 <label><?php echo xlt('Status'); ?>:</label>  
 			<input id="cc" class="easyui-combobox" name="formResultStatus" 
-                                data-options="valueField:'option_id',textField:'title',
+                                data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=status&optId=result'" />
             </div>  
             <div class="fitem">  
