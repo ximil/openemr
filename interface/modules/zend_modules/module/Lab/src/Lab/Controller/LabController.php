@@ -334,26 +334,21 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
     {
         $site_dir           = $GLOBALS['OE_SITE_DIR'];            
         $requisition_dir    = $site_dir."/lab/requisition/";
-            
+	
         $request = $this->getRequest();
-	if($request->isGet())
-	{
-	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+	if($request->isPost()) {
+	    $data = array('procedure_order_id'	=> $request->getPost('order_id'));
+	} elseif ($request->isGet()) {
+	     $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
-        
-        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
-        
-        
+	//$data = array('procedure_order_id'	=> '119');
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
-        
-        if(($curr_status == "requisitionpulled")||($curr_status == "final"))
-        {
-            $labrequisitionfile    = $this->getLabTable()->getOrderRequisitionFile($data['procedure_order_id']);            
-        }
-	else
-        {
+
+        if(($curr_status == "requisitionpulled")||($curr_status == "final")) {
+            $labrequisitionfile    = $this->getLabTable()->getOrderRequisitionFile($data['procedure_order_id']);
+	} else {
             $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
-                    
+
             $username   = $cred['login'];
             $password   = $cred['password'];        
             $site_dir   = $_SESSION['site_id'];
@@ -367,24 +362,35 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
        
             $labrequisitionfile  = "labrequisition_".gmdate('YmdHis').".pdf";           
             
-            if (!is_dir($requisition_dir))
-            {
+            if (!is_dir($requisition_dir)) {
                 mkdir($requisition_dir,0777,true);
             }
-            
+
             $fp = fopen($requisition_dir.$labrequisitionfile,"wb");
             fwrite($fp,base64_decode($result));
-            
             $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
         }
-        
+	// Ajax Handling (Result success or failed)  
+	if($request->isPost()) {
+	    $arrResult = explode(':', $result);
+	    if ($arrResult[0] == 'failed') {
+		$return[0] = array('return'=>1, 'msg'=> $arrResult[1]);
+		$arr = new JsonModel($return);
+		return $arr;
+	    } else {
+		$return[0] = array('return'=>0, 'order_id'=> $data['procedure_order_id']);
+		$arr = new JsonModel($return);
+		return $arr;
+	    }
+	}
 	while(ob_get_level()){
 	    ob_get_clean();
 	}
 	header('Content-Disposition: attachment; filename='.$labrequisitionfile );
 	header("Content-Type: application/octet-stream" );
 	header("Content-Length: " . filesize( $requisition_dir.$labrequisitionfile ) );		
-	readfile( $requisition_dir.$labrequisitionfile );         
+	readfile( $requisition_dir.$labrequisitionfile );
+	
     }
 
     public function getlabresultAction()
@@ -393,21 +399,17 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
         $result_dir    = $site_dir."/lab/result/";
         
 	$request = $this->getRequest();
-	if($request->isGet())
-	{
-	    $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
+	if($request->isPost()) {
+	    $data = array('procedure_order_id'	=> $request->getPost('order_id'));
+	} elseif ($request->isGet()) {
+	     $data = array('procedure_order_id'	=> $request->getQuery('order_id'));
 	}
-	
-        //$data['procedure_order_id'] = 2; //HARD CODED FOR TESTING
-        
+
         $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
         
-        if($curr_status == "final")
-        {
+        if($curr_status == "final") {
             $labresultfile    = $this->getLabTable()->getOrderResultFile($data['procedure_order_id']);            
-        }
-	else
-        {
+        } else {
             $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
                 
             $username   = $cred['login'];
@@ -420,12 +422,10 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
             $options    = $this->getLabTable()->getWebserviceOptions();    
             $client     = new Client(null,$options);
             $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
-            //print_r($result);
-            //exit;
+
             $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";        
             
-            if (!is_dir($result_dir))
-            {
+            if (!is_dir($result_dir)) {
                 mkdir($result_dir,0777,true);
             }
             $fp = fopen($result_dir.$labresultfile,"wb");
@@ -433,7 +433,19 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
             
             $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
         }
-        
+	// Ajax Handling (Result success or failed)
+        if($request->isPost()) {
+	    $arrResult = explode(':', $result);
+	    if ($arrResult[0] == 'failed') {
+		$return[0] = array('return'=>1, 'msg'=> $arrResult[1]);
+		$arr = new JsonModel($return);
+		return $arr;
+	    } else {
+		$return[0] = array('return'=>0, 'order_id'=> $data['procedure_order_id']);
+		$arr = new JsonModel($return);
+		return $arr;
+	    }
+	}
 	while(ob_get_level()){
 	    ob_get_clean();
 	}

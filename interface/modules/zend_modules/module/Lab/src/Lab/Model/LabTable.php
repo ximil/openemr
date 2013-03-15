@@ -24,39 +24,28 @@ class LabTable extends AbstractTableGateway
         $this->tableGateway = $tableGateway;
     }
     
-	public function listLabOptions($data)
-	{
-		if (isset($data['option_id'])) { 
-			$where = " AND option_id='$data[option_id]'";
-		}
-		$sql = "SELECT option_id, title FROM list_options 
-						WHERE list_id='" . $data['optId'] . "' $where 
-						ORDER BY seq, title";
-		$result = sqlStatement($sql);
-		$arr = array();
-		$i = 0;
-		if ($data['opt'] == 'search') {
-			$arr[$i] = array (
-				'option_id' => 'all',
-				'title' => xlt('All'),
-				'selected' => TRUE,
-			);
-			$i++;
-		}
-		
-		while($row = sqlFetchArray($result)) {
-			$arr[$i] = array (
-				'option_id' => htmlspecialchars($row['option_id'],ENT_QUOTES),
-				'title' => xlt($row['title']),
-			);
-			if ($data['optId'] == 'ord_status' && $row['option_id'] == 'pending') {
-				$arr[$i]['selected'] = true;
-			}
-			$i++;
-			
-		}
-		return $arr;
+     /**
+     * Lab Order Row wise
+     */
+    
+    public function listLabOrders()
+    {
+	$sql = "SELECT procedure_order_id,
+			provider_id,
+			patient_id,
+			encounter_id,
+			date_ordered
+		    FROM procedure_order";
+	$result = sqlStatement($sql);
+	$arr = array();
+	while ($row = sqlFetchArray($result)) {
+	    $arr[] = $row;
 	}
+	//echo '<pre>'; print_r($arr); echo '</pre>';
+	return $arr;
+    }
+    
+  
 	
 //   public function saveLab(Lab $lab,$aoe)
 //    {

@@ -6,8 +6,8 @@ $(function(){
 	$('#dg').edatagrid({
 		url: './result/resultShow', // show all the pending results
 		saveUrl: './result/resultUpdate', // save the result 
-		updateUrl: './result/resultUpdate',
-	});
+		updateUrl: './result/resultUpdate'
+	})
 });
 
 // Search options, Status and Ordered Date
@@ -16,9 +16,11 @@ function doSearch(){
 		statusOrder: $("input[name=searchStatusOrder]").val(),
 		statusReport: $("input[name=searchStatusReport]").val(),
 		statusResult: $("input[name=searchStatusResult]").val(),
-		dtFrom: $('#acpro_inp1').val(),
-		dtTo: $('#acpro_inp4').val(),
-	}); 
+		dtFrom: $("input[name=dtFrom]").val(),
+		dtTo: $("input[name=dtTo]").val()
+		//dtFrom: $('#acpro_inp1').val(),
+		//dtTo: $('#acpro_inp4').val(),
+	}) 
 }
 
 // Result request with ordser id
@@ -29,7 +31,30 @@ function getResult(target) {
 	var row = $('#dg').datagrid('getSelected'); 
 	if (row){  
 		var order_id = row.procedure_order_id;
-		window.location.assign("./getlabresult?order_id=" + order_id);
+		//window.location.assign("./getlabresult?order_id=" + order_id);
+		$.ajax({
+			type: "POST",
+			cache: false,
+			dataType: "json",
+			url: "./getlabresult",
+			data: {
+				order_id: order_id
+			},
+			success: function(data) {
+				$.each(data, function(jsonIndex, jsonValue){
+					if (jsonValue['return'] == 1) {
+						alert('Request Failed');
+					} else if (jsonValue['return'] == 0) {
+						var order_id = jsonValue['order_id'];
+						window.location.assign("./getlabresult?order_id=" + order_id);
+					}
+				});
+				
+			},
+			error: function(data){
+				alert('Ajax Fail');
+			}
+		});
 	}
 }
 
@@ -41,7 +66,30 @@ function getRequisition(target) {
 	var row = $('#dg').datagrid('getSelected'); 
 	if (row){  
 		var order_id = row.procedure_order_id;
-		window.location.assign("./getlabrequisition?order_id=" + order_id);
+		//window.location.assign("./getlabrequisition?order_id=" + order_id);
+		$.ajax({
+			type: "POST",
+			cache: false,
+			dataType: "json",
+			url: "./getlabrequisition",
+			data: {
+				order_id: order_id
+			},
+			success: function(data) {
+				$.each(data, function(jsonIndex, jsonValue){
+					if (jsonValue['return'] == 1) {
+						alert('Request Failed');
+					} else if (jsonValue['return'] == 0) {
+						var order_id = jsonValue['order_id'];
+						window.location.assign("./getlabrequisition?order_id=" + order_id);
+					}
+				});
+				
+			},
+			error: function(data){
+				alert('Ajax Fail');
+			}
+		});
 	}
 }
 
@@ -76,7 +124,7 @@ function editComments(target){
 				dataType: "json",
 				url: "./result/getResultComments",
 				data: {
-					prid: row.procedure_result_id,
+					prid: row.procedure_result_id
 					},
 				success: function(data) {
 					$.each(data, function(entryIndex, entry){
