@@ -5,6 +5,10 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
 
+use Zend\Soap\Client;
+use Zend\Config;
+use Zend\Config\Reader;
+
 class ResultController extends AbstractActionController
 {
     protected $labTable;
@@ -138,5 +142,280 @@ class ResultController extends AbstractActionController
             return $this->redirect()->toRoute('result');
         }
         return $this->redirect()->toRoute('result');
+    }
+    
+    /**
+     * Result pulling and view
+    */
+    
+    public function getLabResultPDFAction()
+    {
+        $site_dir           = $GLOBALS['OE_SITE_DIR'];        
+        $result_dir         = $site_dir."/lab/result/";
+        $result             = array();
+        $request = $this->getRequest();
+	if($request->isPost()) {
+	    $data   = array('procedure_order_id'    => $request->getPost('order_id'));
+	} elseif ($request->isGet()) {
+	    $data   = array('procedure_order_id'    => $request->getQuery('order_id'));
+	}
+
+        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+        if($curr_status == "final") {
+            $labresultfile    = $this->getLabTable()->getOrderResultFile($data['procedure_order_id']);
+        } else {
+            $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+                
+            $username   = $cred['login'];
+            $password   = $cred['password'];        
+            $site_dir   = $_SESSION['site_id'];
+            $remote_host   	= trim($cred['remote_host']);
+	 
+            if(($username == "")||($password == "")) {
+                $return[0]  = array('return' => 1, 'msg' => xlt("Lab Credentials not found"));
+		$arr        = new JsonModel($return);
+		return $arr;
+            } else if($remote_host == "") {
+                $return[0]  = array('return' => 1, 'msg' =>  xlt("Remote Host not found"));
+		$arr        = new JsonModel($return);
+		return $arr;
+            } else {
+                ini_set("soap.wsdl_cache_enabled","0");	
+                ini_set('memory_limit', '-1');
+                
+                $options    = array('location' => $remote_host,
+				'uri'      => "urn://zhhealthcare/lab"
+				);
+                try {
+                    $client     = new Client(null,$options);
+                    $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+                } catch(\Exception $e){
+                    $return[0]  = array('return' => 1, 'msg' => xlt("Could not connect to the web service"));
+                    $arr        = new JsonModel($return);
+                    return $arr;
+                }
+            }
+        }
+        
+	// Ajax Handling (Result success or failed)
+        if($request->isPost()) {
+	    if ($result['status'] == 'failed') {
+		$return[0]  = array('return' => 1, 'msg' => xlt($result['content']));
+		$arr        = new JsonModel($return);
+		return $arr;
+	    }else { //IF THE RESULT RETURNS VALID OUTPUT
+                if($curr_status <> "final") { //IF THE RESULT IS ALREADY DOWNLOADED
+                    $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
+                    if (!is_dir($result_dir)) {
+                        mkdir($result_dir,0777,true);
+                    }
+                    $fp = fopen($result_dir.$labresultfile,"wb");
+                    fwrite($fp,base64_decode($result['content']));
+                    $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+                }
+		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
+		$arr        = new JsonModel($return);
+		return $arr;
+	    }
+                    
+	}
+        
+        if($labresultfile <> "") {
+            $this->getLabResultDetails($data['procedure_order_id']);
+            while(ob_get_level()) {
+                ob_get_clean();
+            }
+            header('Content-Disposition: attachment; filename='.$labresultfile );
+            header("Content-Type: application/octet-stream" );
+            header("Content-Length: " . filesize( $result_dir.$labresultfile ) );
+            readfile( $result_dir.$labresultfile );
+            return false;
+        }
+    }
+    
+    public function getLabResultDetails($order_id)
+    {
+        $site_dir               = $GLOBALS['OE_SITE_DIR'];        
+        $resultdetails_dir      = $site_dir."/lab/resultdetails/";
+        
+	$data['procedure_order_id'] = $order_id;
+        $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+	  
+	$username       = $cred['login'];
+	$password       = $cred['password'];
+        $remote_host   	= trim($cred['remote_host']);
+	$site_dir       = $GLOBALS['site_id'];
+	    
+	ini_set("soap.wsdl_cache_enabled","0");	
+	ini_set('memory_limit', '-1');
+	
+	$options    = array('location' => $remote_host,
+				'uri'      => "urn://zhhealthcare/lab"
+				);
+       	$client     = new Client(null,$options);
+	$result     = $client->getLabResultDetails($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
+        $labresultdetailsfile  = "labresultdetails_".gmdate('YmdHis').".xml";
+	
+        if (!is_dir($resultdetails_dir)) {
+            mkdir($resultdetails_dir,0777,true);
+        }
+            
+	$fp = fopen($resultdetails_dir.$labresultdetailsfile,"wb");
+	fwrite($fp,$result);	
+	
+	$reader     = new Config\Reader\Xml();
+	$xmldata    = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
+       
+        $test_arr               = explode("#--#",$xmldata['test_ids']);
+        $res_arr                = explode("!#@#!",$xmldata['result_values']);
+        $resrep_comments_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
+        
+        $has_subtest    = 0;
+        
+        //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
+        //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
+        if(substr_count($xmldata['res_report_comments'], "#-!!-#") > 1) {
+            $has_subtest    = 1;
+        }
+        $i      = 0;
+
+        /* HARD CODED */
+        $source         = "source";
+        $report_notes   = "report_notes";
+        $comments       = 'comments';
+        /* HARD CODED */
+         
+        $order_seq = $this->getLabTable()->getProcedureOrderSequences($data['procedure_order_id']);        
+        foreach($order_seq as $seq) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
+            $testdetails        = $test_arr[$i]; // i th  test
+           
+            if(trim($testdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE TEST
+                $testdetails_arr    = explode("#!#",$testdetails);
+                list($test_code, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
+                
+                $result_comments    = $resrep_comments_arr[$i]; // result comments of ith subtest.
+                
+                $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
+                                                specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
+                                        
+                $report_inarray = array($data['procedure_order_id'],$seq['procedure_order_seq'],$spec_collected_time,$res_reported_time,$source,
+                                        '','','received',$report_notes);
+                $procedure_report_id = $this->getLabTable()->insertProcedureReport($sql_report,$report_inarray);   
+                
+                $resultdetails      = $res_arr[$i]; // result details of i th  subtest
+                $resultdetails_arr  = explode("!@!",$resultdetails);
+                list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $resultdetails_arr;
+                
+                if(trim($resultdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
+                    if($has_subtest    == 0) {
+                        $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
+                                                        facility,units,result,`range`,abnormal,comments,result_status)
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                                                        
+                        $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
+                                                $result_comments,$result_status);            
+
+                        $this->getLabTable()->insertProcedureResult($sql_test_result,$result_inarray);
+                    } else {
+                        $sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
+                                                        result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments)
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                                                                
+                        $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
+                                                $abn_flag,$result_status,$result_time,$providers_id,$result_comments);
+                        $this->getLabTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
+                    }
+                }
+            }
+            $i++;
+        }
+    }
+    
+    public function getLabRequisitionPDFAction()
+    {
+        $site_dir           = $GLOBALS['OE_SITE_DIR'];            
+        $requisition_dir    = $site_dir."/lab/requisition/";
+	
+        $request    = $this->getRequest();
+	if($request->isPost()) {
+	    $data   = array('procedure_order_id'    => $request->getPost('order_id'));
+	} elseif ($request->isGet()) {
+	    $data  = array('procedure_order_id'    => $request->getQuery('order_id'));
+	}
+
+        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+
+        if(($curr_status == "requisitionpulled")||($curr_status == "final")) {
+            $labrequisitionfile    = $this->getLabTable()->getOrderRequisitionFile($data['procedure_order_id']);                       
+        } else {
+            $cred       = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            $username   = $cred['login'];
+            $password   = $cred['password'];
+            $site_dir   = $_SESSION['site_id'];
+            
+            $remote_host   	= trim($cred['remote_host']);
+	
+            if(($username == "")||($password == "")) {
+                $return[0]  = array('return' => 1, 'msg' => "Lab Credentials not found");
+		$arr        = new JsonModel($return);
+		return $arr;
+            } else if($remote_host == "") {
+                $return[0]  = array('return' => 1, 'msg' => "Remote Host not found");
+		$arr        = new JsonModel($return);
+		return $arr;
+            } else {           
+                ini_set("soap.wsdl_cache_enabled","0");	
+                ini_set('memory_limit', '-1');
+                
+                $options    = array('location' => $remote_host,
+				'uri'      => "urn://zhhealthcare/lab"
+				);
+                try {
+                    $client     = new Client(null,$options);
+                    $result     = $client->getLabRequisition($username,$password,$site_dir,$data['procedure_order_id']); //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+                } catch(\Exception $e) {
+                    $return[0]  = array('return' => 1, 'msg' => "Could not connect to the web service");
+                    $arr        = new JsonModel($return);
+                    return $arr;
+                }
+            }
+            
+        }
+        $fp = fopen("D:/test.tx","w");
+        fwrite($fp,"REs :".print_r($result,1));
+	// Ajax Handling (Result success or failed)  
+	if($request->isPost()) {
+	    if ($result['status'] == 'failed') {
+		$return[0]  = array('return' => 1, 'msg' => xlt($result['content']));
+		$arr        = new JsonModel($return);
+		return $arr;
+	    } else { //IF THE REQUISITION RETURNS VALID OUTPUT
+                if(($curr_status <> "requisitionpulled")&&($curr_status <> "final")) { //IF THE REQUISITION/RESULT IS ALREADY DOWNLOADED
+                    $labrequisitionfile  = "labrequisition_".gmdate('YmdHis').".pdf";           
+                    if (!is_dir($requisition_dir)) {
+                        mkdir($requisition_dir,0777,true);
+                    }
+        
+                    $fp     = fopen($requisition_dir.$labrequisitionfile,"wb");
+                    fwrite($fp,base64_decode($result['content']));
+                    $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
+                }
+		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
+		$arr        = new JsonModel($return);
+		return $arr;
+	    }
+	}
+        if($labrequisitionfile <> "")
+        {
+            while(ob_get_level())
+            {
+                ob_get_clean();
+            }
+            header('Content-Disposition: attachment; filename='.$labrequisitionfile );
+            header("Content-Type: application/octet-stream" );
+            header("Content-Length: " . filesize( $requisition_dir.$labrequisitionfile ) );		
+            readfile( $requisition_dir.$labrequisitionfile ); 
+            return false;
+        }
     }
 }

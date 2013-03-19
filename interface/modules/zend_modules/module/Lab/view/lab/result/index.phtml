@@ -104,7 +104,7 @@
                                                             var s = '<a></a> ';
                                                             var c = '<a></a>';
                                                             return s+c;
-                                                    } else {
+                                                    } else if (row.editor == 1) {
                                                             var f = '<a href=\'#\' onClick=\'getLabelDownload(this);\' style=padding-left:25px;><img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> title=<?php echo xlt('Label'); ?> border=0 /></a>';
                                                             var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=padding-left:65px;><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
                                                             var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:70px;><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';

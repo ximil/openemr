@@ -423,4 +423,113 @@ class ResultTable extends AbstractTableGateway
             }
         }
     }
+    
+    /**
+     * Result pulling and view
+    */
+
+    public function getProcedureOrderSequences($proc_order_id)
+    {
+	$sql_order_test = "SELECT procedure_order_id, procedure_order_seq FROM procedure_order_code WHERE procedure_order_id = ? ";     
+	$value_arr      = array();
+        
+        $value_arr['procedure_order_id']   = $proc_order_id;        
+	$result     = sqlStatement($sql_order_test,$value_arr);
+	$result_arr = array();
+	while ($row = sqlFetchArray($result)) {
+	    $result_arr[] = $row;
+	}
+	return $result_arr;        
+    }
+    
+    public function insertProcedureReport($sql, $in_array)
+    {
+	$procedure_report_id = sqlInsert($sql, $in_array);
+	return $procedure_report_id;
+    }
+    
+    public function insertProcedureResult($sql, $in_array)
+    {        
+	$procedure_result_id = sqlInsert($sql, $in_array);
+	return $procedure_result_id;
+    }
+    
+    public function getOrderStatus($proc_order_id)
+    {
+	$sql_status         = "SELECT order_status FROM procedure_order WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);
+        return $res_status['order_status'];        
+    }
+    
+    public function setOrderStatus($proc_order_id,$status)
+    {
+	$sql_status         = "UPDATE procedure_order SET order_status = ? WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['status']             = $status;
+        $status_value_arr['procedure_order_id'] = $proc_order_id;
+        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status;        
+    }
+    
+    public function getOrderResultFile($proc_order_id)
+    {
+	$sql_status         = "SELECT result_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status['result_file_url'];        
+    }
+    
+    public function getClientCredentials($proc_order_id)
+    {
+	$sql_proc       = "SELECT lab_id FROM procedure_order WHERE procedure_order_id = ? ";
+	$proc_value_arr = array();
+	$proc_value_arr['procedure_order_id']   = $proc_order_id;
+	$res_proc   = sqlQuery($sql_proc,$proc_value_arr);
+	$sql_cred   = "SELECT  login, password, remote_host FROM procedure_providers WHERE ppid = ? ";
+	$res_cred   = sqlQuery($sql_cred,$res_proc);
+	return $res_cred;        
+    }
+    
+    public function changeOrderResultStatus($proc_order_id,$status,$file_name)
+    {
+	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['status']             = $status;
+        $status_value_arr['result_file_url']    = $file_name;
+	$status_value_arr['procedure_order_id'] = $proc_order_id;
+        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status;        
+    }
+    
+    public function getOrderRequisitionFile($proc_order_id)
+    {
+	$sql_status         = "SELECT requisition_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status['requisition_file_url'];        
+    }
+    
+    public function changeOrderRequisitionStatus($proc_order_id,$status,$file_name)
+    {
+	$sql_status         = "UPDATE procedure_order SET order_status = ?, requisition_file_url = ? WHERE procedure_order_id = ? ";        
+	$status_value_arr   = array();
+        
+        $status_value_arr['status']               = $status;
+        $status_value_arr['requisition_file_url'] = $file_name;
+	$status_value_arr['procedure_order_id']   = $proc_order_id;
+        
+	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+	return $res_status;        
+    }
 }

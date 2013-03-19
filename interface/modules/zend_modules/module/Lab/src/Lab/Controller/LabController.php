@@ -233,7 +233,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
     /**
     * Vipin
     */
-    
+    /*
     public function pullcompendiumtestAction()
     {        
 	ini_set("soap.wsdl_cache_enabled","0");	
@@ -263,7 +263,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
-
+    */
     /*
     //THIS ACTION IS MOVED INTO INDEX ACTION
     public function generateorderAction()
@@ -329,7 +329,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
         
     }
     */ 
-
+    /*
     public function getlabrequisitionAction()
     {
         $site_dir           = $GLOBALS['OE_SITE_DIR'];            
@@ -391,9 +391,9 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
 	header("Content-Length: " . filesize( $requisition_dir.$labrequisitionfile ) );		
 	readfile( $requisition_dir.$labrequisitionfile );
 	
-    }
+    }*/
 
-    public function getlabresultAction()
+    /*public function getlabresultAction()
     {
         $site_dir   = $GLOBALS['OE_SITE_DIR'];        
         $result_dir    = $site_dir."/lab/result/";
@@ -500,7 +500,7 @@ $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name:
 	$this->getLabTable()->importResultDetails($result_config_arr,$result);
         
         
-    }
+    }*/
     
     public function testAction()
     {
