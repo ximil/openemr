@@ -250,7 +250,7 @@ $pdf3 = ZendPdf::parse($text);
     /**
     * Vipin
     */
-    
+    /*
     public function pullcompendiumtestAction()
     {        
 	ini_set("soap.wsdl_cache_enabled","0");	
@@ -280,7 +280,7 @@ $pdf3 = ZendPdf::parse($text);
 	$this->getLabTable()->importDataCheck($result,$testconfig_arr);
 	return $this->redirect()->toRoute('result');
     }
-
+    */
     /*
     //THIS ACTION IS MOVED INTO INDEX ACTION
     public function generateorderAction()
@@ -346,7 +346,7 @@ $pdf3 = ZendPdf::parse($text);
         
     }
     */ 
-
+    /*
     public function getlabrequisitionAction()
     {
         $site_dir           = $GLOBALS['OE_SITE_DIR'];            
@@ -408,9 +408,9 @@ $pdf3 = ZendPdf::parse($text);
 	header("Content-Length: " . filesize( $requisition_dir.$labrequisitionfile ) );		
 	readfile( $requisition_dir.$labrequisitionfile );
 	
-    }
+    }*/
 
-    public function getlabresultAction()
+    /*public function getlabresultAction()
     {
         $site_dir   = $GLOBALS['OE_SITE_DIR'];        
         $result_dir    = $site_dir."/lab/result/";
@@ -517,7 +517,7 @@ $pdf3 = ZendPdf::parse($text);
 	$this->getLabTable()->importResultDetails($result_config_arr,$result);
         
         
-    }
+    }*/
     
     public function testAction()
     {

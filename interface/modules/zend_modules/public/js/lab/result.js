@@ -29,24 +29,23 @@ function getResult(target) {
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
 	var row = $('#dg').datagrid('getSelected'); 
-	if (row){  
+	if (row){
 		var order_id = row.procedure_order_id;
-		//window.location.assign("./getlabresult?order_id=" + order_id);
 		$.ajax({
 			type: "POST",
 			cache: false,
 			dataType: "json",
-			url: "./getlabresult",
+			url: "./result/getLabResultPDF",
 			data: {
 				order_id: order_id
 			},
 			success: function(data) {
 				$.each(data, function(jsonIndex, jsonValue){
 					if (jsonValue['return'] == 1) {
-						alert('Request Failed');
+						alert(jsonValue['msg']);
 					} else if (jsonValue['return'] == 0) {
 						var order_id = jsonValue['order_id'];
-						window.location.assign("./getlabresult?order_id=" + order_id);
+						window.location.assign("./result/getLabResultPDF?order_id=" + order_id);
 					}
 				});
 				
@@ -66,22 +65,21 @@ function getRequisition(target) {
 	var row = $('#dg').datagrid('getSelected'); 
 	if (row){  
 		var order_id = row.procedure_order_id;
-		//window.location.assign("./getlabrequisition?order_id=" + order_id);
 		$.ajax({
 			type: "POST",
 			cache: false,
 			dataType: "json",
-			url: "./getlabrequisition",
+			url: "./result/getLabRequisitionPDF",
 			data: {
 				order_id: order_id
 			},
 			success: function(data) {
 				$.each(data, function(jsonIndex, jsonValue){
 					if (jsonValue['return'] == 1) {
-						alert('Request Failed');
+						alert(jsonValue['msg']);
 					} else if (jsonValue['return'] == 0) {
 						var order_id = jsonValue['order_id'];
-						window.location.assign("./getlabrequisition?order_id=" + order_id);
+						window.location.assign("./result/getLabRequisitionPDF?order_id=" + order_id);
 					}
 				});
 				
@@ -169,7 +167,6 @@ $(function(){
 				$("#datagrid-row-r2-1-" + lastIndex).hide();
 				$("#datagrid-row-r2-2-" + lastIndex).hide();
 			}
-			
 		},
 		 onSelect:function(rowIndex, rowData){
 			var row = $('#dg').datagrid('getSelected');
