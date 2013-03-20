@@ -11,6 +11,8 @@ use Zend\Soap\Client;
 use Zend\Config;
 use Zend\Config\Reader;
 
+use Zend\ZendPdf;
+
 class LabController extends AbstractActionController
 {
     protected $labTable;
@@ -85,7 +87,7 @@ class LabController extends AbstractActionController
 	    //exit;
 			// End Prodedure Order Import
 			
-                //return $this->redirect()->toRoute('result');
+                return $this->redirect()->toRoute('result');
             }
 	    else {
 		echo 'invalid ..';
@@ -159,7 +161,7 @@ class LabController extends AbstractActionController
     
     public function sendimagetextAction($orderId) {
 	if(!$orderId)
-	$orderId = $_GET['order'];
+	$orderId = $_GET['order_id'];
   // Set font size
   $font_size = 2;
 //$text = "Client: ".$client_id."\nLab Ref: ".$lab_ref."\nPat Name: ".$pat_name;
@@ -167,67 +169,82 @@ $row = sqlQuery("SELECT send_fac_id,CONCAT_WS('-',login,procedure_order_id) AS l
 patient_data ON pid=patient_id WHERE procedure_order_id=?",array($orderId));
 $text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name: ".$row['pname'];
 
-  $ts=explode("\n",$text);
-  $total_lines = count($ts);
-  $width=0;
-  foreach ($ts as $k=>$string) { //compute width
-    $width=max($width,strlen($string));
-  }
+//$dompdf = new DOMPDF();
+//$dompdf->load_html($text);
+//$dompdf->render();
+//$dompdf->stream('sample.pdf');
+//Zend_Loader::loadClass('Zend_Pdf');
+$pdf1 = new ZendPdf();
 
-  // Create image width dependant on width of the string
-  //$width  = imagefontwidth($font_size)*$width;
-  $width  = 168;
-  // Set height to that of the font
-  //$height = imagefontheight($font_size)*count($ts);
-  $height = 72;
-  $el=imagefontheight($font_size);
-  $em=imagefontwidth($font_size);
-  // Create the image pallette
-  $img = imagecreatetruecolor($width,$height);
-  // Dark red background
-  $bg = imagecolorallocate($img, 255, 255, 255);
-  imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
-  // White font color
-  $color = imagecolorallocate($img, 0, 0, 0);
-  
-  foreach ($ts as $k=>$string) {
-    // Length of the string
-    $len = strlen($string);
-    // Y-coordinate of character, X changes, Y is static
-    $ypos = 0;
-    // Loop through the string
-    for($i=0;$i<$len;$i++){
-      // Position of the character horizontally
-      $xpos = $i * $em;
-      $ypos = $k * $el;
-	  
-	  $center_x = ceil( ( ( imagesx($img) - ( $em * $len ) ) / 2 ) + ( $i * $em ) );
-	  $center_y = ceil( ( ( imagesy($img) - ( $el * $total_lines ) ) / 2)  + ( $k * $el ) );
-	  
-	  //error_log("aa:$xpos, $ypos---$center_x, $center_y");
-	  
-      // Draw character
-      imagechar($img, $font_size, $center_x, $center_y, $string, $color);
-      // Remove character from string
-      $string = substr($string, 1);
-    }
-  }
-  // Return the image
-  //$IMGING = imagepng($img);
-  //header("Content-Type: image/png");
-  //header('Content-Disposition: attachment; filename=Specimen Label.png' );
-  //  header("Content-Type: application/octet-stream" );
-  //  header("Content-Length: " . filesize( $IMGING ) );
-  ob_end_clean();
-    ob_start();
-  imagepng($img);
-  $IMGING = ob_get_contents();
-  header("Content-Type: image/png");
-  header('Content-Disposition: attachment; filename=SpecimenLabel.png' );
-    header("Content-Type: application/octet-stream" );
-    header("Content-Length: " . filesize( $IMGING ) );
-  // Remove image
-  imagedestroy($img);
+// Load a PDF document from a file
+$pdf2 = ZendPdf::load('D:/sample.pdf');
+
+// Load a PDF document from a string
+$pdf3 = ZendPdf::parse($text);
+
+//  $ts=explode("\n",$text);
+//  $total_lines = count($ts);
+//  $width=0;
+//  foreach ($ts as $k=>$string) { //compute width
+//    $width=max($width,strlen($string));
+//  }
+//
+//  // Create image width dependant on width of the string
+//  //$width  = imagefontwidth($font_size)*$width;
+//  $width  = 168;
+//  // Set height to that of the font
+//  //$height = imagefontheight($font_size)*count($ts);
+//  $height = 72;
+//  $el=imagefontheight($font_size);
+//  $em=imagefontwidth($font_size);
+//  // Create the image pallette
+//  $img = imagecreatetruecolor($width,$height);
+//  // Dark red background
+//  $bg = imagecolorallocate($img, 255, 255, 255);
+//  imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
+//  // White font color
+//  $color = imagecolorallocate($img, 0, 0, 0);
+//  
+//  foreach ($ts as $k=>$string) {
+//    // Length of the string
+//    $len = strlen($string);
+//    // Y-coordinate of character, X changes, Y is static
+//    $ypos = 0;
+//    // Loop through the string
+//    for($i=0;$i<$len;$i++){
+//      // Position of the character horizontally
+//      $xpos = $i * $em;
+//      $ypos = $k * $el;
+//	  
+//	  $center_x = ceil( ( ( imagesx($img) - ( $em * $len ) ) / 2 ) + ( $i * $em ) );
+//	  $center_y = ceil( ( ( imagesy($img) - ( $el * $total_lines ) ) / 2)  + ( $k * $el ) );
+//	  
+//	  //error_log("aa:$xpos, $ypos---$center_x, $center_y");
+//	  
+//      // Draw character
+//      imagechar($img, $font_size, $center_x, $center_y, $string, $color);
+//      // Remove character from string
+//      $string = substr($string, 1);
+//    }
+//  }
+//  // Return the image
+//  //$IMGING = imagepng($img);
+//  //header("Content-Type: image/png");
+//  //header('Content-Disposition: attachment; filename=Specimen Label.png' );
+//  //  header("Content-Type: application/octet-stream" );
+//  //  header("Content-Length: " . filesize( $IMGING ) );
+//    ob_end_clean();
+//    ob_start();
+//    imagepng($img);
+//    $IMGING = ob_get_contents();
+//    $fh = fopen("D:/speclbl.pdf","w");
+//    fwrite($fh,$IMGING);
+//    header("Content-Type: application/octet-stream");
+//    header('Content-Disposition: attachment; filename=SpecimenLabel.png' );
+//    header("Content-Type: application/octet-stream" );
+//    header("Content-Length: " . filesize( $IMGING ) );
+//    // Remove image
+//    imagedestroy($img);
 }
    
     /**

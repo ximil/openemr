@@ -96,6 +96,10 @@ function cloneRow()
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").removeAttr("required");
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").removeAttr("class");
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").attr("class","combo");
+	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").attr("id","diagnoses_"+rowcount);
+	prevrowcount = rowcount-1;
+	prevdiagval = $('#diagnosestemplate_'+prevrowcount+" > td:last input[type=text]").val();
+	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").val(prevdiagval);
 	var clone = row.cloneNode(true); // copy children too
 	clone.id = "proceduretemplate"+rowcount;
 	//$('#proceduretemplate'+rowcount+" > td input[type=text]").id="procedures_"+rowcount;

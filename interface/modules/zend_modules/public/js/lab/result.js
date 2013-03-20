@@ -100,8 +100,8 @@ function getLabelDownload(target) {
 	var row = $('#dg').datagrid('getSelected'); 
 	if (row){  
 		var order_id = row.procedure_order_id;
-		alert('Order Id is ..' + order_id);
-		//window.location.assign("./getLabelDownload?order_id=" + order_id);
+		//alert('Order Id is ..' + order_id);
+		window.location.assign("./sendimagetext?order_id=" + order_id);
 	}
 }
 

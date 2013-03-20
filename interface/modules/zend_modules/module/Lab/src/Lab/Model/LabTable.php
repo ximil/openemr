@@ -724,11 +724,11 @@ class LabTable extends AbstractTableGateway
         
         $xmlconfig['procedure_order']       = array(                      
 						'column_map'    => array(
-                                                                        'provider_id'           => '#provider_id,ordering_provider_id',
+                                                                        'provider_id'           => '#provider_id',
                                                                         'psc_hold'         	=> 'recv_app_id',
 									'billto'	    	=> 'bill_to',
-									'patient_instructions'	=> 'patient_internal_comments',
-									'internal_comments'	=> 'observation_request_comments'
+									'internal_comments'	=> 'patient_internal_comments',
+									'patient_instructions'	=> 'observation_request_comments'
 									),
                                                 'value_map'     => array(
                                                                         'psc_hold'              => array(
@@ -742,7 +742,8 @@ class LabTable extends AbstractTableGateway
         $xmlconfig['users']                 = array(                      
 						'column_map'    => array(
                                                                         'fname'                 => 'ordering_provider_fname',
-                                                                        'lname'         	=> 'ordering_provider_lname'
+                                                                        'lname'         	=> 'ordering_provider_lname',
+									'npi'			=> 'ordering_provider_id',
 									),
                                                 'primary_key'   => array('id'),
 						'match_value'   => array('provider_id'));

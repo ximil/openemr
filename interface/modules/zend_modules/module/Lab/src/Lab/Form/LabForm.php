@@ -158,8 +158,10 @@ class LabForm extends Form
             'name' => 'diagnoses[]',
             'attributes' => array(
                 'type'  => 'text',
+		'id'	=> 'diagnoses_1',
 		'class' => 'easyui-validatebox combo',
-		'required' => 'required'
+		'required' => 'required',
+		'placeholder' => 'Seperated by semicolon(;)'
             ),
         ));
 	$this->add(array(
