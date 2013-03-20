@@ -336,7 +336,6 @@ class LabTable extends AbstractTableGateway
 	    }
 	    
 	    $count++;	    
-	    //if($count > 5){ break;}
 	}
 	sqlStatement("UPDATE procedure_type SET parent=procedure_type_id");
 	sqlStatement("UPDATE procedure_type SET name=description");
@@ -952,9 +951,6 @@ class LabTable extends AbstractTableGateway
                                         $$tag   = $data[$col];
                                     }
                                 }
-			
-                                //echo "<br>".$col." => $".$tag." = ".$$tag;
-                                //echo "<br>$"."data[".$col."] = ".$data[$col];
                             }
                         }
                     }
@@ -1117,44 +1113,7 @@ class LabTable extends AbstractTableGateway
 	$res_cred   = sqlQuery($sql_cred,$res_proc);
 	return $res_cred;        
     }
-    /*
-    public function changeOrderRequisitionStatus($proc_order_id,$status,$file_name)
-    {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, requisition_file_url = ? WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
-        $status_value_arr['status']               = $status;
-        $status_value_arr['requisition_file_url'] = $file_name;
-	$status_value_arr['procedure_order_id']   = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status;        
-    }
     
-    public function changeOrderResultStatus($proc_order_id,$status,$file_name)
-    {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
-        $status_value_arr['status']             = $status;
-        $status_value_arr['result_file_url']    = $file_name;
-	$status_value_arr['procedure_order_id'] = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status;        
-    }
-   
-    
-    public function getOrderStatus($proc_order_id)
-    {
-	$sql_status         = "SELECT order_status FROM procedure_order WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['order_status'];        
-    }
-     
     public function setOrderStatus($proc_order_id,$status)
     {
 	$sql_status         = "UPDATE procedure_order SET order_status = ? WHERE procedure_order_id = ? ";        
@@ -1166,28 +1125,6 @@ class LabTable extends AbstractTableGateway
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status;        
     }
-    
-    public function getOrderRequisitionFile($proc_order_id)
-    {
-	$sql_status         = "SELECT requisition_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['requisition_file_url'];        
-    }
-    
-    public function getOrderResultFile($proc_order_id)
-    {
-	$sql_status         = "SELECT result_file_url FROM procedure_order WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
-        $status_value_arr['procedure_order_id']   = $proc_order_id;        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status['result_file_url'];        
-    }
-    */
-    
 }
 ?>
 
