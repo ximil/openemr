@@ -52,7 +52,7 @@ class LabController extends AbstractActionController
 			
 		//------------- STARTING PROCEDURE ORDER XML IMPORT -------------
                 //GET CLIENT CREDENTIALS OF INITIATING ORDER
-                $cred           = $this->getLabTable()->getClientCredentials($clientorder_id);                
+                $cred           = $this->getLabTable()->getClientCredentials($clientorder_id[0]);                
                 $username       = $cred['login'];
                 $password       = $cred['password'];
                 $remote_host    = trim($cred['remote_host']);
