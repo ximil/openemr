@@ -213,6 +213,9 @@ class ResultController extends AbstractActionController
                     fwrite($fp,base64_decode($result['content']));
                     $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
                 }
+		//PULING RESULT DETAILS INTO THE OPENEMR TABLES
+		$this->getLabResultDetails($data['procedure_order_id']);
+		
 		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 		$arr        = new JsonModel($return);
 		return $arr;
@@ -221,7 +224,7 @@ class ResultController extends AbstractActionController
 	}
         
         if($labresultfile <> "") {
-            $this->getLabResultDetails($data['procedure_order_id']);
+            
             while(ob_get_level()) {
                 ob_get_clean();
             }
@@ -265,70 +268,94 @@ class ResultController extends AbstractActionController
 	
 	$reader     = new Config\Reader\Xml();
 	$xmldata    = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
-       
-        $test_arr               = explode("#--#",$xmldata['test_ids']);
-        $res_arr                = explode("!#@#!",$xmldata['result_values']);
-        $resrep_comments_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
-        
-        $has_subtest    = 0;
-        
-        //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
-        //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
-        if(substr_count($xmldata['res_report_comments'], "#-!!-#") > 1) {
-            $has_subtest    = 1;
-        }
-        $i      = 0;
-
-        /* HARD CODED */
-        $source         = "source";
-        $report_notes   = "report_notes";
-        $comments       = 'comments';
-        /* HARD CODED */
-         
-        $order_seq = $this->getLabTable()->getProcedureOrderSequences($data['procedure_order_id']);        
-        foreach($order_seq as $seq) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
-            $testdetails        = $test_arr[$i]; // i th  test
-           
-            if(trim($testdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE TEST
-                $testdetails_arr    = explode("#!#",$testdetails);
-                list($test_code, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
-                
-                $result_comments    = $resrep_comments_arr[$i]; // result comments of ith subtest.
-                
-                $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
-                                                specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
-                                        
-                $report_inarray = array($data['procedure_order_id'],$seq['procedure_order_seq'],$spec_collected_time,$res_reported_time,$source,
-                                        '','','received',$report_notes);
-                $procedure_report_id = $this->getLabTable()->insertProcedureReport($sql_report,$report_inarray);   
-                
-                $resultdetails      = $res_arr[$i]; // result details of i th  subtest
-                $resultdetails_arr  = explode("!@!",$resultdetails);
-                list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $resultdetails_arr;
-                
-                if(trim($resultdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
-                    if($has_subtest    == 0) {
-                        $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
-                                                        facility,units,result,`range`,abnormal,comments,result_status)
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-                                                        
-                        $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
-                                                $result_comments,$result_status);            
-
-                        $this->getLabTable()->insertProcedureResult($sql_test_result,$result_inarray);
-                    } else {
-                        $sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
-                                                        result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments)
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-                                                                
-                        $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
-                                                $abn_flag,$result_status,$result_time,$providers_id,$result_comments);
-                        $this->getLabTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
-                    }
-                }
-            }
-            $i++;
-        }
+	
+	//CHECKS IF THE RESULT DETAIL IS ALREADY PULLED
+	$pulled_count 	= $this->getLabTable()->getOrderResultPulledCount($order_id);
+	$fp = fopen("D:/sql.txt","w");
+		    fwrite($fp,"\n Pulled count ....................  :".print_r($pulled_count,1));
+	if($pulled_count == 0)
+	{
+	    //SEPERATES EACH TEST DETAILS
+	    $test_arr              	 	= explode("#--#",$xmldata['test_ids']);
+	    $result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
+	    $resultcomments_test_arr    	= explode("#-!!-#",$xmldata['res_report_comments']);
+		
+	    /* HARD CODED */
+	    $source         = "source";
+	    $report_notes   = "report_notes";
+	    $comments       = 'comments';
+	    /* HARD CODED */
+	    
+	    $index = 0;
+	    $order_seq = $this->getLabTable()->getProcedureOrderSequences($data['procedure_order_id']);        
+	    foreach($order_seq as $seq) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
+		
+		$has_subtest    = 0;    //FLAG FOR INDICATING IF ith TEST HAS SUBTEST OR NOT
+		$testdetails    = $test_arr[$index]; // i th  test
+	       
+		if(trim($testdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE TEST
+		    
+		    //SEPERATES TEST SPECIFIC DETAILS
+		    $testdetails_arr    = explode("#!#",$testdetails);
+		    list($test_code, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
+		  
+		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
+						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
+					    
+		    $report_inarray = array($data['procedure_order_id'],$seq['procedure_order_seq'],$spec_collected_time,$res_reported_time,$source,
+					    '','','received',$report_notes);
+		    $procedure_report_id = $this->getLabTable()->insertProcedureReport($sql_report,$report_inarray);   
+		    
+		    // RESULT REPORT COMMENTS OF ith TEST	
+		    $result_test_comments    = $resultcomments_test_arr[$index];
+		    
+		    //SEPERATES RESULT REPORT COMMENTS OF EACH SUBTEST OF ith TEST
+		    $resultcomments_arr = explode("#!!#",$result_test_comments);
+		    
+		    //RESULT VALUES/DETAILS OF ith TEST
+		    $resultdetails_test      = $result_test_arr[$index];
+		    //SEPERATES RESULT VALUES/DETAILS OF EACH SUBTEST OF ith TEST
+		    $resultdetails_subtest_arr  = explode("!#@#!",$resultdetails_test);
+		    
+		    //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
+		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.		
+		    $no_of_subtests	= substr_count($result_test_comments, "#!!#") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
+		    
+		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
+			if($no_of_subtests   < 2) {
+			    $subtest_comments	    = $resultcomments_arr[0];
+				
+			    $subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[0]);
+			    list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
+			   
+			    $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
+							    facility,units,result,`range`,abnormal,comments,result_status)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
+						    $subtest_comments,$result_status);            
+			    $this->getLabTable()->insertProcedureResult($sql_test_result,$result_inarray);
+			} else {
+			    
+			    for($j=0;$j<$no_of_subtests;$j++)
+			    {
+				$subtest_comments	    = $resultcomments_arr[$j];
+				
+				$subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[$j]);
+				list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
+				
+				$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
+							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
+							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments);
+				$this->getLabTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
+			    }                        
+			}
+		    }
+		}
+		$index++;
+	    }
+	}
     }
     
     public function getLabRequisitionPDFAction()

@@ -190,7 +190,14 @@ class ResultTable extends AbstractTableGateway
                                     "pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
                                     "pt2.name AS name, pt2.description, pt2.seq AS seq, " .
                                     "ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
-                                    "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments";
+                                    "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments"; 
+            $selects .= ", psr.procedure_subtest_result_id,
+                                psr.subtest_code,
+                                psr.subtest_desc AS result_text,
+                                psr.result_value AS result,
+                                psr.abnormal_flag AS abnormal,
+                                psr.units,
+                                psr.range";
             
             // Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
             $pt2cond = '';
@@ -206,6 +213,7 @@ class ResultTable extends AbstractTableGateway
             $pscond = "ps.procedure_report_id = $report_id";
 
             $joincond = "ps.result_code = pt2.procedure_code";
+            $joincond .= " LEFT JOIN procedure_subtest_result AS psr ON psr.procedure_report_id=$report_id ";
             if($statusResult) {
                  $where .= " AND ps.result_status='$statusResult'";
             }
@@ -238,7 +246,17 @@ class ResultTable extends AbstractTableGateway
                 $result_comments  = empty($rrow['comments'        ]) ? '' : $rrow['comments'];
                 $result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
                 $result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
+                
+                // if sub tests are in the table 'procedure_subtest_result'
+                if (!empty($rrow['subtest_code'])) {
+                    $result_code  = $rrow['subtest_code'];
+                    $restyp_units = $rrow['units'];
+                    $restyp_range = $rrow['range'];
+                    if ($rrow['abnormal'] == 'H') {
+                        $result_abnormal = 'high'; 
+                    }
                     
+                } 
                 if ($lastpoid != $order_id || $lastpcid != $order_seq) {
                     $lastprid = -1;
                     if ($lastpoid != $order_id) {
@@ -271,7 +289,7 @@ class ResultTable extends AbstractTableGateway
                 $arr1[$i]['review_status'] = xlt($review_status);
                 $arr1[$i]['procedure_code'] = xlt($restyp_code);
                 $arr1[$i]['procedure_type'] = xlt($restyp_type);
-                $arr1[$i]['name'] = xlt($restyp_name);
+                $arr1[$i]['name'] = xlt($restyp_name);  
                 $arr1[$i]['pt2_units'] = xlt($restyp_units);
                 $arr1[$i]['pt2_range'] = xlt($restyp_range);
                 $arr1[$i]['procedure_result_id'] = $result_id;
@@ -294,6 +312,9 @@ class ResultTable extends AbstractTableGateway
                 $lastpoid = $order_id;
                 $lastpcid = $order_seq;
                 $lastprid = $report_id;
+                //if ($order_id == '116') {
+                     //echo '<pre>'; print_r($rrow); echo '</pre>';
+               // }
             }
         }
         $arr1[$i]['total'] = $i-1;
@@ -531,5 +552,15 @@ class ResultTable extends AbstractTableGateway
         
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status;        
+    }
+    
+    public function getOrderResultPulledCount($proc_order_id)
+    {
+	$sql_check	= "SELECT COUNT(procedure_order_id) AS cnt FROM procedure_report WHERE procedure_order_id = ? ";     
+	$status_value_arr   = array();
+        
+        $status_value_arr['procedure_order_id']   = $proc_order_id;        
+	$res_status   = sqlQuery($sql_check,$status_value_arr);	
+	return $res_status['cnt'];        
     }
 }
