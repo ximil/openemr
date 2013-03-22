@@ -204,7 +204,7 @@ class ResultController extends AbstractActionController
 		$arr        = new JsonModel($return);
 		return $arr;
 	    }else { //IF THE RESULT RETURNS VALID OUTPUT
-                if($curr_status <> "final") { //IF THE RESULT IS ALREADY DOWNLOADED
+                if($curr_status <> "final" || $labresultfile == "") { //IF DOESN'T HAVE RESULT FILE
                     $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
                     if (!is_dir($result_dir)) {
                         mkdir($result_dir,0777,true);
@@ -212,9 +212,9 @@ class ResultController extends AbstractActionController
                     $fp = fopen($result_dir.$labresultfile,"wb");
                     fwrite($fp,base64_decode($result['content']));
                     $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+		    //PULING RESULT DETAILS INTO THE OPENEMR TABLES
+		    $this->getLabResultDetails($data['procedure_order_id']);
                 }
-		//PULING RESULT DETAILS INTO THE OPENEMR TABLES
-		$this->getLabResultDetails($data['procedure_order_id']);
 		
 		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 		$arr        = new JsonModel($return);

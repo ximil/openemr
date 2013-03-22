@@ -229,14 +229,79 @@ class LabController extends AbstractActionController
 	//  header("Content-Length: " . filesize( $IMGING ) );
 	ob_end_clean();
 	ob_start();
-	imagepng($img);
+	//imagejpeg($img);
+	$this->createImageBorder($img);
 	$IMGING = ob_get_contents();
-	header("Content-Type: image/png");
-	header('Content-Disposition: attachment; filename=SpecimenLabel.png' );
+	header("Content-Type: image/jpg");
+	header('Content-Disposition: attachment; filename=SpecimenLabel_'.$orderId.'.jpg' );
 	header("Content-Type: application/octet-stream" );
 	header("Content-Length: " . filesize( $IMGING ) );
 	// Remove image
 	imagedestroy($img);
+	exit;
     }
+    
+    function createImageBorder($imgName){
 
+     //$img     =  substr($imgName, 0, -4); // remove fileExtension
+     //$ext     = ".jpg";
+     //$quality = 95;
+     $borderColor = 0;  // 255 = white
+    
+    /*
+     a                         b
+     +-------------------------+
+     |                         
+     |          IMAGE          
+     |                         
+     +-------------------------+
+     c                         d  
+    */
+   
+    //$scr_img = imagecreatefromjpeg($img.$ext);
+    $scr_img = $imgName;
+    $width   = imagesx($scr_img);
+    $height  = imagesy($scr_img);
+             
+        // line a - b
+        $abX  = 0;
+        $abY  = 0;
+        $abX1 = $width;
+        $abY1 = 0;
+       
+        // line a - c
+        $acX  = 0;
+        $acY  = 0;
+        $acX1 = 0;
+        $acY1 = $height;
+       
+        // line b - d
+        $bdX  = $width-1;
+        $bdY  = 0;
+        $bdX1 = $width-1;
+        $bdY1 = $height;
+       
+        // line c - d
+        $cdX  = 0;
+        $cdY  = $height-1;
+        $cdX1 = $width;
+        $cdY1 = $height-1;
+	
+	$w   = imagecolorallocate($scr_img, 255, 255, 255);
+	$b = imagecolorallocate($scr_img, 0, 0, 0);
+	
+	$style = array_merge(array_fill(0, 5, $b), array_fill(0, 5, $w));
+	imagesetstyle($scr_img, $style);
+           
+       // DRAW LINES   
+        imageline($scr_img,$abX,$abY,$abX1,$abY1,IMG_COLOR_STYLED);
+        imageline($scr_img,$acX,$acY,$acX1,$acY1,IMG_COLOR_STYLED);
+        imageline($scr_img,$bdX,$bdY,$bdX1,$bdY1,IMG_COLOR_STYLED);
+        imageline($scr_img,$cdX,$cdY,$cdX1,$cdY1,IMG_COLOR_STYLED);
+       
+      // create copy from image   
+        imagejpeg($scr_img);
+        //imagedestroy($scr_img);
+  }
+   
 }
