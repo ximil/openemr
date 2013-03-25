@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS `form_transfer_summary` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `date` datetime DEFAULT NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) DEFAULT NULL,
   `user` varchar(255) DEFAULT NULL,
   `groupname` varchar(255) DEFAULT NULL,

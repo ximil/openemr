@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `form_vitalsM` (
 `id`                bigint(20)      NOT NULL auto_increment,
-`date`              datetime        default NULL,
+`date`              timestamp       NULL DEFAULT NULL,
 `pid`               bigint(20)      default 0,
 `user`              varchar(255)    default NULL,
 `groupname`         varchar(255)    default NULL,
