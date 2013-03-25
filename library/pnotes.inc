@@ -38,7 +38,7 @@ function getPnoteById($id, $cols = "*")
  *                         messages, or all users' messages.
  * @param string $user The user whom's notes you want to retrieve.
  * @param bool $count Whether to return a count, or just return 0.
- * @param string $sortby A field to sort results by.
+ * @param string $sortby A field to sort results by. (options are users.lname,patient_data.lname,pnotes.title,pnotes.date,pnotes.message_status) (will default to users.lname)
  * @param string $sortorder whether to sort ascending or descending.
  * @param string $begin what row to start retrieving results from.
  * @param string $listnumber number of rows to return.
@@ -75,8 +75,9 @@ function getPnotesByUser($activity="1",$show_all="no",$user='',$count=false,$sor
           LEFT JOIN patient_data ON pnotes.pid = patient_data.pid) WHERE $activity_query
           pnotes.deleted != '1' AND pnotes.assigned_to LIKE ?";
   if (!empty($sortby) || !empty($sortorder)  || !empty($begin) || !empty($listnumber)) {
-    $sql .= " order by ".add_escape_custom($sortby)." ".add_escape_custom($sortorder).
-           " limit ".add_escape_custom($begin).", ".add_escape_custom($listnumber);
+    $sql .= " order by ".escape_sql_column_name($sortby,array('users','patient_data','pnotes'),TRUE).
+            " ".escape_sort_order($sortorder).
+            " limit ".escape_limit($begin).", ".escape_limit($listnumber);
   }
   $result = sqlStatement($sql, array($usrvar));
 
@@ -126,10 +127,10 @@ $sqlParameterArray = array();
     array_push($sqlParameterArray, $username);
   }
   if ($status)
-    $sql .= " AND message_status IN ('".str_replace(",", "','", $status)."')";
+    $sql .= " AND message_status IN ('".str_replace(",", "','", add_escape_custom($status) )."')";
   $sql .= " ORDER BY date DESC";
   if($limit != "all")
-    $sql .= " LIMIT $start, $limit";
+    $sql .= " LIMIT ".escape_limit($start).", ".escape_limit($limit);
 
   $res = sqlStatement($sql, $sqlParameterArray);
 
@@ -171,10 +172,10 @@ $sqlParameterArray = array();
     array_push($sqlParameterArray, $username);
   }
   if ($status)
-    $sql .= " AND message_status IN ('".str_replace(",", "','", $status)."')";
+    $sql .= " AND message_status IN ('".str_replace(",", "','", add_escape_custom($status) )."')";
   $sql .= " ORDER BY date DESC";
   if($limit != "all")
-    $sql .= " LIMIT $start, $limit";
+    $sql .= " LIMIT ".escape_limit($start).", ".escape_limit($limit);
 
   $res = sqlStatement($sql, $sqlParameterArray);
 
@@ -187,7 +188,7 @@ $sqlParameterArray = array();
 function getPatientNotes($pid = '', $limit = '', $offset = 0, $search = '')
 {
   if($limit){
-    $limit = "LIMIT $offset, $limit";
+    $limit = "LIMIT ".escape_limit($offset).", ".escape_limit($limit);
   }
   $sql = "
     SELECT
@@ -223,7 +224,7 @@ function getPatientNotes($pid = '', $limit = '', $offset = 0, $search = '')
 function getPatientNotifications($pid = '', $limit = '', $offset = 0, $search = '')
 {
   if($limit){
-    $limit = "LIMIT $offset, $limit";
+    $limit = "LIMIT ".escape_limit($offset).", ".escape_limit($limit);
   }
   $sql = "
     SELECT
@@ -259,7 +260,7 @@ function getPatientNotifications($pid = '', $limit = '', $offset = 0, $search = 
 function getPatientSentNotes($pid = '', $limit = '', $offset = 0, $search = '')
 {
   if($limit){
-    $limit = "LIMIT $offset, $limit";
+    $limit = "LIMIT ".escape_limit($offset).", ".escape_limit($limit);
   }
   $sql = "
     SELECT
@@ -303,7 +304,7 @@ function getPnotesByPid ($pid, $activity = "1", $cols = "*", $limit=10, $start=0
     "AND activity = '1' ".
     " AND message_status != 'Done' ".
     " AND deleted != 1 ".
-    " ORDER BY date DESC LIMIT $start,$limit", array($pid) );
+    " ORDER BY date DESC LIMIT ".escape_limit($start).",".escape_limit($limit), array($pid) );
  }
  else if ($activity == '0') {
   // return only inactive
@@ -311,13 +312,13 @@ function getPnotesByPid ($pid, $activity = "1", $cols = "*", $limit=10, $start=0
     "AND (activity = '0' ".
     " OR message_status = 'Done') ".
     " AND deleted != 1 ".
-    " ORDER BY date DESC LIMIT $start,$limit", array($pid) );
+    " ORDER BY date DESC LIMIT ".escape_limit($start).",".escape_limit($limit), array($pid) );
  }
  else { // $activity == "all"
   // return both active and inactive
   $res = sqlStatement("SELECT $cols FROM pnotes WHERE pid LIKE ? " .
     " AND deleted != 1 ".
-    " ORDER BY date DESC LIMIT $start,$limit", array($pid) );
+    " ORDER BY date DESC LIMIT ".escape_limit($start).",".escape_limit($limit), array($pid) );
  }
   for ($iter = 0; $row = sqlFetchArray($res); $iter++)
     $all[$iter] = $row;
@@ -377,7 +378,7 @@ function addMailboxPnote($pid, $newtext, $authorized = '0', $activity = '1',
 function updatePnote($id, $newtext, $title, $assigned_to, $message_status = "")
 {
   $row = getPnoteById($id);
-  if (! $row) die("updatePnote() did not find id '$id'");
+  if (! $row) die("updatePnote() did not find id '".text($id)."'");
   $activity = $assigned_to ? '1' : '0';
 
   // make inactive if set as Done
@@ -421,7 +422,7 @@ function updatePnoteMessageStatus($id, $message_status)
 function updatePnotePatient($id, $patient_id)
 {
   $row = getPnoteById($id);
-  if (! $row) die("updatePnotePatient() did not find id '$id'");
+  if (! $row) die("updatePnotePatient() did not find id '".text($id)."'");
   $activity = $assigned_to ? '1' : '0';
 
   $pid = $row['pid'];

@@ -1233,6 +1233,9 @@ function getPatientAge($dobYMD, $nowYMD=null)
 
     $ageInMonths = (($nowYear * 12) + $nowMonth) - (($dobYear*12) + $dobMonth);
 
+    // We want the age in FULL months, so if the current date is less than the numerical day of birth, subtract a month
+    if($dayDiff<0) { $ageInMonths-=1; } 
+    
     if ( $ageInMonths > 24 ) {
         $age = $yearDiff;
         if (($monthDiff == 0) && ($dayDiff < 0)) { $age -= 1; }
@@ -1245,6 +1248,110 @@ function getPatientAge($dobYMD, $nowYMD=null)
     return $age;
 }
 
+/**
+ * Wrapper to make sure the clinical rules dates formats corresponds to the 
+ * format expected by getPatientAgeYMD
+ *
+ * @param  string  $dob     date of birth
+ * @param  string  $target  date to calculate age on
+ * @return array containing
+ *      age - decimal age in years
+ *      age_in_months - decimal age in months
+ *      ageinYMD - formatted string #y #m #d */
+function parseAgeInfo($dob,$target)
+{
+    // Prepare dob (expected in order Y M D, remove whatever delimiters might be there
+    $dateDOB = preg_replace("/[-\s\/]/", "", $dob);;
+    // Prepare target (Y-M-D H:M:S)
+    $dateTarget = preg_replace("/[-\s\/]/","",$target);
+
+    return getPatientAgeYMD($dateDOB,$dateTarget);
+
+}
+
+/**
+ * 
+ * @param type $dob
+ * @param type $date
+ * @return array containing
+ *      age - decimal age in years
+ *      age_in_months - decimal age in months
+ *      ageinYMD - formatted string #y #m #d
+ */
+function getPatientAgeYMD($dob, $date=null) {
+	
+    if ($date == null) {
+        $daynow = date("d");
+        $monthnow = date("m");
+        $yearnow = date("Y");
+        $datenow=$yearnow.$monthnow.$daynow;
+    }
+    else {
+        $datenow=preg_replace("/-/", "", $date);
+        $yearnow=substr($datenow,0,4);
+        $monthnow=substr($datenow,4,2);
+        $daynow=substr($datenow,6,2);
+        $datenow=$yearnow.$monthnow.$daynow;
+    }
+
+    $dob=preg_replace("/-/", "", $dob);
+    $dobyear=substr($dob,0,4);
+    $dobmonth=substr($dob,4,2);
+    $dobday=substr($dob,6,2);
+    $dob=$dobyear.$dobmonth.$dobday;
+
+    //to compensate for 30, 31, 28, 29 days/month
+    $mo=$monthnow; //to avoid confusion with later calculation
+
+    if ($mo==05 or $mo==07 or $mo==10 or $mo==12) {  //determined by monthnow-1 
+        $nd=30; //nd = number of days in a month, if monthnow is 5, 7, 9, 12 then 
+    }  // look at April, June, September, November for calculation.  These months only have 30 days.
+    elseif ($mo==03) { // for march, look to the month of February for calculation, check for leap year
+        $check_leap_Y=$yearnow/4; // To check if this is a leap year. 
+        if (is_int($check_leap_Y)) {$nd=29;} //If it true then this is the leap year
+        else {$nd=28;} //otherwise, it is not a leap year.
+    }
+    else {$nd=31;} // other months have 31 days
+
+    $bdthisyear=$yearnow.$dobmonth.$dobday; //Date current year's birthday falls on
+    if ($datenow < $bdthisyear) // if patient hasn't had birthday yet this year
+    {
+        $age_year = $yearnow - $dobyear - 1;
+        if ($daynow < $dobday) {
+            $months_since_birthday=12 - $dobmonth + $monthnow - 1;
+            $days_since_dobday=$nd - $dobday + $daynow; //did not take into account for month with 31 days
+        }
+        else {
+            $months_since_birthday=12 - $dobmonth + $monthnow;
+            $days_since_dobday=$daynow - $dobday;
+        }
+    }
+    else // if patient has had birthday this calandar year
+    {
+        $age_year = $yearnow - $dobyear;
+        if ($daynow < $dobday) {
+            $months_since_birthday=$monthnow - $dobmonth -1;
+            $days_since_dobday=$nd - $dobday + $daynow;
+        }
+        else {
+            $months_since_birthday=$monthnow - $dobmonth;
+            $days_since_dobday=$daynow - $dobday;
+        }	
+    }
+    
+    $day_as_month_decimal = $days_since_dobday / 30;
+    $months_since_birthday_float = $months_since_birthday + $day_as_month_decimal;
+    $month_as_year_decimal = $months_since_birthday_float / 12;
+    $age_float = $age_year + $month_as_year_decimal;
+
+    $age_in_months = $age_year * 12 + $months_since_birthday_float;
+    $age_in_months = round($age_in_months,2);  //round the months to xx.xx 2 floating points
+    $age = round($age_float,2);
+
+    // round the years to 2 floating points
+    $ageinYMD = $age_year."y ".$months_since_birthday."m ".$days_since_dobday."d";
+    return compact('age','age_in_months','ageinYMD');
+}
 
 // Returns Age in days
 //   in months if < 2 years old
@@ -1274,11 +1381,30 @@ function getPatientAgeInDays($dobYMD, $nowYMD=null) {
     $dobtime = strtotime($dobYear."-".$dobMonth."-".$dobDay);
     $nowtime = strtotime($nowYear."-".$nowMonth."-".$nowDay);
     $timediff = $nowtime - $dobtime;
-    $age = $timediff / 86400;
+    $age = $timediff / 86400; // 24 hours * 3600 seconds/hour  = 86400 seconds
 
     return $age;
 }
-
+/**
+ * Returns a string to be used to display a patient's age
+ * 
+ * @param type $dobYMD
+ * @param type $asOfYMD
+ * @return string suitable for displaying patient's age based on preferences
+ */
+function getPatientAgeDisplay($dobYMD, $asOfYMD=null)
+{
+    if($GLOBALS['age_display_format']=='1')
+    {
+        $ageYMD=getPatientAgeYMD($dobYMD,$asOfYMD);    
+        return $ageYMD['ageinYMD'];
+    }
+    else
+    {
+        return getPatientAge($dobYMD, $asOfYMD);
+    }
+    
+}
 function dateToDB ($date)
 {
     $date=substr ($date,6,4)."-".substr ($date,3,2)."-".substr($date, 0,2);
@@ -1468,17 +1594,75 @@ function DBToDate ($date)
     return $date;
 }
 
-function get_patient_balance($pid) {
+/**
+ * Get up to 3 insurances (primary, secondary, tertiary) that are effective
+ * for the given patient on the given date.
+ *
+ * @param int     The PID of the patient.
+ * @param string  Date in yyyy-mm-dd format.
+ * @return array  Array of 0-3 insurance_data rows.
+ */
+function getEffectiveInsurances($patient_id, $encdate) {
+  $insarr = array();
+  foreach (array('primary','secondary','tertiary') as $instype) {
+    $tmp = sqlQuery("SELECT * FROM insurance_data " .
+      "WHERE pid = ? AND type = ? " .
+      "AND date <= ? ORDER BY date DESC LIMIT 1",
+      array($patient_id, $instype, $encdate));
+    if (empty($tmp['provider'])) break;
+    $insarr[] = $tmp;
+  }
+  return $insarr;
+}
+
+/**
+ * Get the patient's balance due. Normally this excludes amounts that are out
+ * to insurance.  If you want to include what insurance owes, set the second
+ * parameter to true.
+ *
+ * @param int     The PID of the patient.
+ * @param boolean Indicates if amounts owed by insurance are to be included.
+ * @return number The balance.
+ */
+function get_patient_balance($pid, $with_insurance=false) {
   if ($GLOBALS['oer_config']['ws_accounting']['enabled'] === 2) {
-    $brow = sqlQuery("SELECT SUM(fee) AS amount FROM billing WHERE " .
-      "pid = ? AND activity = 1", array($pid) );
-    $srow = sqlQuery("SELECT SUM(fee) AS amount FROM drug_sales WHERE " .
-      "pid = ?", array($pid) );
-    $drow = sqlQuery("SELECT SUM(pay_amount) AS payments, " .
-      "SUM(adj_amount) AS adjustments FROM ar_activity WHERE " .
-      "pid = ?", array($pid) );
-    return sprintf('%01.2f', $brow['amount'] + $srow['amount']
-      - $drow['payments'] - $drow['adjustments']);
+    $balance = 0;
+    $feres = sqlStatement("SELECT date, encounter, last_level_billed, " .
+      "last_level_closed, stmt_count " .
+      "FROM form_encounter WHERE pid = ?", array($pid));
+    while ($ferow = sqlFetchArray($feres)) {
+      $encounter = $ferow['encounter'];
+      $dos = substr($ferow['date'], 0, 10);
+      $insarr = getEffectiveInsurances($pid, $dos);
+      $inscount = count($insarr);
+      if (!$with_insurance && $ferow['last_level_closed'] < $inscount && $ferow['stmt_count'] == 0) {
+        // It's out to insurance so only the co-pay might be due.
+        $brow = sqlQuery("SELECT SUM(fee) AS amount FROM billing WHERE " .
+          "pid = ? AND encounter = ? AND " .
+          "code_type = 'copay' AND activity = 1",
+          array($pid, $encounter));
+        $drow = sqlQuery("SELECT SUM(pay_amount) AS payments " .
+          "FROM ar_activity WHERE " .
+          "pid = ? AND encounter = ? AND payer_type = 0",
+          array($pid, $encounter));
+        $ptbal = $insarr[0]['copay'] + $brow['amount'] - $drow['payments'];
+        if ($ptbal > 0) $balance += $ptbal;
+      }
+      else {
+        // Including insurance or not out to insurance, everything is due.
+        $brow = sqlQuery("SELECT SUM(fee) AS amount FROM billing WHERE " .
+          "pid = ? AND encounter = ? AND " .
+          "activity = 1", array($pid, $encounter));
+        $drow = sqlQuery("SELECT SUM(pay_amount) AS payments, " .
+          "SUM(adj_amount) AS adjustments FROM ar_activity WHERE " .
+          "pid = ? AND encounter = ?", array($pid, $encounter));
+        $srow = sqlQuery("SELECT SUM(fee) AS amount FROM drug_sales WHERE " .
+          "pid = ? AND encounter = ?", array($pid, $encounter));
+        $balance += $brow['amount'] + $srow['amount']
+          - $drow['payments'] - $drow['adjustments'];
+      }
+    }
+    return sprintf('%01.2f', $balance);
   }
   else if ($GLOBALS['oer_config']['ws_accounting']['enabled']) {
     // require_once($GLOBALS['fileroot'] . "/library/classes/WSWrapper.class.php");

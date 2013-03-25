@@ -7,7 +7,6 @@ if (!defined('IS_WINDOWS'))
 // Some important php.ini overrides. Defaults for these values are often
 // too small.  You might choose to adjust them further.
 //
-ini_set('memory_limit', '64M');
 ini_set('session.gc_maxlifetime', '14400');
 
 /* If the includer didn't specify, assume they want us to "fake" register_globals. */
@@ -152,8 +151,11 @@ $GLOBALS['edi_271_file_path'] = $GLOBALS['OE_SITE_DIR'] . "/edi/";
 //  open the openemr mysql connection.
 include_once (dirname(__FILE__) . "/../library/translation.inc.php");
 
-// Include convenience functions with shorter names than "htmlspecialchars"
+// Include convenience functions with shorter names than "htmlspecialchars" (for security)
 require_once (dirname(__FILE__) . "/../library/htmlspecialchars.inc.php");
+
+// Include sanitization/checking functions (for security)
+require_once (dirname(__FILE__) . "/../library/formdata.inc.php");
 
 // Include sanitization/checking function (for security)
 require_once (dirname(__FILE__) . "/../library/sanitize.inc.php");
