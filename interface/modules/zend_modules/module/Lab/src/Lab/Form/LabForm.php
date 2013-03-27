@@ -89,6 +89,7 @@ class LabForm extends Form
 	    'attributes' => array(
                 'type'  => 'text',
 		'class' => 'easyui-datebox',
+		'style' => 'width:100px',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d"),
 		'required' => 'required'
@@ -110,6 +111,7 @@ class LabForm extends Form
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
+		'style' => 'width:90px',
 		'data-options' => 'required:true',
 		'required' => 'required'
             ),
@@ -124,6 +126,7 @@ class LabForm extends Form
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
+		'style' => 'width:90px',
 		'data-options' => 'required:true',
 		'required' => 'required',
             ),
@@ -133,6 +136,7 @@ class LabForm extends Form
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
+		'style' => 'width:90px',
 		'data-options' => 'required:true',
 		'required' => 'required',
             ),
@@ -169,7 +173,7 @@ class LabForm extends Form
             'name' => 'patient_instructions',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
-		'style' => 'height:60px',
+		'style' => 'height:20px',
 		'id' => 'patient_instructions',
             ),
         ));
@@ -178,7 +182,7 @@ class LabForm extends Form
             'name' => 'internal_comments',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
-		'style' => 'height:60px',
+		'style' => 'height:20px',
 		'id' => 'internal_comments',
             ),
         ));
@@ -199,6 +203,7 @@ class LabForm extends Form
             'name' => 'procedures[]',
             'attributes' => array(
 		'id' => 'procedures_1',
+		'autocomplete' 	=> 'off',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
 		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")',

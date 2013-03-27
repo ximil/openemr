@@ -74,3 +74,12 @@
 .icon-more{
 	background:url('icons/more.png') no-repeat center center;
 }
+/**
+* Zend Lab Module
+*/
+.icon-single{
+	background:url('icons/single.png') no-repeat center center;
+}
+.icon-multiple{
+	background:url('icons/multiple.png') no-repeat center center;
+}
