@@ -4,7 +4,7 @@ namespace Lab\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
-
+use Zend\Json\Json;
 use Zend\Soap\Client;
 use Zend\Config;
 use Zend\Config\Reader;
@@ -15,9 +15,13 @@ class ResultController extends AbstractActionController
 	
     public function indexAction()
     {
-
+     $labresult1=$this->resultShowAction(); 
+	  $viewModel = new ViewModel(array(
+       "albums"=>$labresult1
+		));
+	return $viewModel;	  
+		
     }
-    
     public function getLabTable()
     {
         if (!$this->labTable) {
@@ -42,15 +46,21 @@ class ResultController extends AbstractActionController
                     'rows'          => $request->getPost('rows'),
             ); 
         }
-        $labResult = $this->getLabResult($data);
-        $data = new JsonModel($labResult);
-        return $data;
+        $data = $this->getLabResult($data);
+		  $file = fopen("D:/test9.txt","w");
+           fwrite($file,print_r($data,1));
+           fclose($file);
+		   
+       // $data = new JsonModel($labResult);
+	
+		return $data;
+				
     }
     
     public function getLabResult($data)
     {
         $labResult = $this->getLabTable()->listLabResult($data);
-        return $labResult;
+	     return $labResult;
     }
     
     public function getLabOptionsAction()

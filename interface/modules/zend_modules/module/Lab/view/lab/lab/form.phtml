@@ -1,0 +1,143 @@
+<?php
+	$form = $this->form;
+	$form->setAttribute('action', $this->url('lab', array('action' => 'index')));
+	$form->prepare();
+	$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+	echo $this->form()->openTag($form);
+	//echo $this->formRow($form->get('patient_id'));
+	//echo $this->formRow($form->get('encounter_id'));
+	//echo $this->formRow($form->get('procedurecount'));
+?>
+<?php	if ($type == 'multi') { ?>
+	<table border='0' class="dv-table" style="width:97%;height:auto;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #CCFFFF; box-shadow: 10px 10px 5px #E0E0EB;">
+		<tr>
+                            <td width='10%'><?php echo xlt('Ordering Provider');?>:</td>
+                            <td width='20%'><?php echo $this->formRow($form->get('provider'));?></td>
+                            <td width='10%'><?php echo xlt('Sending To');?>:</td>
+                            <td width='20%'><?php echo $this->formRow($form->get('lab_id'));?></td>
+                            <td width='10%'><?php echo xlt('Order Date');?>:</td>
+                            <td width='20%'><?php echo $this->formRow($form->get('orderdate'));?></td>
+                            
+                            
+                    </tr>
+                    <tr>
+                            <span id="internaltime" style="display:none">
+                                <td width='10%'><?php echo xlt('Internal Time Collected');?>:</td>
+                                <td width='20%'><?php echo $this->formRow($form->get('timecollected'));?></td>
+                            </span>
+			    <td><?php echo xlt('Internal Comments');?>:</td>
+                            <td  colspan='2'><?php echo $this->formRow($form->get('internal_comments'));?></td>
+                    </tr>
+		<tr>
+			<td><?php echo xlt('Specimen Collected');?>:</td>
+			<td><?php echo $this->formRadio($form->get('specimencollected'), 'prepend');?></td>
+			<td><?php echo xlt('Priority');?>:</td>
+			<td><?php echo $this->formRow($form->get('priority'));?></td>
+			<td><?php echo xlt('Status');?>:</td>
+			<td><?php echo $this->formRow($form->get('status'));?></td>
+		</tr>
+		
+		<tr>
+			<td valign='top'><?php echo xlt('Bill To');?>:</td>
+			<td valign='top'><?php echo $this->formRow($form->get('billto'));?></td>
+			<td valign='top'><?php echo xlt('Patient Instructions');?>:</td>
+			<td><?php echo $this->formRow($form->get('patient_instructions'));?></td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		
+		<tr id="diagnosestemplate_1">
+			<td valign='top'><?php echo xlt('Diagnoses');?>:</td>
+			<td valign='top'><?php echo $this->formRow($form->get('diagnoses[]'));?></td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		
+		<tr id="proceduretemplate_1">
+			<td valign='top'><?php echo xlt('Procedure');?>:</td>
+			<td>
+				<?php echo $this->formRow($form->get('procedures[]'));?>
+				<div class="autocomplete-suggestions" id="prodiv_1" style="display:none;z-index:99999;position:relative;min-width:150px"></div>
+				<?php echo $this->formRow($form->get('procedure_code[]'));?>
+				<?php echo $this->formRow($form->get('procedure_suffix[]'));?>
+			</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		
+		<tr id="AOEtemplate_1"  style="display:none">
+			<td>&nbsp;</td>
+			<!--<td>&nbsp;</td>
+			<td>&nbsp;</td>-->
+			<td id="AOE_1"></td>
+		</tr>
+		
+		<!--<tr>
+			<td colspan='4'>
+				<div style="padding:5px 0;text-align:left;padding-right:30px;padding-left:450px">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
+					<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
+				</div>
+			</td>
+		</tr>-->
+	</table>
+<?php	} else { ?>
+	<table border='0' class="dv-table" style="width:97%;height:99%;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #CCFFFF; box-shadow: 10px 10px 5px #E0E0EB;">
+
+		<tr>
+			<td><?php echo xlt('Specimen Collected');?>:</td>
+			<td><?php echo xlt('Priority');?>:</td>
+			<td><?php echo xlt('Status');?>:</td>
+			<td valign='top'><?php echo xlt('Bill To');?>:</td>
+			<td valign='top'><?php echo xlt('Patient Instructions');?>:</td>
+			<td valign='top'><?php echo xlt('Diagnoses');?>:</td>
+			<td valign='top'><?php echo xlt('Procedure');?>:</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td valign='top'><?php echo $this->formRadio($form->get('specimencollected'), 'prepend');?></td>
+			<td valign='top'><?php echo $this->formRow($form->get('priority'));?></td>
+			<td valign='top'><?php echo $this->formRow($form->get('status'));?></td>
+			<td valign='top'><?php echo $this->formRow($form->get('billto'));?></td>
+			<td valign='top'><?php echo $this->formRow($form->get('patient_instructions'));?></td>
+			<span id="diagnosestemplate_1">
+				<td valign='top'><?php echo $this->formRow($form->get('diagnoses[]'));?></td>
+			</span>
+			<span id="proceduretemplate_1"> 
+				<td valign='top'>
+					<?php echo $this->formRow($form->get('procedures[]'));?>
+					<div class="autocomplete-suggestions" id="prodiv_1" style="display:none;z-index:99999;position:relative;min-width:150px"></div>
+					<?php echo $this->formRow($form->get('procedure_code[]'));?>
+					<?php echo $this->formRow($form->get('procedure_suffix[]'));?>
+				</td>
+			</span>
+		</tr>
+		
+		<tr id="AOEtemplate_1"  style="display:none">
+			<td id="AOE_1" colspan='8'></td>
+		</tr>
+		
+		<!--<tr>
+			<td colspan='4'>
+				<div style="padding:5px 0;text-align:left;padding-right:30px;padding-left:450px">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
+					<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
+				</div>
+			</td>
+		</tr>-->
+	</table>
+<?php	} ?>
+<?php
+	echo $this->form()->closeTag();
+	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+				->prependFile($this->basePath() . '/js/lab/lab.js')
+				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+				->prependFile($this->basePath() . '/js/lib/bubbles.js')
+?>
