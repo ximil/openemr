@@ -8,6 +8,8 @@ use Lab\Model\Result;
 use Lab\Model\ResultTable;
 use Lab\Model\Pull;//ADDED VIPIN
 use Lab\Model\PullTable;//ADDED VIPIN
+use Lab\Model\Specimen;
+use Lab\Model\SpecimenTable;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\ModuleManager\ModuleManager;
@@ -53,7 +55,7 @@ class Module
                     $table = new LabTable($tableGateway);
                     return $table;
                 },
-		'Lab\Model\PullTable' =>  function($sm) {
+								'Lab\Model\PullTable' =>  function($sm) {
                     $tableGateway = $sm->get('LabTableGateway');
                     $table = new PullTable($tableGateway);
                     return $table;
@@ -64,7 +66,7 @@ class Module
                     $resultSetPrototype->setArrayObjectPrototype(new Lab());
                     return new TableGateway('procedure_order', $dbAdapter, null, $resultSetPrototype);
                 },
-		'Lab\Model\ResultTable' =>  function($sm) {
+								'Lab\Model\ResultTable' =>  function($sm) {
                     $tableGateway = $sm->get('ResultTableGateway');
                     $table = new ResultTable($tableGateway);
                     return $table;
@@ -74,6 +76,17 @@ class Module
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Result());
                     return new TableGateway('procedure_result', $dbAdapter, null, $resultSetPrototype);
+                },
+								'SpecimenTableGateway' => function ($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new Specimen());
+                    return new TableGateway('procedure_order', $dbAdapter, null, $resultSetPrototype);
+                },
+								'Lab\Model\SpecimenTable' =>  function($sm) {
+                    $tableGateway = $sm->get('SpecimenTableGateway');
+                    $table = new SpecimenTable($tableGateway);
+                    return $table;
                 },
             ),
         );
