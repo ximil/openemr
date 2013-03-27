@@ -62,3 +62,15 @@
 .icon-mini-refresh{
 	background:url('icons/mini_refresh.png') no-repeat center center;
 }
+.icon-acl{
+	background:url('icons/acl.png') no-repeat center center;
+}
+.icon-preference{
+	background:url('icons/preference.png') no-repeat center center;
+}
+.icon-plug{
+	background:url('icons/plug.png') no-repeat center center;
+}
+.icon-more{
+	background:url('icons/more.png') no-repeat center center;
+}

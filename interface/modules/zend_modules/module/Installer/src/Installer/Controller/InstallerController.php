@@ -11,6 +11,14 @@ class InstallerController extends AbstractActionController
 {
     protected $InstallerTable;
     
+    public function nolayout()
+    {
+        // Turn off the layout, i.e. only render the view script.
+        $viewModel = new ViewModel();
+        $viewModel->setTerminal(true);
+        return $viewModel;
+    }
+    
     public function indexAction(){    	   
     		
     	//get the list of installed and new modules
@@ -136,5 +144,20 @@ class InstallerController extends AbstractActionController
     		$string .= ",";
     	}
     	return $string;    
+    }
+    
+    public function SaveConfigurationsAction(){
+	$request = $this->getRequest();
+	$fh = fopen("D:/tttt.txt","a");
+	fwrite($fh,print_r($request->getPost(),1));
+    }
+    public function configureAction(){
+	$request = $this->getRequest();
+	return new ViewModel(array(
+	    'TabSettings' => $this->getInstallerTable()->getTabSettings($request->getPost('mod_id')),
+	    'ACL' => $this->getInstallerTable()->getACL($request->getPost('mod_id')),
+	    'OemrUserGroup' => $this->getInstallerTable()->getOemrUserGroup(),
+	    'OemrUserGroupAroMap' => $this->getInstallerTable()->getOemrUserGroupAroMap(),
+	));
     }
 }

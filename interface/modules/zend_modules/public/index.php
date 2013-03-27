@@ -6,7 +6,8 @@
 require_once(dirname(__FILE__)."/../../../globals.php");
 require_once(dirname(__FILE__)."/../../../../library/forms.inc");
 require_once(dirname(__FILE__)."/../../../../library/options.inc.php");
-
+require_once(dirname(__FILE__)."/../../../../library/acl.inc");
+$_SESSION['phpgacl'] = $phpgacl_location;
 chdir(dirname(__DIR__));
 
 // Setup autoloading

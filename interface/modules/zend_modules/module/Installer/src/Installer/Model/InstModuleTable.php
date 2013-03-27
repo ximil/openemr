@@ -122,6 +122,66 @@ class InstModuleTable
     	return sqlInsert("update modules set $mod,date=NOW() where mod_id=?",array($id));    
     }
     
-   
+    /**
+     * Function to get ACL objects for module
+     * @param int 		$mod_id		Module PK
+     */
+    public function getACL($mod_id){
+	$all = array();
+    	$sql = "SELECT * FROM modules_settings WHERE mod_id=?";
+    	$res = sqlStatement($sql,array($mod_id));
+    	if($res){
+    		while($m = sqlFetchArray($res)){
+		    $mod = new InstModule();
+		    $mod -> exchangeArray($m);
+		    array_push($all,$mod);
+    		}
+    	}
+    	return $all;
+    }
+    /**
+     * Function to get Oemr User Group
+     */
+    public function getOemrUserGroup(){
+	$all = array();
+    	$sql = "SELECT * FROM gacl_aro_groups AS gag LEFT OUTER JOIN gacl_groups_aro_map AS ggam ON gag.id=ggam.group_id
+		WHERE parent_id<>0 AND group_id IS NOT NULL GROUP BY id ";
+    	$res = sqlStatement($sql);
+    	if($res){
+    		while($m = sqlFetchArray($res)){
+		    $mod = new InstModule();
+		    $mod -> exchangeArray($m);
+		    array_push($all,$mod);
+    		}
+    	}
+    	return $all;
+    }
+    /**
+     * Function to get Oemr User Group and Aro Map
+     */
+    public function getOemrUserGroupAroMap(){
+	$all = array();
+    	$sql = "SELECT group_id,u.id AS id,CONCAT_WS(' ',CONCAT_WS(',',u.lname,u.fname),u.mname) AS user,u.username FROM gacl_aro_groups gag
+		LEFT OUTER JOIN gacl_groups_aro_map AS ggam ON gag.id=ggam.group_id LEFT OUTER JOIN gacl_aro AS ga ON ggam.aro_id=ga.id
+		LEFT OUTER JOIN users AS u ON u.username=ga.value WHERE group_id IS NOT NULL ORDER BY gag.id";
+    	$res = sqlStatement($sql);
+    	if($res){
+    		while($m = sqlFetchArray($res)){
+		    $all[$m['group_id']][$m['id']] = $m['user'];
+    		}
+    	}
+    	return $all;
+    }
+    public function getTabSettings($mod_id){
+	$all = array();
+    	$sql = "SELECT fld_type,COUNT(*) AS cnt  FROM modules_settings WHERE mod_id=? GROUP BY fld_type ORDER BY fld_type ";
+    	$res = sqlStatement($sql,array($mod_id));
+    	if($res){
+    		while($m = sqlFetchArray($res)){
+		    $all[$m['fld_type']] = $m['cnt'];
+    		}
+    	}
+    	return $all;
+    }
 }
 ?>

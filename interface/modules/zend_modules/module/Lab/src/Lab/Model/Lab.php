@@ -12,8 +12,6 @@ class Lab implements InputFilterAwareInterface
 
     public function exchangeArray($data)
     {
-	$fh = fopen("d:/POST.txt","a");
-	fwrite($fh,print_r($data,1));
 	$this->id	     		= (isset($data['id']))   	  	? $data['id']  			: null;
 	$this->pid	    	 	= (isset($data['patient_id']))     	? $data['patient_id']  		: null;
 	$this->encounter    	 	= (isset($data['encounter_id']))     	? $data['encounter_id']  	: null;

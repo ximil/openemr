@@ -35,7 +35,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 					<table id="table-6" class="imagetable" align="center">
 						<thead>  
 							<tr>
-								<th colspan='8' class="groupReg">
+								<th colspan='10' class="groupReg">
 									<?php echo xlt('Registered Modules');?>
 								</th>
 							<tr>
@@ -47,7 +47,8 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 								<th scope="col" ><?php echo xlt('Nick Name'); ?> </th>
 								<th scope="col" ><?php echo xlt('Encounter Menu'); ?> </th>
 								<th scope="col" ><?php echo xlt('Type'); ?> </th>			
-								<th scope="col" ><?php echo xlt('Action'); ?> </th>						
+								<th scope="col" ><?php echo xlt('Action'); ?> </th>
+								<th scope="col" ><?php echo xlt('Config'); ?> </th>
 							</tr>
 					  </thead>
 					<?php
@@ -118,9 +119,27 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo xlt('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo xlt('Disable');?>"/></a>
 										<?php }
 										else{?>
-											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo xlt('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo xlt('Activate');?>"/></a>
+											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo xlt('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo xlt('Enable');?>"/></a>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}?>
+								</td>
+								<td>
+								<?php					
+		 
+			  							if ($moduleResult -> sqlRun==0){?>
+			  								--
+			  							<?php 			  								
+			  							}else if ($moduleResult -> modActive == 1){?>
+			  								<a href="javascript:void(0)" class="link_submit active" onclick="configure('<?php echo $moduleResult -> modId?>','<?php echo $this->basePath()?>');" title="<?php echo xlt('Click Here to Configure This module');?>"><img src="<?php echo $this->basePath()?>/images/config.png" border=0></a>
+										<?php }
+										else{?>
+											--
+										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
+										}?>
+								</td>
+							</tr>
+							<tr style="display:none" id="ConfigRow_<?php echo $moduleResult -> modId;?>">
+								<td colspan="10" align="center">
 								</td>
 							</tr>
 					<?php							
@@ -137,13 +156,13 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 		<table class="imagetable" id="unregistered">
 			<tr>
 				<th colspan='4' class="groupRegUn">
-					Unregistered Modules
+					<?php echo xlt('Unregistered Modules');?>
 				</th>
 			<tr>
-				<th scope="col" >Sl.No</th>
-				<th scope="col" >Module Name</th>
-				<th scope="col" >Type</th>
-				<th scope="col" >Action</th>
+				<th scope="col" ><?php echo xlt('Sl.No');?></th>
+				<th scope="col" ><?php echo xlt('Module Name');?></th>
+				<th scope="col" ><?php echo xlt('Type');?></th>
+				<th scope="col" ><?php echo xlt('Action');?></th>
 			</tr>
 			<?php
 				$dpath = $GLOBALS['srcdir']."/../{$baseModuleDir}{$customDir}/";
@@ -179,7 +198,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
                 		?>		
                 		</td>						
 						<td>
-							Normal
+							<?php echo xlt('Normal');?>
 						</td>	
 						<td >
 						 <a href="javascript:void(0)" onclick="register(1,'<?php echo xl_form_title($form_title);?>','<?php echo $fname?>','register','');"><input type='button' class='activate' value='Register'/></a>
@@ -219,7 +238,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
                 		?>		
                 		</td>
                 		<td >
-							Zend Module
+							<?php echo xlt('Zend Module');?>
 						</td>	
 						<td >
 							<a href="javascript:void(0)" onclick="register(1,'<?php echo xl_form_title($form_title);?>','<?php echo $fname?>','register','zend');"><input type='button' class='activate' value='Register'/></a>
