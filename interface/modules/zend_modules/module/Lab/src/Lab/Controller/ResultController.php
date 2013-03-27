@@ -276,9 +276,20 @@ class ResultController extends AbstractActionController
 	if($pulled_count == 0)
 	{
 	    //SEPERATES EACH TEST DETAILS
-	    $test_arr              	 	= explode("#--#",$xmldata['test_ids']);
+	    $test_arr              	= explode("#--#",$xmldata['test_ids']);
 	    $result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
-	    $resultcomments_test_arr    	= explode("#-!!-#",$xmldata['res_report_comments']);
+	    $resultcomments_test_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
+	    
+	    $fp	= fopen("D:/abc.txt", "a");
+		    fwrite($fp," \n XML  array ".print_r($result,1));
+	    
+	    
+	    $fp	= fopen("D:/abc.txt", "a");
+		    fwrite($fp," \n\n\n res_report_comments ".$xmldata['res_report_comments']);
+	    
+	    $fp	= fopen("D:/abc.txt", "a");
+		    fwrite($fp," \n test comments  array ".print_r($resultcomments_test_arr,1));
+		    
 		
 	    /* HARD CODED */
 	    $source         = "source";
@@ -318,9 +329,14 @@ class ResultController extends AbstractActionController
 		    $resultdetails_subtest_arr  = explode("!#@#!",$resultdetails_test);
 		    
 		    //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
-		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.		
-		    $no_of_subtests	= substr_count($result_test_comments, "#!!#") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
+		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
 		    
+		    $fp	= fopen("D:/abc.txt", "a");
+		    fwrite($fp," \n test comments  ".$result_test_comments);
+		    
+		    $no_of_subtests	= substr_count($resultdetails_test, "!#@#!") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
+		     $fp	= fopen("D:/abc.txt", "a");
+		    fwrite($fp," \n no of subtests  ".$no_of_subtests);
 		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
 			if($no_of_subtests   < 2) {
 			    $subtest_comments	    = $resultcomments_arr[0];
@@ -408,8 +424,7 @@ class ResultController extends AbstractActionController
             }
             
         }
-        $fp = fopen("D:/test.tx","w");
-        fwrite($fp,"REs :".print_r($result,1));
+        
 	// Ajax Handling (Result success or failed)  
 	if($request->isPost()) {
 	    if ($result['status'] == 'failed') {

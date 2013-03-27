@@ -229,6 +229,7 @@
   -webkit-box-shadow: 2px 2px 3px #cccccc;
   box-shadow: 2px 2px 3px #cccccc;
   filter: progid:DXImageTransform.Microsoft.Blur(pixelRadius=2,MakeShadow=false,ShadowOpacity=0.2);
+  height:auto !important;
 }
 .window,
 .window .window-body {
@@ -1028,6 +1029,7 @@ a:hover.l-btn-disabled {
   padding: 0;
   overflow: auto;
   zoom: 1;
+ 
 }
 .datagrid-view1 .datagrid-body-inner {
   padding-bottom: 20px;
@@ -2177,4 +2179,10 @@ a.s-btn-plain-active {
   border-color: #CC9933;
   background-color: #FFFFCC;
   color: #000;
+}
+.icon-lab-order{
+	background:url('images/lab_order.png') no-repeat center center;
+}
+.icon-lab-result{
+	background:url('images/lab_result.png') no-repeat center center;
 }

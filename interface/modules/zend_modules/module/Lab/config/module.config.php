@@ -2,9 +2,10 @@
 return array(
     'controllers' => array(
         'invokables' => array(
-            'Lab'       => 'Lab\Controller\LabController',
-            'Result'    => 'Lab\Controller\ResultController',
-            'Pull'      => 'Lab\Controller\PullController',
+            'Lab'           => 'Lab\Controller\LabController',
+            'Result'        => 'Lab\Controller\ResultController',
+            'Pull'          => 'Lab\Controller\PullController',
+            'Configuration' => 'Lab\Controller\ConfigurationController',
         ),
     ),
 
@@ -51,6 +52,21 @@ return array(
                     ),
                     'defaults' => array(
                         'controller' => 'Pull',
+                        'action'     => 'index',
+                    ),
+                ),
+            ),            
+            
+            'configuration' => array(
+                'type'    => 'segment',
+                'options' => array(
+                     'route'    => '/lab/configuration[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id'     => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Configuration',
                         'action'     => 'index',
                     ),
                 ),
