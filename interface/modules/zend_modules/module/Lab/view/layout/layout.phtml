@@ -29,16 +29,16 @@
 					->prependFile($this->basePath() . '/js/lib/jquery-1.8.0.min.js')
 					?>
     <?php
-    $phpgacl_location = $_SESSION['phpgacl'];
-    if (isset ($phpgacl_location)) {
-	include_once("$phpgacl_location/gacl_api.class.php");
-	$gacl = new gacl_api();
-}
-else {
-	die("You must first set up library/acl.inc to use phpGACL!");
-}
-addObjectSectionAcl('module_lab', 'Module Lab');
-addObjectAcl('module_lab', 'Module Lab', 'procedure_order', 'Procedure Order');
+//    $phpgacl_location = $_SESSION['phpgacl'];
+//    if (isset ($phpgacl_location)) {
+//	include_once("$phpgacl_location/gacl_api.class.php");
+//	$gacl = new gacl_api();
+//}
+//else {
+//	die("You must first set up library/acl.inc to use phpGACL!");
+//}
+//addObjectSectionAcl('module_lab', 'Module Lab');
+//addObjectAcl('module_lab', 'Module Lab', 'procedure_order', 'Procedure Order');
 ?>
     </head>
     <body  class="body_top">
