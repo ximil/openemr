@@ -49,7 +49,9 @@ class LabController extends AbstractActionController
 		$Lab->exchangeArray($form->getData());
                 //$clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
 		$clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
-			
+                
+		
+                
 		//------------- STARTING PROCEDURE ORDER XML IMPORT -------------
                 //GET CLIENT CREDENTIALS OF INITIATING ORDER
                 $cred           = $this->getLabTable()->getClientCredentials($clientorder_id[0]);                
@@ -69,6 +71,7 @@ class LabController extends AbstractActionController
 				'uri'      => "urn://zhhealthcare/lab"
 				);
                     $client     = new Client(null,$options);                    
+                    
                     $lab_id     = $request->getPost('lab_id');   
                     
                     foreach($xmlresult_arr as $xmlresult){
