@@ -1,0 +1,81 @@
+<?php 
+// module/Installer/view/Installer/Installer/index.phtml:
+echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/images/favicon.ico'))
+        		->prependStylesheet($this->basePath() . '/css/easyui.css')
+                        ->prependStylesheet($this->basePath() . '/css/icon.css');
+echo $this->headScript()->appendFile($this->basePath() . '/js/installer/action.js')
+                        ->appendFile($this->basePath() . '/js/lib/jquery.easyui.min.js')
+                        ->appendFile($this->basePath() . '/js/lib/jquery-1.7.2.min.js');
+$title = xlt('Module Installer');
+$this->headTitle($title);
+$baseModuleDir 	= $GLOBALS['baseModuleDir'];
+$customDir 	= $GLOBALS['customDir'];
+$zendModDir 	= $GLOBALS['zendModDir'];
+if(count($TabSettings)>0){
+?>
+<div class="easyui-tabs" style="width:800px;height:auto;">
+    <?php
+    if($TabSettings[1]['cnt'] > 0){
+    ?>
+    <div title="ACL" iconCls="icon-acl">
+        <form name="aclform" id="aclform">
+        <div class="easyui-accordion" style="width:787px;height:auto;align:center;margin:5px">
+    <?php foreach($ACL as $obj_acl){ ?>
+        <div title="<?php echo xlt($obj_acl->menu_name);?>" style="overflow:auto;padding:10px;">
+            <table>
+            <?php
+            foreach($OemrUserGroup as $OUG){
+            ?>
+            <tr valign="top">
+                <td>
+                    <input type="checkbox" name="oemruser_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>" value="<?php echo $OUG->id;?>"><?php echo $OUG->name;?>
+                   
+                </td>
+                <td onclick="custom_toggle('users_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>')">
+                    <div class="icon-more" style="width:15px"  style="float:left">&nbsp;</div>
+                </td>
+                <td id="users_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>" style="display:none">
+                    <select name="selctedUsers_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>[]" multiple="multiple" size="5">
+                    <?php
+                    foreach($OemrUserGroupAroMap[$OUG->id] as $k=>$v){
+                    ?>
+                    <option value="<?php echo $k;?>"><?php echo $v;?></option>
+                    <?php
+                    }
+                    ?>
+                    </select>
+                </td>
+            </tr>
+            <?php
+            }
+            ?>
+            </table>
+        </div>
+        <?php
+    }
+    ?>
+        </div>
+        <div style="text-align:center"><a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:SaveMe('aclform')"><?php echo xlt('Save'); ?></a></div>
+        </form>
+    </div>
+    <?php
+    }
+    if($TabSettings[2]['cnt'] > 0){
+    ?>
+    <div title="Preference" iconCls="icon-preference">  
+        Second Tab  
+    </div>
+    <?php
+    }
+    if($TabSettings[3]['cnt'] > 0){
+    ?>
+    <div title="Hooks" iconCls="icon-plug"> 
+        Third Tab  
+    </div>
+    <?php
+    }
+    ?>
+</div>
+<?php
+}
+?>

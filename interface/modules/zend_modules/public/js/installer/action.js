@@ -27,3 +27,40 @@ function manage(id,action){
 	   }
 	);
 }
+
+function configure(id,imgpath){
+	//$("#ConfigRow_"+id).toggle();
+	//$("#ConfigRow_"+id).html('<td colspan="10" align="center"><img src="'+imgpath+'/images/pulling.gif"></td>');
+	//$("#ConfigRow_"+id).load("./Installer/configure");
+	if($("#ConfigRow_"+id).css("display")!="none"){
+		$("#ConfigRow_"+id).fadeOut();
+	}
+	else{
+		$.post("./Installer/configure", { mod_id:id},
+			function(data) {
+			     $("#ConfigRow_"+id).hide();
+			     $("#ConfigRow_"+id).html('<td colspan="10" align="center">'+data+'</td>').fadeIn();	
+			}
+		);
+	}
+}
+
+function custom_toggle(obj){
+	if($("#"+obj).css("display")!="none"){
+		$("#"+obj).fadeOut();
+	}
+	else{
+		$("#"+obj).fadeIn();
+	}
+}
+
+function SaveMe(frmId){
+	$.ajax({
+		type: 'POST',
+		url: "./Installer/SaveConfigurations",
+		data: $('#'+frmId).serialize(),   
+		success: function(data){
+		   alert(data);
+		}
+	});
+}

@@ -46,6 +46,14 @@ class InstModule implements InputFilterAwareInterface
    		$this -> date				= isset($data['date'])? $data['date']: null;
    		$this -> sqlRun				= isset($data['sql_run'])? $data['sql_run']: null;
    		$this -> type				= isset($data['type'])? $data['type']: null;
+		$this -> fld_type			= isset($data['fld_type'])? $data['fld_type']: null;
+		$this -> obj_name			= isset($data['obj_name'])? $data['obj_name']: null;
+		$this -> menu_name			= isset($data['menu_name'])? $data['menu_name']: null;
+		$this -> id				= isset($data['id'])? $data['id']: null;
+		$this -> name				= isset($data['name'])? $data['name']: null;
+		$this -> group_id			= isset($data['group_id'])? $data['group_id']: null;
+		$this -> user				= isset($data['user'])? $data['user']: null;
+		$this -> cnt				= isset($data['cnt'])? $data['cnt']: null;
     }
     
     public function setInputFilter(InputFilterInterface $inputFilter)
