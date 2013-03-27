@@ -32,3 +32,31 @@
 	padding: 1px;
 	background: #fff;
 }
+
+/**
+* Specimen Collection Screen
+*/
+
+#specimentable{
+	border: 1px solid #95B8E7;
+}
+.mainhead{
+	background-color: #79b8ec;
+	text-align: center;
+}
+.subhead{
+	background-color: #a8d1f2;
+	text-align: center;
+}
+.left{
+	text-align: left;
+}
+.right{
+	text-align: right;
+}
+.bold{
+	font-weight: bold;
+}
+.mediumfont{
+	font-size: 12px;
+}

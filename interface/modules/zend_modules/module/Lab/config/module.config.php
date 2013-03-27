@@ -6,6 +6,7 @@ return array(
             'Result'        => 'Lab\Controller\ResultController',
             'Pull'          => 'Lab\Controller\PullController',
             'Configuration' => 'Lab\Controller\ConfigurationController',
+            'Specimen'  => 'Lab\Controller\SpecimenController',
         ),
     ),
 
@@ -71,6 +72,22 @@ return array(
                     ),
                 ),
             ),
+            
+            'specimen' => array(
+                'type'    => 'segment',
+                'options' => array(
+                     'route'    => '/specimen[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id'     => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Specimen',
+                        'action'     => 'index',
+                    ),
+                ),
+            ),
+            
         ),
     ),
 
@@ -78,6 +95,7 @@ return array(
         'template_path_stack' => array(
             'lab' => __DIR__ . '/../view/',
             'pull' => __DIR__ . '/../view/',
+            'specimen' => __DIR__ . '/../view/',
         ),
         'template_map' => array(
             'layout/layout' => __DIR__ . '/../view/layout/layout.phtml',
