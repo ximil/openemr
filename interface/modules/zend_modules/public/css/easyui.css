@@ -2183,9 +2183,4 @@ a.s-btn-plain-active {
 .border1{
   border: 1px solid red;
  }
-.icon-lab-order{
-	background:url('images/lab_order.png') no-repeat center center;
-}
-.icon-lab-result{
-	background:url('images/lab_result.png') no-repeat center center;
-}
+
