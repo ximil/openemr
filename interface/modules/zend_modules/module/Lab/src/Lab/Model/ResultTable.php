@@ -147,8 +147,8 @@ class ResultTable extends AbstractTableGateway
         if ($dtFrom) {
             $where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
         }
-        $start = isset($data['page']) ? $data['page'] :  0;
-        $rows = isset($data['rows']) ? $data['rows'] : 20;
+        $start = isset($data['page']) ? $data['page'] :  20;
+        $rows = isset($data['rows']) ? $data['rows'] : 30;
         if ($data['page'] == 1) {
             $start = $data['page'] - 1;
         } elseif ($data['page'] > 1) {
