@@ -164,6 +164,9 @@ class ResultTable extends AbstractTableGateway
         $result = sqlStatement($sql);
         $arr1 = array();
         $i = 0;
+		$colr1="#ff0000";
+		$colr2="#00ff00";
+		$count=0;
         while($row = sqlFetchArray($result)) {
             $order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
             $order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
@@ -228,7 +231,7 @@ class ResultTable extends AbstractTableGateway
                                             "ORDER BY seq, name, procedure_type_id, result_code";
 
             $rres = sqlStatement($query);
-
+            
             while ($rrow = sqlFetchArray($rres)) {
                 $restyp_code      = empty($rrow['procedure_code'  ]) ? '' : $rrow['procedure_code'];
                 $restyp_type      = empty($rrow['procedure_type'  ]) ? '' : $rrow['procedure_type'];
@@ -266,12 +269,41 @@ class ResultTable extends AbstractTableGateway
                     }
                 }
                
-                if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+			    if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+                    $lastprid = -1;
+                    if ($lastpoid != $order_id) {
+			   
+                    if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+					}
+				   }
+				  }
+				  
+				  
+				  if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+                    $lastprid = -1;
+                    if ($lastpoid != $order_id) {
+			   
+                    if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+                    $arr1[$i]['order_id'] = $order_id;
+					if ($count%2==0){
+					 $arr1[$i]['color']="#EFF5FF";
+					}
+					else{
+					 $arr1[$i]['color']="#fff3f3";
+					 }
+					 $count++;
+					}
+					
+				   }
+				  }
+				  
+				  
+				  if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['date_report'] = $date_report;
                     $arr1[$i]['date_collected'] = $date_collected;
                     
-                    $arr1[$i]['order_id'] = $order_id;
+                    
                     $arr1[$i]['patient_name'] = xlt($row['patient_name']);
                     $arr1[$i]['encounter_id'] = $row['encounter_id'];
 
@@ -318,7 +350,12 @@ class ResultTable extends AbstractTableGateway
             }
         }
         $arr1[$i]['total'] = $i-1;
+		   $file = fopen("D:/test8.txt","w");
+           fwrite($file,print_r($arr1,1));
+           fclose($file);
         return $arr1;
+		
+		
     }
     
     public function saveResult($data)

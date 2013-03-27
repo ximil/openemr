@@ -1,0 +1,230 @@
+<?php
+	$form = $this->form;
+	$form->setAttribute('action', $this->url('lab', array('action' => 'index')));
+	$form->prepare();
+	
+	echo $this->form()->openTag($form);
+	echo $this->formRow($form->get('patient_id'));
+	echo $this->formRow($form->get('encounter_id'));
+	echo $this->formRow($form->get('procedurecount'));
+        echo $this->headScript()->prependFile($this->basePath() . '/js/lib/datagrid-detailview.js');
+?>
+
+<style type="text/css">
+    table.gridtable td {
+      border-width: 1px 1px 1px 0px;
+      border-style: dotted;
+      border-color: #ccc;
+      margin: 0;
+      padding: 0;
+    }
+    
+</style>
+
+<script>
+    var url = './saveData'
+    function saveFrm() {
+        url = 'saveData';
+        
+        $('#lab').form('submit',{
+            url: url,  
+            onSubmit: function(){  
+                return; //$(this).form('validate');  
+            },  
+            success: function(result){
+                var result = eval('('+result+')');  
+                if (result.errorMsg){
+                    $.messager.show({  
+                        title: 'Error',  
+                        msg: result.errorMsg  
+                    });  
+                }
+            }  
+        });  
+    }
+        
+    $(function(){
+        //$("tr:even").css("background-color", "#b7d2ff");
+        //$("tr:odd").css("background-color", "#D2DEF2");
+    });
+    var inc = 1;
+    function addRow() {
+        inc++;
+        var pp = $('#accord').accordion('getSelected');
+        if (pp){
+            var index = $('#accord').accordion('getPanelIndex',pp);
+            if (index == 0) index = '';
+            //$('#cloneID' + index).closest("tr").clone(true).appendTo("#dgord" + index);
+            var clone = $('#cloneID_1').closest("tr").clone(true).appendTo("#dgord" + index);
+            clone.find('#cloneID_1').attr('id', 'cloneID_' + inc);
+            clone.find('#diagnosestemplate_1').attr('id', 'diagnosestemplate_' + inc);
+            clone.find('#prodiv_1').attr('id', 'prodiv_' + inc);
+            clone.find('#AOEtemplate_1').attr('id', 'AOEtemplate_' + inc);
+            clone.find("#procedures_1").attr('id', 'procedures_' + inc);
+            clone.find("#procedures_" + inc).val("");
+            clone.find("#AOE_1").attr('id', 'AOE_' + inc);
+            $('#AOEtemplate_' + inc).css("display", "none");
+        }
+    }
+    
+    $(function(){
+        /*$("#addButton").click(function(){
+            $('#cloneID').closest("tr").clone(true).appendTo("#dgord");
+        });*/
+        
+        $("#deleteButton").click(function(){
+            $(this).closest("table").remove();
+        });
+    });
+    
+    var idx = 1;
+    function newOrder(){
+        //var clno = document.getElementById('main');
+        //clr = clno.cloneNode(true);
+        //var newAccord = $('#main').closest("div").clone(false).appendTo("#accord");
+        //$("#current_users").clone(false).find("*[id]").andSelf().each(function() { $(this).attr("id", $(this).attr("id") + "_cloned"); });
+        
+        var newAccord = $("#main").clone(false).find("#main,#toolbar,#editor,#dgord").andSelf().each(function() { $(this).attr("id", $(this).attr("id") + idx); });
+        
+        //var newAccord = $("#main").attr('id', 'main' + idx).clone().insertAfter("#accord");
+        //var newAccord = $('#main>*').children().clone(true);
+        //var newAccord = $('#main>*').clone(true, true);
+        $('#accord').accordion('add',{
+            title:'Multiple Order ' + idx + ' <a href="javascript:void(0)" class="easyui-linkbutton" onclick="removeAccord()">Remove</a>',
+            //content:newAccord
+        });
+        //var pp = $('#accord').accordion('getSelected'); 
+        
+        var pp = $('#accord').accordion('getSelected');
+        if (pp){  
+            //pp.panel('refresh','./form');
+            var index = $('#accord').accordion('getPanelIndex', pp);
+            alert(index);
+        }
+       /* $('#pp').panel({  
+                href:'.',  
+                onLoad:function(){  
+                alert('loaded successfully');  
+            }  
+        });*/
+        idx++;
+    }
+    
+    function removeAccord(){
+        var pp = $('#accord').accordion('getSelected');
+        if (pp){
+            var index = $('#accord').accordion('getPanelIndex',pp); alert(index);
+            $('#accord').accordion('remove',index);
+        }
+    }
+    
+</script>
+
+<div id='accord' class="easyui-accordion" style="width:auto;height:550px;">
+    <div id='main' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
+            <div id="toolbar">
+                <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                    <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
+                    <?php echo xlt('Add Procedure'); ?>
+                </a>
+                <a href="#"  plain="true" onclick="newOrder();">
+                    <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
+                    <?php echo xlt('New Order'); ?>
+                </a>
+                <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyItem()">Destroy</a>-->
+                <a href="#"  plain="true" onclick="saveFrm();">
+                    <img  class="easyui-linkbutton" iconCls="icon-save" src=<?php echo $this->basePath() .'/css/icons/filesave.png'; ?> title=<?php echo xlt('Save'); ?> border=0 />
+                    <?php echo xlt('Save'); ?>
+                </a>
+            </div>
+            <div id='editor' style="text-align: left; padding-left:20px;">
+
+                <table id='tt' border='0' class="dv-table gridtable" style="width:97%;background:#fafafa;padding:1px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+                    <tr style="font-weight: bold">
+                        <td><?php echo xlt('Ordering Provider');?></td>
+                        <td><?php echo xlt('Sending To');?></td>
+                        <td><?php echo xlt('Order Date');?></td>
+                        <td><?php echo xlt('Internal Time Collected');?></td>
+                        <td><?php echo xlt('Internal Comments');?></td>
+                        <td><?php echo xlt('Specimen Collected');?></td>
+                        <td><?php echo xlt('Priority');?></td>
+                        <td><?php echo xlt('Status');?></td>
+                        <td valign='top'><?php echo xlt('Bill To');?></td>
+                    </tr>
+                    <tr>
+                        <td valign='top'><?php echo $this->formRow($form->get('provider'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('lab_id'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('orderdate'));?></td>
+                        <td valign='top'>
+                            <span id="internaltime" style="display:none111">
+                                <?php echo $this->formRow($form->get('timecollected'));?>
+                            </span>
+                        </td>
+                        <td  valign='top'><?php echo $this->formRow($form->get('internal_comments'));?></td>
+                        <td valign='top'><?php echo $this->formRadio($form->get('specimencollected'), 'prepend');?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('priority'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('status'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('billto'));?></td>
+                    </tr>
+                </table>
+
+                <table id='dgord' border='0'  style="width:97%;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+                    <tr>
+                        <td>
+                            <table class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
+                            <tr  style="font-weight: bold">
+                                    <td width='40%' valign='top'><?php echo xlt('Patient Instructions');?></td>
+                                    <td width='20%' valign='top'><?php echo xlt('Diagnoses');?></td>
+                                    <td width='20%' valign='top'><?php echo xlt('Procedure');?></td>
+                                    <td><?php echo xlt('Action'); ?></td>
+                            </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table id='cloneID_1' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
+                            <tr >
+                                    <td width='40%' valign='top'><?php echo $this->formRow($form->get('patient_instructions'));?></td>
+                                    <td width='20%' valign='top'>
+                                        <span id="diagnosestemplate_1">
+                                            <?php echo $this->formRow($form->get('diagnoses[]'));?>
+                                        </span>
+                                    </td>
+                                    <td width='20%' valign='top'>
+                                        <span id="proceduretemplate_1">
+                                            <?php echo $this->formRow($form->get('procedures[]'));?>
+                                            <div class="autocomplete-suggestions" id="prodiv_1" style="display:none;z-index:99999;position:relative;min-width:150px"></div>
+                                            <?php echo $this->formRow($form->get('procedure_code[]'));?>
+                                             <?php echo $this->formRow($form->get('procedure_suffix[]'));?>
+                                        </span>
+                                    </td>
+                                    <td valign='top'>
+                                        <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem()">
+                                            <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
+                                            <?php echo xlt('Cancel'); ?>
+                                        </a>
+                                    </td> 
+                            </tr>
+                            <tr id="AOEtemplate_1"  style="display:none">
+                                    <!--<td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>-->
+                                    <td id="AOE_1" colspan='3'></td>
+                            </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table><!-- End dgord-->
+           </div><!-- End editor -->
+    </div><!-- End main -->
+</div><!-- End accord -->
+    
+<?php
+	echo $this->form()->closeTag();
+	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+				->prependFile($this->basePath() . '/js/lab/lab.js')
+				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+				->prependFile($this->basePath() . '/js/lib/bubbles.js')
+?>

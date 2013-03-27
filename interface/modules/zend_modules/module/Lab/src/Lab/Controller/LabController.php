@@ -17,8 +17,107 @@ class LabController extends AbstractActionController
 {
     protected $labTable;
     
+    /**
+     * Lab Order Row wise
+     */
+    
+    public function orderAction()
+    {
+	$form = new LabForm();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	$providers = $helper->getProviders();
+	$form->get('provider')->setValueOptions($providers);
+	
+	$labs = $helper->getLabs();
+	$form->get('lab_id')->setValueOptions($labs);
+	
+	$priority = $helper->getList("ord_priority");
+	$form->get('priority')->setValueOptions($priority);
+	
+	$status = $helper->getList("ord_status",'pending');
+	$form->get('status')->setValueOptions($status);
+	
+	// disable layout in the form
+	//$result = new ViewModel(array('form' => $form));
+	//$result->setTerminal(true);
+	//return $result;
+	
+	return array('form' => $form);
+    }
+    
+    public function getOrdersAction()
+    {
+	$labOrders = $this->getLabTable()->listLabOrders();
+        $data = new JsonModel($labOrders);
+        return $data;
+    }
+    
+    public function formAction()
+    {
+	$form = new LabForm();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	$providers = $helper->getProviders();
+	$form->get('provider')->setValueOptions($providers);
+	
+	$labs = $helper->getLabs();
+	$form->get('lab_id')->setValueOptions($labs);
+	
+	$priority = $helper->getList("ord_priority");
+	$form->get('priority')->setValueOptions($priority);
+	
+	$status = $helper->getList("ord_status",'pending');
+	$form->get('status')->setValueOptions($status);
+	
+	// disable layout in the form
+	$result = new ViewModel(array('form' => $form));
+	$result->setTerminal(true);
+	return $result;
+	
+	//return array('form' => $form);
+	
+	$request = $this->getRequest();
+        $data =array();
+        if ($request->getQuery('index') == 'index') {
+            $data = array(
+                    'index'  => $request->getQuery('index'),
+            ); 
+        }
+        //$fh = fopen("D:/test.txt","a");
+        //fwrite($fh,print_r($data,1));
+       // $labResult = $this->getLabResult($data);
+        //$data = new JsonModel($labResult);
+        //return $data;
+    }
+    
+    public function saveDataAction()
+    {
+	$request = $this->getRequest();
+	$data =array();
+        /*if($request->isPost()){
+            $data = array(
+                    'statusReport'  => $request->getPost('statusReport'),
+                    'statusOrder'   => $request->getPost('statusOrder'),
+                    'statusResult'  => $request->getPost('statusResult'),
+                    'dtFrom'        => $request->getPost('dtFrom'),
+                    'dtTo'          => $request->getPost('dtTo'),
+                    'page'          => $request->getPost('page'),
+                    'rows'          => $request->getPost('rows'),
+            ); 
+        }*/
+	$fh = fopen("D:/test.txt","a");
+        fwrite($fh,print_r($request->getPost(),1));
+    }
+    
     public function indexAction()
     {
+	// Start Row wise data save 
+	$request = $this->getRequest();
+        if ($request->isPost()) {
+	    $fh = fopen("D:/test.txt","a");
+	    fwrite($fh,print_r($request->getPost(),1));
+	}
+	// End Row wise data save
+	
         $form = new LabForm();
 	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	$providers = $helper->getProviders();

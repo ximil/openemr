@@ -2180,6 +2180,9 @@ a.s-btn-plain-active {
   background-color: #FFFFCC;
   color: #000;
 }
+.border1{
+  border: 1px solid red;
+ }
 .icon-lab-order{
 	background:url('images/lab_order.png') no-repeat center center;
 }
