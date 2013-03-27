@@ -6,6 +6,10 @@ use Lab\Model\Lab;
 use Lab\Model\LabTable;
 use Lab\Model\Result;
 use Lab\Model\ResultTable;
+use Lab\Model\Pull;//ADDED VIPIN
+use Lab\Model\PullTable;//ADDED VIPIN
+use Lab\Model\Configuration;//ADDED VIPIN
+use Lab\Model\ConfigurationTable;//ADDED VIPIN
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\ModuleManager\ModuleManager;
@@ -49,6 +53,16 @@ class Module
                 'Lab\Model\LabTable' =>  function($sm) {
                     $tableGateway = $sm->get('LabTableGateway');
                     $table = new LabTable($tableGateway);
+                    return $table;
+                },
+		'Lab\Model\PullTable' =>  function($sm) {
+                    $tableGateway = $sm->get('LabTableGateway');
+                    $table = new PullTable($tableGateway);
+                    return $table;
+                },
+		'Lab\Model\ConfigurationTable' =>  function($sm) {
+                    $tableGateway = $sm->get('LabTableGateway');
+                    $table = new ConfigurationTable($tableGateway);
                     return $table;
                 },
                 'LabTableGateway' => function ($sm) {

@@ -1,0 +1,80 @@
+<?php
+echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.js')
+?>
+<div style="margin:10px 0;"></div>
+<div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" >
+<a href="javascript:void(0)" onclick="addConfig()">
+	<img  src=<?php echo $this->basePath(); ?>/images/add_type.jpg title='Add' border=0  width ='30' height='30' />
+</a>
+	<table id="tg" class="easyui-treegrid"  style="width:850px;height:300px"
+			data-options="
+				iconCls: 'icon-ok',
+				rownumbers: true,
+				animate: true,
+				collapsible: true,
+				fitColumns: true,
+				url: './configuration/getAllConfigDeatils',
+				idField: 'id',
+				treeField: 'name',
+				pagination:true,
+				pageNumber:1,
+				pageSize:25,
+				pageList:[10,15,20,25,50],
+				width:'100%',  
+				height:700,  
+				
+			">
+		<thead>			
+			<tr>
+				<th data-options="field:'pk',width:25,editor:'text'">Type ID</th>
+				<th data-options="field:'name',width:180,editor:'text'">Name</th>
+				<th data-options="field:'order',width:60,align:'left',editor:'text'">Type</th>
+				<th data-options="field:'procedure_code',width:60,editor:'text'">Code</th>
+				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
+				<th data-options="field:'discription',width:180,editor:'text'">Discription</th>
+				<!-- Start Action -->
+                    <th data-options="field:'action',title:'Action',align:'centre',
+								formatter:function(value,row,index){
+										if (row.editing){
+												var s = '<a></a> ';
+												var c = '<a></a>';
+												return s+c;
+										} else {
+												var d = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-edit\' plain=\'true\' onclick=editItem()><img  src=<?php echo $this->basePath(); ?>/images/pencil.png title=\'Edit\' border=0 /></a> ';
+												var e = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-delete\' plain=\'true\' onclick=deleterow(this)><img  src=<?php echo $this->basePath(); ?>/images/cancel.png title=\'Dlete\' border=0 /></a> ';
+												return d+e;
+										}
+								}">
+								Action
+								</th>
+				<!-- End Action -->
+
+			</tr>
+		</thead>
+	</table>
+	
+	
+	
+	<!-- Start Popup -->
+
+	<div id="w" class="easyui-window" title="Orders and Results" data-options="modal:true,closed:true,iconCls:'icon-save'"
+	     style="width:735px;min-height:330px;padding:10px;">
+		<table id="pg" style="width:720px;min-height:280px"></table>  
+		<div style="padding:5px 0;text-align:right;padding-right:30px;padding-left:430px">
+			<input type="hidden" name="action" id="action" value="edit" />
+			<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
+			<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
+		</div>
+		<script>
+			function groupFormatter(fvalue, rows){
+				return fvalue + ' - <span style="color:red">' + rows.length + ' rows</span>';
+			}
+		</script>
+	</div>
+
+	<!-- End Popup -->	
+	
+</div>	
+<?php
+echo $this->form()->closeTag();		
+?>
