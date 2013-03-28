@@ -26,15 +26,18 @@ class ConfigurationTable extends AbstractTableGateway
     public $initiating_typeid;
     
     public $result;
+    
+    public $child_ids;
 
 
     public function __construct(TableGateway $tableGateway)
     {
-        $this->tableGateway = $tableGateway;
-	$this->parent_result 	= array();
-	$this->child_result 	= array();
+        $this->tableGateway 		= $tableGateway;
+	$this->parent_result 		= array();
+	$this->child_result 		= array();
 	$this->initiating_typeid	= 0;
-	$this->result		= array();
+	$this->result			= array();
+	$this->child_ids		= array();
     }   
 	
     public function getConfigDetails($type_id)
@@ -100,17 +103,37 @@ class ConfigurationTable extends AbstractTableGateway
     public function getConfigChildDetails($type_id)
     {
 	
-	$child = $this->getChildDetails($type_id);
-	
-	if(($child['procedure_type_id'] <> "")&&($child['procedure_type_id'] <> $type_id))
+	$child_res 	= $this->getChildDetails($type_id);
+	while($child 	= sqlFetchArray($child_res))
 	{
-	    $res_arr = $this->saveDetailsArray($child);
-	    array_push($this->child_result, $res_arr);
-	
-	    $this->getConfigChildDetails($child['procedure_type_id']);
-	}     
+	    if(($child['procedure_type_id'] <> "")&&($child['procedure_type_id'] <> $type_id))
+	    {
+		$res_arr = $this->saveDetailsArray($child);
+		array_push($this->child_result, $res_arr);
+	    
+		$this->getConfigChildDetails($child['procedure_type_id']);
+	    }
+	}
 	return $this->child_result;	
     }
+    
+    public function getConfigChildIds($type_id)
+    {
+	
+	$child_res 	= $this->getChildDetails($type_id);
+	while($child 	= sqlFetchArray($child_res))
+	{
+	    if(($child['procedure_type_id'] <> "")&&($child['procedure_type_id'] <> $type_id))
+	    {
+		array_push($this->child_ids, $child['procedure_type_id']);
+	    
+		$this->getConfigChildIds($child['procedure_type_id']);
+	    }
+	}
+	return $this->child_ids;	
+    }
+    
+    
     
     public function getTypeDetails($type_id)
     {	
@@ -145,8 +168,8 @@ class ConfigurationTable extends AbstractTableGateway
 	$value_arr  	= array($type_id);
 	
 	$res        	= sqlStatement($sql,$value_arr);
-	$row 		= sqlFetchArray($res);
-	return $row;
+	
+	return $res;
     }
     
     
@@ -247,6 +270,23 @@ class ConfigurationTable extends AbstractTableGateway
 	$no_rows		= 0;
 	
 	while ($row = sqlFetchArray($res)) {
+	    
+	    $exists	= 0;
+	    foreach($this->result as $result)
+	    {
+		if($result['id'] == $row['procedure_type_id'])
+		{
+		    $exists	= 1;
+		    break;
+		}
+	    }
+	    
+	    if($exists == 1)
+	    {
+		continue;
+	    }
+	    
+	    
 	    $no_rows++;
 	    
 	    $res_arr	= array();
@@ -261,7 +301,84 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['discription']	= $row['description'];	    
 	    
 	    if($res_arr['procedure_type'] == "grp"){
+		$res_arr['iconCls']	= "tree-folder";
+		$res_arr['order']	= "Group";
+	    }
+	    else if($res_arr['procedure_type'] == "ord"){
+		$res_arr['iconCls']	= "icon-lab-order";
+		$res_arr['order']	= "Order";
+	    }
+	    else if($res_arr['procedure_type'] == "res"){
+		$res_arr['iconCls']	= "icon-lab-result";
+		$res_arr['order']	= "Result";
+	    }
+	    else if($res_arr['procedure_type'] == "rec"){
 		$res_arr['iconCls']	= "";
+		$res_arr['order']	= "Recommendation";
+	    }	    
+	    
+	    $sql_child	= "SELECT procedure_type_id FROM procedure_type WHERE parent = '".$row['procedure_type_id']."' AND
+				procedure_type_id <> '".$row['procedure_type_id']."' ";
+	    $res_child 	= sqlStatement($sql_child);	
+	    $numchilds	= sqlNumRows($res_child);	    
+	    
+	    if($row['procedure_type_id'] <> $row['parent'])
+	    {
+		
+		$row['parent']		= ($row['parent'] == 0) ? "":$row['parent'];
+		$res_arr['_parentId']	= $row['parent'];
+	    
+	    }
+	    if($numchilds > 0)
+		{
+		    $res_arr['state']	= "closed";
+		}
+	    //array_push($this->result[$row['procedure_type_id']],$res_arr);
+	    $this->result[]	= $res_arr;
+	    
+	    //if($no_rows == $rows)
+	    //{
+		if($numchilds > 0)
+		{
+		    $this->saveAllChildConfigArray($row['procedure_type_id']);
+		}
+	    //}
+	}
+	
+	
+	$fp	= fopen("D:/json.txt","w");
+	fwrite($fp,print_r($this->result,1));
+	
+	$json_arr['rows']	= $this->result;	
+	$result_arr        	= new JsonModel($json_arr);	
+	
+	return $result_arr;
+    }
+    
+    public function saveAllChildConfigArray($type_id)
+    {
+	$sql	= "SELECT `procedure_type_id`, parent, name, procedure_code, procedure_type, `range`, description
+			FROM procedure_type WHERE parent = '".$type_id."' AND
+				    procedure_type_id <> '".$type_id."' ";
+	
+	$res    = sqlStatement($sql);
+	//$row 	= sqlFetchArray($res);
+	
+	while($row = sqlFetchArray($res))
+	{
+	    $res_arr	= array();
+    
+	    $res_arr['id']		= $row['procedure_type_id'];
+	    $res_arr['pk']		= $row['procedure_type_id'];
+	    $res_arr['name']		= $row['name'];	
+	    
+	    $res_arr['procedure_code']	= $row['procedure_code'];
+	    $res_arr['procedure_type']	= $row['procedure_type'];
+	    $res_arr['range']		= $row['range'];
+	    $res_arr['discription']	= $row['description'];	
+	    
+	    if($res_arr['procedure_type'] == "grp"){
+		$res_arr['iconCls']	= "tree-folder";
 		$res_arr['order']	= "Group";
 	    }
 	    else if($res_arr['procedure_type'] == "ord"){
@@ -275,12 +392,12 @@ class ConfigurationTable extends AbstractTableGateway
 	    else if($res_arr['procedure_type'] == "rec"){
 		$res_arr['iconCls']	= "icon-lab-result";
 		$res_arr['order']	= "Recommendation";
-	    }	    
+	    }	
 	    
 	    $sql_child	= "SELECT procedure_type_id FROM procedure_type WHERE parent = '".$row['procedure_type_id']."' AND
-				procedure_type_id <> '".$row['procedure_type_id']."' ";
+				    procedure_type_id <> '".$row['procedure_type_id']."' ";
 	    $res_child 	= sqlStatement($sql_child);	
-	    $numchilds	= sqlNumRows($res_child);	    
+	    $numchilds	= sqlNumRows($res_child);
 	    
 	    if($row['procedure_type_id'] <> $row['parent'])
 	    {
@@ -292,78 +409,12 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['_parentId']	= $row['parent'];
 	    
 	    }
-	    array_push($this->result, $res_arr);
-	    
-	    if($no_rows == $rows)
+	    //array_push($this->result[$type_id], $res_arr);
+	    $this->result[]	=  $res_arr;
+	    if($numchilds > 0)
 	    {
-		if($numchilds > 0)
-		{
-		    $this->saveAllConfigArray($row['procedure_type_id']);
-		}
+		$this->saveAllChildConfigArray($row['procedure_type_id']);
 	    }
-	}
-	
-	$json_arr['rows']	= $this->result;	
-	$result_arr        	= new JsonModel($json_arr);	
-	
-	return $result_arr;
-    }
-    
-    public function saveAllConfigArray($type_id)
-    {
-	$sql	= "SELECT procedure_type_id, parent, name, procedure_code, procedure_type, `range`, description
-			FROM procedure_type WHERE parent = '".$type_id."' ";
-	
-	$res    = sqlStatement($sql);
-	$row 	= sqlFetchArray($res);
-	
-	$res_arr	= array();
-
-	$res_arr['id']		= $row['procedure_type_id'];
-	$res_arr['pk']		= $row['procedure_type_id'];
-	$res_arr['name']	= $row['name'];	
-	
-	$res_arr['procedure_code']	= $row['procedure_code'];
-	$res_arr['procedure_type']	= $row['procedure_type'];
-	$res_arr['range']		= $row['range'];
-	$res_arr['discription']		= $row['description'];	
-	
-	if($res_arr['procedure_type'] == "grp"){
-	    $res_arr['iconCls']	= "";
-	    $res_arr['order']	= "Group";
-	}
-	else if($res_arr['procedure_type'] == "ord"){
-	    $res_arr['iconCls']	= "icon-lab-order";
-	    $res_arr['order']	= "Order";
-	}
-	else if($res_arr['procedure_type'] == "res"){
-	    $res_arr['iconCls']	= "icon-lab-result";
-	    $res_arr['order']	= "Result";
-	}
-	else if($res_arr['procedure_type'] == "rec"){
-	    $res_arr['iconCls']	= "icon-lab-result";
-	    $res_arr['order']	= "Recommendation";
-	}	
-	
-	$sql_child	= "SELECT procedure_type_id FROM procedure_type WHERE parent = '".$row['procedure_type_id']."' AND
-				procedure_type_id <> '".$row['procedure_type_id']."' ";
-	$res_child 	= sqlStatement($sql_child);	
-	$numchilds	= sqlNumRows($res_child);
-	
-	if($row['procedure_type_id'] <> $row['parent'])
-	{
-	    if($numchilds <> 0)
-	    {
-		$res_arr['state']	= "closed";
-	    }
-	    $row['parent']		= ($row['parent'] == 0) ? "":$row['parent'];
-	    $res_arr['_parentId']	= $row['parent'];
-	
-	}
-	array_push($this->result, $res_arr);
-	if($numchilds > 0)
-	{
-	    $this->saveAllConfigArray($row['procedure_type_id']);
 	}
     }
     
@@ -535,6 +586,99 @@ class ConfigurationTable extends AbstractTableGateway
 	$return	= array();
 	
 	$return[0]  = array('return' => 0, 'type_id' => $res);
+	$arr        = new JsonModel($return);
+	
+	return $arr;
+    }
+    
+    public function getAddExistConfigDetails($type_id)
+    {
+	$arr		= array();
+	$ret_arr	= array();
+	$result_array	= array();
+	
+	$row 		= $this->getTypeDetails($type_id);
+	
+	
+	$grp_array	= array('name' => "Name", 'description' => "Description");
+				
+	$ord_array	= array('name' => "Name", 'description' => "Description",'seq' => "Sequence",'order_from' => "Order From",
+				'procedure_code' => "Procedure Code",'standard_code' => "Standard Code",'body_site' => "Body Site",
+				'specimen' =>"Specimen Type", 'route_admin' => "Administer Via",'laterality' => "Laterality");
+	
+	$res_array	= array('name' => "Name", 'description' => "Description",'seq' => "Sequence", 'units' => "Default Units",
+				'range' =>"Default Range", 'related_code' => "Followup Services");
+	
+	$rec_array	= array('name' => "Name", 'description' => "Description",'seq' => "Sequence", 'units' => "Default Units",
+				'range' =>"Default Range", 'related_code' => "Followup Services");
+		
+	foreach($grp_array as $column => $grp)
+	{
+	    $arr['name'] 	= $grp;
+	    $arr['value'] 	= "";
+	    $arr['group'] 	= 'Group'; 
+	    $arr['editor'] 	= 'text';
+	    array_push($result_array, $arr);
+	}
+	
+	/*if($row['procedure_type'] == "grp")
+	{*/
+	    foreach($ord_array as $column => $ord)
+	    {
+		$arr['name'] 	= $ord;
+		$arr['value'] 	= "";			
+		$arr['group'] 	= 'Order';
+		$arr['editor'] 	= 'text';
+		array_push($result_array, $arr);
+	    }
+	/*}*/
+	/*if($row['procedure_type'] == "ord")
+	{*/
+	    foreach($res_array as $column => $res)
+	    {
+		$arr['name'] 	= $res;
+		$arr['value'] 	= "";			
+		$arr['group'] 	= 'Result';
+		$arr['editor'] 	= 'text';
+		array_push($result_array, $arr);
+	    }
+	/*}*/
+	/*if($row['procedure_type'] == "res")
+	{*/
+	    foreach($rec_array as $column => $rec)
+	    {
+		$arr['name'] 	= $rec;
+		$arr['value'] 	= "";			
+		$arr['group'] 	= 'Recommendation';
+		$arr['editor'] 	= 'text';
+		array_push($result_array, $arr);
+	    }
+	/*}*/
+	$ret_arr        	= new JsonModel($result_array);	
+	return $ret_arr;	
+    }
+    
+    public function deleteConfigDetails($type_id)
+    {
+	array_push($this->child_ids, $type_id);
+	$ret_arr	= $this->getConfigChildIds($type_id);
+	$ret_arr	= array_reverse($ret_arr);
+	
+	$sql	= "DELETE FROM procedure_type WHERE procedure_type_id = ? ";
+	
+	foreach($ret_arr as $typeid)
+	{
+	    $in_arr	= array('type_id' => $typeid);
+	    
+	    sqlStatement($sql,$in_arr);
+	}
+	
+	//$fp	= fopen("D:/del.txt","w");
+	//fwrite($fp,print_r($ret_arr,1));
+	
+	$return	= array();
+	
+	$return[0]  = array('return' => 0, 'type_id' => $type_id);
 	$arr        = new JsonModel($return);
 	
 	return $arr;

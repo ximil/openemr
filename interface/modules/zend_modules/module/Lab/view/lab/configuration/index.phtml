@@ -4,8 +4,8 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 <div style="margin:10px 0;"></div>
 <div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" >
 <a href="javascript:void(0)" onclick="addConfig()">
-	<img  src=<?php echo $this->basePath(); ?>/images/add_type.jpg title='Add' border=0  width ='30' height='30' />
-</a>
+	<img  src=<?php echo $this->basePath(); ?>/css/icons/add_type.png title='Add' border=0  />
+</a> <b>ADD</b>
 	<table id="tg" class="easyui-treegrid"  style="width:850px;height:300px"
 			data-options="
 				iconCls: 'icon-ok',
@@ -20,29 +20,32 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 				pageNumber:1,
 				pageSize:25,
 				pageList:[10,15,20,25,50],
-				width:'95%',  
-				height:700,  
+				width:'88%',  
+				height:'auto',  
 				
 			">
 		<thead>			
 			<tr>
 				<th data-options="field:'pk',width:25,editor:'text'">Type ID</th>
-				<th data-options="field:'name',width:180,editor:'text'">Name</th>
+				<th data-options="field:'name',width:170,editor:'text'">Name</th>
 				<th data-options="field:'order',width:60,align:'left',editor:'text'">Type</th>
 				<th data-options="field:'procedure_code',width:60,editor:'text'">Code</th>
 				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
-				<th data-options="field:'discription',width:180,editor:'text'">Discription</th>
+				<th data-options="field:'discription',width:170,editor:'text'">Discription</th>
 				<!-- Start Action -->
-                    <th data-options="field:'action',title:'Action',align:'centre',
+                    <th data-options="field:'action',title:'Action',width:30,align:'centre',
 								formatter:function(value,row,index){
 										if (row.editing){
+												var x = '<a></a>';
 												var s = '<a></a> ';
 												var c = '<a></a>';
-												return s+c;
+												
+												return x+s+c;
 										} else {
+												var y = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-add\' plain=\'true\' onclick=addExist()><img  src=<?php echo $this->basePath(); ?>/css/icons/add.png title=\'Add\' border=0 /></a> ';
 												var d = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-edit\' plain=\'true\' onclick=editItem()><img  src=<?php echo $this->basePath(); ?>/css/icons/pencil.png title=\'Edit\' border=0 /></a> ';
-												var e = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-delete\' plain=\'true\' onclick=deleterow(this)><img  src=<?php echo $this->basePath(); ?>/css/icons/cancel.png title=\'Dlete\' border=0 /></a> ';
-												return d+e;
+												var e = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-delete\' plain=\'true\' onclick=deleteItem(this)><img  src=<?php echo $this->basePath(); ?>/css/icons/cancel.png title=\'Delete\' border=0 /></a> ';
+												return y+d+e;
 										}
 								}">
 								Action
@@ -62,6 +65,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 		<table id="pg" style="width:720px;min-height:280px"></table>  
 		<div style="padding:5px 0;text-align:right;padding-right:30px;padding-left:430px">
 			<input type="hidden" name="action" id="action" value="edit" />
+			<input type="hidden" name="exist_typeid" id="exist_typeid" value="" />
 			<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
 			<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
 		</div>
@@ -72,7 +76,9 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 		</script>
 	</div>
 
-	<!-- End Popup -->	
+	<!-- End Popup -->
+	
+	
 	
 </div>	
 <?php

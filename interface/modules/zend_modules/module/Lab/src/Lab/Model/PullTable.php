@@ -24,12 +24,6 @@ class PullTable extends AbstractTableGateway
         $this->tableGateway = $tableGateway;
     }
 	
-	
-	
-    /**
-    * Vipin
-    **/
-    
     public function getColumns($result)
     {
 	$result_columns	= array();
@@ -48,8 +42,7 @@ class PullTable extends AbstractTableGateway
 
     public function columnMapping($column_map,$result_col)
     {
-	$table_sql	= array();
-	
+	$table_sql	= array();	
 	foreach($result_col as $col)
 	{
 	    if(($column_map[$col]['colconfig']['table'] <> "")&&($column_map[$col]['colconfig']['column'] <> ""))
@@ -59,18 +52,14 @@ class PullTable extends AbstractTableGateway
 		
 		$table_sql[$table][$col]	= $column;				
 	    }
-	    //echo "<br>";
 	}
 	return $table_sql;		
     }
 
     public function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
     {
-	$retstr	= "";
-	
-	
-	$result_col	= $this->getColumns($result);
-	
+	$retstr		= "";	
+	$result_col	= $this->getColumns($result);	
 	$mapped_tables	= $this->columnMapping($column_map,$result_col);
 	
 	foreach($result as $res)
@@ -112,9 +101,9 @@ class PullTable extends AbstractTableGateway
 		    {
 			if($index > 0)
 			{
-			    $condition.=" AND ";
+			    $condition	.= " AND ";
 			}
-			$condition.=" ".$pkey." = ? ";
+			$condition	.=" ".$pkey." = ? ";
 			$index++;
 			$check_value_arr[$pkey] = $value_arr[$pkey];
 		    }
@@ -138,48 +127,29 @@ class PullTable extends AbstractTableGateway
 			$update_key_arr[]   = $upkey;
 		    }
 		    
-		    $update_expr    = implode(" = ? ,",$update_key_arr);
-		    $update_expr.=" = ? ";
+		    $update_expr    	= implode(" = ? ,",$update_key_arr);
+		    $update_expr	.=" = ? ";
 		    
-		    /*echo "<br>".*/$sql_check  = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
-		    //$retstr	.= "<br>".$sql_check;
-		    $pat_data_check         = sqlQuery($sql_check,$check_value_arr);
-		    //print_r($check_value_arr);
-		    //$retstr	.= "<br>".print_r($check_value_arr,1);
-		   
-		    //echo "<br>";
-		    //print_r($update_combined_arr);
+		    $sql_check  = "SELECT COUNT(*) as data_exists FROM ".$table." WHERE ".$condition;
+		    $pat_data_check    	= sqlQuery($sql_check,$check_value_arr);
+		    
 		    if($pat_data_check['data_exists'])
 		    {
-			/*echo "<br>".*/$sqlup	= "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
-			//$retstr	.= "<br>".$sqlup;
-			$pat_data_check         = sqlQuery($sqlup,$update_combined_arr);
-			//$retstr	.= "<br>".print_r($update_combined_arr,1);
+			$sqlup		= "UPDATE ".$table." SET ".$update_expr." WHERE ".$condition;
+			$pat_data_check	= sqlQuery($sqlup,$update_combined_arr);
 		    }
 		    else
 		    {
-			/*echo "<br>".*/$sql		= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
-			//$retstr	.= "<br>".$sql;
-			/*echo "<br>".*/$insert_id 	= sqlInsert($sql,$value_arr);
-			//$retstr	.= "<br>".print_r($value_arr,1);
-			//print_r($value_arr);
+			$sql		= "INSERT INTO ".$table."(".$fields.") VALUES (".$params.")";
+			$insert_id 	= sqlInsert($sql,$value_arr);			
 		    }
 		}		
 	    }
-	    
-	    //$count++;
-	    //
-	    //if($count > 4000)
-	    //{
-	    //    break;
-	    //}
 	}
 	sqlStatement("UPDATE procedure_type SET parent=procedure_type_id");
 	sqlStatement("UPDATE procedure_type SET name=description");
 	return $retstr;
     }
-
-    //$constraint_arr
     
     public function getWebserviceOptions()
     {
@@ -191,12 +161,6 @@ class PullTable extends AbstractTableGateway
     
     public function pullcompendiumTestConfig()
     {
-	/*$column_map['test_id'] 		        = array('colconfig' => array(
-									    'table'     => "procedure_type",
-									    'column'    => "procedure_type_id",
-									    'value_map' => "0",
-									    'insert_id' => "0"));*/
-	
 	$column_map['test_lab_id']	                = array('colconfig' => array(
 									    'table'     => "procedure_type",
 									    'column'    => "lab_id",
@@ -325,8 +289,7 @@ class PullTable extends AbstractTableGateway
 									    'table'     => "",
 									    'column'    => "",
 									    'value_map' => "0",
-									    'insert_id' => "0"));
-	
+									    'insert_id' => "0"));	
 	
 	$column_map['contraints']   = array('procedure_type' => array(
 									'primary_key' => array(
@@ -337,33 +300,8 @@ class PullTable extends AbstractTableGateway
 	return $column_map;
     }
     
-    //    public function listLabLocation($inputString)
-    //    {
-    //	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
-    //	$result = sqlStatement($sql);
-    //	$i = 0;
-    //	
-    //	while($row=sqlFetchArray($res)) {
-    //		$rows[$i] = array (
-    //			'value' => $row['ppid'],
-    //			'label' => $row['name'],
-    //		);
-    //		$i++;
-    //	}
-    //	return $rows;
-    //
-    //    }
-    
-    
-
     public function pullcompendiumAoeConfig()
     {
-	/*$column_map['aoe_id'] 		        = array('colconfig' => array(
-									    'table'     => "procedure_type",
-									    'column'    => "procedure_type_id",
-									    'value_map' => "0",
-									    'insert_id' => "0"));*/
-	
 	$column_map['aoe_lab_id']	                = array('colconfig' => array(
 									    'table'     => "procedure_questions",
 									    'column'    => "lab_id",
@@ -495,9 +433,7 @@ class PullTable extends AbstractTableGateway
 	$sql_cred   = "SELECT  login, password, remote_host FROM procedure_providers WHERE ppid = ? ";
 	$res_cred   = sqlQuery($sql_cred,array('ppid' => $lab_id));
 	return $res_cred;        
-    }
-    
-    
+    }    
 }
 ?>
 

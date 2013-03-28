@@ -2041,7 +2041,7 @@ a.s-btn-plain-active {
   background: url('images/tree_icons.png') no-repeat -160px 0;
 }
 .tree-folder {
-  background: url('images/tree_icons.png') no-repeat -208px 0;
+  background: url('images/tree_icons.png')  no-repeat -208px 0 !important ;
 }
 .tree-folder-open {
   background: url('images/tree_icons.png') no-repeat -224px 0;
@@ -2183,4 +2183,12 @@ a.s-btn-plain-active {
 .border1{
   border: 1px solid red;
  }
+
+.icon-lab-order{
+	background:url('icons/lab_order.png') no-repeat center center !important;
+}
+.icon-lab-result{
+	background:url('icons/lab_result.png') no-repeat center center !important;
+}
+
 
