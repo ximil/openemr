@@ -29,7 +29,7 @@ return array(
             ),
             
             'result' => array(
-            'type' => 'segment',
+                'type' => 'segment',
                 'options' => array(
                     'route'    => '/lab/result[/:action][/:id]',
                     'constraints' => array(
