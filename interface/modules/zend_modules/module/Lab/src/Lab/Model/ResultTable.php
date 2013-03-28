@@ -159,7 +159,7 @@ class ResultTable extends AbstractTableGateway
                                   "FROM procedure_order AS po " .
                                   "$joins " .
                                   "WHERE po.patient_id = '$pid' AND $where " .
-                                  "$groupby ORDER BY $orderby LIMIT $start, $rows";
+                                  "$groupby ORDER BY $orderby ";
 
         $result = sqlStatement($sql);
         $arr1 = array();
@@ -287,10 +287,10 @@ class ResultTable extends AbstractTableGateway
                     if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['order_id'] = $order_id;
 					if ($count%2==0){
-					 $arr1[$i]['color']="#EFF5FF";
+					 $arr1[$i]['color']="#CCE6FF";
 					}
 					else{
-					 $arr1[$i]['color']="#fff3f3";
+					 $arr1[$i]['color']="#f5d7d7";
 					 }
 					 $count++;
 					}
@@ -299,10 +299,10 @@ class ResultTable extends AbstractTableGateway
 				  }
 				  
 				  
-				  if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+		  if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['date_report'] = $date_report;
                     $arr1[$i]['date_collected'] = $date_collected;
-                    
+                     $arr1[$i]['order_id1']=$order_id;
                     
                     $arr1[$i]['patient_name'] = xlt($row['patient_name']);
                     $arr1[$i]['encounter_id'] = $row['encounter_id'];
