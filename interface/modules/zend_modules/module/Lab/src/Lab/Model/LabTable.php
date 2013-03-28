@@ -71,8 +71,8 @@ class LabTable extends AbstractTableGateway
 //	}
 //	return $procedure_type_id;
 //    }
-    public function insertAoe($procedure_type_id,$seq,$aoe,$procedure_code_i){
-	foreach($aoe as $ProcedureOrder=>$QuestionArr){
+    public function insertAoe($procedure_type_id,$seq,$aoe,$procedure_code_i,$ordnum){
+	foreach($aoe[$ordnum] as $ProcedureOrder=>$QuestionArr){
 	    if($ProcedureOrder==$procedure_code_i){
 		foreach($QuestionArr as $Question=>$Answer){
 		    sqlStatement("INSERT INTO procedure_answers (procedure_order_id,procedure_order_seq,question_code,answer) VALUES (?,?,?,?)",
@@ -81,12 +81,12 @@ class LabTable extends AbstractTableGateway
 	    }
 	}
     }
-    public function insertProcedureMaster($post){
+    public function insertProcedureMaster($post,$ordnum){
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
-				       order_status,patient_instructions,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-		    array($post['provider'],$post['patient_id'],$post['encounter_id'],$post['timecollected'],$post['orderdate'],$post['priority'],
-		    'pending',$post['patient_instructions'],$post['lab_id'],$post['specimencollected'],
-		    $post['billto'],$post['internal_comments']));
+				       order_status,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
+		    'pending',$post['lab_id'][$ordnum][0],$post['specimencollected'][$ordnum][0],
+		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0]));
 	return $procedure_type_id;
     }
     public function saveLab($post,$aoe)
@@ -96,68 +96,77 @@ class LabTable extends AbstractTableGateway
 	$procedure_type_id_arr = array();
 	$j=0;
 	$prevState = '';
-	for($i=0;$i<sizeof($post['procedures']);$i++){
+	for($ordnum=0;$ordnum<1;$ordnum++){
+	    for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
 	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
-			     array($post['procedure_code'][$i],$post['procedure_suffix'][$i]));
-	    if(!isset(${$PRow['specimen_state']."_j"}))
-	    ${$PRow['specimen_state']."_j"} = 0;
+			     array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+	    if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
+	    ${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
 	    if($PRow['pap_indicator']=="P"){
-		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['procedure'] = $PRow['name'];
-		$papArray[$post['procedure_code'][$i]."|-|".$post['procedure_suffix'][$i]]['diagnoses'] = $post['diagnoses'][$i];
+		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
+		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
 	    }
 	    else{
-		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_code'] = $PRow['procedure_code'];
-		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure'] = $PRow['name'];
-		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['procedure_suffix'] = $PRow['suffix'];
-		$specimenState[$PRow['specimen_state']][${$PRow['specimen_state']."_j"}]['diagnoses'] = $post['diagnoses'][$i];
-		${$PRow['specimen_state']."_j"}++;
+		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
+		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
+		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		${$PRow['specimen_state']."_".$ordnum."_j"}++;
 	    }
-	}
-	if(sizeof($papArray)>0){
-	    foreach($papArray as $procode_suffix=>$pronameArr ){
-	    	$PSArray = explode("|-|",$procode_suffix);
-		$procode = $PSArray[0];
-		$prosuffix = $PSArray[1];
-		$proname = $pronameArr['procedure'];
-		$diagnoses = $pronameArr['diagnoses'];
-		$PAPprocedure_type_id = $this->insertProcedureMaster($post);
-		$procedure_type_id_arr[] = $PAPprocedure_type_id;
-		$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-		     VALUES (?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
-		$this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode);
 	    }
-	}
-	if($post['specimencollected']=="onsite"){
-	    if(sizeof($specimenState)>0){
-		foreach($specimenState as $k=>$vArray){
-		    $SPEprocedure_type_id = $this->insertProcedureMaster($post);
-		    $procedure_type_id_arr[] = $SPEprocedure_type_id;
-		    for($i=0;$i<sizeof($vArray);$i++){
-			$procode = $vArray[$i]['procedure_code'];
-			$proname = $vArray[$i]['procedure'];
-			$prosuffix = $vArray[$i]['procedure_suffix'];
-			$diagnoses = $vArray[$i]['diagnoses'];
-			$SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-					VALUES (?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
-			$this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode);
+	    fwrite($fh,"eee:".${$PRow['specimen_state']."_".$ordnum."_j"});
+	    fwrite($fh,"\r\nPRow:".print_r($PRow,1));
+	    fwrite($fh,"papArray:".print_r($papArray,1));
+	    fwrite($fh,"specimenState:".print_r($specimenState,1));
+	    if(sizeof($papArray[$ordnum])>0){
+		foreach($papArray[$ordnum] as $procode_suffix=>$pronameArr ){
+		    $PSArray = explode("|-|",$procode_suffix);
+		    $procode = $PSArray[0];
+		    $prosuffix = $PSArray[1];
+		    $proname = $pronameArr['procedure'];
+		    $diagnoses = $pronameArr['diagnoses'];
+		    $PAPprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
+		    $procedure_type_id_arr[] = $PAPprocedure_type_id;
+		    $PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+			 VALUES (?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
+		    $this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode,$ordnum);
+		}
+	    }
+	    if($post['specimencollected'][$ordnum][0]=="onsite"){
+		if(sizeof($specimenState[$ordnum])>0){
+		    foreach($specimenState[$ordnum] as $k=>$vArray){
+			$SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
+			$procedure_type_id_arr[] = $SPEprocedure_type_id;
+			for($i=0;$i<sizeof($vArray);$i++){
+			    $procode = $vArray[$i]['procedure_code'];
+			    $proname = $vArray[$i]['procedure'];
+			    $prosuffix = $vArray[$i]['procedure_suffix'];
+			    $diagnoses = $vArray[$i]['diagnoses'];
+			    $SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+					    VALUES (?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
+			    $this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode,$ordnum);
+			}
 		    }
 		}
 	    }
-	}
-	else{
-	    for($i=0;$i<sizeof($post['procedures']);$i++){
-		$procedure_code = $post['procedure_code'][$i];
-		$procedure_suffix = $post['procedure_suffix'][$i];
-		if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
-		if($i==0){
-		$procedure_type_id = $this->insertProcedureMaster($post);
-		$procedure_type_id_arr[] = $procedure_type_id;
+	    else{
+		for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
+		    $procedure_code = $post['procedure_code'][$ordnum][$i];
+		    $procedure_suffix = $post['procedure_suffix'][$ordnum][$i];
+		    if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
+		    if($i==0){
+		    $procedure_type_id = $this->insertProcedureMaster($post,$ordnum);
+		    $procedure_type_id_arr[] = $procedure_type_id;
+		    }
+		    $seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
+			VALUES (?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$ordnum][$i],$post['procedures'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+		    $this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$ordnum][$i],$post['diagnoses'][$ordnum][$i],$ordnum);
 		}
-		$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-		    VALUES (?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$i],$post['procedures'][$i],$post['procedure_suffix'][$i]));
-		$this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$i],$post['diagnoses'][$i]);
 	    }
 	}
+	
+	
+	
 	return $procedure_type_id_arr;
     }
     
