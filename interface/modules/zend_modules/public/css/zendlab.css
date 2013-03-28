@@ -60,3 +60,14 @@
 .mediumfont{
 	font-size: 12px;
 }
+
+/**
+* Specimen Collection Screen
+*/
+
+.smalltb{
+	width: 60px !important;
+}
+.mediumtb{
+	width: 100px !important;
+}

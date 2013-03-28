@@ -4,6 +4,7 @@ namespace Lab\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
+use Lab\Form\ResultForm;
 use Zend\Json\Json;
 use Zend\Soap\Client;
 use Zend\Config;
@@ -47,13 +48,8 @@ class ResultController extends AbstractActionController
             ); 
         }
         $data = $this->getLabResult($data);
-		  $file = fopen("D:/test9.txt","w");
-           fwrite($file,print_r($data,1));
-           fclose($file);
-		   
        // $data = new JsonModel($labResult);
-	
-		return $data;
+				return $data;
 				
     }
     
@@ -469,5 +465,42 @@ class ResultController extends AbstractActionController
             readfile( $requisition_dir.$labrequisitionfile ); 
             return false;
         }
+    }
+		
+		public function resultEntryAction()
+    {
+				global $pid;
+				$form = new ResultForm();
+				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+				$statuses_abn = $helper->getList("proc_res_abnormal");
+				$form->get('abnormal[]')->setValueOptions($statuses_abn);
+				if($pid){
+						$form->get('patient_id')->setValue($pid);
+						$search_pid = $pid;
+				}
+				$form->get('search_patient')->setValue($this->getLabTable()->getPatientName($pid));
+				$request = $this->getRequest();
+				$from_dt = null;
+				$to_dt = null;
+        if ($request->isPost()) {
+						$search_pid = $request->getPost()->patient_id;
+						$form->get('search_patient')->setValue($this->getLabTable()->getPatientName($search_pid));
+						$from_dt = $request->getPost()->search_from_date;
+						$to_dt = $request->getPost()->search_to_date;
+						$form->get('patient_id')->setValue($search_pid);
+						$form->get('search_from_date')->setValue($from_dt);
+						$form->get('search_to_date')->setValue($to_dt);
+				}
+				$this->layout()->res = $this->getLabTable()->listResults($search_pid,$from_dt,$to_dt);
+        return array('form' => $form);
+    }
+		
+		public function saveResultAction()
+    {
+				$request = $this->getRequest();
+        if ($request->isPost()) {
+						$this->getLabTable()->saveResultEntryDetails($request->getPost());
+						return $this->redirect()->toRoute('resultEntry');
+				}
     }
 }
