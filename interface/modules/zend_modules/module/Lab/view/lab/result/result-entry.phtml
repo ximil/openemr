@@ -1,0 +1,102 @@
+<style>
+table.gridview2 td{
+		border-style: dotted;
+		border-width: 1px 1px 1px 1px;
+		margin: 0;padding: 0;
+		border-color:#cccccc;
+}
+table.thcolor th{
+		background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;
+		border: 1px solid #cccccc;
+		height:10px;
+		height:20px; 
+}
+#patdiv{
+		position: absolute;
+		left: 422px;
+		border: 1px solid;
+		display: none;
+		min-width: 143px;
+		background-color: #fff;
+}
+</style>
+<script type="text/javascript">
+function doSearch(){
+		$("#resultentry").submit();
+}
+function doSave(){
+		$("#resultentry").attr("action", "./result/saveEntry");
+		$("#resultentry").submit();
+}
+</script>
+<div style="margin:10px 0;"></div>
+<div class="easyui-panel" title="<?php echo xlt('Result Entry');?>" >
+	<div style="padding:10px;">
+		<?php
+		$form = $this->form;
+		$form->setAttribute('action', $this->url('result', array('action' => 'resultEntry')));
+		$form->prepare();
+		
+		echo $this->form()->openTag($form);
+		?>
+		<div>
+				<div>
+						<span class="bold mediumfont" >Date</span>
+				</div>
+				<div style="float:left;padding-right:10px;">
+						<span><?php echo xlt('From').":&nbsp;"; echo $this->formRow($form->get('search_from_date')); ?></span>
+						<span><?php echo xlt('To').":&nbsp;"; echo $this->formRow($form->get('search_to_date')); ?></span>
+						<span style="padding-left:25px;"><?php echo xlt('Patient').":&nbsp;"; echo $this->formRow($form->get('search_patient')); ?></span>
+						<div id="patdiv" ></div>
+						<?php echo $this->formRow($form->get('patient_id')); ?>
+				</div>
+				<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()"><?php echo xlt('Search'); ?></a>
+		</div>
+		<br/>
+		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="doSave()"><?php echo xlt('Save'); ?></a>
+		<table id="specimentable" class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;" >
+			<tr>
+					<th colspan="2" class="mainhead" >Order</th>
+					<th colspan="3" class="mainhead" >Report</th>
+					<th colspan="6" class="mainhead" >Results and Recommendations</th>
+			</tr>
+			<tr>
+					<td style="width:80px;" >Date</td>
+					<td style="min-width:200px;" >Name</td>
+					<td >Specimen</td>
+					<td >Specimen Time Collected</td>
+					<td >Specimen Status</td>
+					<td >Group</td>
+					<td >Name</td>
+					<td >Abn</td>
+					<td >Value</td>
+					<td >Units</td>
+					<td >Range</td>
+			</tr>
+			<?php foreach($this->layout()->res as $val): ?>
+			<tr>
+				<?php echo $this->formRow($form->get('procedure_report_id[]')->setValue($val['procedure_report_id'])); ?>
+				<td><?php echo $val['date_ordered']; ?></td>
+				<td><?php echo $val['procedure_name']; ?></td>
+				<td><?php echo $val['specimen_num']; ?></td>
+				<td><?php echo $val['date_collected']; ?></td>
+				<td><?php echo $val['report_status']; ?></td>
+				<td><?php echo ""; ?></td>
+				<td><?php echo $val['result_text']; ?></td>
+				<td><?php echo $this->formRow($form->get('abnormal[]')->setValue($val['abnormal'])); ?></td>
+				<td><?php echo $this->formRow($form->get('result[]')->setValue($val['result'])); ?></td>
+				<td><?php echo $this->formRow($form->get('units[]')->setValue($val['units'])); ?></td>
+				<td><?php echo $this->formRow($form->get('range[]')->setValue($val['range'])); ?></td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+  </div>
+</div>
+<?php
+echo $this->form()->closeTag();
+echo $this->headScript()->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+			->prependFile($this->basePath() . '/js/lab/specimen.js')
+			->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+			->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+			->prependFile($this->basePath() . '/js/lib/bubbles.js')
+?>

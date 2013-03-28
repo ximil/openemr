@@ -600,4 +600,60 @@ class ResultTable extends AbstractTableGateway
 	$res_status   = sqlQuery($sql_check,$status_value_arr);	
 	return $res_status['cnt'];        
     }
+    
+    public function listResults($pat_id,$from_dt,$to_dt)
+    {
+				$sql = "SELECT *,po.procedure_order_id AS poid FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
+				if($pat_id || $from_dt || $to_dt){
+						$sql .= " WHERE";
+						$cond = 0;
+						$param = array();
+						if($pat_id){
+								$sql .= " po.patient_id = ?";
+								array_push($param,$pat_id);
+								$cond = 1;
+						}
+						if($from_dt && $to_dt){
+								if($cond){
+										$sql .= " AND po.date_ordered BETWEEN ? AND ?";
+								}else{
+										$sql .= " po.date_ordered BETWEEN ? AND ?";
+										$cond = 1;
+								}
+								array_push($param,$from_dt,$to_dt);
+						}elseif($from_dt){
+								if($cond){
+										$sql .= " AND po.date_ordered > ?";
+								}else{
+										$sql .= " po.date_ordered > ?";
+										$cond = 1;
+								}
+								array_push($param,$from_dt);
+						}elseif($to_dt){
+								if($cond){
+										$sql .= " AND po.date_ordered < ?";
+								}else{
+										$sql .= " po.date_ordered < ?";
+										$cond = 1;
+								}
+								array_push($param,$to_dt);
+						}
+						$result = sqlStatement($sql,$param);
+				}else{
+						$result = sqlStatement($sql);
+				}
+				$arr = array();
+				while ($row = sqlFetchArray($result)) {
+						$arr[] = $row;
+				}
+				return $arr;
+    }
+    
+    public function getPatientName($pat_id)
+    {
+				$sql = "SELECT CONCAT(lname,' ',fname) AS pname FROM patient_data WHERE pid = ?";
+				$param = array($pat_id);
+				$pres = sqlQuery($sql,$param);
+				return $pres['pname'];
+    }
 }
