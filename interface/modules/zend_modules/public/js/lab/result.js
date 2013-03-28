@@ -25,12 +25,8 @@ function doSearch(){
 
 // Result request with ordser id
 function getResult(target) {
-	var tr = $(target).closest('tr.datagrid-row');
-	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-	$('#dg').datagrid('selectRow', rowIndex);
-	var row = $('#dg').datagrid('getSelected'); 
-	if (row){
-		var order_id = row.procedure_order_id;
+	        
+		var order_id = target;
 		$.ajax({
 			type: "POST",
 			cache: false,
@@ -54,17 +50,17 @@ function getResult(target) {
 				alert('Ajax Fail');
 			}
 		});
-	}
+	
 }
 
 // Requisition request with ordser id
 function getRequisition(target) {
-	var tr = $(target).closest('tr.datagrid-row');
+	/*var tr = $(target).closest('tr.datagrid-row');
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
 	var row = $('#dg').datagrid('getSelected'); 
-	if (row){  
-		var order_id = row.procedure_order_id;
+	if (row){  */
+		var order_id = target;
 		$.ajax({
 			type: "POST",
 			cache: false,
@@ -88,19 +84,20 @@ function getRequisition(target) {
 				alert('Ajax Fail');
 			}
 		});
-	}
+	/*}*/
 }
 
 function getLabelDownload(target) {
-	var tr = $(target).closest('tr.datagrid-row');
+	
+	/*var tr = $(target).closest('tr.datagrid-row');
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
 	var row = $('#dg').datagrid('getSelected'); 
-	if (row){  
-		var order_id = row.procedure_order_id;
+	if (row){  */
+		var order_id = target;
 		//alert('Order Id is ..' + order_id);
 		window.location.assign("./sendimagetext?order_id=" + order_id);
-	}
+	/*}*/
 }
 
 /**
@@ -108,14 +105,15 @@ function getLabelDownload(target) {
 */
 var url;  
 function editComments(target){
-	var tr = $(target).closest('tr.datagrid-row');
+	//alert(target);
+	/*var tr = $(target).closest('tr.datagrid-row');
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
 	var row = $('#dg').datagrid('getSelected');
 	if (row.editor == 0) {
-		if (row){
+		if (row){*/
 			$('#dlg').dialog('open').dialog('setTitle','Result');
-			$('#titleShow').html(row.result_text);
+			//$('#titleShow').html(row.result_text);
 			$.ajax({
 				type: "POST",
 				cache: false,
@@ -140,8 +138,8 @@ function editComments(target){
 			});		
 			$('#fm').form('load',row);
 			url	= '';		
-		}
-	}
+		/*}*/
+	/*}*/
 } 
 
 // Save the Popup form details to field comments

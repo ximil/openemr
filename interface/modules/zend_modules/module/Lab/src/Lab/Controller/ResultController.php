@@ -98,7 +98,7 @@ class ResultController extends AbstractActionController
             }
 
         $helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-	$labOptions = $helper->getList($data['optId'],$data['select'],$data['opt']);
+	   $labOptions = $helper->getList($data['optId'],$data['select'],$data['opt']);
         $data = new JsonModel($labOptions);
         return $data;
     }
