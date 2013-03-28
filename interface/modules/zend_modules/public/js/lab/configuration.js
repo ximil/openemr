@@ -109,6 +109,7 @@
 	
 	function addConfig()
 	{
+		//alert("ADD ITEM");
 		//alert('add '+document.getElementById('action').value);
 		document.getElementById('action').value = "add";
 		//alert('add '+document.getElementById('action').value);
@@ -125,12 +126,50 @@
 		collapseChildGroups();			
 	}
 	
+	function deleteItem()
+	{
+		$('#tg').treegrid({
+			
+			onClickRow: function(row) {
+				//alert("DELETE ITEM");
+				
+				var parentNode = $('#tg').treegrid('getParent' , row.id);
+				//alert("parent :"+parentNode)
+				if(parentNode != null)
+				{
+					var parentNodeId = parentNode.id;
+				}
+				//alert("row id :"+row.id);
+				$.ajax({
+					type: "GET",
+					cache: false,
+					dataType: "json",
+					url: "./configuration/deleteConfigDetails?type_id="+row.id,
+					data: {							
+						},
+					success: function(data) {
+						//alert("Ajax success");
+					},
+					error: function(data){
+						alert("Ajax Fail");
+					}
+				});
+				alert('Items Deleted Successfully');
+				$('#tg').treegrid('reload'); 
+			},			
+		})	
+
+	}
+	
+	
 	function editItem() {
+		
 		document.getElementById('action').value = "edit";
 		
 		$('#tg').treegrid({
 			
 			onClickRow: function(row) {
+				//alert("EDIT ITEM");
 				//alert('going 2 reload'+row);
 				
 				var parentNode = $('#tg').treegrid('getParent' , row.id);
@@ -207,6 +246,10 @@
 		if(document.getElementById('action').value == "add")
 		{
 			addItem();
+		}
+		if(document.getElementById('action').value == "addExist")
+		{
+			addExistItem();
 		}
 		else
 		{
@@ -321,7 +364,7 @@
 				//alert("sub index :"+ind+" => "+sub_arr[ind]);
 				params	+= "&"+column_arr[ind]+"="+sub_arr[ind];						
 			}	
-			alert("submitting : "+index+" params : "+params);
+			//alert("submitting : "+index+" params : "+params);
 			
 			$.ajax({
 				type: "GET",
@@ -351,8 +394,115 @@
 	}
 	
 	
-	function reloadTreeGrid()
+	
+	
+	function addExist()
 	{
-		alert('in reload func');
+		document.getElementById('action').value = "addExist";
+		
+		
+		$('#tg').treegrid({
+			
+			onClickRow: function(row) {
+				//alert('in addexist '+document.getElementById('action').value);
+				var parentNode = $('#tg').treegrid('getParent' , row.id);
+				//alert("parent :"+parentNode)
+				if(parentNode != null)
+				{
+					var parentNodeId = parentNode.id;
+				}
+				//alert("row id :"+row.id);
+				
+				document.getElementById('exist_typeid').value = row.id;
+				
+				$('#pg').propertygrid({
+					
+					url: './configuration/getAddExistConfigDeatils?type_id='+ row.id,  
+					showGroup: true,  
+					columns: mycolumns,
+					width:700,
+					height:'auto'//500
+				});					
+				
+				$('#w').window('open');
+				//
+				collapseChildGroups();
+				
+				
+			},			
+		})	
+	}
+	
+	function addExistItem()
+	{
+		var input_arr	= new Array();
+		
+		var column_arr	= {'Name': 'name','Description':'description','Sequence':'seq','Order From':'order_from',
+					'Procedure Code':'procedure_code','Standard Code':'standard_code','Body Site':'body_site',
+					'Specimen Type':'specimen','Administer Via':'route_admin','Laterality':'laterality',
+					'Default Units':'units','Default Range':'range','Followup Services':'related_code'};
+		
+		//alert("in addItem ");
+		var rows 	= $('#pg').propertygrid('getChanges');
+		
+		//alert("myObject is " + rows.toSource());
+		//return false;
+		
+		var parent_id	= document.getElementById('exist_typeid').value;
+		var obj;			
+		
+		var curr_row	= "";
+			
+		for(var i=0; i<rows.length; i++){
+							
+			//alert(rows[i].id+' => ' + rows[i].name + ':' + rows[i].value);
+			
+			if(curr_row	!= rows[i].group)
+			{
+				input_arr[rows[i].group]	= new Array();
+			}
+			input_arr[rows[i].group][rows[i].name] = rows[i].value;
+			curr_row	= rows[i].group;					
+		}
+			
+		for(var index in input_arr)
+		{
+			var params = "";
+			//alert("index :"+index+" => "+input_arr[index]);
+			params	= "?procedure_type="+index+"&parent="+parent_id;
+			var sub_arr	= new Array();
+			sub_arr		= input_arr[index];
+			for(var ind in sub_arr)
+			{
+				//alert("sub index :"+ind+" => "+sub_arr[ind]);
+				params	+= "&"+column_arr[ind]+"="+sub_arr[ind];						
+			}	
+			//alert("submitting : "+index+" params : "+params);
+			
+			$.ajax({
+				type: "GET",
+				cache: false,
+				dataType: "json",
+				async: false,
+				url: "./configuration/addConfigDetails"+params,
+				data: {							
+					},
+				success: function(data) {
+					//alert("Ajax success"+data);
+					//alert("myObject is " + data.toSource());
+					$.each(data, function(jsonIndex, jsonValue){
+						//alert("new type id :"+jsonValue['type_id']);
+						parent_id = jsonValue['type_id'];
+					});
+				},
+				error: function(data){
+					alert("Ajax Fail");
+				}
+			});
+		}
+		
+		$('#w').window('close');
+		alert('Configuration Added Successfully');
+		$('#tg').treegrid('reload'); 
 	}
 	

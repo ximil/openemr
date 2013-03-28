@@ -41,6 +41,19 @@ class ConfigurationController extends AbstractActionController
 	return $ret_arr;	
     }
     
+    public function deleteConfigDetailsAction()
+    {
+	$request    	= $this->getRequest();
+	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
+	
+        $typeID		= $data['type_id'];
+	
+	$ret_arr 	= $this->getConfigurationTable()->deleteConfigDetails($typeID);
+	
+	return $ret_arr;	
+    }
+    
+    
     public function getAllConfigDeatilsAction()
     {
 	$ret_arr 	= $this->getConfigurationTable()->getAllConfigDetails();		
@@ -66,6 +79,18 @@ class ConfigurationController extends AbstractActionController
 	$up_res		= $this->getConfigurationTable()->addConfigDetails($request);
 	return $up_res;
     }
+    
+    public function getAddExistConfigDeatilsAction()
+    {
+	$request    	= $this->getRequest();
+	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
+	
+        $typeID		= $data['type_id'];
+	
+	$ret_arr 	= $this->getConfigurationTable()->getAddExistConfigDetails($typeID);
+	return $ret_arr;
+    }
+    
     
     
 }
