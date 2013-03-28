@@ -11,7 +11,7 @@ class LabForm extends Form
         parent::__construct('lab');
         $this->setAttribute('method', 'post');
         $this->add(array(
-            'name' => 'id',
+            'name' => 'id[0][]',
             'attributes' => array(
                 'type'  => 'hidden',
             ),
@@ -31,15 +31,15 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
-            'name' => 'procedurecount',
+            'name' => 'procedurecount[0][]',
             'attributes' => array(
                 'type'  => 'hidden',
-		'id'	=> 'procedurecount',
+		'id'	=> 'procedurecount_1_1',
 		'value'	=> 2,
             ),
         ));
 	$this->add(array(
-            'name' => 'provider',
+            'name' => 'provider[0][]',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
@@ -54,12 +54,12 @@ class LabForm extends Form
 	    ),
         ));
 	$this->add(array(
-            'name' => 'lab_id',
+            'name' => 'lab_id[0][]',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
-		'id' => 'lab_id',
+		'id' => 'lab_id_1_1',
 		'required' => 'required',
 		'onchange' => '/*checkLab(this.value)*/',
             ),
@@ -84,7 +84,7 @@ class LabForm extends Form
 //	    ),
 //        ));
 	$this->add(array(
-            'name' => 'orderdate',
+            'name' => 'orderdate[0][]',
 	    'type'  => 'Zend\Form\Element\Date',
 	    'attributes' => array(
                 'type'  => 'text',
@@ -96,10 +96,10 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
-            'name' => 'timecollected',
+            'name' => 'timecollected[0][]',
             'attributes' => array(
                 'type'  => 'text',
-		'id' => 'timecollected',
+		'id' => 'timecollected_1_1',
 		'class' => 'easyui-datetimebox',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d H:i:s"),
@@ -107,7 +107,7 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
-            'name' => 'priority',
+            'name' => 'priority[0][]',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
@@ -122,7 +122,7 @@ class LabForm extends Form
 	    ),
         ));
 	$this->add(array(
-            'name' => 'status',
+            'name' => 'status[0][]',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
@@ -132,7 +132,7 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
-            'name' => 'billto',
+            'name' => 'billto[0][]',
 	    'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
 		'class' => '/*easyui-combobox*/ combo',
@@ -159,10 +159,10 @@ class LabForm extends Form
 	    ),
         ));
 	$this->add(array(
-            'name' => 'diagnoses[]',
+            'name' => 'diagnoses[0][]',
             'attributes' => array(
                 'type'  => 'text',
-		'id'	=> 'diagnoses_1',
+		'id'	=> 'diagnoses_1_1',
 		'class' => 'easyui-validatebox combo',
 		'required' => 'required',
 		'placeholder' => 'Seperated by semicolon(;)'
@@ -170,24 +170,24 @@ class LabForm extends Form
         ));
 	$this->add(array(
 	    'type' => 'Zend\Form\Element\Textarea',
-            'name' => 'patient_instructions',
+            'name' => 'patient_instructions[0][]',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
 		'style' => 'height:20px',
-		'id' => 'patient_instructions',
+		'id' => 'patient_instructions_1_1',
             ),
         ));
 	$this->add(array(
 	    'type' => 'Zend\Form\Element\Textarea',
-            'name' => 'internal_comments',
+            'name' => 'internal_comments[0][]',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
 		'style' => 'height:20px',
-		'id' => 'internal_comments',
+		'id' => 'internal_comments_1_1',
             ),
         ));
 	$this->add(array(
-	    'name' => 'specimencollected',
+	    'name' => 'specimencollected[0][]',
 	    'type' => 'Zend\Form\Element\Radio',
 	    'attributes' => array(
 		'required' => 'required'
@@ -200,28 +200,28 @@ class LabForm extends Form
 	    ),
 	));
         $this->add(array(
-            'name' => 'procedures[]',
+            'name' => 'procedures[0][]',
             'attributes' => array(
-		'id' => 'procedures_1',
+		'id' => 'procedures_1_1',
 		'autocomplete' 	=> 'off',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
-		'onKeyup' => 'getProcedures(this.value, this.id ,"lab_id")',
+		'onKeyup' => 'getProcedures(this.value, this.id )',
 		'required' => 'required'
             ),
         ));
 	$this->add(array(
-            'name' => 'procedure_code[]',
+            'name' => 'procedure_code[0][]',
             'attributes' => array(
                 'type' => 'hidden',
-		'id' => 'procedure_code_1'
+		'id' => 'procedure_code_1_1'
             ),
         ));
 	$this->add(array(
-            'name' => 'procedure_suffix[]',
+            'name' => 'procedure_suffix[0][]',
             'attributes' => array(
                 'type' => 'hidden',
-		'id' => 'procedure_suffix_1'
+		'id' => 'procedure_suffix_1_1'
             ),
         ));
         $this->add(array(

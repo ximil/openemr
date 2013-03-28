@@ -28,7 +28,7 @@ document.onclick=HideTheAjaxDivs;
 function HideTheAjaxDivs(){
 	$(".autocomplete-suggestions").css('display','none');
 }
-function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix){
+function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
 	//alert(ProcedureCode+"-"+procedure+"-"+count);
 	$('#procedures_' + count).val(procedure);
 	$('#procedure_code_'+count).val(ProcedureCode);
@@ -53,7 +53,7 @@ function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix){
 			    cls = "personPopupTrigger";
 			    else
 			    cls = "";
-			    j +='<tr><td>'+i+'</td><td>'+splitArr[0]+'</td><td><input rel="'+tips+'" class="combo '+cls+'" type="text" name="AOE_'+ProcedureCode+"_"+splitArr[2]+'"></td></tr>';
+			    j +='<tr><td>'+i+'</td><td>'+splitArr[0]+'</td><td><input rel="'+tips+'" class="combo '+cls+'" type="text" name="AOE_'+ordercnt+"_"+ProcedureCode+"_"+splitArr[2]+'"></td></tr>';
 		    }
 		    j+="</table>";
 		    //alert(j);
@@ -96,10 +96,6 @@ function cloneRow()
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").removeAttr("required");
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").removeAttr("class");
 	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").attr("class","combo");
-	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").attr("id","diagnoses_"+rowcount);
-	prevrowcount = rowcount-1;
-	prevdiagval = $('#diagnosestemplate_'+prevrowcount+" > td:last input[type=text]").val();
-	$('#diagnosestemplate_'+rowcount+" > td:last input[type=text]").val(prevdiagval);
 	var clone = row.cloneNode(true); // copy children too
 	clone.id = "proceduretemplate"+rowcount;
 	//$('#proceduretemplate'+rowcount+" > td input[type=text]").id="procedures_"+rowcount;
@@ -133,9 +129,11 @@ function cloneRow()
 	$('#proceduretemplate'+rowcount+" > td:last input[type=text]").focus();
 	document.getElementById('procedurecount').value = parseInt(rowcount)+1;
 }
-function getProcedures(inputString,thisID,labID) {
-	countArr = thisID.split("_");
-	count = countArr[1];
+function getProcedures(inputString,thisID) {//alert(inputString + '|' + thisID + '|' + labID);
+	arr = thisID.split("procedures_");
+	ordercntArr = arr[1].split("_");
+	labID = "lab_id_"+ordercntArr[0]+"_1";
+	count = arr[1];
 	var labval = document.getElementById(labID).value;
         $.post("./search",{
             type: "getProcedures",
@@ -151,7 +149,7 @@ function getProcedures(inputString,thisID,labID) {
 		    for(var procedure in procedureArray){
 			    splitArr = procedureArray[procedure].split("|-|");
 			    //alert('"'+splitArr[3]+'"');
-			    j +="<li onclick=loadAoeQuest('"+labval+"','"+splitArr[1].replace(/\s+/gi,"&#160;")+"','"+splitArr[3].replace(/\s+/gi,"&#160;")+"','"+count+"','"+splitArr[2].replace(/\s+/gi,"&#160;")+"')><a href='#'>"+splitArr[1]+"-"+splitArr[3]+"</a></li>";
+			    j +="<li onclick=loadAoeQuest('"+labval+"','"+splitArr[1].replace(/\s+/gi,"&#160;")+"','"+splitArr[3].replace(/\s+/gi,"&#160;")+"','"+count+"','"+splitArr[2].replace(/\s+/gi,"&#160;")+"','"+ordercntArr[0]+"')><a href='#'>"+splitArr[1]+"-"+splitArr[3]+"</a></li>";
 		    }
 		    j+="</ul>";
 		    //alert(j);
