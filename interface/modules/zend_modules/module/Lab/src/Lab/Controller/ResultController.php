@@ -17,13 +17,13 @@ class ResultController extends AbstractActionController
     public function indexAction()
     {
      $labresult1=$this->resultShowAction(); 
-	  $viewModel = new ViewModel(array(
-       "albums"=>$labresult1
+	    $viewModel = new ViewModel(array(
+	    "albums"=>$labresult1
 		));
 	return $viewModel;	  
 		
     }
-    public function getLabTable()
+    public function getResultTable()
     {
         if (!$this->labTable) {
             $sm = $this->getServiceLocator();
@@ -55,7 +55,7 @@ class ResultController extends AbstractActionController
     
     public function getLabResult($data)
     {
-        $labResult = $this->getLabTable()->listLabResult($data);
+        $labResult = $this->getResultTable()->listLabResult($data);
 	     return $labResult;
     }
     
@@ -110,7 +110,7 @@ class ResultController extends AbstractActionController
             if($request->getPost('prid')){
                 $data['procedure_result_id'] = $request->getPost('prid');
             }
-        $comments = $this->getLabTable()->listResultComment($data);
+        $comments = $this->getResultTable()->listResultComment($data);
         $data = new JsonModel($comments);
         return $data;
     }
@@ -144,7 +144,7 @@ class ResultController extends AbstractActionController
                             'facility'		    => $arr[1],
                             'comments'		    => $comments,
             );
-            $this->getLabTable()->saveResult($data);
+            $this->getResultTable()->saveResult($data);
             return $this->redirect()->toRoute('result');
         }
         return $this->redirect()->toRoute('result');
@@ -166,11 +166,11 @@ class ResultController extends AbstractActionController
 	    $data   = array('procedure_order_id'    => $request->getQuery('order_id'));
 	}
 
-        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+        $curr_status    = $this->getResultTable()->getOrderStatus($data['procedure_order_id']);
         if($curr_status == "final") {
-            $labresultfile    = $this->getLabTable()->getOrderResultFile($data['procedure_order_id']);
+            $labresultfile    = $this->getResultTable()->getOrderResultFile($data['procedure_order_id']);
         } else {
-            $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            $cred = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
                 
             $username   = $cred['login'];
             $password   = $cred['password'];        
@@ -217,7 +217,7 @@ class ResultController extends AbstractActionController
                     }
                     $fp = fopen($result_dir.$labresultfile,"wb");
                     fwrite($fp,base64_decode($result['content']));
-                    $status_res = $this->getLabTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
+                    $status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
 		    //PULING RESULT DETAILS INTO THE OPENEMR TABLES
 		    $this->getLabResultDetails($data['procedure_order_id']);
                 }
@@ -248,7 +248,7 @@ class ResultController extends AbstractActionController
         $resultdetails_dir      = $site_dir."/lab/resultdetails/";
         
 	$data['procedure_order_id'] = $order_id;
-        $cred = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+        $cred = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
 	  
 	$username       = $cred['login'];
 	$password       = $cred['password'];
@@ -276,7 +276,7 @@ class ResultController extends AbstractActionController
 	$xmldata    = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
 	
 	//CHECKS IF THE RESULT DETAIL IS ALREADY PULLED
-	$pulled_count 	= $this->getLabTable()->getOrderResultPulledCount($order_id);
+	$pulled_count 	= $this->getResultTable()->getOrderResultPulledCount($order_id);
 	$fp = fopen("D:/sql.txt","w");
 		    fwrite($fp,"\n Pulled count ....................  :".print_r($pulled_count,1));
 	if($pulled_count == 0)
@@ -304,7 +304,7 @@ class ResultController extends AbstractActionController
 	    /* HARD CODED */
 	    
 	    $index = 0;
-	    $order_seq = $this->getLabTable()->getProcedureOrderSequences($data['procedure_order_id']);        
+	    $order_seq = $this->getResultTable()->getProcedureOrderSequences($data['procedure_order_id']);        
 	    foreach($order_seq as $seq) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
 		
 		$has_subtest    = 0;    //FLAG FOR INDICATING IF ith TEST HAS SUBTEST OR NOT
@@ -321,7 +321,7 @@ class ResultController extends AbstractActionController
 					    
 		    $report_inarray = array($data['procedure_order_id'],$seq['procedure_order_seq'],$spec_collected_time,$res_reported_time,$source,
 					    '','','received',$report_notes);
-		    $procedure_report_id = $this->getLabTable()->insertProcedureReport($sql_report,$report_inarray);   
+		    $procedure_report_id = $this->getResultTable()->insertProcedureReport($sql_report,$report_inarray);   
 		    
 		    // RESULT REPORT COMMENTS OF ith TEST	
 		    $result_test_comments    = $resultcomments_test_arr[$index];
@@ -355,7 +355,7 @@ class ResultController extends AbstractActionController
 							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
 						    $subtest_comments,$result_status);            
-			    $this->getLabTable()->insertProcedureResult($sql_test_result,$result_inarray);
+			    $this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
 			} else {
 			    
 			    for($j=0;$j<$no_of_subtests;$j++)
@@ -370,7 +370,7 @@ class ResultController extends AbstractActionController
 							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
 							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments);
-				$this->getLabTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
+				$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
 			    }                        
 			}
 		    }
@@ -392,12 +392,12 @@ class ResultController extends AbstractActionController
 	    $data  = array('procedure_order_id'    => $request->getQuery('order_id'));
 	}
 
-        $curr_status    = $this->getLabTable()->getOrderStatus($data['procedure_order_id']);
+        $curr_status    = $this->getResultTable()->getOrderStatus($data['procedure_order_id']);
 
         if(($curr_status == "requisitionpulled")||($curr_status == "final")) {
-            $labrequisitionfile    = $this->getLabTable()->getOrderRequisitionFile($data['procedure_order_id']);                       
+            $labrequisitionfile    = $this->getResultTable()->getOrderRequisitionFile($data['procedure_order_id']);                       
         } else {
-            $cred       = $this->getLabTable()->getClientCredentials($data['procedure_order_id']);
+            $cred       = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
             $username   = $cred['login'];
             $password   = $cred['password'];
             $site_dir   = $_SESSION['site_id'];
@@ -446,7 +446,7 @@ class ResultController extends AbstractActionController
         
                     $fp     = fopen($requisition_dir.$labrequisitionfile,"wb");
                     fwrite($fp,base64_decode($result['content']));
-                    $status_res = $this->getLabTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
+                    $status_res = $this->getResultTable()->changeOrderRequisitionStatus($data['procedure_order_id'],"requisitionpulled",$labrequisitionfile);
                 }
 		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 		$arr        = new JsonModel($return);
@@ -478,20 +478,20 @@ class ResultController extends AbstractActionController
 						$form->get('patient_id')->setValue($pid);
 						$search_pid = $pid;
 				}
-				$form->get('search_patient')->setValue($this->getLabTable()->getPatientName($pid));
+				$form->get('search_patient')->setValue($this->getResultTable()->getPatientName($pid));
 				$request = $this->getRequest();
 				$from_dt = null;
 				$to_dt = null;
         if ($request->isPost()) {
 						$search_pid = $request->getPost()->patient_id;
-						$form->get('search_patient')->setValue($this->getLabTable()->getPatientName($search_pid));
+						$form->get('search_patient')->setValue($this->getResultTable()->getPatientName($search_pid));
 						$from_dt = $request->getPost()->search_from_date;
 						$to_dt = $request->getPost()->search_to_date;
 						$form->get('patient_id')->setValue($search_pid);
 						$form->get('search_from_date')->setValue($from_dt);
 						$form->get('search_to_date')->setValue($to_dt);
 				}
-				$this->layout()->res = $this->getLabTable()->listResults($search_pid,$from_dt,$to_dt);
+				$this->layout()->res = $this->getResultTable()->listResults($search_pid,$from_dt,$to_dt);
         return array('form' => $form);
     }
 		
@@ -499,7 +499,7 @@ class ResultController extends AbstractActionController
     {
 				$request = $this->getRequest();
         if ($request->isPost()) {
-						$this->getLabTable()->saveResultEntryDetails($request->getPost());
+						$this->getResultTable()->saveResultEntryDetails($request->getPost());
 						return $this->redirect()->toRoute('resultEntry');
 				}
     }
