@@ -474,6 +474,8 @@ class ResultController extends AbstractActionController
 				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 				$statuses_abn = $helper->getList("proc_res_abnormal");
 				$form->get('abnormal[]')->setValueOptions($statuses_abn);
+				$statuses_units = $helper->getList("proc_unit");
+				$form->get('units[]')->setValueOptions($statuses_units);
 				if($pid){
 						$form->get('patient_id')->setValue($pid);
 						$search_pid = $pid;
@@ -495,12 +497,12 @@ class ResultController extends AbstractActionController
         return array('form' => $form);
     }
 		
-		public function saveResultAction()
+		public function saveResultEntryAction()
     {
 				$request = $this->getRequest();
         if ($request->isPost()) {
 						$this->getResultTable()->saveResultEntryDetails($request->getPost());
-						return $this->redirect()->toRoute('resultEntry');
+						return $this->redirect()->toRoute('result',array('action' => 'resultEntry'));
 				}
     }
 }

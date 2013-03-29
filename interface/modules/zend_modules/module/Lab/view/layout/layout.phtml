@@ -40,20 +40,34 @@
 //}
 //addObjectSectionAcl('module_lab', 'Module Lab');
 //addObjectAcl('module_lab', 'Module Lab', 'procedure_order', 'Procedure Order');
+		if($current_controller == 'lab' && $current_action == 'order'){
+				$procedure_order_active = "menu-active";
+		}elseif($current_controller == 'Result' && $current_action == 'index'){
+				$pending_review_active = "menu-active";
+		}elseif($current_controller == 'Result' && $current_action == 'resultEntry'){
+				$result_entry_active = "menu-active";
+		}elseif($current_controller == 'Pull' && $current_action == 'index'){
+				$pull_compendium_active = "menu-active";
+		}elseif($current_controller == 'Configuration' && $current_action == 'index'){
+				$procudure_config_active = "menu-active";
+		}elseif($current_controller == 'Specimen' && $current_action == 'index'){
+				$specimen_collection_active = "menu-active";
+		}
 ?>
     </head>
     <body  class="body_top">
         <div class="container">
 	    <div style="padding:5px;border:1px solid #ddd">
-		<a href="<?php echo $this->url('lab', array('action'=>'order'));?>" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Procedure Order');?></a>
+		<a href="<?php echo $this->url('lab', array('action'=>'index'));?>/index" class="easyui-linkbutton <?php echo $procedure_order_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Order');?></a>
 		<?php
-		//if(acl_check("module_lab","procedure_order")){
+		if(acl_check("module_lab","procedure_order")){
 		    ?>
-		<a id="btn-edit" href="<?php echo $this->url('result', array('action'=>'index'));?>" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pending Review/ Result');?></a>
-		<?php// } ?>
-		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
-		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
-		<a href="<?php echo $this->url('specimen', array('action'=>'index'));?>" class="easyui-linkbutton" data-options="plain:true"><?php echo xlt('Specimen Collection');?></a>
+		<a id="btn-edit" href="<?php echo $this->url('result', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pending_review_active; ?>" data-options="plain:true"><?php echo xlt('Pending Review/ Result');?></a>
+		<?php } ?>
+		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
+		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
+		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
+		<a href="<?php echo $this->url('specimen', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $specimen_collection_active; ?>" data-options="plain:true"><?php echo xlt('Specimen Collection');?></a>
 	    </div>
             <?php echo $this->content; ?>
             <hr>

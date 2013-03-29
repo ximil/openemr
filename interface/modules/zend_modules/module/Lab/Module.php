@@ -43,6 +43,11 @@ class Module
         $sharedEvents->attach(__NAMESPACE__, 'dispatch', function($e) {
             $controller = $e->getTarget();
             $controller->layout('layout/layout');
+						$route = $controller->getEvent()->getRouteMatch();
+						$controller->getEvent()->getViewModel()->setVariables(array(
+						    'current_controller' => $route->getParam('controller'),
+						    'current_action' => $route->getParam('action'),
+						)); 
         }, 100);
     }
 	

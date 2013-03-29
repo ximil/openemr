@@ -25,7 +25,7 @@ function doSearch(){
 		$("#resultentry").submit();
 }
 function doSave(){
-		$("#resultentry").attr("action", "./result/saveEntry");
+		$("#resultentry").attr("action", "./saveResultEntry");
 		$("#resultentry").submit();
 }
 </script>
@@ -73,14 +73,17 @@ function doSave(){
 					<td >Units</td>
 					<td >Range</td>
 			</tr>
-			<?php foreach($this->layout()->res as $val): ?>
+			<?php foreach($this->layout()->res as $val):
+			$helper = $this->getHelperPluginManager()->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+			$rep_status = $helper->getDropdownValAsText("proc_rep_status",$val['report_status']);
+			?>
 			<tr>
-				<?php echo $this->formRow($form->get('procedure_report_id[]')->setValue($val['procedure_report_id'])); ?>
+				<?php echo $this->formRow($form->get('procedure_report_id[]')->setValue($val['prid'])); ?>
 				<td><?php echo $val['date_ordered']; ?></td>
 				<td><?php echo $val['procedure_name']; ?></td>
 				<td><?php echo $val['specimen_num']; ?></td>
 				<td><?php echo $val['date_collected']; ?></td>
-				<td><?php echo $val['report_status']; ?></td>
+				<td><?php echo $rep_status; ?></td>
 				<td><?php echo ""; ?></td>
 				<td><?php echo $val['result_text']; ?></td>
 				<td><?php echo $this->formRow($form->get('abnormal[]')->setValue($val['abnormal'])); ?></td>
