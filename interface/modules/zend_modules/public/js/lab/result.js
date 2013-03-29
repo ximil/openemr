@@ -25,7 +25,7 @@ function doSearch(){
 
 // Result request with ordser id
 function getResult(target) {
-	        
+	   	   
 		var order_id = target;
 		$.ajax({
 			type: "POST",
@@ -55,12 +55,15 @@ function getResult(target) {
 
 // Requisition request with ordser id
 function getRequisition(target) {
+
 	/*var tr = $(target).closest('tr.datagrid-row');
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
 	var row = $('#dg').datagrid('getSelected'); 
 	if (row){  */
+	
 		var order_id = target;
+		
 		$.ajax({
 			type: "POST",
 			cache: false,
@@ -96,7 +99,7 @@ function getLabelDownload(target) {
 	if (row){  */
 		var order_id = target;
 		//alert('Order Id is ..' + order_id);
-		window.location.assign("./sendimagetext?order_id=" + order_id);
+		window.location.assign("./result/getLabelDownload?order_id=" + order_id);
 	/*}*/
 }
 
@@ -105,7 +108,7 @@ function getLabelDownload(target) {
 */
 var url;  
 function editComments(target){
-	//alert(target);
+	
 	/*var tr = $(target).closest('tr.datagrid-row');
 	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
 	$('#dg').datagrid('selectRow', rowIndex);
@@ -113,7 +116,7 @@ function editComments(target){
 	if (row.editor == 0) {
 		if (row){*/
 			$('#dlg').dialog('open').dialog('setTitle','Result');
-			//$('#titleShow').html(row.result_text);
+			$('#titleShow').html(row.result_text);
 			$.ajax({
 				type: "POST",
 				cache: false,
