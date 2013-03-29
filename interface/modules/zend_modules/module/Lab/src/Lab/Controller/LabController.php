@@ -182,6 +182,7 @@ class LabController extends AbstractActionController
     
     public function indexAction()
     {
+	return $this->redirect()->toRoute('lab',array('action'=>'order'));
 	// Start Row wise data save 
 	$request = $this->getRequest();
         if ($request->isPost()) {

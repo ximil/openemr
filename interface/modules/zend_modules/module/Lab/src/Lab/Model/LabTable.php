@@ -188,7 +188,7 @@ class LabTable extends AbstractTableGateway
 //    }
     public function listProcedures($inputString,$labId)
     {
-	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND (name LIKE ? OR procedure_code LIKE ?) AND pt.activity=1";
+	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND (name LIKE ? OR procedure_code LIKE ?) AND pt.activity=1 AND procedure_type='ord'";
 	$result = sqlStatement($sql,array($labId,$inputString."%",$inputString."%"));
 	$arr = array();
 	$i = 0;
