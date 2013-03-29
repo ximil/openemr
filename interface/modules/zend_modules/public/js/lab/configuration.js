@@ -114,7 +114,7 @@
 		document.getElementById('action').value = "add";
 		//alert('add '+document.getElementById('action').value);
 		$('#pg').propertygrid({						
-			url: './configuration/getAddConfigDeatils',  
+			url: './configuration/getConfigAddPageDeatils',  
 			showGroup: true,  
 			columns: addcolumns,
 			width:700,
@@ -181,7 +181,7 @@
 				//alert("row id :"+row.id);
 				$('#pg').propertygrid({
 					
-					url: './configuration/getConfigDeatils?type_id='+ row.id,  
+					url: './configuration/getConfigEditDeatils?type_id='+ row.id,  
 					showGroup: true,  
 					columns: mycolumns,
 					width:700,
@@ -247,7 +247,7 @@
 		{
 			addItem();
 		}
-		if(document.getElementById('action').value == "addExist")
+		else if(document.getElementById('action').value == "addExist")
 		{
 			addExistItem();
 		}
@@ -404,6 +404,7 @@
 		$('#tg').treegrid({
 			
 			onClickRow: function(row) {
+				//alert("ADD EXIST ITEM");
 				//alert('in addexist '+document.getElementById('action').value);
 				var parentNode = $('#tg').treegrid('getParent' , row.id);
 				//alert("parent :"+parentNode)
@@ -417,7 +418,7 @@
 				
 				$('#pg').propertygrid({
 					
-					url: './configuration/getAddExistConfigDeatils?type_id='+ row.id,  
+					url: './configuration/getConfigAddPageDeatils',  
 					showGroup: true,  
 					columns: mycolumns,
 					width:700,
