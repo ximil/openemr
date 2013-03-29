@@ -68,7 +68,7 @@ class Emr extends AbstractHelper
 		'selected' => TRUE,
 		'disabled' => FALSE
 	);
-	$i = 1;
+	$i = 0;
 	
 	while($row=sqlFetchArray($res)) {
 		$rows[$i] = array (

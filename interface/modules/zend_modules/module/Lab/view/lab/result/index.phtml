@@ -192,8 +192,8 @@
                          <td class="tdfont" title="<?php echo $this->escapeHtml($album[result_text]);?>"><?php echo $this->escapeHtml(substr($album[result_text],0,14));?></td>
                          <td class="tdfont" ><?php echo $this->escapeHtml($album[abnormal]);?></td>
                          <td class="tdfont" ><?php echo $this->escapeHtml($album[result]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[pt2_units]);?>"><?php echo $this->escapeHtml(substr($album[pt2_units],0,5));?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[pt2_range]);?>"><?php echo strip_tags(substr($album[pt2_range],0,9));?> </td>
+                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[units]);?>"><?php echo $this->escapeHtml(substr($album[units],0,5));?></td>
+                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[range]);?>"><?php echo strip_tags(substr($album[range],0,9));?> </td>
                          <td class="tdfont" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($album[procedure_result_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> ></td>
 		      
 		       <?php  if(($album['editor']==1) AND ($album['editor']!=0)){ $check=1; ?>
