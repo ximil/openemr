@@ -605,7 +605,7 @@ class ResultTable extends AbstractTableGateway
     
     public function listResults($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,po.procedure_order_id AS poid FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
+				$sql = "SELECT *,pr.procedure_report_id AS prid FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE";
 						$cond = 0;
@@ -657,5 +657,28 @@ class ResultTable extends AbstractTableGateway
 				$param = array($pat_id);
 				$pres = sqlQuery($sql,$param);
 				return $pres['pname'];
+    }
+    
+    public function saveResultEntryDetails($request)
+    {
+				$existing_query = "SELECT * FROM procedure_result WHERE procedure_report_id = ?";
+				$sqlins = "INSERT INTO procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, procedure_report_id = ?";
+				$sqlupd = "UPDATE procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ? WHERE procedure_report_id = ?";
+				for($i=0;$i<count($request->procedure_report_id);$i++){
+						$param = array();
+						array_push($param,$request->units[$i]);
+						array_push($param,$request->result[$i]);
+						array_push($param,$request->range[$i]);
+						array_push($param,$request->abnormal[$i]);
+            array_push($param,$request->procedure_report_id[$i]);
+						$existing_res = sqlStatement($existing_query,array($request->procedure_report_id[$i]));
+						if(sqlNumRows($existing_res) > 0){
+								$result = sqlQuery($sqlupd,$param);
+						}else{
+								if($request->result[$i] || $request->range[$i] || $request->abnormal[$i]){
+										$result = sqlQuery($sqlins,$param);
+								}
+						}
+				}
     }
 }

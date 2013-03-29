@@ -52,11 +52,16 @@ class ResultForm extends Form
         ));
 				$this->add(array(
             'name' => 'units[]',
+						'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-                'type'  => 'text',
-								'id'	=> 'units',
 								'class' => 'combo smalltb',
+								'editable' => 'true',
             ),
+						'options' => array(
+								'value_options' => array(
+								    '' => xlt('Unassigned'),
+								),
+						),
         ));
 				$this->add(array(
             'name' => 'range[]',
