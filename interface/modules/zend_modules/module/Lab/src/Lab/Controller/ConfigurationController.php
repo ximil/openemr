@@ -3,7 +3,7 @@ namespace Lab\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
-use Lab\Model\Configuration;
+use Lab\Model\Configuration;//vip
 use Lab\Form\PullForm;//EDITED
 use Zend\View\Model\JsonModel;
 
@@ -29,27 +29,38 @@ class ConfigurationController extends AbstractActionController
         return $this->configurationTable;
     }
 
-    public function getConfigDeatilsAction()
-    {
+    public function getConfigEditDeatilsAction()
+    {	
 	$request    	= $this->getRequest();
-	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
-	
+	$data  	    	= array('type_id'    => $request->getQuery('type_id'));		
         $typeID		= $data['type_id'];
 	
-	$ret_arr 	= $this->getConfigurationTable()->getConfigDetails($typeID);
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	
+	$body_sites 	= $helper->getList("proc_body_site");
+	$specimen_type 	= $helper->getList("proc_specimen");
+	$admin_via 	= $helper->getList("proc_route");
+	$laterality 	= $helper->getList("proc_lat");
+	$dafault_units 	= $helper->getList("proc_unit");
+	
+	$list_arr	= array();
+	
+	$list_arr[]	= $body_sites;
+	$list_arr[]	= $specimen_type;
+	$list_arr[]	= $admin_via;
+	$list_arr[]	= $laterality;
+	$list_arr[]	= $dafault_units;
+	
+	$ret_arr 	= $this->getConfigurationTable()->getConfigDetails($typeID,$list_arr);	
 	return $ret_arr;	
     }
     
     public function deleteConfigDetailsAction()
     {
 	$request    	= $this->getRequest();
-	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
-	
-        $typeID		= $data['type_id'];
-	
-	$ret_arr 	= $this->getConfigurationTable()->deleteConfigDetails($typeID);
-	
+	$data  	    	= array('type_id'    => $request->getQuery('type_id'));		
+        $typeID		= $data['type_id'];	
+	$ret_arr 	= $this->getConfigurationTable()->deleteConfigDetails($typeID);	
 	return $ret_arr;	
     }
     
@@ -67,9 +78,25 @@ class ConfigurationController extends AbstractActionController
 	return $up_res;
     }
     
-    public function getAddConfigDeatilsAction()
+    public function getConfigAddPageDeatilsAction()
     {
-	$ret_arr 	= $this->getConfigurationTable()->getAddConfigDetails();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	
+	$body_sites 	= $helper->getList("proc_body_site");
+	$specimen_type 	= $helper->getList("proc_specimen");
+	$admin_via 	= $helper->getList("proc_route");
+	$laterality 	= $helper->getList("proc_lat");
+	$dafault_units 	= $helper->getList("proc_unit");
+	
+	$list_arr	= array();
+	
+	$list_arr[]	= $body_sites;
+	$list_arr[]	= $specimen_type;
+	$list_arr[]	= $admin_via;
+	$list_arr[]	= $laterality;
+	$list_arr[]	= $dafault_units;
+		
+	$ret_arr 	= $this->getConfigurationTable()->getAddConfigDetails($list_arr);
 	return $ret_arr;
     }
     
@@ -80,16 +107,14 @@ class ConfigurationController extends AbstractActionController
 	return $up_res;
     }
     
-    public function getAddExistConfigDeatilsAction()
+    /*public function getAddExistConfigDeatilsAction()
     {
 	$request    	= $this->getRequest();
 	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
-	
-        $typeID		= $data['type_id'];
-	
+        $typeID		= $data['type_id'];	
 	$ret_arr 	= $this->getConfigurationTable()->getAddExistConfigDetails($typeID);
 	return $ret_arr;
-    }
+    }*/
     
     
     
