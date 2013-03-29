@@ -164,9 +164,7 @@ class ResultTable extends AbstractTableGateway
         $result = sqlStatement($sql);
         $arr1 = array();
         $i = 0;
-		$colr1="#ff0000";
-		$colr2="#00ff00";
-		$count=0;
+	$count=0;
         while($row = sqlFetchArray($result)) {
             $order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
             $order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
@@ -212,7 +210,7 @@ class ResultTable extends AbstractTableGateway
                 $pt2cond = "pt2.parent = $order_type_id AND " .
                             "(pt2.procedure_type LIKE 'res%' OR pt2.procedure_type LIKE 'rec%')";
             }
-            
+            //$editor = 0;
             $pscond = "ps.procedure_report_id = $report_id";
 
             $joincond = "ps.result_code = pt2.procedure_code";
@@ -249,7 +247,7 @@ class ResultTable extends AbstractTableGateway
                 $result_comments  = empty($rrow['comments'        ]) ? '' : $rrow['comments'];
                 $result_range     = empty($rrow['range'           ]) ? $restyp_range : $rrow['range'];
                 $result_status    = empty($rrow['result_status'   ]) ? '' : $rrow['result_status'];
-                
+
                 // if sub tests are in the table 'procedure_subtest_result'
                 if (!empty($rrow['subtest_code'])) {
                     $result_code  = $rrow['subtest_code'];
@@ -269,18 +267,17 @@ class ResultTable extends AbstractTableGateway
                     }
                 }
                
-			    if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+		if ($lastpoid != $order_id || $lastpcid != $order_seq) {
                     $lastprid = -1;
                     if ($lastpoid != $order_id) {
-			   
-                    if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
-                    $arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
-					}
-				   }
-				  }
+                        if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+                            $arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+                        }
+		    }
+		}
 				  
 				  
-				  if ($lastpoid != $order_id || $lastpcid != $order_seq) {
+		  if ($lastpoid != $order_id || $lastpcid != $order_seq) {
                     $lastprid = -1;
                     if ($lastpoid != $order_id) {
 			   
@@ -310,6 +307,8 @@ class ResultTable extends AbstractTableGateway
                     $title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
                     $arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
                 }
+                 
+                 
                 $arr1[$i]['specimen_num'] = xlt($specimen_num);
                 $title = $this->listLabOptions(array('option_id'=> $report_status, 'optId'=> 'proc_rep_status'));
                 $arr1[$i]['report_status'] = xlt($report_status);
@@ -344,16 +343,19 @@ class ResultTable extends AbstractTableGateway
                 $lastpoid = $order_id;
                 $lastpcid = $order_seq;
                 $lastprid = $report_id;
-                //if ($order_id == '116') {
-                     //echo '<pre>'; print_r($rrow); echo '</pre>';
-               // }
+                /*if ($order_id == '127') {
+                     echo '<pre>'; print_r($rrow); echo '</pre>';
+                }*/
             }
         }
         $arr1[$i]['total'] = $i-1;
-		   $file = fopen("D:/test8.txt","w");
+	
+          $cutlastrow = array_pop($arr1);
+       	   $file = fopen("D:/test8.txt","w");
            fwrite($file,print_r($arr1,1));
            fclose($file);
-        return $arr1;
+         //echo '<pre>'; print_r($arr1); echo '</pre>';
+         return $arr1;
 		
 		
     }
