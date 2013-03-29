@@ -62,12 +62,12 @@
 		<?php
 		if(acl_check("module_lab","procedure_order")){
 		    ?>
-		<a id="btn-edit" href="<?php echo $this->url('result', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pending_review_active; ?>" data-options="plain:true"><?php echo xlt('Pending Review/ Result');?></a>
+		<a id="btn-edit" href="<?php echo $this->url('result', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pending_review_active; ?>" data-options="plain:true"><?php echo xlt('Results');?></a>
 		<?php } ?>
-		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
-		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
-		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
 		<a href="<?php echo $this->url('specimen', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $specimen_collection_active; ?>" data-options="plain:true"><?php echo xlt('Specimen Collection');?></a>
+		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
+		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
+		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
 	    </div>
             <?php echo $this->content; ?>
             <hr>
