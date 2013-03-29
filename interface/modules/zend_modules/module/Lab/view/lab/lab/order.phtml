@@ -1,9 +1,10 @@
 <?php
 	$form = $this->form;
-	$form->setAttribute('action', $this->url('lab', array('action' => 'index')));
+	$form->setAttribute('action', $this->url('lab', array('action' => 'savedata')));
 	$form->prepare();
 	
 	echo $this->form()->openTag($form);
+	echo $this->formRow($form->get('hiddensubmit'));
 	echo $this->formRow($form->get('patient_id'));
 	echo $this->formRow($form->get('encounter_id'));
 	echo $this->formRow($form->get('procedurecount[0][]'));
@@ -24,22 +25,23 @@
 <script>
     var url = './savedata'
     function saveFrm() {
-        url = 'savedata';
-        $('#lab').form('submit',{
-            url: url,  
-            onSubmit: function(){  
-                return; //$(this).form('validate');  
-            },  
-            success: function(result){
-                var result = eval('('+result+')');  
-                if (result.errorMsg){
-                    $.messager.show({  
-                        title: 'Error',  
-                        msg: result.errorMsg  
-                    });  
-                }
-            }  
-        });  
+	$("#hiddensubmit").click();
+        //url = 'savedata';
+        //$('#lab').form('submit',{
+        //    url: url,  
+        //    onSubmit: function(){  
+        //        return; //$(this).form('validate');  
+        //    },  
+        //    success: function(result){
+        //        var result = eval('('+result+')');  
+        //        if (result.errorMsg){
+        //            $.messager.show({  
+        //                title: 'Error',  
+        //                msg: result.errorMsg  
+        //            });  
+        //        }
+        //    }  
+        //});  
     }
         
     $(function(){
@@ -65,6 +67,7 @@
             $('#cloneID_'+acc_cnt+'_' + inc).find('#diagnosestemplate').attr('id', 'diagnosestemplate_'+acc_cnt+'_' + inc);
             $('#cloneID_'+acc_cnt+'_' + inc).find('#proceduretemplate').attr('id', 'proceduretemplate_'+acc_cnt+'_' + inc);
             $('#cloneID_'+acc_cnt+'_' + inc).find('#prodiv').attr('id', 'prodiv_'+acc_cnt+'_' + inc);
+	    $('#cloneID_'+acc_cnt+'_' + inc).find('#deleteButton').attr('id', 'deleteButton_'+acc_cnt+'_' + inc);
             $('#cloneID_'+acc_cnt+'_' + inc).find('#patient_instructions_1_1').attr('id', 'patient_instructions_'+acc_cnt+'_' + inc);
             $('#cloneID_'+acc_cnt+'_' + inc).find('#diagnoses_1_1').attr('id', 'diagnoses_'+acc_cnt+'_' + inc);
             $('#cloneID_'+acc_cnt+'_' + inc).find('#procedures_1_1').attr('id', 'procedures_'+acc_cnt+'_' + inc);
@@ -82,6 +85,13 @@
         }
     }
     
+    function cancelItem(thisID){
+	$("#"+thisID).closest("table").remove();
+	//Arr = thisID.split("deleteButton");
+	//Acc = Arr[1].split("_");
+	////alert('#insTempl'+Acc[1]+"_1_____#cloneID"+Arr[1]);
+	//$('#insTempl'+Acc[1]+"_1").find("#cloneID"+Arr[1]).remove();
+    }
     $(function(){
         /*$("#addButton").click(function(){
             $('#cloneID').closest("tr").clone(true).appendTo("#dgord");
@@ -162,10 +172,10 @@
     
 </script>
 
-<a href="#"  plain="true" onclick="newOrder();">
+<!--a href="#"  plain="true" onclick="newOrder();">
     <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
     <?php echo xlt('New Order'); ?>
-</a>
+</a-->
 <a href="#"  plain="true" onclick="saveFrm();">
     <img  class="easyui-linkbutton" iconCls="icon-save" src=<?php echo $this->basePath() .'/css/icons/filesave.png'; ?> title=<?php echo xlt('Save'); ?> border=0 />
     <?php echo xlt('Save'); ?>
@@ -178,15 +188,15 @@
                     <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                     <?php echo xlt('Add Procedure'); ?>
                 </a>
-                <a href="#"  plain="true" onclick="newOrder();">
+                <!--a href="#"  plain="true" onclick="newOrder();">
                     <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
                     <?php echo xlt('New Order'); ?>
-                </a>
+                </a-->
                 <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyItem()">Destroy</a>-->
-                <a href="#"  plain="true" onclick="saveFrm();">
+                <!--a href="#"  plain="true" onclick="saveFrm();">
                     <img  class="easyui-linkbutton" iconCls="icon-save" src=<?php echo $this->basePath() .'/css/icons/filesave.png'; ?> title=<?php echo xlt('Save'); ?> border=0 />
                     <?php echo xlt('Save'); ?>
-                </a>
+                </a-->
             </div>
             <div id='editor' style="text-align: left; padding-left:20px;">
 
@@ -195,27 +205,27 @@
                         <td><?php echo xlt('Ordering Provider');?></td>
                         <td><?php echo xlt('Sending To');?></td>
                         <td><?php echo xlt('Order Date');?></td>
-                        <td><?php echo xlt('Internal Time Collected');?></td>
+                        <!--td><?php //echo xlt('Internal Time Collected');?></td-->
                         <td><?php echo xlt('Internal Comments');?></td>
-                        <td><?php echo xlt('Specimen Collected');?></td>
+                        <td style="display:none"><?php echo xlt('Specimen Collected');?></td>
                         <td><?php echo xlt('Priority');?></td>
                         <td><?php echo xlt('Status');?></td>
-                        <td valign='top'><?php echo xlt('Bill To');?></td>
+                        <td valign='top' style="display:none"><?php echo xlt('Bill To');?></td>
                     </tr>
                     <tr>
                         <td valign='top'><?php echo $this->formRow($form->get('provider[0][]'));?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('lab_id[0][]'));?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('orderdate[0][]'));?></td>
-                        <td valign='top'>
+                        <!--td valign='top'>
                             <span id="internaltime" style="display:none111">
-                                <?php echo $this->formRow($form->get('timecollected[0][]'));?>
+                                <?php //echo $this->formRow($form->get('timecollected[0][]'));?>
                             </span>
-                        </td>
+                        </td-->
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
-                        <td valign='top'><?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?></td>
+                        <td valign='top' style="display:none"><?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('priority[0][]'));?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('status[0][]'));?></td>
-                        <td valign='top'><?php echo $this->formRow($form->get('billto[0][]'));?></td>
+                        <td valign='top' style="display:none"><?php echo $this->formRow($form->get('billto[0][]'));?></td>
                     </tr>
                 </table>
 
@@ -251,7 +261,7 @@
                                         </span>
                                     </td>
                                     <td valign='top'>
-                                        <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem()">
+                                        <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                                             <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                                             <?php echo xlt('Cancel'); ?>
                                         </a>
@@ -297,7 +307,7 @@
             </span>
         </td>
         <td valign='top'>
-            <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem()">
+            <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                 <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                 <?php echo xlt('Cancel'); ?>
             </a>

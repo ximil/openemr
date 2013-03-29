@@ -17,6 +17,14 @@ class LabForm extends Form
             ),
         ));
 	$this->add(array(
+            'name' => 'hiddensubmit',
+            'attributes' => array(
+                'type'  => 'submit',
+		'id'	=> 'hiddensubmit',
+		'style' => 'display:none'
+            ),
+        ));
+	$this->add(array(
             'name' => 'patient_id',
             'attributes' => array(
                 'type'  => 'hidden',

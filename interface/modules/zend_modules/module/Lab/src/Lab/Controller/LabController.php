@@ -35,6 +35,8 @@ class LabController extends AbstractActionController
 	$status = $helper->getList("ord_status",'pending');
 	$form->get('status[0][]')->setValueOptions($status);
 	
+	$form->get('specimencollected[0][]')->setValue('onsite');
+	
 	// disable layout in the form
 	//$result = new ViewModel(array('form' => $form));
 	//$result->setTerminal(true);
