@@ -4,7 +4,7 @@ namespace Lab\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Lab\Model\Configuration;//vip
-use Lab\Form\PullForm;//EDITED
+use Lab\Form\ConfigurationForm;//EDITED
 use Zend\View\Model\JsonModel;
 
 use Zend\Soap\Client;
@@ -17,7 +17,29 @@ class ConfigurationController extends AbstractActionController
 
     public function indexAction()
     {
-       
+	$form 	= new ConfigurationForm();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	
+	$labs = $helper->getLabs();
+	$form->get('order_from')->setValueOptions($labs);
+	
+	$body_sites 	= $helper->getList("proc_body_site");
+	$form->get('order_bodysite')->setValueOptions($body_sites);
+	
+	$specimen_type 	= $helper->getList("proc_specimen");
+	$form->get('order_specimentype')->setValueOptions($specimen_type);
+	
+	$admin_via 	= $helper->getList("proc_route");
+	$form->get('order_administervia')->setValueOptions($admin_via);
+	
+	$laterality 	= $helper->getList("proc_lat");
+	$form->get('order_laterality')->setValueOptions($laterality);
+	
+	$dafault_units 	= $helper->getList("proc_unit");
+	$form->get('result_defaultunits')->setValueOptions($dafault_units);
+	$form->get('reccomendation_defaultunits')->setValueOptions($dafault_units);
+	  
+        return array('form' => $form);
     }
     
     public function getConfigurationTable()
@@ -35,7 +57,9 @@ class ConfigurationController extends AbstractActionController
 	$data  	    	= array('type_id'    => $request->getQuery('type_id'));		
         $typeID		= $data['type_id'];
 	
-	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	
+	
+	/*$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	
 	$body_sites 	= $helper->getList("proc_body_site");
 	$specimen_type 	= $helper->getList("proc_specimen");
@@ -49,9 +73,15 @@ class ConfigurationController extends AbstractActionController
 	$list_arr[]	= $specimen_type;
 	$list_arr[]	= $admin_via;
 	$list_arr[]	= $laterality;
-	$list_arr[]	= $dafault_units;
+	$list_arr[]	= $dafault_units;*/
 	
-	$ret_arr 	= $this->getConfigurationTable()->getConfigDetails($typeID,$list_arr);	
+	//$form 	= new ConfigurationForm();
+	//$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	//
+	//$labs = $helper->getLabs(1);
+	//$form->get('order_from')->setValueOptions($labs);
+	
+	$ret_arr 	= $this->getConfigurationTable()->getConfigDetails($typeID);	
 	return $ret_arr;	
     }
     
