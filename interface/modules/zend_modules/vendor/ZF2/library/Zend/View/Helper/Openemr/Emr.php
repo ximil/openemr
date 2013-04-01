@@ -59,7 +59,7 @@ class Emr extends AbstractHelper
 	return $rows;
     }
     
-    public function getLabs()
+    public function getLabs($selected)
     {
 	$res = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid"); 
 	$rows[0] = array (
@@ -71,9 +71,11 @@ class Emr extends AbstractHelper
 	$i = 1;
 	
 	while($row=sqlFetchArray($res)) {
+	    $sel = ($row['ppid']==$selected) ? TRUE : FALSE;
 		$rows[$i] = array (
 			'value' => $row['ppid'],
 			'label' => $row['name'],
+			'selected' => $sel,
 		);
 		$i++;
 	}
