@@ -21,11 +21,16 @@ table.thcolor th{
 }
 </style>
 <script type="text/javascript">
+$(document).ready(function (){
+		<?php if($this->layout()->saved == 'yes'){ ?>
+		alert('Successfully Saved');
+		<?php } ?>
+});
 function doSearch(){
 		$("#specimen").submit();
 }
 function doSave(){
-		$("#specimen").attr("action", "./specimen/save");
+		$("#specimen").attr("action", window.location.href.replace("index","save"));
 		$("#specimen").submit();
 }
 </script>

@@ -2,10 +2,11 @@
 return array(
     'controllers' => array(
         'invokables' => array(
-            'Lab'       => 'Lab\Controller\LabController',
-            'Result'    => 'Lab\Controller\ResultController',
-            'Pull'      => 'Lab\Controller\PullController',
-            'Specimen'  => 'Lab\Controller\SpecimenController',
+            'Lab'           => 'Lab\Controller\LabController',
+            'Result'        => 'Lab\Controller\ResultController',
+            'Pull'          => 'Lab\Controller\PullController',
+            'Configuration' => 'Lab\Controller\ConfigurationController',
+            'Specimen'      => 'Lab\Controller\SpecimenController',
         ),
     ),
 
@@ -30,7 +31,7 @@ return array(
             'result' => array(
                 'type' => 'segment',
                 'options' => array(
-                    'route'    => '/lab/result[/:action][/:id]',
+                    'route'    => '/lab/result[/:action][/:id][/:saved]',
                     'constraints' => array(
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         'id'     => '[0-9]+',
@@ -55,19 +56,34 @@ return array(
                         'action'     => 'index',
                     ),
                 ),
+            ),            
+            
+            'configuration' => array(
+                'type'    => 'segment',
+                'options' => array(
+                     'route'    => '/lab/configuration[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id'     => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Configuration',
+                        'action'     => 'index',
+                    ),
+                ),
             ),
             
             'specimen' => array(
                 'type'    => 'segment',
                 'options' => array(
-                     'route'    => '/specimen[/:action][/:id]',
+                     'route'    => '/specimen[/:action][/:id][/:saved]',
                     'constraints' => array(
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         'id'     => '[0-9]+',
                     ),
                     'defaults' => array(
                         'controller' => 'Specimen',
-                        'action'     => 'index',
+                        //'action'     => 'index',
                     ),
                 ),
             ),

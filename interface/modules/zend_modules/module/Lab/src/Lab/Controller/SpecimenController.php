@@ -33,6 +33,7 @@ class SpecimenController extends AbstractActionController
 				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 				$statuses = $helper->getList("proc_rep_status");
 				$form->get('specimen_status[]')->setValueOptions($statuses);
+				$this->layout()->saved = $this->params('saved');
 				if($pid){
 						$form->get('patient_id')->setValue($pid);
 						$search_pid = $pid;
@@ -59,7 +60,7 @@ class SpecimenController extends AbstractActionController
 				$request = $this->getRequest();
         if ($request->isPost()) {
 						$this->getSpecimenTable()->saveSpecimenDetails($request->getPost());
-						return $this->redirect()->toRoute('specimen');
+						return $this->redirect()->toRoute('specimen',array('action' => 'index', 'saved' => 'yes'));
 				}
     }
 		
