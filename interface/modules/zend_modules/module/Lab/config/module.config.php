@@ -6,7 +6,7 @@ return array(
             'Result'        => 'Lab\Controller\ResultController',
             'Pull'          => 'Lab\Controller\PullController',
             'Configuration' => 'Lab\Controller\ConfigurationController',
-            'Specimen'  => 'Lab\Controller\SpecimenController',
+            'Specimen'      => 'Lab\Controller\SpecimenController',
         ),
     ),
 
@@ -31,7 +31,7 @@ return array(
             'result' => array(
                 'type' => 'segment',
                 'options' => array(
-                    'route'    => '/lab/result[/:action][/:id]',
+                    'route'    => '/lab/result[/:action][/:id][/:saved]',
                     'constraints' => array(
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         'id'     => '[0-9]+',
@@ -76,14 +76,14 @@ return array(
             'specimen' => array(
                 'type'    => 'segment',
                 'options' => array(
-                     'route'    => '/specimen[/:action][/:id]',
+                     'route'    => '/specimen[/:action][/:id][/:saved]',
                     'constraints' => array(
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         'id'     => '[0-9]+',
                     ),
                     'defaults' => array(
                         'controller' => 'Specimen',
-                        'action'     => 'index',
+                        //'action'     => 'index',
                     ),
                 ),
             ),
