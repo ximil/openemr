@@ -476,6 +476,7 @@ class ResultController extends AbstractActionController
 				$form->get('abnormal[]')->setValueOptions($statuses_abn);
 				$statuses_units = $helper->getList("proc_unit");
 				$form->get('units[]')->setValueOptions($statuses_units);
+				$this->layout()->saved = $this->params('saved');
 				if($pid){
 						$form->get('patient_id')->setValue($pid);
 						$search_pid = $pid;
@@ -502,7 +503,7 @@ class ResultController extends AbstractActionController
 				$request = $this->getRequest();
         if ($request->isPost()) {
 						$this->getResultTable()->saveResultEntryDetails($request->getPost());
-						return $this->redirect()->toRoute('result',array('action' => 'resultEntry'));
+						return $this->redirect()->toRoute('result',array('action' => 'resultEntry','saved' => 'yes'));
 				}
     }
 }
