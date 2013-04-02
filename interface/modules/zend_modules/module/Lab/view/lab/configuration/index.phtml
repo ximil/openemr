@@ -14,31 +14,64 @@ table.gridtable td {
 {
 	width:300px;
 }
+
+.icon_add
+{
+	float:left;
+	width:20px;
+	background-image:url("<?php echo $this->basePath(); ?>/css/icons/add.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.icon_edit
+{
+	float:left;
+	width:20px;
+	background-image:url("<?php echo $this->basePath(); ?>/css/icons/pencil.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+  
+  
+.icon_delete
+{
+	float:left;
+	width:20px;
+	background-image:url("<?php echo $this->basePath(); ?>/css/icons/cancel.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+  
   
 </style>
 <div style="margin:10px 0;"></div>
 <div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" >
-<a href="javascript:void(0)" onclick="addConfig()">
-	<img  src=<?php echo $this->basePath(); ?>/css/icons/add_type.png title='Add' border=0  />
-</a> <b>ADD</b>
+	<a href="javascript:void(0)" onclick="addConfig()">
+		<img  src=<?php echo $this->basePath(); ?>/css/icons/add_type.png title='Add' border=0  />
+	</a>
+	<b>ADD</b>
 	<table id="tg" class="easyui-treegrid"  style="width:850px;height:300px"
-			data-options="
-				iconCls: 'icon-ok',
-				rownumbers: true,
-				animate: true,
-				collapsible: true,
-				fitColumns: true,
-				url: './configuration/getAllConfigDeatils',
-				idField: 'id',
-				treeField: 'name',
-				pagination:true,
-				pageNumber:1,
-				pageSize:25,
-				pageList:[10,15,20,25,50],
-				width:'88%',  
-				height:'auto',  
-				
-			">
+		data-options="
+			iconCls: 'icon-ok',
+			rownumbers: true,
+			animate: true,
+			collapsible: true,
+			fitColumns: true,
+			url: './configuration/getAllConfigDeatils',
+			idField: 'id',
+			treeField: 'name',
+			pagination:true,
+			pageNumber:1,
+			pageSize:25,
+			pageList:[10,15,20,25,50],
+			width:'88%',  
+			height:'auto',  
+			
+		">
 		<thead>			
 			<tr>
 				<th data-options="field:'pk',width:25,editor:'text'">Type ID</th>
@@ -46,25 +79,33 @@ table.gridtable td {
 				<th data-options="field:'order',width:60,align:'left',editor:'text'">Type</th>
 				<th data-options="field:'procedure_code',width:60,editor:'text'">Code</th>
 				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
-				<th data-options="field:'discription',width:170,editor:'text'">Discription</th>
+				<th data-options="field:'discription',width:170,editor:'text'">Description</th>
+				<th data-options="field:'action',title:'Action',width:33,align:'centre'"></th>
+				
 				<!-- Start Action -->
-                    <th data-options="field:'action',title:'Action',width:30,align:'centre',
-								formatter:function(value,row,index){
-										if (row.editing){
-												var x = '<a></a>';
-												var s = '<a></a> ';
-												var c = '<a></a>';
-												
-												return x+s+c;
-										} else {
-												var y = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-add\' plain=\'true\' onclick=addExist()><img  src=<?php echo $this->basePath(); ?>/css/icons/add.png title=\'Add\' border=0 /></a> ';
-												var d = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-edit\' plain=\'true\' onclick=editItem()><img  src=<?php echo $this->basePath(); ?>/css/icons/pencil.png title=\'Edit\' border=0 /></a> ';
-												var e = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-delete\' plain=\'true\' onclick=deleteItem(this)><img  src=<?php echo $this->basePath(); ?>/css/icons/cancel.png title=\'Delete\' border=0 /></a> ';
-												return y+d+e;
-										}
-								}">
-								Action
-								</th>
+				<!--<th data-options="field:'action',title:'Action',width:30,align:'centre',
+					formatter:function(value,row,index)
+					{
+					//alert('hi');
+						if (row.editing)
+						{
+							var x = '<a></a>';
+							var s = '<a></a>';
+							var c = '<a></a>';								
+							return x+s+c;
+						}
+						else
+						{
+							var y = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-add\' plain=\'true\' onclick=addExist()><img  src=<?php echo $this->basePath(); ?>/css/icons/add.png title=\'Add\' border=0 /></a> ';
+							var d = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-edit\' plain=\'true\' onclick=editItem()><img  src=<?php echo $this->basePath(); ?>/css/icons/pencil.png title=\'Edit\' border=0 /></a> ';
+							var e = '<a href=\'#\' class=\'easyui-linkbutton\' iconCls=\'icon-delete\' plain=\'true\' onclick=deleteItem(this)><img  src=<?php echo $this->basePath(); ?>/css/icons/cancel.png title=\'Delete\' border=0 /></a> ';
+							return y+d+e;
+						}
+					}">
+					Action
+				</th>-->
+				
+				
 				<!-- End Action -->
 
 			</tr>
@@ -74,312 +115,607 @@ table.gridtable td {
 	
 	
 	<!-- Start Popup -->
-
-	<!--<div id="w" class="easyui-window" title="Orders and Results" data-options="modal:true,closed:true,iconCls:'icon-save'"
-	     style="width:735px;min-height:330px;padding:10px;">
-		<table id="pg" style="width:720px;min-height:280px"></table>  
-		<div style="padding:5px 0;text-align:right;padding-right:30px;padding-left:430px">
-			<input type="hidden" name="action" id="action" value="edit" />
-			<input type="hidden" name="exist_typeid" id="exist_typeid" value="" />
-			<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
-			<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
-		</div>
-		<script>
-			function groupFormatter(fvalue, rows){
-				return fvalue + ' - <span style="color:red">' + rows.length + ' rows</span>';
-			}
-		</script>
-	</div>-->
 	
 	<div id="w" class="easyui-window" title="Procedure Types Configuration" data-options="modal:true,closed:true,iconCls:'icon-save'"
 	     style="width:650px;min-height:330px;padding:10px;">
 		
 		<form name="config_form" id="config_form" method="post">
 		
-		
-			<div id="group_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
-				<div id="group_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
-				     onclick="statusChange(this.id)">
-					+				
-				</div>
-				<input type="hidden" name="group_indicator_value" id="group_indicator_value" value="+">
-				<input type="hidden" name="group_type_id" id="group_type_id" value="">	
-				<div id="group_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-					Group
+			<div id="add_div" style="float:left;display:none;width:100%">
+				<div id="group_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="group_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+					     onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('group_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('group_type_id[]'));?>
+					<div id="group_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Group
+					</div>
+					
+				</div>	
+				<div id="group_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">							
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('group_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('group_description[]'));?>
+							</td>
+						</tr>
+						
+					</table>
 				</div>
 				
-			</div>	
-			<div id="group_div" style="float:left;margin-left:20px;display:none">
-				<table style="width:600px;min-height:280px"  class="gridtable">
-					<tr>
-						<td width="150">
-							Name
-						</td>
-						<td width="430">
-							<input name="group_name" id="group_name" class="textfield" >
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Description
-						</td>
-						<td>
-							<input name="group_description" id="group_description" class="textfield">
-						</td>
-					</tr>
+				<div id="order_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="order_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('order_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('order_type_id[]'));?>
+					<div id="order_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Order
+					</div>
 					
-				</table>
+				</div>	
+				<div id="order_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px" class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('order_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Order From
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_from'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Procedure Code
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_procedurecode[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Standard Code
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_standardcode[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Body Site
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_bodysite'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Specimen_type
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_specimentype'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Administer Via
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_administervia'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Laterality
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_laterality'));?>
+							</td>
+						</tr>
+						
+					</table>
+				</div>
+				
+				<div id="result_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="result_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('result_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('result_type_id[]'));?>	
+					<div id="result_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Result
+					</div>
+					
+				</div>
+					
+				<div id="result_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('result_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Units
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_defaultunits'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Range
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_defaultrange[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Followup Services
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_followupservices[]'));?>
+							</td>
+						</tr>
+						
+					</table>
+				</div>
+				
+				<div id="reccomendation_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="reccomendation_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('reccomendation_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('reccomendation_type_id[]'));?>	
+					<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Reccomendation
+					</div>
+					
+				</div>
+			
+				
+				<div id="reccomendation_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('reccomendation_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Units
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_defaultunits'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Range
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_defaultrange[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Followup Services
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_followupservices[]'));?>
+							</td>
+						</tr>
+						
+					</table>
+				</div>
+			
+			</div>
+			<!--CLONE DIVS...................................................................................-->
+			
+			<div id="group_div_clone" style="float:left;display:none">
+			
+				<div id="group_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="group_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+					     onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('group_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('group_type_id[]'));?>
+					<div id="group_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Group
+					</div>
+					
+				</div>	
+				<div id="group_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">							
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('group_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('group_description[]'));?>
+							</td>
+						</tr>
+						
+					</table>
+				</div>
 			</div>
 			
-			<div id="order_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
-				<div id="order_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
-					onclick="statusChange(this.id)">
-					+				
-				</div>
-				<input type="hidden" name="order_indicator_value" id="order_indicator_value" value="+">
-				<input type="hidden" name="order_type_id" id="order_type_id" value="">	
-				<div id="order_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-					Order
-				</div>
+			<div id="order_div_clone" style="float:left;display:none">
 				
-			</div>	
-			<div id="order_div" style="float:left;margin-left:20px;display:none">
-				<table style="width:600px;min-height:280px" class="gridtable">
-					<tr>
-						<td width="150">
-							Name
-						</td>
-						<td width="430">
-							<input name="order_name" id="order_name"  class="textfield">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Description
-						</td>
-						<td>
-							<input name="order_description" id="order_description" class="textfield">
-						</td>
-					</tr>
+				<div id="order_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="order_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('order_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('order_type_id[]'));?>
+					<div id="order_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Order
+					</div>
 					
-					<tr>
-						<td>
-							Sequence
-						</td>
-						<td>
-							<input name="order_sequence" id="order_sequence" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Order From
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('order_from'));?>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Procedure Code
-						</td>
-						<td>
-							<input name="order_procedurecode" id="order_procedurecode" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Standard Code
-						</td>
-						<td>
-							<input name="order_standardcode" id="order_standardcode" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Body Site
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('order_bodysite'));?>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Specimen_type
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('order_specimentype'));?>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Administer Via
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('order_administervia'));?>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Laterality
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('order_laterality'));?>
-						</td>
-					</tr>
-					
-				</table>
+				</div>	
+				<div id="order_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px" class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('order_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Order From
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_from'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Procedure Code
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_procedurecode[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Standard Code
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_standardcode[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Body Site
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_bodysite'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Specimen_type
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_specimentype'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Administer Via
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_administervia'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Laterality
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('order_laterality'));?>
+							</td>
+						</tr>
+						
+					</table>
+				</div>
 			</div>
 			
-			<div id="result_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
-				<div id="result_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
-					onclick="statusChange(this.id)">
-					+				
+			<div id="result_div_clone" style="float:left;display:none">
+				<div id="result_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="result_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('result_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('result_type_id[]'));?>	
+					<div id="result_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Result
+					</div>
+					
 				</div>
-				<input type="hidden" name="result_indicator_value" id="result_indicator_value" value="+">
-				<input type="hidden" name="result_type_id" id="result_type_id" value="">	
-				<div id="result_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-					Result
+				<div id="result_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('result_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Units
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_defaultunits'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Range
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_defaultrange[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Followup Services
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('result_followupservices[]'));?>
+							</td>
+						</tr>
+						
+					</table>
 				</div>
-				
-			</div>
-				
-			<div id="result_div" style="float:left;margin-left:20px;display:none">
-				<table style="width:600px;min-height:280px"  class="gridtable">
-					<tr>
-						<td width="150">
-							Name
-						</td>
-						<td width="430">
-							<input name="result_name" id="result_name"  class="textfield">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Description
-						</td>
-						<td>
-							<input name="result_description" id="result_description" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Sequence
-						</td>
-						<td>
-							<input name="result_sequence" id="result_sequence" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Default Units
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('result_defaultunits'));?>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Default Range
-						</td>
-						<td>
-							<input name="result_defaultrange" id="result_defaultrange" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Followup Services
-						</td>
-						<td>
-							<input name="result_followupservices" id="result_followupservices" class="textfield">
-						</td>
-					</tr>
-					
-				</table>
 			</div>
 			
-			<div id="reccomendation_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
-				<div id="reccomendation_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
-					onclick="statusChange(this.id)">
-					+				
+			<div id="reccomendation_div_clone" style="float:left;display:none">
+				<div id="reccomendation_title" style="float:left;background-color:#E0ECFF;width:100%;height:20px;padding-top:5px;padding-left:5px">
+					<div id="reccomendation_indicator" style="float:left;width:15px;font-weight:bold;font-size:16px;color:#9A9A9A;cursor:hand;cursor:pointer"
+						onclick="statusChange(this.id)">
+						+				
+					</div>
+					<?php echo $this->formRow($form->get('reccomendation_indicator_value[]'));?>
+					<?php echo $this->formRow($form->get('reccomendation_type_id[]'));?>	
+					<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
+						Reccomendation
+					</div>
+					
 				</div>
-				<input type="hidden" name="reccomendation_indicator_value" id="reccomendation_indicator_value" value="+">
-				<input type="hidden" name="reccomendation_type_id" id="reccomendation_type_id" value="">	
-				<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-					Reccomendation
+				<div id="reccomendation_div" style="float:left;margin-left:20px;display:none">
+					<table style="width:600px;min-height:280px"  class="gridtable">
+						<tr>
+							<td width="150">
+								Name
+							</td>
+							<td width="430">
+								<?php echo $this->formRow($form->get('reccomendation_name[]'));?>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Description
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_description[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Sequence
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_sequence[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Units
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_defaultunits'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Default Range
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_defaultrange[]'));?>
+							</td>
+						</tr>
+						
+						<tr>
+							<td>
+								Followup Services
+							</td>
+							<td>
+								<?php echo $this->formRow($form->get('reccomendation_followupservices[]'));?>
+							</td>
+						</tr>
+						
+					</table>
 				</div>
+			
+			</div>
+			
+			
+			<!--END OF CLONE DIVS..................................................-->
+			
+			
+			<div id="edit_div" style="display:none;float:left;width:100%">
 				
 			</div>
-		
 			
-			<div id="reccomendation_div" style="float:left;margin-left:20px;display:none">
-				<table style="width:600px;min-height:280px"  class="gridtable">
-					<tr>
-						<td width="150">
-							Name
-						</td>
-						<td width="430">
-							<input name="reccomendation_name" id="reccomendation_name"  class="textfield">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Description
-						</td>
-						<td>
-							<input name="reccomendation_description" id="reccomendation_description" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Sequence
-						</td>
-						<td>
-							<input name="reccomendation_sequence" id="reccomendation_sequence" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Default Units
-						</td>
-						<td>
-							<?php echo $this->formRow($form->get('reccomendation_defaultunits'));?>
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Default Range
-						</td>
-						<td>
-							<input name="reccomendation_defaultrange" id="reccomendation_defaultrange" class="textfield">
-						</td>
-					</tr>
-					
-					<tr>
-						<td>
-							Followup Services
-						</td>
-						<td>
-							<input name="reccomendation_followupservices" id="reccomendation_followupservices" class="textfield">
-						</td>
-					</tr>
-					
-				</table>
-			</div>
+			
 			
 			<div style="padding:5px 0;text-align:right;padding-right:30px;padding-left:230px">
+				
+				<input type="hidden" name="grp_count" id="grp_count" value="" />
+				<input type="hidden" name="ord_count" id="ord_count" value="" />
+				<input type="hidden" name="res_count" id="res_count" value="" />
+				<input type="hidden" name="rec_count" id="rec_count" value="" />
+
+				
+				
 				<input type="hidden" name="action" id="action" value="edit" />
 				<input type="hidden" name="exist_typeid" id="exist_typeid" value="" />
 				<a href="" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
