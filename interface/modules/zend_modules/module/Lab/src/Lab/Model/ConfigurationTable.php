@@ -321,7 +321,11 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['procedure_code']	= $row['procedure_code'];
 	    $res_arr['procedure_type']	= $row['procedure_type'];
 	    $res_arr['range']		= $row['range'];
-	    $res_arr['discription']	= $row['description'];	    
+	    $res_arr['discription']	= $row['description'];
+	    
+	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
 		$res_arr['iconCls']	= "tree-folder";
@@ -336,7 +340,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "";
+		$res_arr['iconCls']	= "tree-file";
 		$res_arr['order']	= "Recommendation";
 	    }	    
 	    
@@ -390,7 +394,11 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['procedure_code']	= $row['procedure_code'];
 	    $res_arr['procedure_type']	= $row['procedure_type'];
 	    $res_arr['range']		= $row['range'];
-	    $res_arr['discription']	= $row['description'];	
+	    $res_arr['discription']	= $row['description'];
+	    
+	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
 		$res_arr['iconCls']	= "tree-folder";
@@ -405,7 +413,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "";
+		$res_arr['iconCls']	= "tree-file";
 		$res_arr['order']	= "Recommendation";
 	    }	
 	    

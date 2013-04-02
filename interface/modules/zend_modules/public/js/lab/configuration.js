@@ -110,8 +110,15 @@
 	function addConfig()
 	{
 		clearAll();
+		document.getElementById('edit_div').innerHTML="";
+		document.getElementById('add_div').style.display="block";
+		//alert("ADD ITEM");
 		
-		expandCategory('group');
+		collapseCategory('order','');
+		collapseCategory('result','');
+		collapseCategory('reccomendation','');
+		
+		expandCategory('group','');
 		//alert("ADD ITEM");
 		//alert('add '+document.getElementById('action').value);
 		document.getElementById('action').value = "add";
@@ -129,217 +136,192 @@
 		//collapseChildGroups();			
 	}
 	
-	function deleteItem()
+	function deleteItem(row_id)
 	{
-		$('#tg').treegrid({
-			
-			onClickRow: function(row) {
-				//alert("DELETE ITEM");
-				
-				var parentNode = $('#tg').treegrid('getParent' , row.id);
-				//alert("parent :"+parentNode)
-				if(parentNode != null)
-				{
-					var parentNodeId = parentNode.id;
-				}
-				//alert("row id :"+row.id);
-				$.ajax({
-					type: "GET",
-					cache: false,
-					dataType: "json",
-					url: "./configuration/deleteConfigDetails?type_id="+row.id,
-					data: {							
-						},
-					success: function(data) {
-						//alert("Ajax success");
+		var conf	= confirm("Do You Really Want to Delete this Item ?");
+		if(conf)
+		{
+			//alert("row id :"+row_id);
+			$.ajax({
+				type: "GET",
+				cache: false,
+				dataType: "json",
+				url: "./configuration/deleteConfigDetails?type_id="+row_id,
+				data: {							
 					},
-					error: function(data){
-						alert("Ajax Fail");
-					}
-				});
-				alert('Items Deleted Successfully');
-				$('#tg').treegrid('reload'); 
-			},			
-		})	
-
-	}
-	
-	
-	/*function editItem() {
-		
-		document.getElementById('action').value = "edit";
-		
-		$('#tg').treegrid({
-			
-			onClickRow: function(row) {
-				//alert("EDIT ITEM");
-				//alert('going 2 reload'+row);
-				
-				var parentNode = $('#tg').treegrid('getParent' , row.id);
-				//alert("parent :"+parentNode)
-				if(parentNode != null)
-				{
-					var parentNodeId = parentNode.id;
+				success: function(data) {
+					//alert("Ajax success");
+				},
+				error: function(data){
+					alert("Ajax Fail");
 				}
-				//alert("row id :"+row.id);
-				$('#pg').propertygrid({
-					
-					url: './configuration/getConfigEditDeatils?type_id='+ row.id,  
-					showGroup: true,  
-					columns: mycolumns,
-					width:700,
-					height:'auto'//500
-				});					
-				
-				$('#w').window('open');
-				
-				collapseChildGroups();
-			},			
-		})	
-
-	}*/
-	
-	
-	function editItem() {
+			});
+			alert('Items Deleted Successfully');
+			$('#tg').treegrid('reload'); 		
+		}
 		
-		var init_type;
+			
+	}	
+	
+	var grp_inc;
+	var ord_inc;
+	var res_inc;
+	var rec_inc;
+	
+	function editItem(row_id) {
+		
+		
+		grp_inc = 0;
+		ord_inc = 0;
+		res_inc = 0;
+		rec_inc = 0;
+		
+		document.getElementById('grp_count').value = grp_inc;
+		document.getElementById('ord_count').value = ord_inc;
+		document.getElementById('res_count').value = res_inc;
+		document.getElementById('rec_count').value = rec_inc;
+	
+	
+		document.getElementById('edit_div').innerHTML="";
+		var type;
 		var count;
 		
-		
-		
-				
-		
 		//alert("edit");
-		$('#tg').treegrid({
-			
-			onClickRow: function(row) {
-				clearAll();
 		
-				showCategory('group');
-				showCategory('order');	
-				showCategory('result');
-				showCategory('reccomendation');	
+		clearAll();
+		document.getElementById('add_div').style.display="none";
+		
+		
+		
+		
+		
+		document.getElementById('action').value = "edit";
+		//alert("EDIT ITEM");
+		//alert('going 2 reload'+row);
+		
+		
+		
+		
+		
+		$.ajax({
+			type: "POST",
+			cache: false,
+			dataType: "json",
+			url: "./configuration/getConfigEditDeatils?type_id="+row_id,
+			data: {							
+				},
+			success: function(data) {
+				//alert("Ajax success"+data.toSource());
 				
-				document.getElementById('action').value = "edit";
-				alert("EDIT ITEM");
-				//alert('going 2 reload'+row);
 				
-				var parentNode = $('#tg').treegrid('getParent' , row.id);
-				//alert("parent :"+parentNode)
-				if(parentNode != null)
-				{
-					var parentNodeId = parentNode.id;
-				}
-				//alert("row id :"+row.id);
-				/*$('#pg').propertygrid({
+				var init_type = "";
+				
+				$.each(data, function(jsonIndex, jsonValue){
+					//alert("type id :"+jsonValue['type_id']);
+					//parent_id = jsonValue['type_id'];
 					
-					url: './configuration/getConfigEditDeatils?type_id='+ row.id,  
-					showGroup: true,  
-					columns: mycolumns,
-					width:700,
-					height:'auto'//500
-				});					
-				*/
-				
-				$.ajax({
-					type: "POST",
-					cache: false,
-					dataType: "json",
-					url: "./configuration/getConfigEditDeatils?type_id="+ row.id,
-					data: {							
-						},
-					success: function(data) {
-						//alert("Ajax success"+data.toSource());
-						
-						count	= 0;
-						
-						$.each(data, function(jsonIndex, jsonValue){
-							//alert("type id :"+jsonValue['type_id']);
-							//parent_id = jsonValue['type_id'];
-							if(count == 0)
-							{
-								init_type = jsonValue['group'];
-							}
-							
-							for(var field in jsonValue)
-							{
-								//alert(field+" : = "+jsonValue[field]);
-								if(field == "group")
-								{
-									continue;
-								}
-								document.getElementById(field).value 		= jsonValue[field];								
-							}							
-							/*
-							if(jsonValue['group'] == "grp")
-							{
-								document.getElementById('group_div').style.display		= 'block';
-								document.getElementById('group_indicator_value').value 		= "-";
-								document.getElementById('group_indicator').innerHTML 		= "-";
-							}
-							else if(jsonValue['group'] == "ord")
-							{
-								document.getElementById('order_div').style.display		= 'block';
-								document.getElementById('order_indicator_value').value 		= "-";
-								document.getElementById('order_indicator').innerHTML 		= "-";
-							}
-							else if(jsonValue['group'] == "res")
-							{
-								document.getElementById('result_div').style.display		= 'block';
-								document.getElementById('result_indicator_value').value 	= "-";
-								document.getElementById('result_indicator').innerHTML 		= "-";
-							}
-							else if(jsonValue['group'] == "rec")
-							{
-								document.getElementById('reccomendation_div').style.display	= 'block';
-								document.getElementById('reccomendation_indicator_value').value = "-";
-								document.getElementById('reccomendation_indicator').innerHTML 	= "-";
-							}*/
-							count++;
-						});
-						
-						if(init_type == "grp")
-						{
-							hideCategory('order');
-							hideCategory('result');
-							hideCategory('reccomendation');
-							expandCategory('group');
-						}
-						
-						if(init_type == "ord")
-						{
-							hideCategory('group');
-							expandCategory('order');
-						}
-						
-						if(init_type == "res")
-						{
-							hideCategory('group');
-							hideCategory('order');
-							expandCategory('result');
-						}
-						
-						if(init_type == "rec")
-						{
-							hideCategory('group');
-							hideCategory('order');	
-							hideCategory('result');
-							expandCategory('reccomendation');
-						}
-					},
-					error: function(data){
-						alert("Ajax Fail");
+					if(init_type == "")
+					{
+						init_type	= jsonValue['group'];
 					}
+					
+					type 		= jsonValue['group'];					
+					
+					
+					if(type == "grp")
+					{
+						cloneDiv("group");
+						for(var field in jsonValue)
+						{
+							//alert(field+" : = "+jsonValue[field]);
+							if(field == "group")
+							{								
+								continue;
+							}
+							document.getElementById(field+'_'+grp_inc).value = jsonValue[field];								
+						}	
+					}
+					else if(type == "ord")
+					{
+						cloneDiv("order");
+						for(var field in jsonValue)
+						{
+							//alert(field+" : = "+jsonValue[field]);
+							if(field == "group")
+							{								
+								continue;
+							}
+							document.getElementById(field+'_'+ord_inc).value = jsonValue[field];								
+						}	
+					}
+					else if(type == "res")
+					{
+						cloneDiv("result");
+						for(var field in jsonValue)
+						{
+							//alert(field+" : = "+jsonValue[field]);
+							if(field == "group")
+							{	continue;
+							}
+							document.getElementById(field+'_'+res_inc).value = jsonValue[field];								
+						}	
+					}
+					else if(type == "rec")
+					{
+						cloneDiv("reccomendation");
+						for(var field in jsonValue)
+						{
+							//alert(field+" : = "+jsonValue[field]);
+							if(field == "group")
+							{
+								continue;
+							}
+							document.getElementById(field+'_'+rec_inc).value = jsonValue[field];								
+						}	
+					}
+					
 				});
 				
+				document.getElementById('grp_count').value = grp_inc;
+				document.getElementById('ord_count').value = ord_inc;
+				document.getElementById('res_count').value = res_inc;
+				document.getElementById('rec_count').value = rec_inc;
 				
+				//alert('init :'+init_type);
+				if(init_type == "grp")
+				{
+					//alert('grp expnd');
+					expandCategory("group",1);
+				}
+				else if(init_type == "ord")
+				{
+					//alert('grp expnd');
+					expandCategory("order",1);
+				}
+				else if(init_type == "res")
+				{
+					//alert('grp expnd');
+					expandCategory("result",1);
+				}
+				else if(init_type == "rec")
+				{
+					//alert('grp expnd');
+					expandCategory("reccomendation",1);
+				}
 				
-				
-				$('#w').window('open');
-				
-				//collapseChildGroups();
-			},			
-		})	
+			},
+			error: function(data){
+				alert("Ajax Fail");
+			}
+		});
+		
+		
+		document.getElementById('edit_div').style.display="block";
+		
+		$('#w').window('open');
+		
+		
+			
 		
 		
 
@@ -368,20 +350,9 @@
 					
 	}
 	
-	$('#pg').propertygrid({
-		onExpand: function(row){
-			alert('hai ****');
-		}
-	});
+	
 			
-	function aaaa(rowid)
-	{
-		$('#pg').propertygrid({  
-			onClickRow:function(rowIndex){  
-			   alert("onClickRow");
-			}  
-		    });  
-	}		    
+		    
 	
 	
 	function loadRemote(){
@@ -422,157 +393,183 @@
 			
 			var params;
 		
-			if($('#group_name').val().trim() != "")
+			//alert('group count :'+$('#grp_count').val());
+			//alert('ord count :'+$('#ord_count').val());
+			//alert('res count :'+$('#res_count').val());
+			//alert('rec count :'+$('#rec_count').val());
+			
+			//return false;
+			
+			for(var i=1; i<=$('#grp_count').val(); i++)
 			{
-				params = "";
-				//alert("index :"+index+" => "+input_arr[index]);
-				params	= "?procedure_type=grp&type_id="+$('#group_type_id').val();
-				
-				for(var ind in grp_arr)
+				if($('#group_name_'+i).val().trim() != "")
 				{
-					if($('#'+grp_arr[ind]).val().trim() != "")
+					params = "";
+					//alert("index :"+index+" => "+input_arr[index]);
+					params	= "?procedure_type=grp&type_id="+$('#group_type_id_'+i).val();
+					
+					for(var ind in grp_arr)
 					{
-						params += "&"+column_arr[grp_arr[ind]]+"="+$('#'+grp_arr[ind]).val();
+						if($('#'+grp_arr[ind]+'_'+i).val().trim() != "")
+						{
+							params += "&"+column_arr[grp_arr[ind]]+"="+$('#'+grp_arr[ind]+'_'+i).val();
+						}
 					}
-				}
-				//alert("submitting : group params : "+params);
-				//return false;
-				
-				$.ajax({
-					type: "GET",
-					cache: false,
-					dataType: "json",
-					async: false,
-					url: "./configuration/saveConfigDetails"+params,
-					data: {							
+					//alert("submitting : group params : "+params);
+					//return false;
+					
+					$.ajax({
+						type: "GET",
+						cache: false,
+						dataType: "json",
+						async: false,
+						url: "./configuration/saveConfigDetails"+params,
+						data: {							
+							},
+						success: function(data) {
+							//alert("Ajax success"+data);
+							//alert("myObject is " + data.toSource());
+							$.each(data, function(jsonIndex, jsonValue){
+								//alert("new type id :"+jsonValue['type_id']);
+								//parent_id = jsonValue['type_id'];
+							});
 						},
-					success: function(data) {
-						//alert("Ajax success"+data);
-						//alert("myObject is " + data.toSource());
-						$.each(data, function(jsonIndex, jsonValue){
-							//alert("new type id :"+jsonValue['type_id']);
-							//parent_id = jsonValue['type_id'];
-						});
-					},
-					error: function(data){
-						alert("Ajax Fail");
-					}
-				});
-				
-				
+						error: function(data){
+							alert("Ajax Fail");
+						}
+					});
+					
+					
+					
+				}
 			}
 			
-			if($('#order_name').val().trim() != "")
+			for(var i=1; i<=$('#ord_count').val(); i++)
 			{
-				params = "";
-				//alert("index :"+index+" => "+input_arr[index]);
-				params	= "?procedure_type=grp&type_id="+$('#order_type_id').val();
-				
-				for(var ind in ord_arr)
+				if($('#order_name_'+i).val().trim() != "")
 				{
-					if($('#'+ord_arr[ind]).val().trim() != "")
+					params = "";
+					//alert("index :"+index+" => "+input_arr[index]);
+					params	= "?procedure_type=grp&type_id="+$('#order_type_id_'+i).val();
+					
+					for(var ind in ord_arr)
 					{
-						params += "&"+column_arr[ord_arr[ind]]+"="+$('#'+ord_arr[ind]).val();
+						if($('#'+ord_arr[ind]+'_'+i).val().trim() != "")
+						{
+							params += "&"+column_arr[ord_arr[ind]]+"="+$('#'+ord_arr[ind]+'_'+i).val();
+						}
 					}
-				}
-				//alert("submitting : order params : "+params);
-				//return false;
-				$.ajax({
-					type: "GET",
-					cache: false,
-					dataType: "json",
-					async: false,
-					url: "./configuration/saveConfigDetails"+params,
-					data: {							
+					//alert("submitting : order params : "+params);
+					//return false;
+					
+					$.ajax({
+						type: "GET",
+						cache: false,
+						dataType: "json",
+						async: false,
+						url: "./configuration/saveConfigDetails"+params,
+						data: {							
+							},
+						success: function(data) {
+							//alert("Ajax success"+data);
+							//alert("myObject is " + data.toSource());
+							$.each(data, function(jsonIndex, jsonValue){
+								//alert("new type id :"+jsonValue['type_id']);
+								//parent_id = jsonValue['type_id'];
+							});
 						},
-					success: function(data) {
-						//alert("Ajax success"+data);
-						//alert("myObject is " + data.toSource());
-						$.each(data, function(jsonIndex, jsonValue){
-							//alert("new type id :"+jsonValue['type_id']);
-							//parent_id = jsonValue['type_id'];
-						});
-					},
-					error: function(data){
-						alert("Ajax Fail");
-					}
-				});
+						error: function(data){
+							alert("Ajax Fail");
+						}
+					});
+					
+				}
 			}
 			
-			if($('#result_name').val().trim() != "")
+			for(var i=1; i<=$('#res_count').val(); i++)
 			{
-				params = "";
-				//alert("index :"+index+" => "+input_arr[index]);
-				params	= "?procedure_type=grp&type_id="+$('#result_type_id').val();
-				
-				for(var ind in res_arr)
+				if($('#result_name_'+i).val().trim() != "")
 				{
-					if($('#'+res_arr[ind]).val().trim() != "")
+					params = "";
+					//alert("index :"+index+" => "+input_arr[index]);
+					params	= "?procedure_type=grp&type_id="+$('#result_type_id_'+i).val();
+					
+					for(var ind in res_arr)
 					{
-						params += "&"+column_arr[res_arr[ind]]+"="+$('#'+res_arr[ind]).val();
+						if($('#'+res_arr[ind]+'_'+i).val().trim() != "")
+						{
+							params += "&"+column_arr[res_arr[ind]]+"="+$('#'+res_arr[ind]+'_'+i).val();
+						}
 					}
-				}
-				//alert("submitting : result params : "+params);
-				//return false;
-				$.ajax({
-					type: "GET",
-					cache: false,
-					dataType: "json",
-					async: false,
-					url: "./configuration/saveConfigDetails"+params,
-					data: {							
+					//alert("submitting : result params : "+params);
+					//return false;
+					
+					$.ajax({
+						type: "GET",
+						cache: false,
+						dataType: "json",
+						async: false,
+						url: "./configuration/saveConfigDetails"+params,
+						data: {							
+							},
+						success: function(data) {
+							//alert("Ajax success"+data);
+							//alert("myObject is " + data.toSource());
+							$.each(data, function(jsonIndex, jsonValue){
+								//alert("new type id :"+jsonValue['type_id']);
+								//parent_id = jsonValue['type_id'];
+							});
 						},
-					success: function(data) {
-						//alert("Ajax success"+data);
-						//alert("myObject is " + data.toSource());
-						$.each(data, function(jsonIndex, jsonValue){
-							//alert("new type id :"+jsonValue['type_id']);
-							//parent_id = jsonValue['type_id'];
-						});
-					},
-					error: function(data){
-						alert("Ajax Fail");
-					}
-				});
+						error: function(data){
+							alert("Ajax Fail");
+						}
+					});
+					
+				}
 			}
 			
-			if($('#reccomendation_name').val().trim() != "")
+			for(var i=1; i<=$('#rec_count').val(); i++)
 			{
-				params = "";
-				//alert("index :"+index+" => "+input_arr[index]);
-				params	= "?procedure_type=grp&type_id="+$('#reccomendation_type_id').val();
-				
-				for(var ind in rec_arr)
+				if($('#reccomendation_name_'+i).val().trim() != "")
 				{
-					if($('#'+rec_arr[ind]).val().trim() != "")
+					params = "";
+					//alert("index :"+index+" => "+input_arr[index]);
+					params	= "?procedure_type=grp&type_id="+$('#reccomendation_type_id_'+i).val();
+					
+					for(var ind in rec_arr)
 					{
-						params += "&"+column_arr[rec_arr[ind]]+"="+$('#'+rec_arr[ind]).val();
+						if($('#'+rec_arr[ind]+'_'+i).val().trim() != "")
+						{
+							params += "&"+column_arr[rec_arr[ind]]+"="+$('#'+rec_arr[ind]+'_'+i).val();
+						}
 					}
-				}
-				//alert("submitting : reccomendation params : "+params);
-				//return false;
-				$.ajax({
-					type: "GET",
-					cache: false,
-					dataType: "json",
-					async: false,
-					url: "./configuration/saveConfigDetails"+params,
-					data: {							
+					//alert("submitting : reccomendation params : "+params);
+					//return false;
+					
+					$.ajax({
+						type: "GET",
+						cache: false,
+						dataType: "json",
+						async: false,
+						url: "./configuration/saveConfigDetails"+params,
+						data: {							
+							},
+						success: function(data) {
+							//alert("Ajax success"+data);
+							//alert("myObject is " + data.toSource());
+							$.each(data, function(jsonIndex, jsonValue){
+								//alert("new type id :"+jsonValue['type_id']);
+								//parent_id = jsonValue['type_id'];
+							});
 						},
-					success: function(data) {
-						//alert("Ajax success"+data);
-						//alert("myObject is " + data.toSource());
-						$.each(data, function(jsonIndex, jsonValue){
-							//alert("new type id :"+jsonValue['type_id']);
-							//parent_id = jsonValue['type_id'];
-						});
-					},
-					error: function(data){
-						alert("Ajax Fail");
-					}
-				});
+						error: function(data){
+							alert("Ajax Fail");
+						}
+					});
+					
+				}
 			}
-						
+			
 			$('#w').window('close');
 			
 			alert('Changes Updated Successfully');
@@ -772,38 +769,31 @@
 		$('#tg').treegrid('reload');
 	}
 	
+		
 	
-	
-	
-	function addExist()
+	function addExist(row_id)
 	{
-		document.getElementById('action').value = "addExist";	
 		
-		$('#tg').treegrid({
+		clearAll();
+		document.getElementById('edit_div').innerHTML="";
+		document.getElementById('add_div').style.display="block";
+		//alert("ADD ITEM");
+		
+		collapseCategory('order','');
+		collapseCategory('result','');
+		collapseCategory('reccomendation','');
+		
+		expandCategory('group','');
+		
+		
+		
+		document.getElementById('action').value = "addExist";
 			
-			onClickRow: function(row) {
-				//alert("ADD EXIST ITEM");
-				//alert('in addexist '+document.getElementById('action').value);
-				var parentNode = $('#tg').treegrid('getParent' , row.id);
-				//alert("parent :"+parentNode)
-				if(parentNode != null)
-				{
-					var parentNodeId = parentNode.id;
-				}
-				//alert("row id :"+row.id);				
-				
-				clearAll();
 		
-				showCategory('group');
-				showCategory('order');	
-				showCategory('result');
-				showCategory('reccomendation');	
-				
-				document.getElementById('exist_typeid').value = row.id;
-				
-				$('#w').window('open');	
-			},			
-		})	
+		document.getElementById('exist_typeid').value = row_id;
+		
+		$('#w').window('open');	
+		
 	}
 	
 	/*function addExistItem()
@@ -885,58 +875,161 @@
 	
 	function statusChange(div_id)
 	{
+		//alert(div_id);
+		
+		
+		var div_arr	= div_id.split("_", 3);//group_indicator_1
+		
+		//alert(div_arr[0]+" , "+div_arr[1]+" , ID :"+div_arr[2])
+		
+		var category	= div_arr[0];
+		var id		= div_arr[2];
+		
+		//return false;
 		var indicator;
 		
-		if(div_id == "group_indicator")
+		if(category == "group")
 		{
+			//alert('group');
 			//alert(document.getElementById('group_indicator_value').value);
-			indicator = document.getElementById('group_indicator_value').value;
-			if(indicator == "+")
+			if(id)
 			{
-				expandCategory('group');
+				indicator = document.getElementById('group_indicator_value_'+id).value;
 			}
 			else
 			{
-				collapseCategory('group');
+				indicator = document.getElementById('group_indicator_value').value;
+			}
+			
+			//alert("indicator :"+indicator);
+			if(indicator == "+")
+			{
+				//alert('expand grp id '+id);
+				if(id)
+				{
+					expandCategory('group',id);
+				}
+				else
+				{
+					expandCategory('group','');
+				}
+				
+			}
+			else
+			{
+				//alert('colpase grp id '+id);
+				if(id)
+				{
+					collapseCategory('group',id);
+				}
+				else
+				{
+					collapseCategory('group','');
+				}
 			}
 		}
-		else if(div_id == "order_indicator")
+		else if(category == "order")
 		{
 			//alert(document.getElementById('order_indicator_value').value);
-			indicator = document.getElementById('order_indicator_value').value;
-			if(indicator == "+")
+			if(id)
 			{
-				expandCategory('order');
+				indicator = document.getElementById('order_indicator_value_'+id).value;
 			}
 			else
 			{
-				collapseCategory('order');
+				indicator = document.getElementById('order_indicator_value').value;
+			}
+			if(indicator == "+")
+			{
+				if(id)
+				{
+					expandCategory('order',id);
+				}
+				else
+				{
+					expandCategory('order','');
+				}
+				
+			}
+			else
+			{
+				if(id)
+				{
+					collapseCategory('order',id);
+				}
+				else
+				{
+					collapseCategory('order','');
+				}
 			}
 		}
-		else if(div_id == "result_indicator")
+		else if(category == "result")
 		{
 			//alert(document.getElementById('result_indicator_value').value);
-			indicator = document.getElementById('result_indicator_value').value;
-			if(indicator == "+")
+			if(id)
 			{
-				expandCategory('result');
+				indicator = document.getElementById('result_indicator_value_'+id).value;
 			}
 			else
 			{
-				collapseCategory('result');
+				indicator = document.getElementById('result_indicator_value').value;
+			}
+			
+			if(indicator == "+")
+			{
+				if(id)
+				{
+					expandCategory('result',id);
+				}
+				else
+				{
+					expandCategory('result','');
+				}
+			}
+			else
+			{
+				if(id)
+				{
+					collapseCategory('result',id);
+				}
+				else
+				{
+					collapseCategory('result','');
+				}
 			}
 		}
-		else if(div_id == "reccomendation_indicator")
+		else if(category == "reccomendation")
 		{
 			//alert(document.getElementById('reccomendation_indicator_value').value);
-			indicator = document.getElementById('reccomendation_indicator_value').value;
-			if(indicator == "+")
+			if(id)
 			{
-				expandCategory('reccomendation');
+				indicator = document.getElementById('reccomendation_indicator_value_'+id).value;
 			}
 			else
 			{
-				collapseCategory('reccomendation');	
+				indicator = document.getElementById('reccomendation_indicator_value').value;
+			}
+			if(indicator == "+")
+			{
+				if(id)
+				{
+					expandCategory('reccomendation',id);
+				}
+				else
+				{
+					expandCategory('reccomendation','');
+				}
+			}
+			else
+			{
+				if(id)
+				{
+					collapseCategory('reccomendation',id);
+				}
+				else
+				{
+					collapseCategory('reccomendation','');
+				}
 			}
 		}
 	}
@@ -945,25 +1038,44 @@
 		document.getElementById('config_form').reset();
 		
 		/*COLLAPSE ALL TYPE CATEGORIES*/
-		collapseCategory('group');
+		/*collapseCategory('group');
 		collapseCategory('order');
 		collapseCategory('result');
-		collapseCategory('reccomendation');		
+		collapseCategory('reccomendation');*/		
 	}
 	
 	
-	function collapseCategory(div)
+	function collapseCategory(div,id)
 	{
-		document.getElementById(div+'_div').style.display	= 'none';
-		document.getElementById(div+'_indicator_value').value 	= "+";
-		document.getElementById(div+'_indicator').innerHTML 	= "+";
+		if(id != "")
+		{
+			document.getElementById(div+'_div_'+id).style.display		= 'none';
+			document.getElementById(div+'_indicator_value_'+id).value 	= "+";
+			document.getElementById(div+'_indicator_'+id).innerHTML 	= "+";
+		}
+		else
+		{
+			document.getElementById(div+'_div').style.display		= 'none';
+			document.getElementById(div+'_indicator_value').value 	= "+";
+			document.getElementById(div+'_indicator').innerHTML 	= "+";
+		}
 	}
 	
-	function expandCategory(div)
+	function expandCategory(div,id)
 	{
-		document.getElementById(div+'_div').style.display	= 'block';
-		document.getElementById(div+'_indicator_value').value 	= "-";
-		document.getElementById(div+'_indicator').innerHTML 	= "-";
+		//alert(div+" , "+id)
+		if(id != "")
+		{
+			document.getElementById(div+'_div_'+id).style.display		= 'block';
+			document.getElementById(div+'_indicator_value_'+id).value 	= "-";
+			document.getElementById(div+'_indicator_'+id).innerHTML 	= "-";
+		}
+		else
+		{
+			document.getElementById(div+'_div').style.display	= 'block';
+			document.getElementById(div+'_indicator_value').value 	= "-";
+			document.getElementById(div+'_indicator').innerHTML 	= "-";
+		}
 	}
 	
 	function hideCategory(div)
@@ -975,4 +1087,127 @@
 	{
 		document.getElementById(div+'_title').style.display	= 'block';		
 	}
+	
+	
+	//CLONE DIVS ....
+	 // Dynamically add new rows in the Procedure order
+	
+	function cloneDiv(category) {
+			//alert("clone");
+		
+		
+		
+		//var clone1 = $("#group_title_clone>*").clone(false).appendTo("#edit_div");
+		var clone = $("#"+category+"_div_clone>*").clone(false).appendTo("#edit_div");
+		
+		
+		
+		
+		if(category == "group")
+		{
+			grp_inc++;
+			
+			$('#edit_div').find('#'+category+'_title').attr('id', category+'_title_'+grp_inc);
+			$('#edit_div').find('#'+category+'_indicator').attr('id', category+'_indicator_'+grp_inc);
+			 
+			$('#edit_div').find('#'+category+'_indicator_value').attr('id', category+'_indicator_value_'+grp_inc);
+			$('#edit_div').find('#'+category+'_type_id').attr('id', category+'_type_id_'+grp_inc);
+			
+			$('#edit_div').find('#'+category+'_div').attr('id', category+'_div_'+grp_inc);
+			
+			$('#edit_div').find('#'+category+'_name').attr('id', category+'_name_'+grp_inc);
+			$('#edit_div').find('#'+category+'_description').attr('id', category+'_description_'+grp_inc);
+		}
+		else if(category == "order")
+		{
+			ord_inc++;
+			
+			$('#edit_div').find('#'+category+'_title').attr('id', category+'_title_'+ord_inc);
+			$('#edit_div').find('#'+category+'_indicator').attr('id', category+'_indicator_'+ord_inc);
+			 
+			$('#edit_div').find('#'+category+'_indicator_value').attr('id', category+'_indicator_value_'+ord_inc);
+			$('#edit_div').find('#'+category+'_type_id').attr('id', category+'_type_id_'+ord_inc);
+			
+			$('#edit_div').find('#'+category+'_div').attr('id', category+'_div_'+ord_inc);
+			
+			$('#edit_div').find('#'+category+'_name').attr('id', category+'_name_'+ord_inc);
+			$('#edit_div').find('#'+category+'_description').attr('id', category+'_description_'+ord_inc);
+			$('#edit_div').find('#'+category+'_sequence').attr('id', category+'_sequence_'+ord_inc);
+			
+			$('#edit_div').find('#'+category+'_from').attr('id', category+'_from_'+ord_inc);
+			$('#edit_div').find('#'+category+'_procedurecode').attr('id', category+'_procedurecode_'+ord_inc);
+			$('#edit_div').find('#'+category+'_standardcode').attr('id', category+'_standardcode_'+ord_inc);
+			$('#edit_div').find('#'+category+'_bodysite').attr('id', category+'_bodysite_'+ord_inc);
+			$('#edit_div').find('#'+category+'_specimentype').attr('id', category+'_specimentype_'+ord_inc);
+			$('#edit_div').find('#'+category+'_administervia').attr('id', category+'_administervia_'+ord_inc);
+			$('#edit_div').find('#'+category+'_laterality').attr('id', category+'_laterality_'+ord_inc);
+			
+			
+		}
+		else if(category == "result")
+		{
+			res_inc++;
+			
+			$('#edit_div').find('#'+category+'_title').attr('id', category+'_title_'+res_inc);
+			$('#edit_div').find('#'+category+'_indicator').attr('id', category+'_indicator_'+res_inc);
+			 
+			$('#edit_div').find('#'+category+'_indicator_value').attr('id', category+'_indicator_value_'+res_inc);
+			$('#edit_div').find('#'+category+'_type_id').attr('id', category+'_type_id_'+res_inc);
+			
+			$('#edit_div').find('#'+category+'_div').attr('id', category+'_div_'+res_inc);
+			
+			$('#edit_div').find('#'+category+'_name').attr('id', category+'_name_'+res_inc);
+			$('#edit_div').find('#'+category+'_description').attr('id', category+'_description_'+res_inc);
+			$('#edit_div').find('#'+category+'_sequence').attr('id', category+'_sequence_'+res_inc);
+			$('#edit_div').find('#'+category+'_defaultunits').attr('id', category+'_defaultunits_'+res_inc);
+			$('#edit_div').find('#'+category+'_defaultrange').attr('id', category+'_defaultrange_'+res_inc);
+			$('#edit_div').find('#'+category+'_followupservices').attr('id', category+'_followupservices_'+res_inc);
+		}
+		else if(category == "reccomendation")
+		{
+			rec_inc++;
+			
+			$('#edit_div').find('#'+category+'_title').attr('id', category+'_title_'+rec_inc);
+			$('#edit_div').find('#'+category+'_indicator').attr('id', category+'_indicator_'+rec_inc);
+			 
+			$('#edit_div').find('#'+category+'_indicator_value').attr('id', category+'_indicator_value_'+rec_inc);
+			$('#edit_div').find('#'+category+'_type_id').attr('id', category+'_type_id_'+rec_inc);
+			
+			$('#edit_div').find('#'+category+'_div').attr('id', category+'_div_'+rec_inc);
+			
+			$('#edit_div').find('#'+category+'_name').attr('id', category+'_name_'+rec_inc);
+			$('#edit_div').find('#'+category+'_description').attr('id', category+'_description_'+rec_inc);
+			$('#edit_div').find('#'+category+'_sequence').attr('id', category+'_sequence_'+rec_inc);
+			$('#edit_div').find('#'+category+'_defaultunits').attr('id', category+'_defaultunits_'+rec_inc);
+			$('#edit_div').find('#'+category+'_defaultrange').attr('id', category+'_defaultrange_'+rec_inc);
+			$('#edit_div').find('#'+category+'_followupservices').attr('id', category+'_followupservices_'+rec_inc);
+		}
+		
+		/*
+		$("#insTempl_"+ acc_cnt + "_1 table:last").attr('id', 'cloneID_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#diagnosestemplate').attr('id', 'diagnosestemplate_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#proceduretemplate').attr('id', 'proceduretemplate_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#diagnodiv').attr('id', 'diagnodiv_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#prodiv').attr('id', 'prodiv_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#patient_instructions_1_1').attr('id', 'patient_instructions_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#diagnoses_1_1').attr('id', 'diagnoses_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedures_1_1').attr('id', 'procedures_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_code_1_1').attr('id', 'procedure_code_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_suffix_1_1').attr('id', 'procedure_suffix_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#AOEtemplate').attr('id', 'AOEtemplate_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find("#procedures").attr('id', 'procedures_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find("#AOE").attr('id', 'AOE_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find("#deleteButton").attr('id', 'deleteButton_'+acc_cnt+'_' + inc);
+		$('#cloneID_'+acc_cnt+'_' + inc).find("#addButton").attr('id', 'addButton_'+acc_cnt+'_' + inc);
+		
+		// Field Name Change
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#patient_instructions_' + acc_cnt + '_' + inc ).attr('name', 'patient_instructions[' + (acc_cnt - 1) + '][]');
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#diagnoses_' + acc_cnt + '_' + inc ).attr('name', 'diagnoses[' + (acc_cnt - 1) + '][]');
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedures_' + acc_cnt + '_' + inc ).attr('name', 'procedures[' + (acc_cnt - 1) + '][]');
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_code_' + acc_cnt + '_' + inc ).attr('name', 'procedure_code[' + (acc_cnt - 1) + '][]');
+		$('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_suffix_' + acc_cnt + '_' + inc ).attr('name', 'procedure_suffix[' + (acc_cnt - 1) + '][]');*/
+	   
+	}
+	
+	
 	
