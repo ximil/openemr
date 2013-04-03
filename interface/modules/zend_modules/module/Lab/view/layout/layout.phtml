@@ -75,15 +75,15 @@ echo $this->doctype(); ?>
         <div class="container">
 	    <div style="padding:5px;border:1px solid #ddd">
 		<?php
-		if(acl_check("module_lab","procedure_order")){
+		//if(acl_check("module_lab","procedure_order")){
 		?>
 		<a href="<?php echo $this->url('lab', array('action'=>'index'));?>/index" class="easyui-linkbutton <?php echo $procedure_order_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Order');?></a>
 		<?php
-		}
-		if(acl_check("module_lab","procedure_results")){
+		//}
+		//if(acl_check("module_lab","procedure_results")){
 		?>
 		<a id="btn-edit" href="<?php echo $this->url('result', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pending_review_active; ?>" data-options="plain:true"><?php echo xlt('Results');?></a>
-		<?php } ?>
+		<?php //} ?>
 		<a href="<?php echo $this->url('specimen', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $specimen_collection_active; ?>" data-options="plain:true"><?php echo xlt('Specimen Collection');?></a>
 		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
 		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
