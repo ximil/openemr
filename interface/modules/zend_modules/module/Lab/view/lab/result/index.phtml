@@ -1,4 +1,3 @@
-<script type="text/JavaScript" src="<?php echo $this->basePath();?>/js/lab/jquery.tablePagination.0.5.js"></script> 
 <style type = "text/css" > .panel - header {
 	border - width: 1px;
 	border - style: solid;
@@ -54,7 +53,14 @@ table.thcolor th {
        tablecell.firstChild.focus();
      }
     }
+	
+	function removerow(){
+	
+	$('#labresult tr:last').hide();
+
+	}
 </script>
+         
          <?php $match = array(
               "/&lt;ref(?:[^\/&]|&(?!gt;))*\/&gt;/is","/&lt;ref[^\/]*&gt;(.*?)&lt;\/ref&gt;/s",);?> 
 	   <div class="panel-header" style="width: 98.9%;">
@@ -63,7 +69,7 @@ table.thcolor th {
            </div>
 	   <div class="datagrid-wrap panel-body" title="" style="width: 99.8%;">
 	     <div id="toolbar">
-		    <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
+		   <!-- <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		    <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
                    <!-- <span style="text-align: right; padding-left: 750px;">
                     <span class="extlab">&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -71,6 +77,7 @@ table.thcolor th {
                     <span class="local">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <span style="font-size: 10px;"> <?php echo xlt('Local Labs'); ?></span>
                    </span>-->
+		    <form id="frmsearch" method="post" novalidate>		   
 		    <div style="text-align: left; padding-left:20px;">
                       <div style="text-align: left;">
                        <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
@@ -103,15 +110,17 @@ table.thcolor th {
 			 </span>
 
 			 <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
-                            <?php echo xlt('Search'); ?> </a>
-
+			 <input  type="submit" value="Search" ></a>
+                           <!-- <?php echo xlt('Search'); ?> </a>-->
+            
 		  </div>
+		  </form>
 	     </div>
 	     
 	<!-- Lab Result listing starts here------------------------------------->
 		
 	<table id="labresult"  class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
-	       <thead>
+	       <thead style="background-color:#E0ECFF;">
                  <tr>
 	          <th  colspan="4"><?php echo xlt('Order'); ?></th>     
                   <th  colspan="4"><?php echo xlt('Report'); ?></th>
@@ -175,6 +184,7 @@ table.thcolor th {
 	        </tr>
 	        <?php $i = 0; foreach ($labresults as $labresult) : 
 			$color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
+			$totrows = $labresult['totalRows'];
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
 				
@@ -200,7 +210,7 @@ table.thcolor th {
                          <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
                          <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
                          <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
+                          
 		         
 			<?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
 		          <td class="tdfont" style="padding-left:5px; display:none;"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
@@ -212,7 +222,7 @@ table.thcolor th {
 			  <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
                           <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
                           <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
+                          
 			 
 		      <?php } ?>
 		      <td style="display:none;"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
@@ -220,16 +230,52 @@ table.thcolor th {
               <?php $i++; endforeach; ?>
 	
       </table>
+	<!-- Result listing ends  here------------------------------------->
 	
-		<!-- Result listing ends  here------------------------------------->
+	 <?php
+	
+ 	 $totPages = ceil($totrows/20);
+	 if(!isset($_GET['pageno'])){
+	   $_GET['pageno']=1;
+	 }
+	 
+	 ?>
+		        	   
+	   <div align="justify" style="float:left;border:1px solid #ddd;padding-left:6px;padding-top:4px;padding-bottom:3px;background-color: #F4F4F4;width:99.1%;">
+	   
+		<div style="float:left;margin-top: 3px;">
+			<a style="margin-top:5px;cursor:hand;cursor:pointer" onclick="movefirstlast(1)"><img  src=<?php echo $this->basePath() .'/css/icons/movfirst.png'; ?> ></a> 
+		</div>
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-top:5px;cursor:hand;cursor:pointer"  <?php if($_GET['pageno'] AND ($_GET['pageno']> 1) ) {?> onclick="movenext1(<?php echo $_GET['pageno'] - 1 ?> ) <?php } ?>"><img  src=<?php echo $this->basePath() .'/css/icons/movprev.png'; ?> ></a> 
+		</div>
+		<div style="float:left;">
+	     <label style="margin-left:20px;" for="pageno">Page</label>
+	     <select name="pageno" id="pageno" style="width:40px;" onchange="movenext()" >
+		<?php 
+			
+			for($i=1; $i<=$totPages; $i++) {
+			$sel = "";
+			if($_GET['pageno'] == $i){  $sel = "selected=\"selected\""; }?>
 		
-        <div class="easyui-pagination" data-options="total:114" style="border:1px solid #ddd;"></div>  
+		<option value="<?php echo $i ?>" <?php echo $sel; ?>  > <?php echo $i ?> </option>
+		<?php } ?>
+		
+	     </select>
+	     <?php echo "of ".$totPages; ?>
+		</div>
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-left:20px; margin-top:5px;cursor:hand;cursor:pointer" <?php if($_GET['pageno'] AND ($_GET['pageno']< $totPages) ) {?> onclick="movenext1(<?php echo $_GET['pageno'] +1 ?> ) <?php } ?>"><img  src=<?php echo $this->basePath() .'/css/icons/movenext.png'; ?> ></a> 
+		</div>
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-top:5px;cursor:hand;cursor:pointer" onclick="movefirstlast(<?php echo  $totPages ?>)"><img   src=<?php echo $this->basePath() .'/css/icons/movelast.png'; ?> ></a> 
+	    </div>
+	   </div>
       </div>
-	
-	
+	    
 	    <div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
             closed="true" buttons="#dlg-buttons">  
-          <div class="ftitle" id='titleShow'></div>  
+            <div class="ftitle" id='titleShow'></div>  
              <form id="fm" method="post" novalidate>
 		       <input type='hidden' name='rep_id' id='rep_id' value='' />
                <div class="fitem">  
@@ -257,7 +303,7 @@ table.thcolor th {
             <?php echo xlt('Save'); ?>
           </a>  
         </div> 
- 
+      
    
   
 	

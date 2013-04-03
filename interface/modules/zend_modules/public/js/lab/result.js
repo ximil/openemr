@@ -158,11 +158,48 @@ function saveComments() {
 		});
 		         $('#dlg').dialog('close');
 }
+        
+        function movenext(){
+			
+			winloc = "'"+window.location+"'";
+			var pageno = document.getElementById('pageno').value;
+			if(winloc.indexOf("index")!="-1")
+			window.location.assign("../result/index?pageno=" + pageno);
+			else
+			window.location.assign("./result/index?pageno=" + pageno);
+			
+		}
+           
+		
 
+		function movenext1(pageno){
+			
+			winloc = "'"+window.location+"'";
+			//alert(winloc);
+			//var pageno = document.getElementById('pageno').value;
+			if(winloc.indexOf("index")!="-1")
+			window.location.assign("../result/index?pageno=" + pageno);
+			else
+			window.location.assign("./result/index?pageno=" + pageno);
+			
+		}
+           
+		function movefirstlast(pageno){
+		
+		   winloc =  "'"+window.location+"'";
+		   if(winloc.indexOf("index")!="-1")
+		     window.location.assign("../result/index?pageno=" + pageno);
+		   else
+		     window.location.assign("./result/index?pageno=" + pageno);
+		      
+		}   
 
-
+		
 // Freezing cells 
+//$("table> tr:last").hide();? ...
 $(function(){ 
+
+    $('#labresult tr:last').hide();
 	$('#dg').edatagrid({
 		rowStyler: function(index,row){
 			if (row.editor == 1) {

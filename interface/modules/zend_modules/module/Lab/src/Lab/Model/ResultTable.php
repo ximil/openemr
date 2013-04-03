@@ -76,8 +76,9 @@ class ResultTable extends AbstractTableGateway
         return $arr;
     }
     
-    public function listLabResult($data)
+    public function listLabResult($data,$pageno)
     {
+	                                
         global $pid;
         $flagSearch = 0;
 
@@ -147,27 +148,38 @@ class ResultTable extends AbstractTableGateway
         if ($dtFrom) {
             $where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
         }
-        $start = isset($data['page']) ? $data['page'] :  20;
-        $rows = isset($data['rows']) ? $data['rows'] : 30;
-        if ($data['page'] == 1) {
-            $start = $data['page'] - 1;
-        } elseif ($data['page'] > 1) {
-            $start = (($data['page'] - 1) * $rows);
+        $start = isset($pageno) ? $pageno :  0;
+        $rows = isset($data['rows']) ? $data['rows'] : 20;
+        if ($pageno == 1) {
+            $start = $pageno - 1;
+           
+        } elseif ($pageno > 1) {
+            $start = (($pageno - 1) * $rows);
+            $rows=$pageno*$rows;
         }
-
+        
+         $sql_cnt = "SELECT $selects " .
+                                  "FROM procedure_order AS po " .
+                                  "$joins " .
+                                  "WHERE po.patient_id = '$pid' AND $where " .
+                                   "$groupby ORDER BY $orderby ";
+                           
+         $result_cnt= sqlStatement($sql_cnt);
+         $totrows= sqlNumRows($result_cnt);
+                                  
         $sql = "SELECT $selects " .
                                   "FROM procedure_order AS po " .
                                   "$joins " .
                                   "WHERE po.patient_id = '$pid' AND $where " .
-                                  "$groupby ORDER BY $orderby ";
-
+                                  "$groupby ORDER BY $orderby LIMIT $start,$rows ";
+                     
         $result = sqlStatement($sql);
         $arr1 = array();
         $i = 0;
 	$count=0;
         while($row = sqlFetchArray($result)) {
-            $order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id' ] + 0);
-            $order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id' ] + 0);
+            $order_type_id  = empty($row['order_type_id']) ? 0 : ($row['order_type_id'] + 0);
+            $order_id       = empty($row['procedure_order_id']) ? 0 : ($row['procedure_order_id'] + 0);
             $order_seq      = empty($row['procedure_order_seq']) ? 0 : ($row['procedure_order_seq'] + 0);
             $report_id      = empty($row['procedure_report_id']) ? 0 : ($row['procedure_report_id'] + 0);
             $date_report    = empty($row['date_report'     ]) ? '' : $row['date_report'];
@@ -175,7 +187,7 @@ class ResultTable extends AbstractTableGateway
             $specimen_num   = empty($row['specimen_num'    ]) ? '' : $row['specimen_num'];
             $report_status  = empty($row['report_status'   ]) ? '' : $row['report_status']; 
             $review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
-            $remoteHost	    = empty($row['remote_host'      ]) ? '' : $row['remote_host' ];
+            $remoteHost	    = empty($row['remote_host'      ]) ? '' : $row['remote_host'];
             $remoteUser	    = empty($row['login']) ? '' : $row['login' ];
             $remotePass	    = empty($row['password']) ? '' : $row['password' ];
             
@@ -370,10 +382,13 @@ class ResultTable extends AbstractTableGateway
               
             }
         }
-        $arr1[$i]['total'] = $i-1;
-		$arr1[$i]['totalPages'] = $i-1;
-          $cutlastrow = array_pop($arr1);
-       	  return $arr1;
+        //$arr1[$i]['total'] = $i-1;
+		$arr1[$i]['totalRows'] = $totrows;
+                $fp = fopen("D:/new1.txt","w");
+                    fwrite($fp,print_r($arr1,1));
+         // $cutlastrow = array_pop($arr1);
+ 
+		  return $arr1;
 		
 		
     }
