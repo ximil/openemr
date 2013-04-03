@@ -1,9 +1,10 @@
 <?php
 	$form = $this->form;
-	$form->setAttribute('action', $this->url('lab', array('action' => 'index')));
+	$form->setAttribute('action', $this->url('lab', array('action' => 'savedata')));
 	$form->prepare();
 	
 	echo $this->form()->openTag($form);
+	echo $this->formRow($form->get('hiddensubmit'));
 	echo $this->formRow($form->get('patient_id'));
 	echo $this->formRow($form->get('encounter_id'));
 	echo $this->formRow($form->get('procedurecount[0][]'));
@@ -19,10 +20,10 @@
         </div>
     </div>
 <?php } else { ?>
-<a href="#"  plain="true" onclick="newOrder();">
+<!--a href="#"  plain="true" onclick="newOrder();">
     <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
     <?php echo xlt('New Order'); ?>
-</a>
+</a-->
 <a href="#"  plain="true" onclick="saveFrm();">
     <img  class="easyui-linkbutton" iconCls="icon-save" src=<?php echo $this->basePath() .'/css/icons/filesave.png'; ?> title=<?php echo xlt('Save'); ?> border=0 />
     <?php echo xlt('Save'); ?>
@@ -63,9 +64,9 @@
                         <td valign='top'>
                             <?php echo $this->formRow($form->get('orderdate[0][]'));?>
                         </td>
-                        <td valign='top' id="internaltime_1_1" style="display:none">
-                                <?php echo $this->formRow($form->get('timecollected[0][]'));?>
-                        </td>
+                        <!--<td valign='top' id="internaltime_1_1" style="display:none">
+                                <?php //echo $this->formRow($form->get('timecollected[0][]'));?>
+                        </td>-->
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
                         <td valign='top' id='specimencollectedtd_1_1' style="display:none">
                             <?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?>
