@@ -180,7 +180,8 @@ class LabController extends AbstractActionController
                 //$clientorder_id = $this->getLabTable()->saveLab($Lab,$aoeArr);
 		$clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
                 
-		
+		$fh = fopen("D:/tt.txt","a");
+		fwrite($fh,print_r($clientorder_id,1));
                 
 		//------------- STARTING PROCEDURE ORDER XML IMPORT -------------
                 //GET CLIENT CREDENTIALS OF INITIATING ORDER
@@ -192,8 +193,9 @@ class LabController extends AbstractActionController
                 
                 if(($username <> "")&&($password <> "")&&($remote_host <> "")) {//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB               
                     //RETURNS AN ARRAY OF ALL PENDING ORDERS OF THE PATIENT
-                    $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
-                    
+                    /*****$xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$request->getPost('lab_id'),"");
+                    ***/
+		    $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),1,"");
                     ini_set("soap.wsdl_cache_enabled","0");            
                     ini_set('memory_limit', '-1');
                     
@@ -202,12 +204,14 @@ class LabController extends AbstractActionController
 				);
                     $client     = new Client(null,$options);                    
                     
-                    $lab_id     = $request->getPost('lab_id');   
-                    
+                    /****$lab_id     = $request->getPost('lab_id');   ****/
+                    $lab_id     = 1; 
                     foreach($xmlresult_arr as $xmlresult){
                         $order_id   = $xmlresult['order_id'];
                         $xmlstring  = $xmlresult['xmlstring'];
-                        
+			
+			
+                         fwrite($fh,$xmlstring);
                         //GET CLIENT CREDENTIALS OF EACH PENDING ORDER OF A PARTICULAR PATIENT   
                         $cred           = $this->getLabTable()->getClientCredentials($order_id);                    
                         $username       = $cred['login'];
@@ -217,7 +221,7 @@ class LabController extends AbstractActionController
                         
                         if(($username <> "")&&($password <> "")&&($remote_host <> "")){//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
                             $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
-                            
+                            fwrite($fh,$result);
                             if(is_numeric($result))// CHECKS IF ORDER IS SUCCESSFULLY IMPORTED
                             {
                                 $this->getLabTable()->setOrderStatus($order_id,"routed");

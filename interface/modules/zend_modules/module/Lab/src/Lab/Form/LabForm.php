@@ -189,7 +189,7 @@ class LabForm extends Form
             'name' => 'patient_instructions[0][]',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
-		'style' => 'height:20px; width:420px',
+		'style' => 'height:20px; width:370px',
 		'id' => 'patient_instructions_1_1',
             ),
         ));
