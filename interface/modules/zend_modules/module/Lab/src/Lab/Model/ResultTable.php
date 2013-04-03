@@ -118,7 +118,7 @@ class ResultTable extends AbstractTableGateway
         $facilities     = array();
 
         $selects =
-                "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
+                "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.patient_id,po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
                 "pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
                 "pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
                 "pr.report_status, pr.review_status";
@@ -306,7 +306,7 @@ class ResultTable extends AbstractTableGateway
                     $lastprid = -1;
                     if ($lastpoid != $order_id) {
                         if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
-                            $arr1[$i]['procedure_name'] = xlt($row['procedure_name']);
+                            $arr1[$i]['procedure_name'] = $row['procedure_name'];
                         }
 		    }
 		}
@@ -322,26 +322,29 @@ class ResultTable extends AbstractTableGateway
 					 $arr1[$i]['color']="#CCE6FF";
 					}
 					else{
-					 $arr1[$i]['color']="#f5d7d7";
+					 $arr1[$i]['color']="#fce7b6";
 					 }
 					 $count++;
 					}
 					
 				   }
-				  }
+		  }
 				  
 				  
 		  if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['date_report'] = $date_report;
-                    $arr1[$i]['date_collected'] = $date_collected;
-                     $arr1[$i]['order_id1']=$order_id;
-                    
-                    $arr1[$i]['patient_name'] = xlt($row['patient_name']);
+                    $arr1[$i]['order_id1']=$order_id;
                     $arr1[$i]['encounter_id'] = $row['encounter_id'];
 
                     $title = $this->listLabOptions(array('option_id'=> $row['order_status'], 'optId'=> 'ord_status'));
                     $arr1[$i]['order_status'] = isset($title) ? xlt($title[0]['title']) : '';
                 }
+		if( $order_id != $lastpoid || $i==0){
+		    $arr1[$i]['patient_id'] = $row['patient_id'];
+		}
+		if($order_id != $lastpoid || $lastdatecollected != $date_collected ){
+		    $arr1[$i]['date_collected'] = $date_collected;
+		}
                  
                  
                 $arr1[$i]['specimen_num'] = xlt($specimen_num);
@@ -379,13 +382,12 @@ class ResultTable extends AbstractTableGateway
                 $lastpoid = $order_id;
                 $lastpcid = $order_seq;
                 $lastprid = $report_id;
+		$lastdatecollected = $date_collected;
               
             }
         }
         //$arr1[$i]['total'] = $i-1;
 		$arr1[$i]['totalRows'] = $totrows;
-                $fp = fopen("D:/new1.txt","w");
-                    fwrite($fp,print_r($arr1,1));
          // $cutlastrow = array_pop($arr1);
  
 		  return $arr1;

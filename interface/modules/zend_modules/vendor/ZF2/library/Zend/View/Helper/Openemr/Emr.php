@@ -94,4 +94,10 @@ class Emr extends AbstractHelper
 	}
 	return $rows;
     }
+		
+		public function getDropdownValAsText($list_id,$option_id)
+    {
+				$res = sqlQuery("SELECT title FROM list_options WHERE list_id = ? AND option_id = ?",array($list_id,$option_id)); 
+				return $res['title'];
+    }
 }
