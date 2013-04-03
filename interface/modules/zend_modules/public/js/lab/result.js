@@ -23,7 +23,7 @@ function doSearch(){
 	}) 
 }
 
-// Result request with ordser id
+// Result request with order id
 function getResult(target) {
 	   	   
 		var order_id = target;
@@ -53,16 +53,10 @@ function getResult(target) {
 	
 }
 
-// Requisition request with ordser id
+// Requisition request with order id
 function getRequisition(target) {
 
-	/*var tr = $(target).closest('tr.datagrid-row');
-	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-	$('#dg').datagrid('selectRow', rowIndex);
-	var row = $('#dg').datagrid('getSelected'); 
-	if (row){  */
-	
-		var order_id = target;
+	var order_id = target;
 		
 		$.ajax({
 			type: "POST",
@@ -87,75 +81,125 @@ function getRequisition(target) {
 				alert('Ajax Fail');
 			}
 		});
-	/*}*/
+	
 }
 
 function getLabelDownload(target) {
 	
-	/*var tr = $(target).closest('tr.datagrid-row');
-	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-	$('#dg').datagrid('selectRow', rowIndex);
-	var row = $('#dg').datagrid('getSelected'); 
-	if (row){  */
-		var order_id = target;
+	var order_id = target;
 		//alert('Order Id is ..' + order_id);
-		window.location.assign("./result/getLabelDownload?order_id=" + order_id);
-	/*}*/
+	window.location.assign("./result/getLabelDownload?order_id=" + order_id);
+	
 }
 
-/**
-* Show Popup and edit Result Status, Fecility, Comments and Notes
+/*
+ Show Popup and edit Result Status, Fecility, Comments and Notes
 */
-var url;  
-function editComments(target){
+function editComments(report_id){
 	
-	/*var tr = $(target).closest('tr.datagrid-row');
-	var rowIndex = parseInt(tr.attr('datagrid-row-index'));
-	$('#dg').datagrid('selectRow', rowIndex);
-	var row = $('#dg').datagrid('getSelected');
-	if (row.editor == 0) {
-		if (row){*/
-			$('#dlg').dialog('open').dialog('setTitle','Result');
-			$('#titleShow').html(row.result_text);
-			$.ajax({
-				type: "POST",
-				cache: false,
-				dataType: "json",
-				url: "./result/getResultComments",
-				data: {
-					prid: row.procedure_result_id
-					},
-				success: function(data) {
-					$.each(data, function(entryIndex, entry){
-						$("input[name=formResultStatus]").val(entry['result_status']);
-						$("input[name=formResultFacility]").val(entry['facility']);
-						$('#formResultComments').val(entry['comments']);
-						$('#formResultNotes').val(entry['notes']);
-						$('#cc').combobox('setValue',$.trim(entry['result_status']));
-						$('#acpro_inp19').val(entry['title']);
-					});
-				},
-				error: function(data){
-					//alert("Ajax Fail");
-				}
-			});		
-			$('#fm').form('load',row);
-			url	= '';		
-		/*}*/
-	/*}*/
+	$('#rep_id').val(report_id);
+	$('#dlg').dialog('open').dialog('setTitle','Result');
+	$('#formResultNotes').val("");
+	$('#formResultComments').val("");
+	$("input[name=formResultFacility]").val("");
+	$("input[name=formResultStatus]").val("");
+	$('#cc1').combobox('setValue',"");
+	$.ajax({
+		type: "POST",
+		cache: false,
+		dataType: "json",
+		url: "./result/getResultComments",
+		data: {
+			prid: report_id
+			},
+		success: function(data) {
+			$.each(data, function(entryIndex, entry){
+				$("input[name=formResultStatus]").val(entry['result_status']);
+				$("input[name=formResultFacility]").val(entry['facility']);
+				$('#formResultComments').val(entry['comments']);
+				$('#formResultNotes').val(entry['notes']);
+				$('#cc1').combobox('setValue',$.trim(entry['result_status']));
+				
+                              
+			});
+		},
+		error: function(data){
+			//alert("Ajax Fail");
+		}
+	});
+	$('#fm').form('load');
+	url	= '';
 } 
 
-// Save the Popup form details to field comments
+//save comments with procedure_report_id
 function saveComments() {
-	var row = $('#dg').datagrid('getSelected');
-	if (row){
-		row.comments = $("input[name=formResultStatus]").val() + '|' + $("input[name=formResultFacility]").val() + '|' + $("#formResultComments").val() + '|' + $("#formResultNotes").val();
-	}
-	$('#dlg').dialog('close');
+	
+		$.ajax({
+			type: "POST",
+			cache: false,
+			dataType: "json",
+			url: "./result/insertLabComments",
+			data: {
+				procedure_report_id: $('#rep_id').val(),
+				result_status: $("input[name=formResultStatus]").val(),
+				facility: $("input[name=formResultFacility]").val(),
+				comments: $("#formResultComments").val() + '\n' + $("#formResultNotes").val(),
+				notes: $("#formResultNotes").val()
+				
+			},
+			success: function(data) {
+			 alert("Comments saved successfully");
+			 $('#dlg').dialog('close');			 
+				
+			},
+			error: function(data){
+				alert('Ajax Fail');
+			}
+		});
+		         $('#dlg').dialog('close');
 }
+        
+        function movenext(){
+			
+			winloc = "'"+window.location+"'";
+			var pageno = document.getElementById('pageno').value;
+			if(winloc.indexOf("index")!="-1")
+			window.location.assign("../result/index?pageno=" + pageno);
+			else
+			window.location.assign("./result/index?pageno=" + pageno);
+			
+		}
+           
+		
 
+		function movenext1(pageno){
+			
+			winloc = "'"+window.location+"'";
+			//alert(winloc);
+			//var pageno = document.getElementById('pageno').value;
+			if(winloc.indexOf("index")!="-1")
+			window.location.assign("../result/index?pageno=" + pageno);
+			else
+			window.location.assign("./result/index?pageno=" + pageno);
+			
+		}
+           
+		function movefirstlast(pageno){
+		
+		   winloc =  "'"+window.location+"'";
+		   if(winloc.indexOf("index")!="-1")
+		     window.location.assign("../result/index?pageno=" + pageno);
+		   else
+		     window.location.assign("./result/index?pageno=" + pageno);
+		      
+		}   
+
+		
 // Freezing cells 
+//$("table> tr:last").hide();? ...
 $(function(){ 
+
+    $('#labresult tr:last').hide();
 	$('#dg').edatagrid({
 		rowStyler: function(index,row){
 			if (row.editor == 1) {

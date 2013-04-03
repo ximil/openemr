@@ -16,12 +16,38 @@ class ResultController extends AbstractActionController
 	
     public function indexAction()
     {
-     $labresult1=$this->resultShowAction(); 
-	  $viewModel = new ViewModel(array(
-       "labresults"=>$labresult1
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 
+     $labresult1=$this->resultShowAction($pageno); 
+	 //$data = new JsonModel($labresult1);
+	    $viewModel = new ViewModel(array(
+	    "labresults"=>$labresult1
 		));
 	return $viewModel;	  
 		
+    }
+    
+    public function paginationAction()
+    {   
+	
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 	 
+	$labresult1=$this->resultShowAction($pageno); 
+	    $viewModel = new ViewModel(array(
+	    "labresults"=>$labresult1
+		));
+	return $viewModel;	   
+	
     }
     public function getResultTable()
     {
@@ -32,30 +58,31 @@ class ResultController extends AbstractActionController
         return $this->labTable;
     }
     
-    public function resultShowAction()
-    {
+    public function resultShowAction($pageno)
+    {		
         $request = $this->getRequest();
         $data =array();
         if($request->isPost()){
             $data = array(
-                    'statusReport'  => $request->getPost('statusReport'),
-                    'statusOrder'   => $request->getPost('statusOrder'),
-                    'statusResult'  => $request->getPost('statusResult'),
+                    'statusReport'  => $request->getPost('searchStatusReport'),
+                    'statusOrder'   => $request->getPost('searchStatusOrder'),
+                    'statusResult'  => $request->getPost('searchStatusResult'),
                     'dtFrom'        => $request->getPost('dtFrom'),
                     'dtTo'          => $request->getPost('dtTo'),
                     'page'          => $request->getPost('page'),
                     'rows'          => $request->getPost('rows'),
             ); 
         }
-        $data = $this->getLabResult($data);
+						
+        $data = $this->getLabResult($data,$pageno);
        // $data = new JsonModel($labResult);
 				return $data;
 				
     }
     
-    public function getLabResult($data)
+    public function getLabResult($data,$pageno)
     {
-        $labResult = $this->getResultTable()->listLabResult($data);
+        $labResult = $this->getResultTable()->listLabResult($data,$pageno);
 	     return $labResult;
     }
     
@@ -108,13 +135,35 @@ class ResultController extends AbstractActionController
         $request = $this->getRequest();
         $data =array();
             if($request->getPost('prid')){
-                $data['procedure_result_id'] = $request->getPost('prid');
+                $data['procedure_report_id'] = $request->getPost('prid');
             }
         $comments = $this->getResultTable()->listResultComment($data);
         $data = new JsonModel($comments);
         return $data;
     }
-    
+	
+    public function insertLabCommentsAction()
+    {  
+	$request=$this->getRequest();
+	$data =array();
+        if($request->isPost()){
+            $data = array(
+		    'procedure_report_id' => $request->getPost('procedure_report_id'),
+                    'result_status'  => $request->getPost('result_status'),
+                    'facility'   => $request->getPost('facility'),
+                    'comments'  => $request->getPost('comments'),
+                    'notes'        => $request->getPost('notes'),
+                    
+            );
+	    $this->getResultTable()->saveResultComments($data['result_status'],$data['facility'],$data['comments'],$data['procedure_report_id']);
+            //return $this->redirect()->toRoute('result');
+	    $return	= array();
+	    $return[0]  = array('return' => 0, 'report_id' => $data['procedure_report_id']);
+	    $arr        = new JsonModel($return);
+	    return $arr;
+        }
+	
+    }
     public function resultUpdateAction()
     {
         $request = $this->getRequest();
@@ -125,6 +174,7 @@ class ResultController extends AbstractActionController
             if ($arr[3] != '') {
                 $comments .=  "\n" . $arr[3];
             }
+	    
             $data = array(
                             'procedure_report_id'   => $request->getPost('procedure_report_id'),
                             'procedure_result_id'   => $request->getPost('procedure_result_id'),
