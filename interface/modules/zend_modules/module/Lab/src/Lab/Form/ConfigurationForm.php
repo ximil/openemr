@@ -35,6 +35,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'group_name',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',		
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -46,6 +47,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'group_description',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -75,6 +77,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'order_name',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -86,6 +89,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'order_description',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -97,6 +101,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'order_sequence',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -193,6 +198,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'order_procedurecode',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -204,6 +210,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'order_standardcode',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -232,6 +239,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'result_name',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -243,6 +251,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'result_description',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -254,6 +263,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'result_sequence',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -282,6 +292,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'result_defaultrange',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -293,6 +304,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'result_followupservices',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -322,6 +334,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'reccomendation_name',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -333,6 +346,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'reccomendation_description',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -344,6 +358,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'reccomendation_sequence',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -373,6 +388,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'reccomendation_defaultrange',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),
@@ -384,6 +400,7 @@ class ConfigurationForm extends Form
                 'type'  => 'text',
 		'id'	=> 'reccomendation_followupservices',
 		'class' => 'easyui-validatebox combo',
+		'style'	=> 'width:300px',
 		'required' => 'required',
 		'placeholder' => ''
             ),

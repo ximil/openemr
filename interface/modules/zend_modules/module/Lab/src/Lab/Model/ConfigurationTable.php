@@ -328,7 +328,7 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
-		$res_arr['iconCls']	= "tree-folder";
+		$res_arr['iconCls']	= "icon-lab-group";
 		$res_arr['order']	= "Group";
 	    }
 	    else if($res_arr['procedure_type'] == "ord"){
@@ -340,7 +340,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "tree-file";
+		$res_arr['iconCls']	= "icon-lab-reccomendation";
 		$res_arr['order']	= "Recommendation";
 	    }	    
 	    
@@ -401,7 +401,7 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
-		$res_arr['iconCls']	= "tree-folder";
+		$res_arr['iconCls']	= "icon-lab-group";
 		$res_arr['order']	= "Group";
 	    }
 	    else if($res_arr['procedure_type'] == "ord"){
@@ -413,7 +413,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "tree-file";
+		$res_arr['iconCls']	= "icon-lab-reccomendation";
 		$res_arr['order']	= "Recommendation";
 	    }	
 	    
@@ -451,7 +451,7 @@ class ConfigurationTable extends AbstractTableGateway
 				'name'    		=> $request->getQuery('name'),
 				'description'    	=> $request->getQuery('description'),
 				'seq'    		=> $request->getQuery('seq'),
-				'order_from'    	=> $request->getQuery('lab_id'),
+				'lab_id'    		=> $request->getQuery('lab_id'),
 				'procedure_code'    	=> $request->getQuery('procedure_code'),
 				'standard_code'   	=> $request->getQuery('standard_code'),
 				'body_site'    		=> $request->getQuery('body_site'),
@@ -467,17 +467,20 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	foreach($upcols_array as $col)
 	{
-	    if($data[$col] <> "")
-	    {	    
+	    /*if($data[$col] <> "")
+	    {*/	    
 		$sel_col	.= "`".$col."` = ? ,";
 		$input_arr[]	= $data[$col];
-	    }	    
+	    /*}*/  
 	}
 	$input_arr[]	= $data['type_id'];	
 	$sel_col	= rtrim($sel_col,",");	
 	
 	$sql	= "UPDATE procedure_type SET $sel_col WHERE procedure_type_id = ? ";	
 	$res    = sqlStatement($sql,$input_arr);
+	
+	$fp	=fopen("D:/query.txt","a");
+	fwrite($fp,"\nSQL :".$sql);
 	
 	$return	= array();
 	

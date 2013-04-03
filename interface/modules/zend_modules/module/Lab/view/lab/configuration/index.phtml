@@ -46,7 +46,7 @@ table.gridtable td {
 	cursor:hand;
 }
   
-  
+
 </style>
 <div style="margin:10px 0;"></div>
 <div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" >
@@ -75,12 +75,12 @@ table.gridtable td {
 		<thead>			
 			<tr>
 				<th data-options="field:'pk',width:25,editor:'text'">Type ID</th>
-				<th data-options="field:'name',width:170,editor:'text'">Name</th>
+				<th data-options="field:'name',width:180,editor:'text'">Name</th>
 				<th data-options="field:'order',width:60,align:'left',editor:'text'">Type</th>
-				<th data-options="field:'procedure_code',width:60,editor:'text'">Code</th>
+				<th data-options="field:'procedure_code',width:50,editor:'text'">Code</th>
 				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
 				<th data-options="field:'discription',width:170,editor:'text'">Description</th>
-				<th data-options="field:'action',title:'Action',width:33,align:'centre'"></th>
+				<th data-options="field:'action',title:'Action',width:39,align:'centre'"></th>
 				
 				<!-- Start Action -->
 				<!--<th data-options="field:'action',title:'Action',width:30,align:'centre',
@@ -714,12 +714,13 @@ table.gridtable td {
 				<input type="hidden" name="res_count" id="res_count" value="" />
 				<input type="hidden" name="rec_count" id="rec_count" value="" />
 
-				
+				<input type="hidden" name="init_edit_id" id="init_edit_id" value="" />
+
 				
 				<input type="hidden" name="action" id="action" value="edit" />
 				<input type="hidden" name="exist_typeid" id="exist_typeid" value="" />
-				<a href="" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem(<?php echo $_REQUEST['index'];?>)">Save</a>
-				<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem(<?php echo $_REQUEST['index'];?>)">Cancel</a>
+				<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="saveItem()">Save</a>
+				<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="cancelItem()">Cancel</a>
 			</div>
 		</form>
 	</div>
