@@ -204,7 +204,7 @@ class ResultTable extends AbstractTableGateway
                                     "pt2.name AS name, pt2.description, pt2.seq AS seq, " .
                                     "ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
                                     "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments"; 
-            /**********************************$selects .= ", psr.procedure_subtest_result_id,
+           $selects .= ", psr.procedure_subtest_result_id,
                                 psr.subtest_code,
                                 psr.subtest_desc AS sub_result_text,
                                 psr.result_value AS sub_result,
@@ -226,7 +226,7 @@ class ResultTable extends AbstractTableGateway
             $pscond = "ps.procedure_report_id = $report_id";
 
             $joincond = "ps.result_code = pt2.procedure_code";
-            /*************************$joincond .= " LEFT JOIN procedure_subtest_result AS psr ON psr.procedure_report_id=$report_id ";*******************/
+            $joincond .= " LEFT JOIN procedure_subtest_result AS psr ON psr.procedure_report_id=$report_id ";
             if($statusResult) {
                  $where .= " AND ps.result_status='$statusResult'";
             }
