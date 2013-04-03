@@ -17,7 +17,7 @@ class ResultController extends AbstractActionController
     {
      $labresult1=$this->resultShowAction(); 
 	  $viewModel = new ViewModel(array(
-       "albums"=>$labresult1
+       "labresults"=>$labresult1
 		));
 	return $viewModel;	  
 		

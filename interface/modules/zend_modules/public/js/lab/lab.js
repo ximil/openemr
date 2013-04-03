@@ -74,13 +74,33 @@ function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
 	    }
 	}, 'json');
 }
-function checkLab(labval){
-	if(labval>0){
-		$("#internaltime").css('display','none');
+function checkLab(labval, id){
+	var arrId = id.split('lab_id_');
+	var arr = labval.split("|");
+	var labvalue = arr[0];
+	var type = arr[1];
+
+	if(labvalue > 0){
+		$("#internaltimecaption_" + arrId[1]).css('display','none');
+		$("#internaltime_" + arrId[1]).css('display','none');
+	} else{
+		$("#internaltimecation_" + arrId[1]).css('display','block');
+		$("#internaltime_" + arrId[1]).css('display','none');
 	}
-	else{
-		$("#internaltime").css('display','block');
+	
+	if (type == 1) {
+		$("#specimencollectedcaption_" + arrId[1]).css('display','block');
+		$("#specimencollectedtd_" + arrId[1]).css('display','block');
+		$("#billtocaption_" + arrId[1]).css('display','block');
+		$("#billtotd_" + arrId[1]).css('display','block');
+		
+	} else {
+		$("#specimencollectedcaption_" + arrId[1]).css('display','none');
+		$("#specimencollectedtd_" + arrId[1]).css('display','none');
+		$("#billtocaption_" + arrId[1]).css('display','none');
+		$("#billtotd_" + arrId[1]).css('display','none');
 	}
+	
 }
 function cloneRow()
 {	
@@ -129,12 +149,14 @@ function cloneRow()
 	$('#proceduretemplate'+rowcount+" > td:last input[type=text]").focus();
 	document.getElementById('procedurecount').value = parseInt(rowcount)+1;
 }
-function getProcedures(inputString,thisID) {//alert(inputString + '|' + thisID + '|' + labID);
+function getProcedures(inputString,thisID) {
 	arr = thisID.split("procedures_");
 	ordercntArr = arr[1].split("_");
-	labID = "lab_id_"+ordercntArr[0]+"_1";
+	labID = "lab_id_"+ordercntArr[0]+"_1"; //alert(inputString + '|' + thisID + '|' + labID);
 	count = arr[1];
-	var labval = document.getElementById(labID).value;
+	var labval1 = document.getElementById(labID).value;
+	arrLab = labval1.split("|");
+	labval = arrLab[0];
         $.post("./search",{
             type: "getProcedures",
 	    inputValue : inputString,
@@ -144,21 +166,25 @@ function getProcedures(inputString,thisID) {//alert(inputString + '|' + thisID +
 	    if(data.response == true){
 		    //alert(data.procedureArray);
 		    if(data.procedureArray.length>0){
-		    procedureArray = data.procedureArray;
-		    j = '<ul class="suggestion">';
-		    for(var procedure in procedureArray){
+			procedureArray = data.procedureArray;
+			j = '<ul class="suggestion">';
+			for(var procedure in procedureArray){
 			    splitArr = procedureArray[procedure].split("|-|");
 			    //alert('"'+splitArr[3]+'"');
 			    j +="<li onclick=loadAoeQuest('"+labval+"','"+splitArr[1].replace(/\s+/gi,"&#160;")+"','"+splitArr[3].replace(/\s+/gi,"&#160;")+"','"+count+"','"+splitArr[2].replace(/\s+/gi,"&#160;")+"','"+ordercntArr[0]+"')><a href='#'>"+splitArr[1]+"-"+splitArr[3]+"</a></li>";
-		    }
-		    j+="</ul>";
-		    //alert(j);
-		    $("#prodiv_"+count).css('display','block');
-		    $("#prodiv_"+count).html(j);
+			}
+			j+="</ul>";
+			//alert(j);
+			//$("#prodiv_"+count).css('display','block');
+			//$("#prodiv_"+count).html(j);
+			$("#prodiv_" + arr[1]).css('display','block');
+			$("#prodiv_" + arr[1]).html(j);
 		    }
 		    else{
-			$("#prodiv_"+count).html("");
-			$("#prodiv_"+count).css('display','none');
+			//$("#prodiv_"+count).html("");
+			//$("#prodiv_"+count).css('display','none');
+			$("#prodiv_" + arr[1]).html("");
+			$("#prodiv_" + arr[1]).css('display','none');
 		    }
 	    // print success message
 	    } else {
@@ -169,10 +195,50 @@ function getProcedures(inputString,thisID) {//alert(inputString + '|' + thisID +
 	}, 'json');
 }
 
+function getDiagnoses(inputString,thisID) {
+	arr = thisID.split("diagnoses_");
+	inputString = $.trim(inputString.substring(inputString.lastIndexOf(';') + 1));
+	if (inputString == '') return false;
+        $.post("./search",{
+            type: "getDiagnoses",
+	    inputValue : inputString
+        },
+	function(data) {
+	    if(data.response == true) {
+		    if(data.diagnosesArray.length>0) {
+			diagnosesArray = data.diagnosesArray;
+			j = '<ul class="suggestion">';
+			for(var diagnoses in diagnosesArray) {
+			    splitArr = diagnosesArray[diagnoses].split("|-|");
+			    j +="<li onclick=loadDiagnoses('" + splitArr[0] + "','" + arr[1] + "')><a href='#'>"+splitArr[0]+"-"+splitArr[1]+"</a></li>";
+			}
+			j += "</ul>";
+			$("#diagnodiv_" + arr[1]).css('display','block');
+			$("#diagnodiv_" + arr[1]).html(j);
+		    }
+		    else {
+			$("#diagnodiv_" + arr[1]).html("");
+			$("#diagnodiv_" + arr[1]).css('display','none');
+		    }
+	    } else {
+		alert("Failed");
+		console.log('could not add');
+	    }
+	}, 'json');
 
+}
 
-function pulldata(lab_id,type)
-{
+var keyWord = '';
+function loadDiagnoses(data, id){
+	keyWord += data + ';';
+	$('#diagnoses_' + id).val(keyWord);
+}
+
+function readDiagnoses(thisValue, thisId) {
+	keyWord = thisValue;
+}
+
+function pulldata(lab_id,type) {
 	//alert("hi pull :"+lab_id.value+" type :"+type );
 	var labVal = document.getElementById("lab_id").value;
 	var actionvar='';
