@@ -1,74 +1,11 @@
-<style type = "text/css" > .panel - header {
-	border - width: 1px;
-	border - style: solid;
-	padding: 5px 0px 5px 0px;
-	position: relative;
-}.panel - title {
-	background: url('images/blank.gif') no - repeat;
-}.panel - tool {
-	position: absolute;
-	top: 50 % ;
-	margin - top: -8px;
-	height: 16px;
-	overflow: hidden;
-	right: 5px;
-	width: auto;
-}.panel - body {
-	border - width: 1px;
-	border - style: solid;
-}
-table.gridview2 td {
-	border - style: dotted;
-	border - width: 1px 1px 1px 1px;
-	margin: 0;
-	padding: 0;
-	border - color: #cccccc;
-}
-table.thcolor th {
-	background: linear - gradient(to bottom, #EFF5FF 0px, #E0ECFF 100 % ) repeat - x scroll 0 0 transparent;
-	border: 1px solid#cccccc;
-	height: 10px;
-	height: 20px;
-}.tdfont {
-	font - size: 11px ! important;
-}.clswidth {
-	width: 91 % ;
-
-}
-
-</style>
-<script type="text/javascript ">
- 
-    function clearText(field){
-	if (field.defaultValue == field.value) field.value = field.defaultValue;
-	else if (field.value == '') field.value = field.defaultValue;
-    } 
-    function changeContent(tablecell)
-    {
-	 var str1=tablecell.innerHTML;
-	   //alert(str1);
-	   if(str1.search(" < input ")==-1){
-	   //alert(tablecell.innerHTML);
-	    tablecell.innerHTML = " < INPUT type = text class = clswidth name = \"name_" + str1 + " \"  onBlur=clearText(this) onfocus=clearText(this)  value=\"" + tablecell.innerHTML + " \">";
-       tablecell.firstChild.focus();
-     }
-    }
-	
-	function removerow(){
-	
-	$('#labresult tr:last').hide();
-
-	}
-</script>
-         
          <?php $match = array(
               "/&lt;ref(?:[^\/&]|&(?!gt;))*\/&gt;/is","/&lt;ref[^\/]*&gt;(.*?)&lt;\/ref&gt;/s",);?> 
-	   <div class="panel-header" style="width: 98.9%;">
+	     <div class="panel-header" style="width: 98.9%;">
              <div class="panel-title">Lab Result</div>
              <div class="panel-tool"></div>
-           </div>
-	   <div class="datagrid-wrap panel-body" title="" style="width: 99.8%;">
-	     <div id="toolbar">
+         </div>
+	     <div class="datagrid-wrap panel-body" title="" style="width: 99.8%;">
+	      <div id="toolbar">
 		   <!-- <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		    <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
                    <!-- <span style="text-align: right; padding-left: 750px;">
@@ -78,7 +15,7 @@ table.thcolor th {
                     <span style="font-size: 10px;"> <?php echo xlt('Local Labs'); ?></span>
                    </span>-->
 		    <form id="frmsearch" method="post" novalidate>		   
-		    <div style="text-align: left; padding-left:20px;">
+		     <div style="text-align: left; padding-left:20px;">
                       <div style="text-align: left;">
                        <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
                        <span style="text-align: left; font-weight: bold; margin-left: 250px;"><?php echo xlt('Status'); ?></span>
@@ -110,8 +47,8 @@ table.thcolor th {
 			 </span>
 
 			 <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
-			 <input  type="submit" value="Search" ></a>
-                           <!-- <?php echo xlt('Search'); ?> </a>-->
+			 <!-- <input type="submit" value="Search" ></a>-->
+                           <?php echo xlt('Search'); ?> </a>
             
 		  </div>
 		  </form>
@@ -120,7 +57,7 @@ table.thcolor th {
 	<!-- Lab Result listing starts here------------------------------------->
 		
 	<table id="labresult"  class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
-	       <thead style="background-color:#E0ECFF;">
+	       <thead">
                  <tr>
 	          <th  colspan="4"><?php echo xlt('Order'); ?></th>     
                   <th  colspan="4"><?php echo xlt('Report'); ?></th>
@@ -189,7 +126,8 @@ table.thcolor th {
                 <tr style="background-color:<?php echo $color; ?>">
 				
                          <td class="tdfont"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
-                         <td class="tdfont" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>"> <?php echo $this->escapeHtml(substr($labresult[procedure_name],0,11));?></td>
+                         <td class="tdfont" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>"> 
+						 <?php echo ( $this->escapeHtml(substr($labresult[procedure_name],0,11)) <> "" ) ? $this->escapeHtml(substr($labresult[procedure_name],0,11).".....") : "";?></td>
                          <td class="tdfont"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
 					     <!-- <td class="tdfont"><?php echo $this->escapeHtml($labresult[patient_name]);?></td>
                          <td class="tdfont"><?php echo $this->escapeHtml($labresult[encounter_id]);?></td>-->
@@ -199,8 +137,9 @@ table.thcolor th {
                          <td class="tdfont"><?php echo $this->escapeHtml($labresult[specimen_num]);?></td>
 		                 <td class="tdfont" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
                          <td class="tdfont"><?php echo $this->escapeHtml($labresult[result_code]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($labresult[result_text]);?>"><?php echo $this->escapeHtml(substr($labresult[result_text],0,14));?></td>
-                         <td class="tdfont" ><?php echo $this->escapeHtml($labresult[abnormal]);?></td>
+                         <td class="tdfont" title="<?php echo $this->escapeHtml($labresult[result_text]);?>">
+						 <?php echo ( $this->escapeHtml(substr($labresult[result_text],0,8)) <> "" ) ? $this->escapeHtml(substr($labresult[result_text],0,8).".....") : "";?></td>
+						 <td class="tdfont" ><?php echo $this->escapeHtml($labresult[abnormal]);?></td>
                          <td class="tdfont" ><?php echo $this->escapeHtml($labresult[result]);?></td>
                          <td class="tdfont" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
                          <td class="tdfont" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
