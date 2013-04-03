@@ -2207,11 +2207,51 @@ a.s-btn-plain-active {
 }
 
 
-.styled-select {
-   width: 240px;
-  overflow: hidden;
-   background: url('images/new_arrow.jpg') no-repeat right ;
+table.gridtable td {
+    border-width: 1px 1px 0px 1px;
+    border-style: dotted;
+    border-color: #ccc;
+    margin: 0;
+    padding: 0;
+  }
+
+.textfield
+{
+	width:300px;
+}
+
+.icon_add
+{
+	float:left;
+	width:20px;
+	background-image:url("icons/add.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+
+.icon_edit
+{
+	float:left;
+	width:20px;
+	background-image:url("icons/pencil.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+  
+  
+.icon_delete
+{
+	float:left;
+	width:20px;
+	background-image:url("icons/cancel.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
+  
    
-   }
+   
   
 

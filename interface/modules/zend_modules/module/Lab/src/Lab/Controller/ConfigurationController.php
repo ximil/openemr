@@ -3,8 +3,8 @@ namespace Lab\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
-use Lab\Model\Configuration;//vip
-use Lab\Form\ConfigurationForm;//EDITED
+use Lab\Model\Configuration;
+use Lab\Form\ConfigurationForm;
 use Zend\View\Model\JsonModel;
 
 use Zend\Soap\Client;
@@ -55,32 +55,7 @@ class ConfigurationController extends AbstractActionController
     {	
 	$request    	= $this->getRequest();
 	$data  	    	= array('type_id'    => $request->getQuery('type_id'));		
-        $typeID		= $data['type_id'];
-	
-	
-	
-	/*$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-	
-	$body_sites 	= $helper->getList("proc_body_site");
-	$specimen_type 	= $helper->getList("proc_specimen");
-	$admin_via 	= $helper->getList("proc_route");
-	$laterality 	= $helper->getList("proc_lat");
-	$dafault_units 	= $helper->getList("proc_unit");
-	
-	$list_arr	= array();
-	
-	$list_arr[]	= $body_sites;
-	$list_arr[]	= $specimen_type;
-	$list_arr[]	= $admin_via;
-	$list_arr[]	= $laterality;
-	$list_arr[]	= $dafault_units;*/
-	
-	//$form 	= new ConfigurationForm();
-	//$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-	//
-	//$labs = $helper->getLabs(1);
-	//$form->get('order_from')->setValueOptions($labs);
-	
+        $typeID		= $data['type_id'];	
 	$ret_arr 	= $this->getConfigurationTable()->getConfigDetails($typeID);	
 	return $ret_arr;	
     }
@@ -135,17 +110,5 @@ class ConfigurationController extends AbstractActionController
 	$request    	= $this->getRequest();
 	$up_res		= $this->getConfigurationTable()->addConfigDetails($request);
 	return $up_res;
-    }
-    
-    /*public function getAddExistConfigDeatilsAction()
-    {
-	$request    	= $this->getRequest();
-	$data  	    	= array('type_id'    => $request->getQuery('type_id'));	
-        $typeID		= $data['type_id'];	
-	$ret_arr 	= $this->getConfigurationTable()->getAddExistConfigDetails($typeID);
-	return $ret_arr;
-    }*/
-    
-    
-    
+    }    
 }

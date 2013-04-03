@@ -5,7 +5,7 @@
 $host	= 'localhost';
 $port	= '3306';
 $login	= 'root';
-$pass	= '';
+$pass	= 'eldho';
 $dbase	= 'openemrquest';
 
 //Added ability to disable
