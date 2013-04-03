@@ -12,15 +12,7 @@ $(function(){
 
 // Search options, Status and Ordered Date
 function doSearch(){
-	$('#dg').edatagrid('load',{  
-		statusOrder: $("input[name=searchStatusOrder]").val(),
-		statusReport: $("input[name=searchStatusReport]").val(),
-		statusResult: $("input[name=searchStatusResult]").val(),
-		dtFrom: $("input[name=dtFrom]").val(),
-		dtTo: $("input[name=dtTo]").val()
-		//dtFrom: $('#acpro_inp1').val(),
-		//dtTo: $('#acpro_inp4').val(),
-	}) 
+	document.getElementById("frmsearch").submit();
 }
 
 // Result request with order id

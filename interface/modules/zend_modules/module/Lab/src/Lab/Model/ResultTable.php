@@ -204,7 +204,7 @@ class ResultTable extends AbstractTableGateway
                                     "pt2.name AS name, pt2.description, pt2.seq AS seq, " .
                                     "ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
                                     "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments"; 
-            $selects .= ", psr.procedure_subtest_result_id,
+           $selects .= ", psr.procedure_subtest_result_id,
                                 psr.subtest_code,
                                 psr.subtest_desc AS sub_result_text,
                                 psr.result_value AS sub_result,
@@ -720,14 +720,17 @@ class ResultTable extends AbstractTableGateway
     public function saveResultEntryDetails($request)
     {
 				$existing_query = "SELECT * FROM procedure_result WHERE procedure_report_id = ?";
-				$sqlins = "INSERT INTO procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, procedure_report_id = ?";
-				$sqlupd = "UPDATE procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ? WHERE procedure_report_id = ?";
+				$sqlins = "INSERT INTO procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ?, procedure_report_id = ?";
+				$sqlupd = "UPDATE procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ? WHERE procedure_report_id = ?";
 				for($i=0;$i<count($request->procedure_report_id);$i++){
 						$param = array();
 						array_push($param,$request->units[$i]);
 						array_push($param,$request->result[$i]);
 						array_push($param,$request->range[$i]);
 						array_push($param,$request->abnormal[$i]);
+            array_push($param,$request->facility[$i]);
+            array_push($param,$request->comments[$i]);
+            array_push($param,$request->result_status[$i]);
             array_push($param,$request->procedure_report_id[$i]);
 						$existing_res = sqlStatement($existing_query,array($request->procedure_report_id[$i]));
 						if(sqlNumRows($existing_res) > 0){
