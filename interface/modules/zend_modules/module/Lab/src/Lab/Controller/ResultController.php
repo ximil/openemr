@@ -476,6 +476,8 @@ class ResultController extends AbstractActionController
 				$form->get('abnormal[]')->setValueOptions($statuses_abn);
 				$statuses_units = $helper->getList("proc_unit");
 				$form->get('units[]')->setValueOptions($statuses_units);
+				$statuses_res = $helper->getList("proc_res_status");
+				$form->get('result_status[]')->setValueOptions($statuses_res);
 				$this->layout()->saved = $this->params('saved');
 				if($pid){
 						$form->get('patient_id')->setValue($pid);
