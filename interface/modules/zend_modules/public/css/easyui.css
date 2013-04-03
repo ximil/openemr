@@ -2191,6 +2191,10 @@ a.s-btn-plain-active {
     background: url("images/lab_result.png") no-repeat scroll center center transparent;
 }
 
+.icon-lab-group{
+	background: url('images/tree_icons.png')  no-repeat -208px 0  !important;
+}
+
 .icon-lab-order{
 	background:url('icons/lab_order.png') no-repeat center center !important;
 }
@@ -2198,4 +2202,16 @@ a.s-btn-plain-active {
 	background:url('icons/lab_result.png') no-repeat center center !important;
 }
 
+.icon-lab-reccomendation{
+	background: url('images/tree_icons.png') no-repeat -240px 0 !important;
+}
+
+
+.styled-select {
+   width: 240px;
+  overflow: hidden;
+   background: url('images/new_arrow.jpg') no-repeat right ;
+   
+   }
+  
 
