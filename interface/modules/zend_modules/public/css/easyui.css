@@ -2213,6 +2213,7 @@ table.gridtable td {
     border-color: #ccc;
     margin: 0;
     padding: 0;
+    height:15px !important;
   }
 
 .textfield
@@ -2250,8 +2251,7 @@ table.gridtable td {
 	cursor:pointer;
 	cursor:hand;
 }
-  
-   
+
    
   
 

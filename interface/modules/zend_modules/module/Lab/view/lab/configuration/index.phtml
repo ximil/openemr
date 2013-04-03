@@ -2,12 +2,12 @@
 echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.js')
 ?>
 <div style="margin:10px 0;"></div>
-<div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" >
+<div class="easyui-panel" title="<?php echo xlt('Configuration - Types of Orders and Results');?>" style="width:1050px" >
 	<a href="javascript:void(0)" onclick="addConfig()">
 		<img  src=<?php echo $this->basePath(); ?>/css/icons/add_type.png title='Add' border=0  />
 	</a>
 	<b>ADD</b>
-	<table id="tg" class="easyui-treegrid"  style="width:850px;height:300px"
+	<table id="tg" class="easyui-treegrid"  
 		data-options="
 			iconCls: 'icon-ok',
 			rownumbers: true,
@@ -21,7 +21,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 			pageNumber:1,
 			pageSize:25,
 			pageList:[10,15,20,25,50],
-			width:'88%',  
+			width:'100%',  
 			height:'auto',  
 			
 		">
@@ -33,7 +33,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 				<th data-options="field:'procedure_code',width:50,editor:'text'">Code</th>
 				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
 				<th data-options="field:'discription',width:170,editor:'text'">Description</th>
-				<th data-options="field:'action',title:'Action',width:39,align:'centre'"></th>
+				<th data-options="field:'action',title:'Action',width:42,align:'centre'"></th>
 			</tr>
 		</thead>
 	</table>
@@ -59,19 +59,15 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>	
 				<div id="group_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
-							<td width="150">							
-								Name
-							</td>
+							<td width="150" >Name</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('group_name[]'));?>
 							</td>
 						</tr>
 						<tr>
-							<td>
-								Description
-							</td>
+							<td>Description</td>
 							<td>
 								<?php echo $this->formRow($form->get('group_description[]'));?>
 							</td>
@@ -93,7 +89,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>	
 				<div id="order_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px" class="gridtable">
+					<table style="width:600px;" class="gridtable">
 						<tr>
 							<td width="150">
 								Name
@@ -192,7 +188,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 				</div>
 					
 				<div id="result_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
 							<td width="150">
 								Name
@@ -259,7 +255,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 				</div>
 							
 				<div id="reccomendation_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
 							<td width="150">
 								Name
@@ -333,19 +329,15 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>	
 				<div id="group_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
-							<td width="150">							
-								Name
-							</td>
+							<td width="150">Name</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('group_name[]'));?>
 							</td>
 						</tr>
 						<tr>
-							<td>
-								Description
-							</td>
+							<td>Description</td>
 							<td>
 								<?php echo $this->formRow($form->get('group_description[]'));?>
 							</td>
@@ -370,7 +362,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>	
 				<div id="order_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px" class="gridtable">
+					<table style="width:600px;" class="gridtable">
 						<tr>
 							<td width="150">
 								Name
@@ -471,7 +463,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>
 				<div id="result_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
 							<td width="150">
 								Name
@@ -539,7 +531,7 @@ echo $this->headScript()->appendFile($this->basePath() . '/js/lab/configuration.
 					
 				</div>
 				<div id="reccomendation_div" style="float:left;margin-left:20px;display:none">
-					<table style="width:600px;min-height:280px"  class="gridtable">
+					<table style="width:600px;"  class="gridtable">
 						<tr>
 							<td width="150">
 								Name
