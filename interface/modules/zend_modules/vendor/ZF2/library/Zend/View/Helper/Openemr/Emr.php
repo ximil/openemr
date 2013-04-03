@@ -59,7 +59,12 @@ class Emr extends AbstractHelper
 	return $rows;
     }
     
-    public function getLabs($selected)
+    /*
+    * function getLabs
+    * @param $type
+    * @value 'y' - for type of Labs (Loacal or External)
+    */
+    public function getLabs($type='')
     {
 	$res = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid"); 
 	$rows[0] = array (
@@ -71,13 +76,21 @@ class Emr extends AbstractHelper
 	$i = 0;
 	
 	while($row=sqlFetchArray($res)) {
-	    $sel = ($row['ppid']==$selected) ? TRUE : FALSE;
-		$rows[$i] = array (
-			'value' => $row['ppid'],
-			'label' => $row['name'],
-			'selected' => $sel,
-		);
-		$i++;
+	    $value = '';
+	    if ($type == 'y') {
+		if ($row['remote_host'] != '' && $row['login'] != '' && $row['password'] != '') {
+			$value = $row['ppid'] . '|' . 1; // 0 - Local Lab and 1 - External Lab
+		} else {
+			$value = $row['ppid'] . '|' . 0;
+		}
+	    } else {
+		$value = $row['ppid'];
+	    }
+	    $rows[$i] = array (
+		'value' => $value,
+		'label' => $row['name'],
+	    );
+	    $i++;
 	}
 	return $rows;
     }

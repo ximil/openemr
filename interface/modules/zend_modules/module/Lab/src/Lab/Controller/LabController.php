@@ -47,6 +47,70 @@ class LabController extends AbstractActionController
     
     public function orderAction()
     {
+	global $pid;
+	$msg = '';
+	if ($pid == '' && $_SESSION['encounter'] == '') {
+	    $msg = 'N';  
+	}
+	$form = new LabForm();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	$providers = $helper->getProviders();
+	$form->get('provider[0][]')->setValueOptions($providers);
+	
+	$labs = $helper->getLabs('y');
+	$form->get('lab_id[0][]')->setValueOptions($labs);
+	
+	$priority = $helper->getList("ord_priority");
+	$form->get('priority[0][]')->setValueOptions($priority);
+	
+	$status = $helper->getList("ord_status",'pending');
+	$form->get('status[0][]')->setValueOptions($status);
+	$result = new ViewModel(array('form' => $form, 'message' => $msg,));
+	return $result;
+    
+	//return array('form' => $form);
+    }
+    
+    public function ordereditAction()
+    {
+	$form = new LabForm();
+	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+	$providers = $helper->getProviders();
+	$form->get('provider[0][]')->setValueOptions($providers);
+	
+	$form->get('specimencollected[0][]')->setValue('onsite');
+	
+	// disable layout in the form
+	//$result = new ViewModel(array('form' => $form));
+	//$result->setTerminal(true);
+	//return $result;
+	$labs = $helper->getLabs('y');
+	$form->get('lab_id[0][]')->setValueOptions($labs);
+	
+	$priority = $helper->getList("ord_priority");
+	$form->get('priority[0][]')->setValueOptions($priority);
+	
+	$status = $helper->getList("ord_status",'pending');
+	$form->get('status[0][]')->setValueOptions($status);
+	
+	//$orders = $this->getLabTable()->listLabOrders();
+	//$form->bind($orders);
+	//return array('form' => $form, 'orders' => $orders);
+	return array('form' => $form,);
+    }
+    
+    public function getOrderListAction()
+    {
+	$data = array(
+		    'ordId'  => '247',
+            ); 
+	$labOrders = $this->getLabTable()->listLabOrders($data);
+        $data = new JsonModel($labOrders);
+        return $data;
+    }
+   
+    public function formAction()
+    {
 	$form = new LabForm();
 	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	$providers = $helper->getProviders();
@@ -61,39 +125,6 @@ class LabController extends AbstractActionController
 	$status = $helper->getList("ord_status",'pending');
 	$form->get('status[0][]')->setValueOptions($status);
 	
-	$form->get('specimencollected[0][]')->setValue('onsite');
-	
-	// disable layout in the form
-	//$result = new ViewModel(array('form' => $form));
-	//$result->setTerminal(true);
-	//return $result;
-	
-	return array('form' => $form);
-    }
-    
-    public function getOrdersAction()
-    {
-	$labOrders = $this->getLabTable()->listLabOrders();
-        $data = new JsonModel($labOrders);
-        return $data;
-    }
-    
-    public function formAction()
-    {
-	$form = new LabForm();
-	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-	$providers = $helper->getProviders();
-	$form->get('provider')->setValueOptions($providers);
-	
-	$labs = $helper->getLabs();
-	$form->get('lab_id')->setValueOptions($labs);
-	
-	$priority = $helper->getList("ord_priority");
-	$form->get('priority')->setValueOptions($priority);
-	
-	$status = $helper->getList("ord_status",'pending');
-	$form->get('status')->setValueOptions($status);
-	
 	// disable layout in the form
 	$result = new ViewModel(array('form' => $form));
 	$result->setTerminal(true);
@@ -101,13 +132,13 @@ class LabController extends AbstractActionController
 	
 	//return array('form' => $form);
 	
-	$request = $this->getRequest();
+	/*$request = $this->getRequest();
         $data =array();
         if ($request->getQuery('index') == 'index') {
             $data = array(
                     'index'  => $request->getQuery('index'),
             ); 
-        }
+        }*/
         //$fh = fopen("D:/test.txt","a");
         //fwrite($fh,print_r($data,1));
        // $labResult = $this->getLabResult($data);
@@ -343,6 +374,11 @@ class LabController extends AbstractActionController
 		$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'aoeArray' => $AOE)));
 		return $response;
 	    }
+	    if($request->getPost('type') == 'getDiagnoses' ){ 
+		$diagnoses = $this->getDiagnoses($inputString);
+		$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'diagnosesArray' => $diagnoses)));
+		return $response;
+	    }
 	}
     }
     
@@ -357,6 +393,12 @@ class LabController extends AbstractActionController
     {
 	$AOE = $this->getLabTable()->listAOE($procedureCode,$labId);
 	return $AOE;
+    }
+    
+    public function getDiagnoses($inputString)
+    {
+	$diagnoses = $this->getLabTable()->listDiagnoses($inputString);
+	return $diagnoses;
     }
     
     public function getLabTable()

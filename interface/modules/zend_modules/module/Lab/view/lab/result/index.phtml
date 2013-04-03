@@ -174,49 +174,32 @@
 			<td  style="display:none;"  width='10%'> <?php echo xlt('order'); ?></td>
 	     
 	       </tr>
-	        <?php $i = 0; foreach ($albums as $album) : 
-			$color = ($album['color'] <> "") ? $album['color'] : $color;
+	        <?php $i = 0; foreach ($labresults as $labresult) : 
+			$color = ($album['color'] <> "") ? $labresult['color'] : $color;
 			?>
-              <tr style="background-color:<?php echo $color; ?>">
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[date_ordered]);?></td>
-                         <td class="tdfont" title=" <?php echo $this->escapeHtml($album[procedure_name]);?>"> <?php echo $this->escapeHtml(substr($album[procedure_name],0,11));?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[order_id]);?></td>
-					  <!-- <td class="tdfont"><?php echo $this->escapeHtml($album[patient_name]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[encounter_id]);?></td>-->
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[order_status]);?></td>
-                         <td class="tdfont"> <?php echo $this->escapeHtml($album[date_report]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[date_collected]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[specimen_num]);?></td>
-		         <td class="tdfont" ><?php echo $this->escapeHtml($album[report_status]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[result_code]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[result_text]);?>"><?php echo $this->escapeHtml(substr($album[result_text],0,14));?></td>
-                         <td class="tdfont" ><?php echo $this->escapeHtml($album[abnormal]);?></td>
-                         <td class="tdfont" ><?php echo $this->escapeHtml($album[result]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[units]);?>"><?php echo $this->escapeHtml(substr($album[units],0,5));?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[range]);?>"><?php echo strip_tags(substr($album[range],0,9));?> </td>
-                         <td class="tdfont" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($album[procedure_result_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> ></td>
-		      
-		       <?php  if(($album['editor']==1) AND ($album['editor']!=0)){ $check=1; ?>
-                         <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                         <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                         <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
-		         
-			<?php }elseif(($album['editor']==0) AND ($album['editor']!=1)){ ?>
-		          <td class="tdfont" style="padding-left:5px; display:none;"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont" style="padding-left:12px; display:none;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont" style="padding-left:5px; display:none;"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-		         
-			 <?php } elseif((($album['editor']==0) OR ($album['editor']==1))  AND $check!=1)  { ?>
-			 
-			  <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
-			 
-		      <?php } ?>
-		      <td style="display:none;"   width='10%'>  <?php echo $this->escapeHtml($album[order_id]);?> </td>
-            </tr>  
+            <tr style="background-color:<?php echo $color; ?>">
+                      <td class="tdfont"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
+                      <td class="tdfont" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>"> <?php echo $this->escapeHtml(substr($labresult[procedure_name],0,11));?></td>
+                      <td class="tdfont"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
+					  <!-- <td class="tdfont"><?php echo $this->escapeHtml($labresult[patient_name]);?></td>
+                      <td class="tdfont"><?php echo $this->escapeHtml($labresult[encounter_id]);?></td>-->
+                      <td class="tdfont"><?php echo $this->escapeHtml($labresult[order_status]);?></td>
+                      <td class="tdfont" onclick="changeContent(this);"> <?php echo $this->escapeHtml($labresult[date_report]);?></td>
+                      <td class="tdfont" onclick="changeContent(this);"><?php echo $this->escapeHtml($labresult[date_collected]);?></td>
+                      <td class="tdfont" onclick="changeContent(this);"><?php echo $this->escapeHtml($labresult[specimen_num]);?></td>
+		              <td class="tdfont" onclick="changeContent(this);"><?php echo $this->escapeHtml($labresult[report_status]);?></td>
+                      <td class="tdfont"><?php echo $this->escapeHtml($labresult[result_code]);?></td>
+                      <td class="tdfont" title="<?php echo $this->escapeHtml($labresult[result_text]);?>"><?php echo $this->escapeHtml(substr($labresult[result_text],0,14));?></td>
+                      <td class="tdfont"  onclick="changeContent(this);"><?php echo $this->escapeHtml($labresult[abnormal]);?></td>
+                      <td class="tdfont" onclick="changeContent(this);"><?php echo $this->escapeHtml($labresult[result]);?></td>
+                      <td class="tdfont" onclick="changeContent(this);" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
+                      <td class="tdfont" onclick="changeContent(this);" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
+                      <td class="tdfont" style="padding-left:13px;" ><a href="#"><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> ></td>
+                      <td class="tdfont" style="padding-left:5px;" > <a href="#"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                      <td class="tdfont" style="padding-left:12px;"> <a href="#"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                      <td class="tdfont" style="padding-left:5px;"> <a href="#"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+					  
+            </tr>
               <?php $i++; endforeach; ?>
 	
       </table>

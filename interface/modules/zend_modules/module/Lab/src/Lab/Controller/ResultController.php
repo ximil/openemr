@@ -17,8 +17,8 @@ class ResultController extends AbstractActionController
     public function indexAction()
     {
      $labresult1=$this->resultShowAction(); 
-	    $viewModel = new ViewModel(array(
-	    "albums"=>$labresult1
+	  $viewModel = new ViewModel(array(
+       "labresults"=>$labresult1
 		));
 	return $viewModel;	  
 		

@@ -28,14 +28,17 @@ class LabTable extends AbstractTableGateway
      * Lab Order Row wise
      */
     
-    public function listLabOrders()
+    public function listLabOrders($data)
     {
-	$sql = "SELECT procedure_order_id,
-			provider_id,
-			patient_id,
-			encounter_id,
-			date_ordered
-		    FROM procedure_order";
+	$sql = "SELECT po.*,
+			CONCAT(pa.lname, ',', pa.fname) AS patient_name,
+			pp.name AS provider_name 
+		    FROM procedure_order po 
+		    LEFT JOIN patient_data pa ON po.patient_id=pa.id 
+		    LEFT JOIN procedure_providers pp ON po.lab_id=pp.ppid 
+		    WHERE po.procedure_order_id='" . $data['ordId'] . "'";
+
+		    
 	$result = sqlStatement($sql);
 	$arr = array();
 	while ($row = sqlFetchArray($result)) {
@@ -45,8 +48,6 @@ class LabTable extends AbstractTableGateway
 	return $arr;
     }
     
-  
-	
 //   public function saveLab(Lab $lab,$aoe)
 //    {
 //	$fh = fopen("D:/SAVELAB.txt","a");
@@ -82,10 +83,12 @@ class LabTable extends AbstractTableGateway
 	}
     }
     public function insertProcedureMaster($post,$ordnum){
+	$labvalArr = explode("|",$post['lab_id'][$ordnum][0]);
+	$labval = $labvalArr[0];
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
 				       order_status,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
-		    'pending',$post['lab_id'][$ordnum][0],$post['specimencollected'][$ordnum][0],
+		    'pending',$labval,$post['specimencollected'][$ordnum][0],
 		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0]));
 	return $procedure_type_id;
     }
@@ -96,24 +99,27 @@ class LabTable extends AbstractTableGateway
 	$procedure_type_id_arr = array();
 	$j=0;
 	$prevState = '';
-	for($ordnum=0;$ordnum<1;$ordnum++){
+	$fh = fopen(dirname(__FILE__)."/teeeewwwt.txt","a");
+	fwrite($fh,"rrr:".print_r($post,1));
+	for($ordnum=0;$ordnum<$post['total_panel'];$ordnum++){
 	    for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
-	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
-			     array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
-	    if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
-	    ${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
-	    if($PRow['pap_indicator']=="P"){
-		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
-		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		$PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
+				 array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+		if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
+		${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
+		if($PRow['pap_indicator']=="P"){
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		}
+		else{
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		    ${$PRow['specimen_state']."_".$ordnum."_j"}++;
+		}
 	    }
-	    else{
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
-		${$PRow['specimen_state']."_".$ordnum."_j"}++;
-	    }
-	    }
+	    $fh = fopen(dirname(__FILE__)."/teeeet.txt","a");
 	    fwrite($fh,"eee:".${$PRow['specimen_state']."_".$ordnum."_j"});
 	    fwrite($fh,"\r\nPRow:".print_r($PRow,1));
 	    fwrite($fh,"papArray:".print_r($papArray,1));
@@ -133,6 +139,8 @@ class LabTable extends AbstractTableGateway
 		}
 	    }
 	    if($post['specimencollected'][$ordnum][0]=="onsite"){
+		$fh = fopen(dirname(__FILE__)."/tessst.txt","a");
+		fwrite($fh,print_r($specimenState[$ordnum],1));
 		if(sizeof($specimenState[$ordnum])>0){
 		    foreach($specimenState[$ordnum] as $k=>$vArray){
 			$SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
@@ -164,9 +172,6 @@ class LabTable extends AbstractTableGateway
 		}
 	    }
 	}
-	
-	
-	
 	return $procedure_type_id_arr;
     }
     
@@ -212,6 +217,21 @@ class LabTable extends AbstractTableGateway
 	//	'name'     => 'AOE_'.$procedureCode."_".$tmp['question_code']
 	//    )));
 	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['tips'],ENT_QUOTES);
+	}
+	return $arr;
+    }
+    
+    public function listDiagnoses($inputString)
+    {
+	$sql = "SELECT * FROM codes
+			    WHERE code_type='2' 
+				AND (code LIKE ? 
+				    OR   code_text LIKE ?) ORDER BY code ";
+	$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[] =  htmlspecialchars($tmp['code'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['code_text'],ENT_QUOTES);
 	}
 	return $arr;
     }
