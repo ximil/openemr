@@ -16,12 +16,38 @@ class ResultController extends AbstractActionController
 	
     public function indexAction()
     {
-     $labresult1=$this->resultShowAction(); 
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 
+     $labresult1=$this->resultShowAction($pageno); 
+	 //$data = new JsonModel($labresult1);
 	    $viewModel = new ViewModel(array(
 	    "labresults"=>$labresult1
 		));
 	return $viewModel;	  
 		
+    }
+    
+    public function paginationAction()
+    {   
+	
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 	 
+	$labresult1=$this->resultShowAction($pageno); 
+	    $viewModel = new ViewModel(array(
+	    "labresults"=>$labresult1
+		));
+	return $viewModel;	   
+	
     }
     public function getResultTable()
     {
@@ -32,31 +58,31 @@ class ResultController extends AbstractActionController
         return $this->labTable;
     }
     
-    public function resultShowAction()
-    {
+    public function resultShowAction($pageno)
+    {		
         $request = $this->getRequest();
         $data =array();
         if($request->isPost()){
             $data = array(
-                    'statusReport'  => $request->getPost('statusReport'),
-                    'statusOrder'   => $request->getPost('statusOrder'),
-                    'statusResult'  => $request->getPost('statusResult'),
+                    'statusReport'  => $request->getPost('searchStatusReport'),
+                    'statusOrder'   => $request->getPost('searchStatusOrder'),
+                    'statusResult'  => $request->getPost('searchStatusResult'),
                     'dtFrom'        => $request->getPost('dtFrom'),
                     'dtTo'          => $request->getPost('dtTo'),
                     'page'          => $request->getPost('page'),
                     'rows'          => $request->getPost('rows'),
             ); 
         }
-	
-        $data = $this->getLabResult($data);
+						
+        $data = $this->getLabResult($data,$pageno);
        // $data = new JsonModel($labResult);
 				return $data;
 				
     }
     
-    public function getLabResult($data)
+    public function getLabResult($data,$pageno)
     {
-        $labResult = $this->getResultTable()->listLabResult($data);
+        $labResult = $this->getResultTable()->listLabResult($data,$pageno);
 	     return $labResult;
     }
     
