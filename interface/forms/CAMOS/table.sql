@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `form_CAMOS` (
 id bigint(20) NOT NULL auto_increment,
-date datetime default NULL,
+date timestamp NULL DEFAULT NULL,
 pid bigint(20) default NULL,
 user varchar(255) default NULL,
 groupname varchar(255) default NULL,
@@ -16,7 +16,7 @@ PRIMARY KEY (id)
 
 CREATE TABLE IF NOT EXISTS `form_CAMOS_category` (
 id bigint(20) NOT NULL auto_increment,
-date datetime default NULL,
+date timestamp NULL DEFAULT NULL,
 pid bigint(20) default NULL,
 user varchar(255) default NULL,
 groupname varchar(255) default NULL,
@@ -30,7 +30,7 @@ PRIMARY KEY (id)
 
 CREATE TABLE IF NOT EXISTS `form_CAMOS_subcategory` (
 id bigint(20) NOT NULL auto_increment,
-date datetime default NULL,
+date timestamp NULL DEFAULT NULL,
 pid bigint(20) default NULL,
 user varchar(255) default NULL,
 groupname varchar(255) default NULL,
@@ -45,7 +45,7 @@ PRIMARY KEY (id)
 
 CREATE TABLE IF NOT EXISTS `form_CAMOS_item` (
 id bigint(20) NOT NULL auto_increment,
-date datetime default NULL,
+date timestamp NULL DEFAULT NULL,
 pid bigint(20) default NULL,
 user varchar(255) default NULL,
 groupname varchar(255) default NULL,

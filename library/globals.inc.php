@@ -96,6 +96,12 @@ $USER_SPECIFIC_GLOBALS = array('default_top_pane',
                                'event_color',
                                'erx_import_status_message');
 
+//build time zone
+
+$timezone_identifiers['server_default'] ='server_default';
+foreach ( DateTimeZone::listIdentifiers() as $k =>$v) {
+  $timezone_identifiers[$v]=$v;                               
+}
 $GLOBALS_METADATA = array(
 
   // Appearance Tab
@@ -111,7 +117,6 @@ $GLOBALS_METADATA = array(
       'main_info.php',                  // default = calendar
       xl('Type of screen layout')
     ),
-
     'concurrent_layout' => array(
       xl('Layout Style'),               // descriptive name
       array(
@@ -454,7 +459,12 @@ $GLOBALS_METADATA = array(
             ),
             '0',
             xl('Format for age display')
-    )
+    ),    
+    'time_zone' => array(xl('Select The Facility Time Zone'),       // descriptive name
+        $timezone_identifiers,
+        '',                                                         // default = calendar
+        xl('Timezone used for date functions')
+    ),
   ),
 
   // Features Tab
@@ -472,7 +482,6 @@ $GLOBALS_METADATA = array(
       '0',                              // default
       xl('Indicator for specialized usage')
     ),
-
     'inhouse_pharmacy' => array(
       xl('Drugs and Products'),
       array(

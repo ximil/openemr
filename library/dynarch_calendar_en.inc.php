@@ -1,4 +1,8 @@
+<?php
+$date_from_server = date('Y,m,d');
+?>
 <script type="text/javascript">
+var default_date_to_display = "<?php echo $date_from_server;?>";
 // ** I18N
 // Calendar EN language
 // Author: Mihai Bazon, <mihai_bazon@yahoo.com>

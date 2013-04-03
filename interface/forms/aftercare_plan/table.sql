@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS `form_aftercare_plan` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `date` datetime DEFAULT NULL,
+  `date` timestamp NULL DEFAULT NULL,
   `pid` bigint(20) DEFAULT NULL,
   `user` varchar(255) DEFAULT NULL,
   `provider` varchar(255) DEFAULT NULL,
