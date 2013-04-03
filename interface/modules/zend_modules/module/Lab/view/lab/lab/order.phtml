@@ -65,7 +65,7 @@
                             <?php echo $this->formRow($form->get('orderdate[0][]'));?>
                         </td>
                         <!--<td valign='top' id="internaltime_1_1" style="display:none">
-                                <?php //echo $this->formRow($form->get('timecollected[0][]'));?>
+                                <?php echo $this->formRow($form->get('timecollected[0][]'));?>
                         </td>-->
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
                         <td valign='top' id='specimencollectedtd_1_1' style="display:none">
@@ -85,7 +85,7 @@
                                     <td width='40%' valign='top'><?php echo xlt('Patient Instructions');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Diagnoses');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Procedure');?></td>
-                                    <td align='center'><?php echo xlt('Action'); ?></td>
+                                    <td align='left'><?php echo xlt('Action'); ?></td>
                             </tr>
                             </table>
                         </td>
@@ -109,19 +109,19 @@
                                              <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
                                         </span>
                                     </td>
-                                    <td valign='top' align='center'>
-                                        <span style="padding-left: 10px;" >
+                                    <td valign='top' align='left'>
+                                        <!--<span style="padding-left: 10px;" >-->
                                             <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                                                 <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                                                 <?php echo xlt('Cancel'); ?>
                                             </a>
-                                        </span>
-                                        <span style="padding-left: 10px;" >
+                                       <!-- </span>
+                                        <span style="padding-left: 10px;" >-->
                                             <a href="javascript:void(0)" id='addButton_1_1'  plain="true" onclick="addRow();">
                                                 <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                                                 <?php echo xlt('Add'); ?>
                                             </a>
-                                        </span>
+                                       <!-- </span>-->
                                     </td> 
                             </tr>
                             <tr id="AOEtemplate_1_1"  style="display:none">
@@ -167,19 +167,19 @@
                  <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
             </span>
         </td>
-        <td valign='top' align='center'>
-            <span style="padding-left: 10px;" >
+        <td valign='top' align='left'>
+            <!--<span style="padding-left: 10px;" >-->
                 <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                     <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                     <?php echo xlt('Cancel'); ?>
                 </a>
-            </span>
-            <span style="padding-left: 10px;" >
+            <!--</span>
+            <span style="padding-left: 10px;" >-->
                 <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
                     <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                     <?php echo xlt('Add'); ?>
                 </a>
-            </span>
+            <!--</span>-->
         </td> 
 </tr>
 <tr id="AOEtemplate"  style="display:none">

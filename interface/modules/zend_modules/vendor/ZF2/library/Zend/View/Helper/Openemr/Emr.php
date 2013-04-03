@@ -66,14 +66,14 @@ class Emr extends AbstractHelper
     */
     public function getLabs($type='')
     {
-	$res = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid"); 
-	$rows[0] = array (
-		'value' => '0',
-		'label' => xlt('Local Lab'),
-		'selected' => TRUE,
-		'disabled' => FALSE
-	);
-	$i = 1;
+	$res = sqlStatement("SELECT ppid,name,remote_host,login,password FROM procedure_providers ORDER BY name, ppid"); 
+	//$rows[0] = array (
+	//	'value' => '0',
+	//	'label' => xlt('Local Lab'),
+	//	'selected' => TRUE,
+	//	'disabled' => FALSE
+	//);
+	$i = 0;
 	
 	while($row=sqlFetchArray($res)) {
 	    $value = '';
