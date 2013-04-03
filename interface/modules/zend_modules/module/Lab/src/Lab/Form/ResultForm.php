@@ -64,6 +64,43 @@ class ResultForm extends Form
 						),
         ));
 				$this->add(array(
+            'name' => 'result_status[]',
+						'type'  => 'Zend\Form\Element\Select',
+            'attributes' => array(
+								'class' => 'combo mediumtb',
+								'editable' => 'true',
+            ),
+						'options' => array(
+								'value_options' => array(
+								    '' => xlt('Unassigned'),
+								),
+						),
+        ));
+				$this->add(array(
+            'name' => 'facility[]',
+            'attributes' => array(
+                'type'  => 'text',
+								'id'	=> 'facility',
+								'class' => 'combo mediumtb',
+            ),
+        ));
+				$this->add(array(
+            'name' => 'comments[]',
+            'attributes' => array(
+                'type'  => 'text',
+								'id'	=> 'comments',
+								'class' => 'combo mediumtb',
+            ),
+        ));
+				$this->add(array(
+            'name' => 'notes[]',
+            'attributes' => array(
+                'type'  => 'text',
+								'id'	=> 'notes',
+								'class' => 'combo mediumtb',
+            ),
+        ));
+				$this->add(array(
             'name' => 'range[]',
             'attributes' => array(
                 'type'  => 'text',
