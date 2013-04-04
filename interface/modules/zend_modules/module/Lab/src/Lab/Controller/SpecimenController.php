@@ -64,7 +64,7 @@ class SpecimenController extends AbstractActionController
 				}
     }
 		
-		public function searchAction()
+		public function searchPatientAction()
     {	
 				$request 	= $this->getRequest();
 				$response = $this->getResponse();

@@ -88,7 +88,7 @@ class SpecimenForm extends Form
                 'type'  => 'text',
 								'id'	=> 'search_patient',
 								'class' => 'combo',
-								'onKeyup' => 'getPatient(this.value, this.id)',
+								'onKeyup' => 'getPatient(this.value, this.id,"./searchPatient")',
 								'autocomplete' => 'off'
             ),
         ));
