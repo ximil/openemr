@@ -42,6 +42,9 @@ $(document).ready(function (){
 		});
 });
 function doSearch(){
+		if($("#search_patient").val() == ''){
+				$("#patient_id").val('');
+		}
 		$("#resultentry").submit();
 }
 function doSave(){
@@ -147,7 +150,7 @@ function showMore(val){
 <?php
 echo $this->form()->closeTag();
 echo $this->headScript()->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
-			->prependFile($this->basePath() . '/js/lab/specimen.js')
+			->prependFile($this->basePath() . '/js/lab/patient.js')
 			->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
 			->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
 			->prependFile($this->basePath() . '/js/lib/bubbles.js')
