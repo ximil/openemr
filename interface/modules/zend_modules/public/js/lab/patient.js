@@ -1,5 +1,5 @@
-function getPatient(inputString,thisID){
-  $.post("./specimen/search",{
+function getPatient(inputString,thisID,url){
+  $.post(url,{
 		type: "getPatient",
 	  inputValue : inputString
 	},
