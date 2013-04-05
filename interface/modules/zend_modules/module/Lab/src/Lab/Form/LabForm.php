@@ -53,7 +53,8 @@ class LabForm extends Form
 		'class' => '/*easyui-combobox*/ combo',
 		'data-options' => 'required:true',
 		'editable' => 'false',
-		'required' => 'required'
+		'required' => 'required',
+		'id' => 'provider_1_1'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -69,7 +70,7 @@ class LabForm extends Form
 		'data-options' => 'required:true',
 		'id' => 'lab_id_1_1',
 		'required' => 'required',
-		'onchange' => '/*checkLab(this.value)*/',
+		'onchange' => 'checkLab(this.value, this.id)',
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -100,7 +101,8 @@ class LabForm extends Form
 		'style' => 'width:100px',
 		'data-options' => 'required:true',
 		'value' => date("Y-m-d"),
-		'required' => 'required'
+		'required' => 'required',
+		'id' => 'orderdate_1_1'
             ),
         ));
 	$this->add(array(
@@ -121,7 +123,8 @@ class LabForm extends Form
 		'class' => '/*easyui-combobox*/ combo',
 		'style' => 'width:90px',
 		'data-options' => 'required:true',
-		'required' => 'required'
+		'required' => 'required',
+		'id' => 'priority_1_1'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -137,6 +140,7 @@ class LabForm extends Form
 		'style' => 'width:90px',
 		'data-options' => 'required:true',
 		'required' => 'required',
+		'id' => 'status_1_1'
             ),
         ));
 	$this->add(array(
@@ -147,6 +151,7 @@ class LabForm extends Form
 		'style' => 'width:90px',
 		'data-options' => 'required:true',
 		'required' => 'required',
+		'id' => 'billto_1_1'
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -171,6 +176,9 @@ class LabForm extends Form
             'attributes' => array(
                 'type'  => 'text',
 		'id'	=> 'diagnoses_1_1',
+		'autocomplete' 	=> 'off',
+		'onKeyup' => 'getDiagnoses(this.value, this.id)',
+		'onfocus' => 'readDiagnoses(this.value, this.id)',
 		'class' => 'easyui-validatebox combo',
 		'required' => 'required',
 		'placeholder' => 'Seperated by semicolon(;)'
@@ -181,7 +189,7 @@ class LabForm extends Form
             'name' => 'patient_instructions[0][]',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
-		'style' => 'height:20px',
+		'style' => 'height:20px; width:370px',
 		'id' => 'patient_instructions_1_1',
             ),
         ));
@@ -198,7 +206,8 @@ class LabForm extends Form
 	    'name' => 'specimencollected[0][]',
 	    'type' => 'Zend\Form\Element\Radio',
 	    'attributes' => array(
-		'required' => 'required'
+		'required' => 'required',
+		'id' => 'specimencollected_1_1',
             ),
 	    'options' => array(
 		'value_options' => array(
@@ -214,7 +223,7 @@ class LabForm extends Form
 		'autocomplete' 	=> 'off',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
-		'onKeyup' => 'getProcedures(this.value, this.id )',
+		'onKeyup' => 'getProcedures(this.value, this.id)',
 		'required' => 'required'
             ),
         ));

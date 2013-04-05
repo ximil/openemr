@@ -20,32 +20,9 @@
 // For more information write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // 
-// Author:   Jacob T.Paul <jacob@zhservices.com>
-//           Shalini Balakrishnan  <shalini@zhservices.com>
+// Author:   Jacob T.Paul <jacob@zhservices.com> 
 //
 // +------------------------------------------------------------------------------+
-/**
- * This makes our life easier when dealing with paths. Everything is relative
- * to the application root now.
- */
-require_once(dirname(__FILE__)."/../../../globals.php");
-require_once(dirname(__FILE__)."/../../../../library/forms.inc");
-require_once(dirname(__FILE__)."/../../../../library/options.inc.php");
-require_once(dirname(__FILE__)."/../../../../library/acl.inc");
-if (isset ($phpgacl_location)) {
-	include_once("$phpgacl_location/gacl_api.class.php");
-	$gacl = new gacl_api();
-    }
-    else {
-	    die("You must first set up library/acl.inc to use phpGACL!");
-    }
-require_once("$srcdir/acl_upgrade_fx.php");
-
-chdir(dirname(__DIR__));
-
-// Setup autoloading
-require 'init_autoloader.php';
-
-// Run the application!
-Zend\Mvc\Application::init(require 'config/application.config.php')->run();
-
+addObjectSectionAcl('module_lab', 'Module Lab');
+addObjectAcl('module_lab', 'Module Lab', 'procedure_order', 'Procedure Order');
+?>

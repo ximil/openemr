@@ -1,3 +1,32 @@
+<script type="text/javascript">
+$(document).ready(function() {
+$(function()  
+{  
+	// One instance that's reused to show info for the current person  
+	var container = $('<div id="personPopupContainer">'  
+	    + '  <div id="personPopupContent"></div>'  
+	    + '</div>');    
+	$('body').append(container);    
+	$('.personPopupTrigger').live('focus', function()  
+	{  
+	    // format of 'rel' tag: pageid,personguid  
+	    var reason = $(this).attr('rel');  
+	    var pos = $(this).offset();  
+	    var width = $(this).width();  
+	    container.css({  
+		left: (pos.left + width+3) + 'px',  
+		top: pos.top - 5 + 'px'  
+	    });  
+	    $('#personPopupContent').html(reason);    
+	    container.css('display', 'block');    
+	    $('.personPopupTrigger').live('blur', function()  
+	    {  
+	     container.css('display', 'none');  
+	    });  
+	});  
+});
+});
+</script>
 <?php
 	$form = $this->form;
 	$form->setAttribute('action', $this->url('lab', array('action' => 'savedata')));
@@ -8,170 +37,18 @@
 	echo $this->formRow($form->get('patient_id'));
 	echo $this->formRow($form->get('encounter_id'));
 	echo $this->formRow($form->get('procedurecount[0][]'));
-        echo $this->headScript()->prependFile($this->basePath() . '/js/lib/datagrid-detailview.js');
+        echo $this->headScript()->prependFile($this->basePath() . '/js/lab/labOrder.js');
+        echo $this->headLink()->prependStylesheet($this->basePath() . '/css/labOrder.css');
 ?>
-
-<style type="text/css">
-    table.gridtable td {
-      border-width: 1px 1px 1px 1px;
-      border-style: dotted;
-      border-color: #ccc;
-      margin: 0;
-      padding: 0;
-    }
-    
-</style>
-
-<script>
-    var url = './savedata'
-    function saveFrm() {
-	$("#hiddensubmit").click();
-        //url = 'savedata';
-        //$('#lab').form('submit',{
-        //    url: url,  
-        //    onSubmit: function(){  
-        //        return; //$(this).form('validate');  
-        //    },  
-        //    success: function(result){
-        //        var result = eval('('+result+')');  
-        //        if (result.errorMsg){
-        //            $.messager.show({  
-        //                title: 'Error',  
-        //                msg: result.errorMsg  
-        //            });  
-        //        }
-        //    }  
-        //});  
-    }
-        
-    $(function(){
-        //$("tr:even").css("background-color", "#b7d2ff");
-        //$("tr:odd").css("background-color", "#D2DEF2");
-    });
-    var inc = 1;
-    function addRow() {
-        inc++;
-        var pp = $('#accord').accordion('getSelected');
-        if (pp){
-            var index = $('#accord').accordion('getPanelIndex',pp);
-            var acc_cnt = index+1;
-            if (index == 0) index = '';
-            //$('#cloneID' + index).closest("tr").clone(true).appendTo("#dgord" + index);
-            //var clone1 = document.getElementById('cloneID_1');
-            //var clone = clone1.cloneNode(true);//.appendTo("#dgord" + index);
-            var clone = $("#cloneID_1").clone(false).appendTo("#insTempl_"+acc_cnt+"_1");
-            $("#insTempl_1_1 table:last").attr('id', 'cloneID_'+acc_cnt+'_' + inc);
-            //$('#cloneID_'+acc_cnt+'_' + inc).find("*[id]").andSelf().each(function() { $(this).attr("id", $(this).attr("id")+"_"+acc_cnt+"_"+inc); });
-            //clone.find('#cloneID_1').attr('id', 'cloneID_'+acc_cnt+'_' + inc);
-            //$("#dgord" + index).appendChild(clone);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#diagnosestemplate').attr('id', 'diagnosestemplate_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#proceduretemplate').attr('id', 'proceduretemplate_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#prodiv').attr('id', 'prodiv_'+acc_cnt+'_' + inc);
-	    $('#cloneID_'+acc_cnt+'_' + inc).find('#deleteButton').attr('id', 'deleteButton_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#patient_instructions_1_1').attr('id', 'patient_instructions_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#diagnoses_1_1').attr('id', 'diagnoses_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#procedures_1_1').attr('id', 'procedures_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_code_1_1').attr('id', 'procedure_code_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#procedure_suffix_1_1').attr('id', 'procedure_suffix_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find('#AOEtemplate').attr('id', 'AOEtemplate_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find("#procedures").attr('id', 'procedures_'+acc_cnt+'_' + inc);
-            //clone.find("#procedures_"+acc_cnt+'_' + inc).val("");
-            $('#cloneID_'+acc_cnt+'_' + inc).find("#AOE").attr('id', 'AOE_'+acc_cnt+'_' + inc);
-            $('#cloneID_'+acc_cnt+'_' + inc).find("#deletebutton").attr('id', 'deletebutton_'+acc_cnt+'_' + inc);
-            
-            //$('#cloneID_'+acc_cnt+'_' + inc).find("*[id]").andSelf().each(function() { $(this).attr("name", $(this).attr("id")+"_"+acc_cnt+"_"+inc); });
-            ////$('#cloneID_'+acc_cnt+'_' + inc).appendChild(clone);
-            //$('#AOEtemplate_'+acc_cnt+'_' + inc).css("display", "none");
-        }
-    }
-    
-    function cancelItem(thisID){
-	$("#"+thisID).closest("table").remove();
-	//Arr = thisID.split("deleteButton");
-	//Acc = Arr[1].split("_");
-	////alert('#insTempl'+Acc[1]+"_1_____#cloneID"+Arr[1]);
-	//$('#insTempl'+Acc[1]+"_1").find("#cloneID"+Arr[1]).remove();
-    }
-    $(function(){
-        /*$("#addButton").click(function(){
-            $('#cloneID').closest("tr").clone(true).appendTo("#dgord");
-        });*/
-        
-        $("#deleteButton").click(function(){
-            $(this).closest("table").remove();
-        });
-    });
-    
-    var idx = 1;
-    var j = 1;
-    function newOrder(){
-        //var clno = document.getElementById('main');
-        //clr = clno.cloneNode(true);
-        //var newAccord = $('#main').closest("div").clone(false).appendTo("#accord");
-        //$("#current_users").clone(false).find("*[id]").andSelf().each(function() { $(this).attr("id", $(this).attr("id") + "_cloned"); });
-        
-        var newAccord = $("#main").clone(false).find("#main,#toolbar,#editor,#dgord").andSelf().each(function() { $(this).attr("id", $(this).attr("id") + idx); });
-        
-        //var newAccord = $("#main").attr('id', 'main' + idx).clone().insertAfter("#accord");
-        //var newAccord = $('#main>*').children().clone(true);
-        //var newAccord = $('#main>*').clone(true, true);
-        
-        /*var newAccord = $('#main>*').closest("div").clone(false).appendTo("#accord");
-        newAccord.find('#main').attr('id', 'main' + j);
-        newAccord.find('#toolbar').attr('id', 'toolbar' + j);
-        newAccord.find('#editor').attr('id', 'editor' + j);
-        newAccord.find('#dgord').attr('id', 'dgord' + j);
-        newAccord.find('#cloneID_1').attr('id', 'cloneID_' + j);
-        newAccord.find('#diagnosestemplate_1').attr('id', 'diagnosestemplate_' + j);
-        newAccord.find('#prodiv_1').attr('id', 'prodiv_' + j);
-        newAccord.find('#AOEtemplate_1').attr('id', 'AOEtemplate_' + j);
-        newAccord.find("#procedures_1").attr('id', 'procedures_' + j);
-        newAccord.find("#procedures_1" + j).val("");
-        newAccord.find("#AOE_1").attr('id', 'AOE_' + j);
-        $('#AOEtemplate_' + j).css("display", "none");*/
-        //newAccord.clone().find('.easyui-datebox').remove();
-        //newAccord.clone().find('dgord' + j:not(:first)").remove();
-        
-        $('#accord').accordion('add',{
-            title:'Multiple Order ' + idx + ' <a href="javascript:void(0)" class="easyui-linkbutton" onclick="removeAccord()">Remove</a>',
-            content:newAccord
-        });
-
-        idx++;
-    }
-    
-    /*function test() {
-        $('#accord').accordion({
-            onAdd:function(title,index){
-                alert('test');
-                var pp = $('#accord').accordion('getSelected');
-                if (pp){  
-                    //pp.panel('refresh','./form');
-                    var index = $('#accord').accordion('getPanelIndex', pp);
-                    alert(index);
-                }  
-            }
-        });
-       
-       $('#pp').panel({  
-                href:'.',  
-                onLoad:function(){  
-                alert('loaded successfully');  
-            }  
-        });
-        
-    }*/
-    
-    function removeAccord(){
-        var pp = $('#accord').accordion('getSelected');
-        if (pp){
-            var index = $('#accord').accordion('getPanelIndex',pp); alert(index);
-            $('#accord').accordion('remove',index);
-        }
-    }
-    
-</script>
-
+<?php if ($this->message == 'N') { ?>
+    <div class="easyui-accordion" style="width:auto;height:550px;">
+        <div  title="<?php echo xlt('Procedur Order'); ?>" style="overflow:auto;padding:10px;">
+            <div id="dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-save'" style="width:400px;height:200px;padding:10px">
+                    Please select patient and encounter .. !
+            </div>
+        </div>
+    </div>
+<?php } else { ?>
 <!--a href="#"  plain="true" onclick="newOrder();">
     <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
     <?php echo xlt('New Order'); ?>
@@ -182,54 +59,54 @@
 </a>
 
 <div id='accord' class="easyui-accordion" style="width:auto;height:550px;">
-    <div id='main' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
-            <div id="toolbar">
-                <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
-                    <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
-                    <?php echo xlt('Add Procedure'); ?>
-                </a>
-                <!--a href="#"  plain="true" onclick="newOrder();">
-                    <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
-                    <?php echo xlt('New Order'); ?>
-                </a-->
-                <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyItem()">Destroy</a>-->
-                <!--a href="#"  plain="true" onclick="saveFrm();">
-                    <img  class="easyui-linkbutton" iconCls="icon-save" src=<?php echo $this->basePath() .'/css/icons/filesave.png'; ?> title=<?php echo xlt('Save'); ?> border=0 />
-                    <?php echo xlt('Save'); ?>
-                </a-->
+    <div id='main_1' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
+            <div id="toolbar_1">
+                <span style="padding-left: 10px;" >
+                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                        <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
+                        <?php echo xlt('Add Procedure'); ?>
+                    </a>
+                </span>
+                <span style="padding-left: 10px;" >
+                    <a href="#"  plain="true" onclick="newOrder();">
+                        <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
+                        <?php echo xlt('New Order'); ?>
+                    </a>
+                </span>
             </div>
-            <div id='editor' style="text-align: left; padding-left:20px;">
-
-                <table id='tt' border='0' class="dv-table gridtable" style="width:98%;background:#fafafa;padding:1px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+            <div id='editor_1' style="text-align: left; padding-left:20px;">
+                <table id='tt_1' border='0' class="dv-table gridtable" style="width:98%;background:#fafafa;padding:1px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
                     <tr style="font-weight: bold">
                         <td><?php echo xlt('Ordering Provider');?></td>
                         <td><?php echo xlt('Sending To');?></td>
                         <td><?php echo xlt('Order Date');?></td>
-                        <!--td><?php //echo xlt('Internal Time Collected');?></td-->
+                        <td id="internaltimecaption_1_1" style="display:none"><?php echo xlt('Internal Time Collected');?></td>
                         <td><?php echo xlt('Internal Comments');?></td>
-                        <td style="display:none"><?php echo xlt('Specimen Collected');?></td>
+                        <td id='specimencollectedcaption_1_1' style="display:none"><?php echo xlt('Specimen Collected');?></td>
                         <td><?php echo xlt('Priority');?></td>
                         <td><?php echo xlt('Status');?></td>
-                        <td valign='top' style="display:none"><?php echo xlt('Bill To');?></td>
+                        <td id='billtocaption_1_1' style="display:none" valign='top'><?php echo xlt('Bill To');?></td>
                     </tr>
                     <tr>
                         <td valign='top'><?php echo $this->formRow($form->get('provider[0][]'));?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('lab_id[0][]'));?></td>
-                        <td valign='top'><?php echo $this->formRow($form->get('orderdate[0][]'));?></td>
-                        <!--td valign='top'>
-                            <span id="internaltime" style="display:none111">
-                                <?php //echo $this->formRow($form->get('timecollected[0][]'));?>
-                            </span>
-                        </td-->
+                        <td valign='top'>
+                            <?php echo $this->formRow($form->get('orderdate[0][]'));?>
+                        </td>
+                        <!--<td valign='top' id="internaltime_1_1" style="display:none">
+                                <?php echo $this->formRow($form->get('timecollected[0][]'));?>
+                        </td>-->
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
-                        <td valign='top' style="display:none"><?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?></td>
+                        <td valign='top' id='specimencollectedtd_1_1' style="display:none">
+                            <?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?>
+                        </td>
                         <td valign='top'><?php echo $this->formRow($form->get('priority[0][]'));?></td>
                         <td valign='top'><?php echo $this->formRow($form->get('status[0][]'));?></td>
-                        <td valign='top' style="display:none"><?php echo $this->formRow($form->get('billto[0][]'));?></td>
+                        <td id='billtotd_1_1' style="display:none" valign='top'><?php echo $this->formRow($form->get('billto[0][]'));?></td>
                     </tr>
                 </table>
 
-                <table id='dgord' border='0'  style="width:98%;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+                <table id='dgord_1' border='0'  style="width:98%;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
                     <tr>
                         <td>
                             <table class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
@@ -237,7 +114,7 @@
                                     <td width='40%' valign='top'><?php echo xlt('Patient Instructions');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Diagnoses');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Procedure');?></td>
-                                    <td><?php echo xlt('Action'); ?></td>
+                                    <td align='left'><?php echo xlt('Action'); ?></td>
                             </tr>
                             </table>
                         </td>
@@ -250,6 +127,7 @@
                                     <td width='20%' valign='top'>
                                         <span id="diagnosestemplate_1_1">
                                             <?php echo $this->formRow($form->get('diagnoses[0][]'));?>
+                                            <div class="autocomplete-suggestions" id="diagnodiv_1_1" style="display:none;z-index:99999;position:absolute;min-width:150px"></div>
                                         </span>
                                     </td>
                                     <td width='20%' valign='top'>
@@ -260,11 +138,19 @@
                                              <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
                                         </span>
                                     </td>
-                                    <td valign='top'>
-                                        <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
-                                            <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
-                                            <?php echo xlt('Cancel'); ?>
-                                        </a>
+                                    <td valign='top' align='left'>
+                                        <!--<span style="padding-left: 10px;" >-->
+                                            <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
+                                                <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
+                                                <?php echo xlt('Cancel'); ?>
+                                            </a>
+                                       <!-- </span>
+                                        <span style="padding-left: 10px;" >-->
+                                            <a href="javascript:void(0)" id='addButton_1_1'  plain="true" onclick="addRow();">
+                                                <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
+                                                <?php echo xlt('Add'); ?>
+                                            </a>
+                                       <!-- </span>-->
                                     </td> 
                             </tr>
                             <tr id="AOEtemplate_1_1"  style="display:none">
@@ -279,16 +165,9 @@
                 </table><!-- End dgord-->
            </div><!-- End editor -->
     </div><!-- End main -->
+  
 </div><!-- End accord -->
-
-<?php
-	echo $this->form()->closeTag();
-	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
-				->prependFile($this->basePath() . '/js/lab/lab.js')
-				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
-				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
-				->prependFile($this->basePath() . '/js/lib/bubbles.js')
-?>
+<!-- Start Row Template -->
 <div style="display:none" id="procedureclonetemplate">
 <table  id='cloneID_1' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
 <tr>
@@ -296,21 +175,30 @@
         <td width='20%' valign='top'>
             <span id="diagnosestemplate">
                 <?php echo $this->formRow($form->get('diagnoses[0][]'));?>
+                <div class="autocomplete-suggestions" id="diagnodiv" style="display:none;z-index:99999;position:absolute;min-width:150px"></div>
             </span>
         </td>
         <td width='20%' valign='top'>
             <span id="proceduretemplate">
                 <?php echo $this->formRow($form->get('procedures[0][]'));?>
-                <div class="autocomplete-suggestions" id="prodiv" style="display:none;z-index:99999;position:relative;min-width:150px"></div>
+                <div class="autocomplete-suggestions" id="prodiv" style="display:none;z-index:99999;position:absolute;min-width:150px"></div>
                 <?php echo $this->formRow($form->get('procedure_code[0][]'));?>
                  <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
             </span>
         </td>
-        <td valign='top'>
-            <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
-                <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
-                <?php echo xlt('Cancel'); ?>
-            </a>
+        <td valign='top' align='left'>
+            <!--<span style="padding-left: 10px;" >-->
+                <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
+                    <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
+                    <?php echo xlt('Cancel'); ?>
+                </a>
+            <!--</span>
+            <span style="padding-left: 10px;" >-->
+                <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                    <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
+                    <?php echo xlt('Add'); ?>
+                </a>
+            <!--</span>-->
         </td> 
 </tr>
 <tr id="AOEtemplate"  style="display:none">
@@ -321,3 +209,91 @@
 </tr>
 </table>
 </div>
+<!-- End Row Template -->
+
+<!-- Start New Order Template -->
+<div style="display:none" id="newprocedureclonetemplate">
+<div id='mainTemplate'>
+    <div id='main' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
+            <div id="toolbar">
+                <span style="padding-left: 10px;" >
+                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                        <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
+                        <?php echo xlt('Add Procedure'); ?>
+                    </a>
+                </span>
+                <span style="padding-left: 10px;" >
+                    <a href="#"  plain="true" onclick="newOrder();">
+                        <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
+                        <?php echo xlt('New Order'); ?>
+                    </a>
+                </span>
+                <span style="margin-left: 70%;">
+                    <a href="javascript:void(0)"  onclick="removeAccord()">
+                        <img  class="easyui-linkbutton" iconCls="icon-no" src=<?php echo $this->basePath() .'/css/icons/no.png'; ?> title=<?php echo xlt('Remove Order'); ?> border=0 />
+                        <?php echo xlt('Remove Order'); ?>
+                    </a>
+                </span>
+            </div>
+            <div id='editor' style="text-align: left; padding-left:20px;">
+
+                <table id='tt' border='0' class="dv-table gridtable" style="width:98%;background:#fafafa;padding:1px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+                    <tr style="font-weight: bold">
+                        <td><?php echo xlt('Ordering Provider');?></td>
+                        <td><?php echo xlt('Sending To');?></td>
+                        <td><?php echo xlt('Order Date');?></td>
+                        <td id='internaltimecaption' style="display:none" style="display:none"><?php echo xlt('Internal Time Collected');?></td>
+                        <td><?php echo xlt('Internal Comments');?></td>
+                        <td id='specimencollectedcaption' style="display:none" ><?php echo xlt('Specimen Collected');?></td>
+                        <td><?php echo xlt('Priority');?></td>
+                        <td><?php echo xlt('Status');?></td>
+                        <td id='billtocaption' style="display:none" valign='top'><?php echo xlt('Bill To');?></td>
+                    </tr>
+                    <tr>
+                        <td valign='top'><?php echo $this->formRow($form->get('provider[0][]'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('lab_id[0][]'));?></td>
+                        <td valign='top' id="oderingdate"><?php echo $this->formRow($form->get('orderdate[0][]'));?></td>
+                        <td valign='top' id="internaltime" style="display:none"><?php echo $this->formRow($form->get('timecollected[0][]'));?></td>
+                        <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
+                        <td id='specimencollectedtd' style="display:none" valign='top'><?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('priority[0][]'));?></td>
+                        <td valign='top'><?php echo $this->formRow($form->get('status[0][]'));?></td>
+                        <td id='billtotd' style="display:none" valign='top'><?php echo $this->formRow($form->get('billto[0][]'));?></td>
+                    </tr>
+                </table>
+
+                <table id='dgord' border='0'  style="width:98%;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+                    <tr>
+                        <td>
+                            <table class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
+                            <tr  style="font-weight: bold">
+                                    <td width='40%' valign='top'><?php echo xlt('Patient Instructions');?></td>
+                                    <td width='20%' valign='top'><?php echo xlt('Diagnoses');?></td>
+                                    <td width='20%' valign='top'><?php echo xlt('Procedure');?></td>
+                                    <td align='center'><?php echo xlt('Action'); ?></td>
+                            </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- -->
+                    <tr>
+                        <td id="insTempl">
+                        
+                        </td>
+                    </tr>
+                    <!-- -->
+                </table><!-- End dgord-->
+           </div><!-- End editor -->
+    </div><!-- End main -->
+</div>
+</div>
+<!-- End New Order Template -->
+
+<?php
+        }
+        echo $this->form()->closeTag();
+	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+				->prependFile($this->basePath() . '/js/lab/lab.js')
+				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+?>

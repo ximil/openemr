@@ -1,74 +1,42 @@
- 
-        <style type="text/css">
-	   .panel-header{
-	     border-width: 1px;
-             border-style: solid;
-	      padding: 5px 0px 5px 0px;
-             position: relative;
-	    }
-	  .panel-title {
-            background: url('images/blank.gif') no-repeat;
-           }
-	  .panel-tool {
-            position: absolute;
-            top: 50%;
-            margin-top: -8px;
-            height: 16px;
-            overflow: hidden;
-	    right: 5px;
-            width: auto;
-           }
-	  .panel-body {
-	    border-width: 1px;
-	    border-style: solid;
-	   }
-	   table.gridview2 td{
-	    border-style: dotted;
-	    border-width: 1px 1px 1px 1px;
-	    margin: 0;padding: 0;
-	    border-color:#cccccc;
-	   }
-	   table.thcolor th{
-	    background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;
-	    border: 1px solid #cccccc;
-	    height:10px;
-	    height:20px; 
-	   }
-	 .tdfont{
-	    font-size:11px !important;   
-	   }
-	   .clswidth{
-	   width:91%;  
-	   
-	   }
-	
-       </style>
-       <script type="text/javascript">
- 
-       function clearText(field){
-        if (field.defaultValue == field.value) field.value = field.defaultValue;
-        else if (field.value == '') field.value = field.defaultValue;
-       } 
-       function changeContent(tablecell)
-       {
-	 var str1=tablecell.innerHTML;
-	 //alert(str1);
-	 if(str1.search("<input")==-1){
-        //alert(tablecell.innerHTML);
-        tablecell.innerHTML = "<INPUT  type=text class=clswidth name=\"name_"+str1+" \"  onBlur=clearText(this) onfocus=clearText(this)  value=\""+tablecell.innerHTML+" \">";
-        tablecell.firstChild.focus();
-	}
-       }
-      </script>
-           <?php $match = array(
+<script type="text/javascript">
+$(document).ready(function() {
+$(function()  
+{  
+	// One instance that's reused to show info for the current person  
+	var container = $('<div id="personPopupContainer">'  
+	    + '  <div id="personPopupContent"></div>'  
+	    + '</div>');    
+	$('body').append(container);    
+	$('.personPopupTrigger').live('focus', function()  
+	{  
+	    // format of 'rel' tag: pageid,personguid  
+	    var reason = $(this).attr('rel');  
+	    var pos = $(this).offset();  
+	    var width = $(this).width();
+            //alert(pos.left+"-"+pos);
+	    container.css({  
+		left: (pos.left -( width+40)) + 'px',  
+		top: pos.top - 5 + 'px'  
+	    });  
+	    $('#personPopupContent').html(reason);    
+	    container.css('display', 'block');    
+	    $('.personPopupTrigger').live('blur', function()  
+	    {  
+	     container.css('display', 'none');  
+	    });  
+	});  
+});
+});
+</script>
+         <?php $match = array(
               "/&lt;ref(?:[^\/&]|&(?!gt;))*\/&gt;/is","/&lt;ref[^\/]*&gt;(.*?)&lt;\/ref&gt;/s",);?> 
-	   <div class="panel-header" style="width: 99.8%;">
+	     <div class="panel-header" style="width: 98.9%;">
              <div class="panel-title">Lab Result</div>
              <div class="panel-tool"></div>
-           </div>
-	   <div class="datagrid-wrap panel-body" title="" style="width: 99.8%;">
-	     <div id="toolbar">
-		    <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
+         </div>
+	     <div class="datagrid-wrap panel-body" title="" style="width: 99.8%;">
+	      <div id="toolbar">
+		   <!-- <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
 		    <a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
                    <!-- <span style="text-align: right; padding-left: 750px;">
                     <span class="extlab">&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -76,11 +44,12 @@
                     <span class="local">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <span style="font-size: 10px;"> <?php echo xlt('Local Labs'); ?></span>
                    </span>-->
-		    <div style="text-align: left; padding-left:20px;">
-             <div style="text-align: left;">
+		    <form id="frmsearch" method="post" novalidate>		   
+		     <div style="text-align: left; padding-left:20px;">
+                      <div style="text-align: left;">
                        <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
                        <span style="text-align: left; font-weight: bold; margin-left: 250px;"><?php echo xlt('Status'); ?></span>
-             </div>
+                        </div>
 			 <span style="text-align: left; padding-right: 10px;">
 			 <?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" name='dtFrom' >
 			 </span>
@@ -108,330 +77,250 @@
 			 </span>
 
 			 <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
-                            <?php echo xlt('Search'); ?> </a>
-
+			 <!-- <input type="submit" value="Search" ></a>-->
+                           <?php echo xlt('Search'); ?> </a>
+            
 		  </div>
-	     </div>   
-	<table id="labresult"  class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
-	       <thead>
+		  </form>
+	     </div>
+	     
+	<!-- Lab Result listing starts here------------------------------------->
+		
+	<table id="labresult"  class="dv-table gridview2 thcolor" cellspacing="0" cellpadding="0" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
+	       <thead">
                  <tr>
-	          <th  colspan="4"><?php echo xlt('Order'); ?></th>     
-                  <th  colspan="4"><?php echo xlt('Report'); ?></th>
+	          <th  colspan="5"><?php echo xlt('Order'); ?></th>     
+                  <th  colspan="2"><?php echo xlt('Report'); ?></th>
                   <th  colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
 		   <?php $count=0;$cnt=0;?>
-		   <?php $i = 0; foreach ($albums as $album) :
+		   <?php $i = 0; foreach ($labresults as $labresult) :
 		   
-		        if(($album['editor']==1) AND ($album['editor']!=0) AND $count==0){$check=1; ?> 
+		        if(($labresult['editor']==1) AND ($labresult['editor']!=0) AND $count==0){$check=1; ?> 
                           <th colspan="3"><?php echo xlt('Action'); ?></th>  
 		           <?php $count=1; 
 		           }
-			elseif(($album['editor']==0) AND ($album['editor']!=1) )  { ?>
+			elseif(($labresult['editor']==0) AND ($labresult['editor']!=1) )  { ?>
 			      <th style="display:none;" colspan="3"><?php echo xlt('Action'); ?></th>
 		          <?php }
-			elseif((($album['editor']==0) OR ($album['editor']==1)) AND $cnt==0 AND $check!=1)  { ?>
+			elseif((($labresult['editor']==0) OR ($labresult['editor']==1)) AND $cnt==0 AND $check!=1)  { ?>
 			  <th colspan="3"><?php echo xlt('Action'); ?></th>  
 		           <?php $cnt=1; }
 		    $i++; endforeach; ?>
 		         
                  </tr>
-               </thead>
-	        <tr>
-			<td   width='10%'> <?php echo xlt('Date'); ?></td>
-			<td   width='17%'> <?php echo xlt('Procedure Name'); ?></td>
-			<td   width='10%'> <?php echo xlt('Ord'); ?></td>
-			<!--<td  width='10%'> <?php echo xlt('Patient'); ?></td>
-			<td   width='10%'> <?php echo xlt('Encounter'); ?></td>-->
-			<td   width='10%'> <?php echo xlt('Status'); ?></td>
-			<td   width='10%'> <?php echo xlt('Reported'); ?></td>
-			<td   width="20%" title="<?php echo xlt('Time Collected'); ?>"> <?php echo xlt('Time Collected'); ?></td>
-			<td   width='10%'> <?php echo xlt('Specimen'); ?></td>
-			<td   width='10%'> <?php echo xlt('Status'); ?></td>
-			<td   width='10%'> <?php echo xlt('Code'); ?></td>
-			<td   width='10%'> <?php echo xlt('Name'); ?></td>
-			<td   width='10%'> <?php echo xlt('Abn'); ?></td>
-			<td   width='10%'> <?php echo xlt('Value'); ?></td>
-			<td   width='10%'> <?php echo xlt('Units'); ?></td>
-			<td   width='10%'> <?php echo xlt('Range'); ?></td>
-			<td   width='10%' title="<?php echo xlt('Comments'); ?>"> <?php echo xlt('Comm'); ?></td>
+                </thead>
+	         <tr bor>
+			<td  class="headtd" width='3%'><b><?php echo xlt('PID'); ?></b></td>
+			<td  class="headtd" width='5%'><b><?php echo xlt('Order Date'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Procedure Name'); ?></b></td>
+			<td  class="headtd" width='3%'><b><?php echo xlt('Ord.No.'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd" title="<?php echo xlt('Time Collected'); ?>"><b><?php echo xlt('Time Collected'); ?></b></td>
+			<td  class="headtd" width='10%'><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Name'); ?></b></td>
+			<td  class="headtd"  width='3%'><b><?php echo xlt('Abn'); ?></b></td>
+			<td  class="headtd"  width='4%'><b><?php echo xlt('Value'); ?></b></td>
+			<td  class="headtd"  width='5%'><b><?php echo xlt('Units'); ?></b></td>
+			<td  class="headtd"  width='6%'><b><?php echo xlt('Range'); ?></b></td>
+                        <td  class="headtd"  width='4%'><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd"  title="<?php echo xlt('Comments'); ?>"><b><?php echo xlt('Comm.'); ?></b></td>
 			<?php $count=0;$cnt=0;?>
-			<?php $i = 0; foreach ($albums as $album) : 
-			if(($album['editor']==1) AND ($album['editor']!=0) AND $count==0){$check=1; ?>
-			<td width='10%'> <?php echo xlt('Label'); ?></td>
-			<td width='10%' title="<?php echo xlt('Requisition'); ?>"> <?php echo xlt('Reqsn'); ?></td>
-			<td width='10%'> <?php echo xlt('Result'); ?></td>
+			<?php $i = 0; foreach ($labresults as $labresult) : 
+			if(($labresult['editor']==1) AND ($labresult['editor']!=0) AND $count==0){$check=1; ?>
+			<td class="headtd" title="<?php echo xlt('Label'); ?>"><b><?php echo xlt('Lbl.'); ?></b></td>
+			<td class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+			<td class="headtd" title="<?php echo xlt('Result'); ?>"><b><?php echo xlt('Res.'); ?></b></td>
 			 <?php $count=1; ?>
 			
-			<?php } elseif(($album['editor']==0) AND ($album['editor']!=1)) {?>
-			<td style="display:none;" width='10%'> <?php echo xlt('Label'); ?></td>
-			<td style="display:none;" width='10%' title="<?php echo xlt('Requisition'); ?>"> <?php echo xlt('Reqsn'); ?></td>
-			<td style="display:none;"  width='10%'> <?php echo xlt('Result'); ?></td>
-			<?php } elseif((($album['editor']==0) OR ($album['editor']==1)) AND $cnt==0 AND $check!=1)  { ?>
-			<td width='10%'> <?php echo xlt('Label'); ?></td>
-		        <td width='10%' title="<?php echo xlt('Requisition'); ?>"> <?php echo xlt('Reqsn'); ?></td>
-		        <td width='10%'> <?php echo xlt('Result'); ?></td>
+			<?php } elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)) {?>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Label'); ?>"><b><?php echo xlt('Lbl.'); ?></b></td>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Result'); ?>"> <?php echo xlt('Res.'); ?></b></td>
+			<?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1)) AND $cnt==0 AND $check!=1)  { ?>
+			<td class="headtd" ><b><?php echo xlt('Lbl.'); ?></b></td>
+		        <td class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+		        <td class="headtd" title="<?php echo xlt('Result'); ?>"><b><?php echo xlt('Res.'); ?></b></td>
 		        <?php  $cnt=1; }
 			$i++; endforeach; ?>
-			<td  style="display:none;"  width='10%'> <?php echo xlt('order'); ?></td>
+			<td  style="display:none;" class="headtd" width='5%'><b><?php echo xlt('order'); ?></b></td>
 	     
-	       </tr>
-	        <?php $i = 0; foreach ($albums as $album) : 
-			$color = ($album['color'] <> "") ? $album['color'] : $color;
+	        </tr>
+	        <?php $i = 0; foreach ($labresults as $labresult) : 
+			$color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
+			$totrows = $labresult['totalRows'];
+                        //if($labresult[order_title]=="") continue;
 			?>
-              <tr style="background-color:<?php echo $color; ?>">
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[date_ordered]);?></td>
-                         <td class="tdfont" title=" <?php echo $this->escapeHtml($album[procedure_name]);?>"> <?php echo $this->escapeHtml(substr($album[procedure_name],0,11));?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[order_id]);?></td>
-					  <!-- <td class="tdfont"><?php echo $this->escapeHtml($album[patient_name]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[encounter_id]);?></td>-->
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[order_status]);?></td>
-                         <td class="tdfont"> <?php echo $this->escapeHtml($album[date_report]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[date_collected]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[specimen_num]);?></td>
-		         <td class="tdfont" ><?php echo $this->escapeHtml($album[report_status]);?></td>
-                         <td class="tdfont"><?php echo $this->escapeHtml($album[result_code]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[result_text]);?>"><?php echo $this->escapeHtml(substr($album[result_text],0,14));?></td>
-                         <td class="tdfont" ><?php echo $this->escapeHtml($album[abnormal]);?></td>
-                         <td class="tdfont" ><?php echo $this->escapeHtml($album[result]);?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[pt2_units]);?>"><?php echo $this->escapeHtml(substr($album[pt2_units],0,5));?></td>
-                         <td class="tdfont" title="<?php echo $this->escapeHtml($album[pt2_range]);?>"><?php echo strip_tags(substr($album[pt2_range],0,9));?> </td>
-                         <td class="tdfont" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($album[procedure_result_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> ></td>
-		      
-		       <?php  if(($album['editor']==1) AND ($album['editor']!=0)){ $check=1; ?>
-                         <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                         <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                         <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
+                <tr style="background-color:<?php echo $color; ?>">
+			 <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?></td>	
+                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
+                         <td  class="tdfont childtd" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>" nowrap=nowrap> 
+						 <?php echo $labresult[order_title] ? $this->escapeHtml($labresult[order_title]) : $this->escapeHtml($labresult[procedure_name]);?></td>
+                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
+                         <td  class="tdfont childtd" nowrap=nowrap><?php echo $this->escapeHtml($labresult[order_status]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[date_collected]);?>" nowrap=nowrap>
+                            <?php echo $this->escapeHtml($labresult[date_collected]);?>
+                         </td>
+		         <td class="tdfont childtd" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[order_title]);?>" nowrap=nowrap>
+			    <?php echo $this->escapeHtml($labresult[result_text]);?>
+                         </td>
+                            <?php
+                            $icclas=$title='';
+                            if($labresult[abnormal]=="H" || $labresult[abnormal]=="high"){
+                               $icclas='icon-H';
+                               $title = xlt('HIGH');
+                            }
+                            elseif($labresult[abnormal]=="HH"){
+                               $icclas='icon-HH';
+                               $title = xlt('VERY HIGH');
+                            }elseif($labresult[abnormal]=="L" || $labresult[abnormal]=="low"){
+                               $icclas='icon-L';
+                               $title = xlt('LOW');
+                            }
+                            elseif($labresult[abnormal]=="LL"){
+                               $icclas='icon-LL';
+                               $title = xlt('VERY LOW');
+                            }
+                            elseif($labresult[abnormal]=="N" || $labresult[abnormal]=="no"){
+                               $icclas='icon-ok';
+                               $title = xlt('NORMAL');
+                            }
+                            elseif($labresult[abnormal]=="A" || $labresult[abnormal]=="yes"){
+                               $icclas='icon-cancel';
+                               $title = xlt('ABNORMAL');
+                            }
+                            else
+                            $icon = $labresult[abnormal];
+                            ?>
+                         <td  class="tdfont childtd <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
+                         <td  class="tdfont childtd" >
+                            <?php
+                            $resStat = '';
+                            if($labresult[result_status]=='F')
+                            $resStat = xlt('Final');
+                            elseif($labresult[result_status]=='P')
+                            $resStat = xlt('Preliminary');
+                            elseif($labresult[result_status]=='I')
+                            $resStat = xlt('Pending');
+                            elseif($labresult[result_status]=='C')
+                            $resStat = xlt('Correction');
+                            elseif($labresult[result_status]=='X')
+                            $resStat = xlt('Cancelled');
+                            else
+                            $resStat = ucwords($labresult[result_status]);
+                            echo $resStat;
+                            ?>
+                         </td>
+                         <!--<td  class="tdfont childtd" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>-->
+                         <?php
+                         $comments='';
+                         if(trim($labresult[comments]))
+                         $comments = $labresult[comments];
+                         else
+                         $comments = xlt('No Comments');
+                         ?>
+                         <td  class="tdfont childtd" align="center"><a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($comments);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>
+		       <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                          
 		         
-			<?php }elseif(($album['editor']==0) AND ($album['editor']!=1)){ ?>
-		          <td class="tdfont" style="padding-left:5px; display:none;"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont" style="padding-left:12px; display:none;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont" style="padding-left:5px; display:none;"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+			<?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
+		          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
 		         
-			 <?php } elseif((($album['editor']==0) OR ($album['editor']==1))  AND $check!=1)  { ?>
+			 <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
 			 
-			  <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($album[order_id1]);?>)"> <img <?php if($album['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-
+			  <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                          <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                          <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                          
 			 
 		      <?php } ?>
-		      <td style="display:none;"   width='10%'>  <?php echo $this->escapeHtml($album[order_id]);?> </td>
+		      <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
             </tr>  
               <?php $i++; endforeach; ?>
 	
       </table>
-	<div class="easyui-pagination" data-options="total:114" style="border:1px solid #ddd;"></div>
-  </div>
-		
+	<!-- Result listing ends  here------------------------------------->
 	
-	<!--<table id="dg" title="Pending Review"  style="width:auto;height:600px"
-                     <!-- toolbar="#toolbar" pagination="true"
-                      idField="procedure_order_id, procedure_result_id,
-                      procedure_order_seq, procedure_report_id, editor"
-                      rownumbers="true" pageSize="20" fitColumns="true" singleSelect="true"> 
-			         <!--- Main Head1-->
-
-        <!--    <thead data-options="frozen:true" >
-                <tr>
-                    <th colspan="6"><?php echo xlt('Order'); ?></th>
-                </tr>
-            </thead>
-            <thead>
-                <tr>
-                    <th colspan="4"><?php echo xlt('Report'); ?></th>
-                    <th colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
-                    <th colspan="1"><?php echo xlt('Action'); ?></th>
-                </tr>
-            </thead>
-			<!--- Main Head2-->
-     <!--       <thead data-options="frozen:true">
-                <tr>
-                <!-- Start Order -->
-                   <!-- <th data-options="field:'date_ordered'"><?php echo xlt('Date'); ?></th>
-                    <th data-options="field:'procedure_name', width: '150'"><?php echo xlt('Procedure Name'); ?></th> 
-                    <th data-options="field:'order_id', align:'center'"><?php echo xlt('Ord'); ?></th> 
-                    <!-- <th data-options="field:'patient_name'"><?php echo xlt('Patient'); ?></th>
-                    <th data-options="field:'encounter_id', align:'center'"><?php echo xlt('Encounter'); ?></th>-->
-                   <!-- <th data-options="field:'order_status'"><?php echo xlt('Status'); ?></th>
-                <!-- End Order -->
-      <!--          </tr>
-            </thead>
-			<thead>
-                <tr>
-                <!-- Start Report -->
-          <!--          <th field="date_report" editor="{type:'datebox',options:{required:true}}" >
-                        <?php echo xlt('Reported'); ?> 
-                    </th>
-                    <th  field="date_collected" editor="{
-                                                        type:'datebox',
-                                                                options:{
-                                                                    class: 'easyui-datetimebox',
-                                                                }
-                                                        }">
-                                                        <?php echo xlt('Ext Time Collected'); ?>
-                                                        
-                                                        </th>
-                    <th field="specimen_num" editor="text"><?php echo xlt('Specimen'); ?></th>
-                    <th data-options="field:'report_status',  
-                                            formatter:function(value,row){  
-                                                return row.report_title;  
-                                            },  
-                                            editor:{  
-                                                    type:'combobox',  
-                                                    options:{  
-                                                            valueField:'value',  
-                                                            textField:'label',  
-                                                            url:'./result/getLabOptions?opt=status&optId=report',  
-                                                            required:false  
-                                                    } 
-                                            }">
-                                            <?php echo xlt('Status'); ?>
-                                            <span style="margin-left: 30px;"></span>
-                                        </th>
-                    <!-- End Report -->
-                    <!-- Start Results and Recommendations -->
-                    <!-- <th data-options="field:'result_code', align:'center'"><?php echo xlt('Code'); ?></th>
-                    <th data-options="field:'result_text', align:'left'"><?php echo xlt('Name'); ?></th>
-                    <th data-options="field:'abnormal',  
-                                            formatter:function(value,row){  
-                                                    return row.abnormal_title;  
-                                            },  
-                                            editor:{  
-                                                    type:'combobox',  
-                                                    options:{  
-                                                            valueField:'option_id',  
-                                                            textField:'title',  
-                                                            url:'./result/getLabOptions?opt=abnormal&optId=abnormal',  
-                                                            required:false  
-                                                    } 
-                                            }">
-                                            <?php echo xlt('Abn'); ?>
-                                            <span style="margin-left: 10px;"></span>
-                                        </th>
-                    <th field="result" editor="text"><?php echo xlt('Value'); ?></th>
-                    <th field="pt2_units" editor="text"><?php echo xlt('Units'); ?></th>
-                    <th field="pt2_range" editor="text"><?php echo xlt('Range'); ?></th>
-                    <th data-options="field:'comments',title:'',align:'center',
-                                            formatter:function(value,row,index){
-                                                    if (row.editing){
-                                                            var s = '<a></a> ';
-                                                            var c = '<a></a>';
-                                                            return s+c;
-                                                    } else {
-                                                            var r = '<a href=javascript:void(0) class=easyui-linkbutton iconCls=icon-edit plain=true onclick=editComments(this)><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> /></a>';
-                                                            var q = '';
-                                                            return r+q;
-                                                    }
-                                            }"><?php echo xlt('Comments'); ?></th>
-
-             <!-- End Results and Recommendations -->
-             <!-- Start Action -->
-             <!--    <th data-options="field:'action',title:'',align:'left',
-                                            formatter:function(value,row,index){
-                                                    if (row.editing){
-                                                            var s = '<a></a> ';
-                                                            var c = '<a></a>';
-                                                            return s+c;
-                                                    } else if (row.editor == 1) {
-                                                            var f = '<a href=\'#\' onClick=\'getLabelDownload(this);\' style=padding-left:25px;><img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> title=<?php echo xlt('Label'); ?> border=0 /></a>';
-                                                            var d = '<a href=\'#\' onClick=\'getRequisition(this);\' style=margin-left:50px; align=center><img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> title=<?php echo xlt('Requisition'); ?> border=0 /></a>';
-                                                            var e = '<a href=\'#\' onClick=\'getResult(this);\' style=padding-left:34px;align=center><img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> title=<?php echo xlt('Result'); ?>  border=0 /></a>';
-                                                            return f+d+e;
-                                                    }
-                                            }">
-                                            <span class="datagrid-cell" style="border-right: 1px dotted #444;">
-                                            <?php echo xlt('Label'); ?>
-                                            </span>
-                                            <span class="datagrid-cell" style="border-right: 1px dotted #444;">
-                                            <?php echo xlt('Requisition'); ?>
-                                            </span>
-                                            <span class="datagrid-cell">
-                                            <?php echo xlt('Result'); ?>
-                                            </span>
-                                            </th>
-	    <!-- End Action -->
-              <!--  </tr>
-            </thead>
-	</table> -->
-
-	<!--<div id="toolbar">
-		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#dg').edatagrid('saveRow')"><?php echo xlt('Save'); ?></a>
-		<a href="#" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')"><?php echo xlt('Cancel'); ?></a>
-                <span style="text-align: right; padding-left: 750px;">
-                    <span class="extlab">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span style="font-size: 10px;"> Ext Labs</span>
-                    <span class="local">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span style="font-size: 10px;"> Local Labs</span>
-                </span>
-		<div style="text-align: left; padding-left:20px;">
-
-                    <div style="text-align: left;">
-                        <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
-                        <span style="text-align: left; font-weight: bold; margin-left: 250px;"><?php echo xlt('Status'); ?></span>
-                    </div>
-			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" name='dtFrom' >
-			</span>
-			<span style="text-align: left; padding-right: 50px;">
-			<?php echo xlt('To'); ?>: <input class="easyui-datebox" style="width:80px" name='dtTo' >
-			</span>
-
-			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Order'); ?>:
-			<input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
-                                data-options="valueField:'value',textField:'label',
-                                url:'./result/getLabOptions?opt=search&optId=order'" />
-			</span>
-			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Report'); ?>:
-			<input id="cc" class="easyui-combobox" name="searchStatusReport" 
-                                data-options="valueField:'value',textField:'label',
-                                url:'./result/getLabOptions?opt=search&optId=report'" />
-			</span>
-			<span style="text-align: left; padding-right: 10px;">
-			<?php echo xlt('Result'); ?>:
-			<input id="searchStatusResult" class="easyui-combobox" name="searchStatusResult" 
-                                data-options="valueField:'value',textField:'label',
-                                url:'./result/getLabOptions?opt=search&optId=result'" />
-			</span>
-
-			<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
-                            <?php echo xlt('Search'); ?>
-                        </a>
-
+	 <?php
+	
+ 	 $totPages = ceil($totrows/20);
+	 if(!isset($_GET['pageno'])){
+	   $_GET['pageno']=1;
+	 }
+	 
+	 ?>
+		        	   
+	   <div align="justify" style="float:left;border:1px solid #ddd;padding-left:6px;padding-top:4px;padding-bottom:3px;background-color: #F4F4F4;width:99.1%;">
+	   
+		<div style="float:left;margin-top: 3px;">
+			<a style="margin-top:5px;cursor:hand;cursor:pointer" onclick="movefirstlast(1)"><img  src=<?php echo $this->basePath() .'/css/icons/movfirst.png'; ?> ></a> 
 		</div>
-	</div>-->
-	
-	<div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-top:5px;cursor:hand;cursor:pointer"  <?php if($_GET['pageno'] AND ($_GET['pageno']> 1) ) {?> onclick="movenext1(<?php echo $_GET['pageno'] - 1 ?> ) <?php } ?>"><img  src=<?php echo $this->basePath() .'/css/icons/movprev.png'; ?> ></a> 
+		</div>
+		<div style="float:left;">
+	     <label style="margin-left:20px;" for="pageno">Page</label>
+	     <select name="pageno" id="pageno" style="width:40px;" onchange="movenext()" >
+		<?php 
+			
+			for($i=1; $i<=$totPages; $i++) {
+			$sel = "";
+			if($_GET['pageno'] == $i){  $sel = "selected=\"selected\""; }?>
+		
+		<option value="<?php echo $i ?>" <?php echo $sel; ?>  > <?php echo $i ?> </option>
+		<?php } ?>
+		
+	     </select>
+	     <?php echo "of ".$totPages; ?>
+		</div>
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-left:20px; margin-top:5px;cursor:hand;cursor:pointer" <?php if($_GET['pageno'] AND ($_GET['pageno']< $totPages) ) {?> onclick="movenext1(<?php echo $_GET['pageno'] +1 ?> ) <?php } ?>"><img  src=<?php echo $this->basePath() .'/css/icons/movenext.png'; ?> ></a> 
+		</div>
+		<div style="float:left;margin-top: 3px;">
+	     <a style="margin-top:5px;cursor:hand;cursor:pointer" onclick="movefirstlast(<?php echo  $totPages ?>)"><img   src=<?php echo $this->basePath() .'/css/icons/movelast.png'; ?> ></a> 
+	    </div>
+	   </div>
+      </div>
+	    
+	    <div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
             closed="true" buttons="#dlg-buttons">  
-        <div class="ftitle" id='titleShow'></div>  
-        <form id="fm" method="post" novalidate>  
-            <div class="fitem">  
+            <div class="ftitle" id='titleShow'></div>  
+             <form id="fm" method="post" novalidate>
+		       <input type='hidden' name='rep_id' id='rep_id' value='' />
+               <div class="fitem">  
                 <label><?php echo xlt('Status'); ?>:</label>  
-			<input id="cc" class="easyui-combobox" name="formResultStatus" 
+			      <input id="cc1" class="easyui-combobox" name="formResultStatus" 
                                 data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=status&optId=result'" />
-            </div>  
-            <div class="fitem">  
-                <label><?php echo xlt('Facility'); ?>:</label>  
-                <input name="formResultFacility" class="easyui-validatebox" style="width: 280px"; >  
-            </div>  
-            <div class="fitem">  
-                <label><?php echo xlt('Comments'); ?>:</label>  
-		    <textarea id='formResultComments' name="formResultComments" style="height:60px; width: 280px;"></textarea>  
-            </div>  
-            <div class="fitem">  
-                <label><?php echo xlt('Notes'); ?>:</label>  
-		    <textarea id='formResultNotes' name="formResultNotes" style="height:60px; width: 280px;"></textarea>
-            </div>  
-        </form>  
-    </div>  
-    <div id="dlg-buttons">  
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()">
-            <?php echo xlt('Close'); ?>
-        </a>  
-    </div> 
- 
-
+                   </div>  
+                  <div class="fitem">  
+                   <label><?php echo xlt('Facility'); ?>:</label>  
+                   <input name="formResultFacility" class="easyui-validatebox" style="width: 280px"; >  
+                  </div>  
+                  <div class="fitem">  
+                  <label><?php echo xlt('Comments'); ?>:</label>  
+		          <textarea id='formResultComments' name="formResultComments" style="height:60px; width: 280px;"></textarea>  
+                  </div>  
+                  <div class="fitem">  
+                  <label><?php echo xlt('Notes'); ?>:</label>  
+		          <textarea id='formResultNotes' name="formResultNotes" style="height:60px; width: 280px;"></textarea>
+                 </div>  
+             </form>  
+        </div>  
+        <div id="dlg-buttons">  
+          <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()">
+            <?php echo xlt('Save'); ?>
+          </a>  
+        </div> 
+      
+   
   
 	

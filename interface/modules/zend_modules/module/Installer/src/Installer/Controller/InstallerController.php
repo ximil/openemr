@@ -1,4 +1,29 @@
 <?php
+// +-----------------------------------------------------------------------------+ 
+// Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+//
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+//
+// A copy of the GNU General Public License is included along with this program:
+// openemr/interface/login/GnuGPL.html
+// For more information write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// 
+// Author:   Jacob T.Paul <jacob@zhservices.com>
+//           Shalini Balakrishnan  <shalini@zhservices.com>
+//
+// +------------------------------------------------------------------------------+
 namespace Installer\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
@@ -89,6 +114,7 @@ class InstallerController extends AbstractActionController
 			$mod_enc_menu = $request->getPost('mod_enc_menu');
 			$mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
     			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
+				$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
     				$this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
     				$status = "Success";
     			}else{
@@ -124,6 +150,21 @@ class InstallerController extends AbstractActionController
     		return true;
     	}else
     		return true;
+    }
+    
+    /**
+     * Function to install ACL for the installed modules
+     * @param 	string 	$dir Location of the php file which calling functions to add sections,aco etc.
+     * @return boolean
+     */
+    private function installACL ( $dir )
+    {
+    	
+    	$aclfile = $dir."/moduleACL.php";
+    	if (file_exists($aclfile))
+    	{
+    		include_once($aclfile);
+    	}
     }
     
     /**

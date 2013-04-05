@@ -28,14 +28,17 @@ class LabTable extends AbstractTableGateway
      * Lab Order Row wise
      */
     
-    public function listLabOrders()
+    public function listLabOrders($data)
     {
-	$sql = "SELECT procedure_order_id,
-			provider_id,
-			patient_id,
-			encounter_id,
-			date_ordered
-		    FROM procedure_order";
+	$sql = "SELECT po.*,
+			CONCAT(pa.lname, ',', pa.fname) AS patient_name,
+			pp.name AS provider_name 
+		    FROM procedure_order po 
+		    LEFT JOIN patient_data pa ON po.patient_id=pa.id 
+		    LEFT JOIN procedure_providers pp ON po.lab_id=pp.ppid 
+		    WHERE po.procedure_order_id='" . $data['ordId'] . "'";
+
+		    
 	$result = sqlStatement($sql);
 	$arr = array();
 	while ($row = sqlFetchArray($result)) {
@@ -45,8 +48,6 @@ class LabTable extends AbstractTableGateway
 	return $arr;
     }
     
-  
-	
 //   public function saveLab(Lab $lab,$aoe)
 //    {
 //	$fh = fopen("D:/SAVELAB.txt","a");
@@ -82,10 +83,12 @@ class LabTable extends AbstractTableGateway
 	}
     }
     public function insertProcedureMaster($post,$ordnum){
+	$labvalArr = explode("|",$post['lab_id'][$ordnum][0]);
+	$labval = $labvalArr[0];
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
 				       order_status,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
-		    'pending',$post['lab_id'][$ordnum][0],$post['specimencollected'][$ordnum][0],
+		    'pending',$labval,$post['specimencollected'][$ordnum][0],
 		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0]));
 	return $procedure_type_id;
     }
@@ -96,28 +99,33 @@ class LabTable extends AbstractTableGateway
 	$procedure_type_id_arr = array();
 	$j=0;
 	$prevState = '';
-	for($ordnum=0;$ordnum<1;$ordnum++){
+	//$fh = fopen(dirname(__FILE__)."/teeeewwwt.txt","a");
+	//fwrite($fh,"rrr:".print_r($post,1));
+	for($ordnum=0;$ordnum<$post['total_panel'];$ordnum++){
 	    for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
-	    $PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
-			     array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
-	    if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
-	    ${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
-	    if($PRow['pap_indicator']=="P"){
-		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
-		$papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		$PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
+				 array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+		if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
+		${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
+		if($PRow['pap_indicator']=="P"){
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['patient_instructions'] = $post['patient_instructions'][$ordnum][$i];
+		}
+		else{
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['patient_instructions'] = $post['patient_instructions'][$ordnum][$i];
+		    ${$PRow['specimen_state']."_".$ordnum."_j"}++;
+		}
 	    }
-	    else{
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
-		$specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
-		${$PRow['specimen_state']."_".$ordnum."_j"}++;
-	    }
-	    }
-	    fwrite($fh,"eee:".${$PRow['specimen_state']."_".$ordnum."_j"});
-	    fwrite($fh,"\r\nPRow:".print_r($PRow,1));
-	    fwrite($fh,"papArray:".print_r($papArray,1));
-	    fwrite($fh,"specimenState:".print_r($specimenState,1));
+	    //$fh = fopen(dirname(__FILE__)."/teeeet.txt","a");
+	    //fwrite($fh,"eee:".${$PRow['specimen_state']."_".$ordnum."_j"});
+	    //fwrite($fh,"\r\nPRow:".print_r($PRow,1));
+	    //fwrite($fh,"papArray:".print_r($papArray,1));
+	    //fwrite($fh,"specimenState:".print_r($specimenState,1));
 	    if(sizeof($papArray[$ordnum])>0){
 		foreach($papArray[$ordnum] as $procode_suffix=>$pronameArr ){
 		    $PSArray = explode("|-|",$procode_suffix);
@@ -125,14 +133,17 @@ class LabTable extends AbstractTableGateway
 		    $prosuffix = $PSArray[1];
 		    $proname = $pronameArr['procedure'];
 		    $diagnoses = $pronameArr['diagnoses'];
+		    $patient_instructions = $pronameArr['patient_instructions'];
 		    $PAPprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
 		    $procedure_type_id_arr[] = $PAPprocedure_type_id;
-		    $PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-			 VALUES (?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
+		    $PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+			 VALUES (?,?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
 		    $this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode,$ordnum);
 		}
 	    }
 	    if($post['specimencollected'][$ordnum][0]=="onsite"){
+		//$fh = fopen(dirname(__FILE__)."/tessst.txt","a");
+		//fwrite($fh,print_r($specimenState[$ordnum],1));
 		if(sizeof($specimenState[$ordnum])>0){
 		    foreach($specimenState[$ordnum] as $k=>$vArray){
 			$SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
@@ -142,8 +153,9 @@ class LabTable extends AbstractTableGateway
 			    $proname = $vArray[$i]['procedure'];
 			    $prosuffix = $vArray[$i]['procedure_suffix'];
 			    $diagnoses = $vArray[$i]['diagnoses'];
-			    $SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-					    VALUES (?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses));
+			    $patient_instructions = $vArray[$i]['patient_instructions'];
+			    $SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+					    VALUES (?,?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
 			    $this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode,$ordnum);
 			}
 		    }
@@ -158,15 +170,13 @@ class LabTable extends AbstractTableGateway
 		    $procedure_type_id = $this->insertProcedureMaster($post,$ordnum);
 		    $procedure_type_id_arr[] = $procedure_type_id;
 		    }
-		    $seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses)
-			VALUES (?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$ordnum][$i],$post['procedures'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+		    $seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+			VALUES (?,?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$ordnum][$i],$post['procedures'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]
+						    ,$post['patient_instructions'][$ordnum][$i]));
 		    $this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$ordnum][$i],$post['diagnoses'][$ordnum][$i],$ordnum);
 		}
 	    }
 	}
-	
-	
-	
 	return $procedure_type_id_arr;
     }
     
@@ -212,6 +222,21 @@ class LabTable extends AbstractTableGateway
 	//	'name'     => 'AOE_'.$procedureCode."_".$tmp['question_code']
 	//    )));
 	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['tips'],ENT_QUOTES);
+	}
+	return $arr;
+    }
+    
+    public function listDiagnoses($inputString)
+    {
+	$sql = "SELECT * FROM codes
+			    WHERE code_type='2' 
+				AND (code LIKE ? 
+				    OR   code_text LIKE ?) ORDER BY code ";
+	$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[] =  htmlspecialchars($tmp['code'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['code_text'],ENT_QUOTES);
 	}
 	return $arr;
     }
@@ -735,8 +760,7 @@ class LabTable extends AbstractTableGateway
                                                                         'provider_id'           => '#provider_id',
                                                                         'psc_hold'         	=> 'recv_app_id',
 									'billto'	    	=> 'bill_to',
-									'internal_comments'	=> 'patient_internal_comments',
-									'patient_instructions'	=> 'observation_request_comments'
+									'internal_comments'	=> 'patient_internal_comments'
 									),
                                                 'value_map'     => array(
                                                                         'psc_hold'              => array(
@@ -870,7 +894,7 @@ class LabTable extends AbstractTableGateway
 			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
 			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
 			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-			    "ordering_provider_fname","observation_request_comments","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP","bill_to");
+			    "ordering_provider_fname","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP","bill_to");
      
 	
 	$cofig_arr  = $this->mapcolumntoxml();
@@ -1030,7 +1054,8 @@ class LabTable extends AbstractTableGateway
 	    }   
 	    
 	    /* ------------------ GETTING TEST DETAILS ------------------------*/
-	    $sql_test   = "SELECT procedure_code, procedure_suffix, procedure_order_seq, diagnoses FROM procedure_order_code
+	    
+	    $sql_test   = "SELECT procedure_code, procedure_suffix, procedure_order_seq, diagnoses, patient_instructions FROM procedure_order_code
                                 WHERE procedure_order_id = ? ";
 	    
 	    $test_value_arr = array();	    
@@ -1038,7 +1063,10 @@ class LabTable extends AbstractTableGateway
 	   
 	    $res_test  	= sqlStatement($sql_test,$test_value_arr);
 	    while($data_test = sqlFetchArray($res_test))
-            {
+            {		
+		/*-------------------- 	GETTING PATIENT INSTRUCTIONS ---------------*/
+		$patient_instructions	= $data_test['patient_instructions'];
+		
 		if(($data_test['procedure_code'] <> "") && ($data_test['procedure_suffix'] <> ""))
 		{
 		    $test_id   .= $data_test['procedure_code']."#!#".$data_test['procedure_suffix']."#--#";
@@ -1096,8 +1124,8 @@ class LabTable extends AbstractTableGateway
 	    
 	    
 	    
-	    /*--------------------------------------------------------------*/
-	    
+	    /*----------------------------  ASSIGNING ADDITIONAL TAG ELEMENTS FOR ORDER----------------------------------*/
+	    $result_xml     .= '<observation_request_comments>'.$patient_instructions.'</observation_request_comments>';
 	    $result_xml     .= '<test_id>'.$test_id.'</test_id>';
 	    $result_xml     .= '<test_diagnosis>'.$diagnosis.'</test_diagnosis>';
 	    $result_xml     .= '<test_aoe>'.$test_aoe.'</test_aoe>';

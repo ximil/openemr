@@ -16,12 +16,174 @@ class ResultController extends AbstractActionController
 	
     public function indexAction()
     {
-     $labresult1=$this->resultShowAction(); 
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 
+     $labresult1=$this->resultShowAction($pageno); 
+	 //$data = new JsonModel($labresult1);
 	    $viewModel = new ViewModel(array(
-	    "albums"=>$labresult1
+	    "labresults"=>$labresult1
 		));
 	return $viewModel;	  
 		
+    }
+    public function getLabelDownloadAction($orderId) {
+	if(!$orderId)
+	$orderId = $_GET['order_id'];
+	// Set font size
+	$font_size = 2;
+	//$text = "Client: ".$client_id."\nLab Ref: ".$lab_ref."\nPat Name: ".$pat_name;
+	$row = sqlQuery("SELECT send_fac_id,CONCAT_WS('-',login,procedure_order_id) AS labref,CONCAT_WS(',',lname,fname) AS pname FROM procedure_order LEFT OUTER JOIN procedure_providers ON lab_id=ppid LEFT OUTER JOIN
+	patient_data ON pid=patient_id WHERE procedure_order_id=?",array($orderId));
+	$text = "Client: ".$row['send_fac_id']."\nLab Ref: ".$row['labref']."\nPat Name: ".$row['pname'];
+
+	$ts=explode("\n",$text);
+	$total_lines = count($ts);
+	$width=0;
+	foreach ($ts as $k=>$string) { //compute width
+	    $width=max($width,strlen($string));
+	}
+
+	// Create image width dependant on width of the string
+	//$width  = imagefontwidth($font_size)*$width;
+	$width  = 168;
+	// Set height to that of the font
+	//$height = imagefontheight($font_size)*count($ts);
+	$height = 72;
+	$el=imagefontheight($font_size);
+	$em=imagefontwidth($font_size);
+	// Create the image pallette
+	$img = imagecreatetruecolor($width,$height);
+	// Dark red background
+	$bg = imagecolorallocate($img, 255, 255, 255);
+	imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
+	// White font color
+	$color = imagecolorallocate($img, 0, 0, 0);
+  
+    foreach ($ts as $k=>$string) {
+	// Length of the string
+	$len = strlen($string);
+	// Y-coordinate of character, X changes, Y is static
+	$ypos = 0;
+	// Loop through the string
+	for($i=0;$i<$len;$i++){
+	    // Position of the character horizontally
+	    $xpos = $i * $em;
+	    $ypos = $k * $el;
+	    
+	    $center_x = ceil( ( ( imagesx($img) - ( $em * $len ) ) / 2 ) + ( $i * $em ) );
+	    $center_y = ceil( ( ( imagesy($img) - ( $el * $total_lines ) ) / 2)  + ( $k * $el ) );
+	    
+	    //error_log("aa:$xpos, $ypos---$center_x, $center_y");
+	    
+	    // Draw character
+	    imagechar($img, $font_size, $center_x, $center_y, $string, $color);
+	    // Remove character from string
+	    $string = substr($string, 1);
+	}
+    }
+	// Return the image
+	//$IMGING = imagepng($img);
+	//header("Content-Type: image/png");
+	//header('Content-Disposition: attachment; filename=Specimen Label.png' );
+	//  header("Content-Type: application/octet-stream" );
+	//  header("Content-Length: " . filesize( $IMGING ) );
+	ob_end_clean();
+	ob_start();
+	////////imagejpeg($img);
+	$this->createImageBorder($img);
+	$IMGING = ob_get_contents();
+	header("Content-Type: image/jpg");
+	header('Content-Disposition: attachment; filename=SpecimenLabel_'.$orderId.'.jpg' );
+	header("Content-Type: application/octet-stream" );
+	header("Content-Length: " . filesize( $IMGING ) );
+	// Remove image
+	imagedestroy($img);
+	exit;
+    }
+    function createImageBorder($imgName){
+
+	//$img     =  substr($imgName, 0, -4); // remove fileExtension
+	//$ext     = ".jpg";
+	//$quality = 95;
+	$borderColor = 0;  // 255 = white
+       
+	/*
+	a                         b
+	+-------------------------+
+	|                         
+	|          IMAGE          
+	|                         
+	+-------------------------+
+	c                         d  
+	*/
+      
+        //$scr_img = imagecreatefromjpeg($img.$ext);
+        $scr_img = $imgName;
+        $width   = imagesx($scr_img);
+        $height  = imagesy($scr_img);
+		
+	// line a - b
+	$abX  = 0;
+	$abY  = 0;
+	$abX1 = $width;
+	$abY1 = 0;
+       
+	// line a - c
+	$acX  = 0;
+	$acY  = 0;
+	$acX1 = 0;
+	$acY1 = $height;
+       
+	// line b - d
+	$bdX  = $width-1;
+	$bdY  = 0;
+	$bdX1 = $width-1;
+	$bdY1 = $height;
+       
+	// line c - d
+	$cdX  = 0;
+	$cdY  = $height-1;
+	$cdX1 = $width;
+	$cdY1 = $height-1;
+	
+	$w   = imagecolorallocate($scr_img, 255, 255, 255);
+	$b = imagecolorallocate($scr_img, 0, 0, 0);
+	
+	$style = array_merge(array_fill(0, 5, $b), array_fill(0, 5, $w));
+	imagesetstyle($scr_img, $style);
+	   
+       // DRAW LINES   
+	imageline($scr_img,$abX,$abY,$abX1,$abY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$acX,$acY,$acX1,$acY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$bdX,$bdY,$bdX1,$bdY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$cdX,$cdY,$cdX1,$cdY1,IMG_COLOR_STYLED);
+       
+      // create copy from image   
+	imagejpeg($scr_img);
+	//imagedestroy($scr_img);
+    }
+    
+    public function paginationAction()
+    {   
+	
+	$request = $this->getRequest();
+	$pageno = 1;
+	if($request->isGet()){
+	
+	 $pageno = ($request->getQuery('pageno')<> "") ? $request->getQuery('pageno') : 1;
+	}
+	 	 
+	$labresult1=$this->resultShowAction($pageno); 
+	    $viewModel = new ViewModel(array(
+	    "labresults"=>$labresult1
+		));
+	return $viewModel;	   
+	
     }
     public function getResultTable()
     {
@@ -32,30 +194,31 @@ class ResultController extends AbstractActionController
         return $this->labTable;
     }
     
-    public function resultShowAction()
-    {
+    public function resultShowAction($pageno)
+    {		
         $request = $this->getRequest();
         $data =array();
         if($request->isPost()){
             $data = array(
-                    'statusReport'  => $request->getPost('statusReport'),
-                    'statusOrder'   => $request->getPost('statusOrder'),
-                    'statusResult'  => $request->getPost('statusResult'),
+                    'statusReport'  => $request->getPost('searchStatusReport'),
+                    'statusOrder'   => $request->getPost('searchStatusOrder'),
+                    'statusResult'  => $request->getPost('searchStatusResult'),
                     'dtFrom'        => $request->getPost('dtFrom'),
                     'dtTo'          => $request->getPost('dtTo'),
                     'page'          => $request->getPost('page'),
                     'rows'          => $request->getPost('rows'),
             ); 
         }
-        $data = $this->getLabResult($data);
+						
+        $data = $this->getLabResult($data,$pageno);
        // $data = new JsonModel($labResult);
 				return $data;
 				
     }
     
-    public function getLabResult($data)
+    public function getLabResult($data,$pageno)
     {
-        $labResult = $this->getResultTable()->listLabResult($data);
+        $labResult = $this->getResultTable()->listLabResult($data,$pageno);
 	     return $labResult;
     }
     
@@ -108,13 +271,35 @@ class ResultController extends AbstractActionController
         $request = $this->getRequest();
         $data =array();
             if($request->getPost('prid')){
-                $data['procedure_result_id'] = $request->getPost('prid');
+                $data['procedure_report_id'] = $request->getPost('prid');
             }
         $comments = $this->getResultTable()->listResultComment($data);
         $data = new JsonModel($comments);
         return $data;
     }
-    
+	
+    public function insertLabCommentsAction()
+    {  
+	$request=$this->getRequest();
+	$data =array();
+        if($request->isPost()){
+            $data = array(
+		    'procedure_report_id' => $request->getPost('procedure_report_id'),
+                    'result_status'  => $request->getPost('result_status'),
+                    'facility'   => $request->getPost('facility'),
+                    'comments'  => $request->getPost('comments'),
+                    'notes'        => $request->getPost('notes'),
+                    
+            );
+	    $this->getResultTable()->saveResultComments($data['result_status'],$data['facility'],$data['comments'],$data['procedure_report_id']);
+            //return $this->redirect()->toRoute('result');
+	    $return	= array();
+	    $return[0]  = array('return' => 0, 'report_id' => $data['procedure_report_id']);
+	    $arr        = new JsonModel($return);
+	    return $arr;
+        }
+	
+    }
     public function resultUpdateAction()
     {
         $request = $this->getRequest();
@@ -125,6 +310,7 @@ class ResultController extends AbstractActionController
             if ($arr[3] != '') {
                 $comments .=  "\n" . $arr[3];
             }
+	    
             $data = array(
                             'procedure_report_id'   => $request->getPost('procedure_report_id'),
                             'procedure_result_id'   => $request->getPost('procedure_result_id'),
@@ -314,7 +500,7 @@ class ResultController extends AbstractActionController
 		    
 		    //SEPERATES TEST SPECIFIC DETAILS
 		    $testdetails_arr    = explode("#!#",$testdetails);
-		    list($test_code, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
+		    list($test_code, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
 		  
 		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
 						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -337,12 +523,7 @@ class ResultController extends AbstractActionController
 		    //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
 		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
 		    
-		    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n test comments  ".$result_test_comments);
-		    
 		    $no_of_subtests	= substr_count($resultdetails_test, "!#@#!") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
-		     $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n no of subtests  ".$no_of_subtests);
 		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
 			if($no_of_subtests   < 2) {
 			    $subtest_comments	    = $resultcomments_arr[0];
@@ -351,10 +532,10 @@ class ResultController extends AbstractActionController
 			    list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 			   
 			    $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
-							    facility,units,result,`range`,abnormal,comments,result_status)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+							    facility,units,result,`range`,abnormal,comments,result_status,order_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
-						    $subtest_comments,$result_status);            
+						    $subtest_comments,$result_status,$order_title);            
 			    $this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
 			} else {
 			    
@@ -366,10 +547,10 @@ class ResultController extends AbstractActionController
 				list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 				
 				$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
-							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments,order_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
-							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments);
+							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title);
 				$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
 			    }                        
 			}

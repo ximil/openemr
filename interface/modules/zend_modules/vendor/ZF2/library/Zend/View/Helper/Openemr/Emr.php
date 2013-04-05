@@ -59,30 +59,45 @@ class Emr extends AbstractHelper
 	return $rows;
     }
     
-    public function getLabs()
+    /*
+    * function getLabs
+    * @param $type
+    * @value 'y' - for type of Labs (Loacal or External)
+    */
+    public function getLabs($type='')
     {
-	$res = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid"); 
-	$rows[0] = array (
-		'value' => '0',
-		'label' => xlt('Local Lab'),
-		'selected' => TRUE,
-		'disabled' => FALSE
-	);
-	$i = 1;
+	$res = sqlStatement("SELECT ppid,name,remote_host,login,password FROM procedure_providers ORDER BY name, ppid"); 
+	//$rows[0] = array (
+	//	'value' => '0',
+	//	'label' => xlt('Local Lab'),
+	//	'selected' => TRUE,
+	//	'disabled' => FALSE
+	//);
+	$i = 0;
 	
 	while($row=sqlFetchArray($res)) {
-		$rows[$i] = array (
-			'value' => $row['ppid'],
-			'label' => $row['name'],
-		);
-		$i++;
+	    $value = '';
+	    if ($type == 'y') {
+		if ($row['remote_host'] != '' && $row['login'] != '' && $row['password'] != '') {
+			$value = $row['ppid'] . '|' . 1; // 0 - Local Lab and 1 - External Lab
+		} else {
+			$value = $row['ppid'] . '|' . 0;
+		}
+	    } else {
+		$value = $row['ppid'];
+	    }
+	    $rows[$i] = array (
+		'value' => $value,
+		'label' => $row['name'],
+	    );
+	    $i++;
 	}
 	return $rows;
     }
 		
-		public function getDropdownValAsText($list_id,$option_id)
+    public function getDropdownValAsText($list_id,$option_id)
     {
-				$res = sqlQuery("SELECT title FROM list_options WHERE list_id = ? AND option_id = ?",array($list_id,$option_id)); 
-				return $res['title'];
+        $res = sqlQuery("SELECT title FROM list_options WHERE list_id = ? AND option_id = ?",array($list_id,$option_id)); 
+        return $res['title'];
     }
 }

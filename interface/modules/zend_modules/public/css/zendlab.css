@@ -77,3 +77,44 @@
 .mediumtb{
 	width: 100px !important;
 }
+.panel - header {
+	border - width: 1px;
+	border - style: solid;
+	padding: 5px 0px 5px 0px;
+	position: relative;
+}.panel - title {
+	background: url('images/blank.gif') no - repeat;
+}.panel - tool {
+	position: absolute;
+	top: 50 % ;
+	margin - top: -8px;
+	height: 16px;
+	overflow: hidden;
+	right: 5px;
+	width: auto;
+}.panel - body {
+	border - width: 1px;
+	border - style: solid;
+}
+table.gridview2 td {
+	border - style: dotted;
+	border - width: 1px 1px 1px 1px;
+	margin: 0;
+	padding: 0;
+	border - color: #cccccc;
+}
+
+
+table.thcolor th {
+    background: linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;
+    border: 1px solid #CCCCCC;
+    height: 20px;
+}
+
+.tdfont {
+	font - size: 11px ! important;
+}
+.clswidth {
+	width: 91 % ;
+
+}

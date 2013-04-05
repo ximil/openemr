@@ -40,13 +40,11 @@ class ConfigurationTable extends AbstractTableGateway
 	$this->child_ids		= array();
     }   
 	
-    public function getConfigDetails($type_id,$list_arr)
+    public function getConfigDetails($type_id)
     {
-	$fp	= fopen("D:/sss.txt","a");
-	fwrite($fp,"\n in getConfigDetails Model ........................\n ".print_r($list_arr,1));	
 	
 	$comb_arr		= array();
-	$resparent_arr[]	= $this->getConfigParentDetails($type_id,$list_arr);
+	$resparent_arr[]	= $this->getConfigParentDetails($type_id);
 	
 	$is_group	= 0;
 	
@@ -57,7 +55,7 @@ class ConfigurationTable extends AbstractTableGateway
 		foreach($type_arr as $type)
 		{
 		    $comb_arr[]	= $type;
-		    if($type['group'] == 'Group')
+		    if($type['group'] == 'grp')
 		    {
 			$is_group	= 1;			
 		    }
@@ -67,7 +65,7 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	if($is_group == 0)
 	{	    
-	    $reschild_arr[]		= $this->getConfigChildDetails($type_id,$list_arr);
+	    $reschild_arr[]		= $this->getConfigChildDetails($type_id);
 	}
 	
 	foreach($reschild_arr as $reschild)
@@ -90,7 +88,7 @@ class ConfigurationTable extends AbstractTableGateway
 	
     }
     //NEW FUNCTION TO SHOW TEST DETAILS IN A TREE VIEW
-    public function getConfigParentDetails($type_id,$list_arr)
+    public function getConfigParentDetails($type_id)
     {
 	$init_tag	= 1;
 	$json_arr	= array();		
@@ -100,13 +98,13 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	if($row['procedure_type_id'] <> "")
 	{	   
-	    $res_arr 	= $this->saveDetailsArray($row,$init_tag,$list_arr);
+	    $res_arr 	= $this->saveDetailsArray($row,$init_tag);
 	    array_push($this->parent_result, $res_arr);
 	}	
 	return $this->parent_result;
     }
      
-    public function getConfigChildDetails($type_id,$list_arr)
+    public function getConfigChildDetails($type_id)
     {
 	
 	$child_res 	= $this->getChildDetails($type_id);
@@ -114,10 +112,10 @@ class ConfigurationTable extends AbstractTableGateway
 	{
 	    if(($child['procedure_type_id'] <> "")&&($child['procedure_type_id'] <> $type_id))
 	    {
-		$res_arr = $this->saveDetailsArray($child,$init_tag,$list_arr);
+		$res_arr = $this->saveDetailsArray($child,$init_tag);
 		array_push($this->child_result, $res_arr);
 	    
-		$this->getConfigChildDetails($child['procedure_type_id'],$list_arr);
+		$this->getConfigChildDetails($child['procedure_type_id']);
 	    }
 	}
 	return $this->child_result;	
@@ -154,7 +152,7 @@ class ConfigurationTable extends AbstractTableGateway
 	    
 	}
 	
-	$sql		= "SELECT procedure_type_id, parent, name, procedure_code, procedure_type, description, seq, units,`range`, related_code,
+	$sql		= "SELECT procedure_type_id, parent, name, lab_id, procedure_code, procedure_type, description, seq, units,`range`, related_code,
 				route_admin, laterality, standard_code, body_site, specimen
 			    FROM procedure_type 
 				WHERE procedure_type_id = ? ";
@@ -168,7 +166,7 @@ class ConfigurationTable extends AbstractTableGateway
     
     public function getChildDetails($type_id)
     {
-	$sql		= "SELECT procedure_type_id, parent, name, procedure_code, procedure_type, description, seq, units,`range`, related_code
+	$sql		= "SELECT procedure_type_id, parent, name, lab_id, procedure_code, procedure_type, description, seq, units,`range`, related_code
 				FROM procedure_type 
 				    WHERE parent = ? ";
 	$value_arr  	= array($type_id);
@@ -179,261 +177,93 @@ class ConfigurationTable extends AbstractTableGateway
     }
     
     
-    public function saveDetailsArray($row,$open_flag=0,$list_array)
+    public function saveDetailsArray($row,$open_flag=0)
     {
 	$arr		= array();
 	$ret_arr	= array();
 	$result_array	= array();
 	$orderfrom_arr	= array();
 	
+	//'group_name', 'group_description',
+	//'order_name', 'order_description', 'order_sequence', 'order_from', 'order_procedurecode', 'order_standardcode', 'order_bodysite',
+	//'order_specimentype', 'order_administervia', 'order_laterality'
+	//'result_name', 'result_description', 'result_sequence', 'result_defaultunits', 'result_defaultrange',	'result_followupservices'
+	//'reccomendation_name', 'reccomendation_description', 'reccomendation_sequence', 'reccomendation_defaultunits', 'reccomendation_defaultrange',	'reccomendation_followupservices'
 	
-	$bodysite	= $list_array[0];
-	$specimen	= $list_array[1];
-	$administervia	= $list_array[2];
-	$laterality	= $list_array[3];
-	$defaultunits	= $list_array[4];	
-
-	foreach($bodysite as $bodysite_array)
-	{
-	    $bodysite_arr[]		= array('value' => $bodysite_array['label'],
-						'text'  => $bodysite_array['label']);
-	}
 	
-	foreach($specimen as $specimen_array)
-	{
-	    $specimen_arr[]		= array('value' => $specimen_array['label'],
-						'text'  => $specimen_array['label']);
-	}
-	
-	foreach($administervia as $administervia_array)
-	{
-	    $administervia_arr[]	= array('value' => $administervia_array['label'],
-						'text'  => $administervia_array['label']);
-	}
-	
-	foreach($laterality as $laterality_array)
-	{
-	    $laterality_arr[]		= array('value' => $laterality_array['label'],
-						'text'  => $laterality_array['label']);
-	}
-	
-	foreach($defaultunits as $defaultunits_array)
-	{
-	    $defaultunits_arr[]		= array('value' => $defaultunits_array['label'],
-						'text'  => $defaultunits_array['label']);
-	}
-	
-	$ppres = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid");
-	while($pprow = sqlFetchArray($ppres))
-	{
-	    $orderfrom_arr[] = array('value' => $pprow['name'],
-				     'text'  => $pprow['name']);
-	}
-	
-	$grp_array	= array('name' 			=> array('title'  	=> "Name",
-								 'editor' 	=> "text"),
-				'description' 		=> array('title'  	=> "Description",
-								 'editor' 	=> "text"));
+	$grp_array	= array('name' 			=> 'group_name',
+				'description' 		=> 'group_description');
 				
-	$ord_array	= array('name' 			=> array('title'  	=> "Name",
-								 'editor' 	=> "text"),
-				'description' 		=> array('title'  	=> "Description",
-								 'editor' 	=> "text"),
-				'seq' 			=> array('title'  	=> "Sequence",
-								 'editor' 	=> "text"),
-				'order_from' 		=> array('title'  	=> "Order From",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'orderfrom_arr'),
-				'procedure_code' 	=> array('title'  	=> "Procedure Code",
-								 'editor' 	=> "text"),
-				'standard_code' 	=> array('title'  	=> "Standard Code",
-								 'editor' 	=> "text"),
-				'body_site' 		=> array('title'  	=> "Body Site",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'bodysite_arr'),
-				'specimen' 		=> array('title'  	=> "Specimen Type",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'specimen_arr'),
-				'route_admin' 		=> array('title'  	=> "Administer Via",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'administervia_arr'),
-				'laterality' 		=> array('title'  	=> "Laterality",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'laterality_arr'));
+	$ord_array	= array('name' 			=> 'order_name',
+				'description' 		=> 'order_description',
+				'seq' 			=> 'order_sequence',
+				'lab_id' 		=> 'order_from',								
+				'procedure_code' 	=> 'order_procedurecode',
+				'standard_code' 	=> 'order_standardcode',
+				'body_site' 		=> 'order_bodysite',
+				'specimen' 		=> 'order_specimentype',
+				'route_admin' 		=> 'order_administervia',								 
+				'laterality' 		=> 'order_laterality');
 	
-	$res_array	= array('name' 			=> array('title'  	=> "Name",
-								 'editor' 	=> "text"),
-				'description' 		=> array('title'  	=> "Description",
-								 'editor' 	=> "text"),
-				'seq' 			=> array('title'  	=> "Sequence",
-								 'editor' 	=> "text"),
-				'units' 		=> array('title'  	=> "Default Units",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'defaultunits_arr'),
-				'range' 		=> array('title'  	=> "Default Range",
-								 'editor' 	=> "text"),
-				'related_code' 		=> array('title'  	=> "Followup Services",
-								 'editor' 	=> "text"));
+	$res_array	= array('name' 			=> 'result_name',
+				'description' 		=> 'result_description',
+				'seq' 			=> 'result_sequence',
+				'units' 		=> 'result_defaultunits',								
+				'range' 		=> 'result_defaultrange',
+				'related_code' 		=> 'result_followupservices');
 	
-	$rec_array	= array('name' 			=> array('title'  	=> "Name",
-								 'editor' 	=> "text"),
-				'description' 		=> array('title'  	=> "Description",
-								 'editor' 	=> "text"),
-				'seq' 			=> array('title'  	=> "Sequence",
-								 'editor' 	=> "text"),
-				'units' 		=> array('title'  	=> "Default Units",
-								 'editor' 	=> "combobox",
-								 'options'	=> 'defaultunits_arr'),
-				'range' 		=> array('title'  	=> "Default Range",
-								 'editor' 	=> "text"),
-				'related_code' 		=> array('title'  	=> "Followup Services",
-								 'editor' 	=> "text"));
+	$rec_array	= array('name' 			=> 'reccomendation_name',
+				'description' 		=> 'reccomendation_description',
+				'seq' 			=> 'reccomendation_sequence',
+				'units' 		=> 'reccomendation_defaultunits',								
+				'range' 		=> 'reccomendation_defaultrange',
+				'related_code' 		=> 'reccomendation_followupservices');	
 	
 	if ($row['procedure_type'] == 'grp')
-	{		    
+	{
+	    $arr['group_type_id'] 	= $row['procedure_type_id'];
+	    $arr['group'] 	= $row['procedure_type'];     
 	    foreach($grp_array as $column => $grp)
-	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $grp['title'];
-		$arr['value'] 	= $row[$column];
-		$arr['group'] 	= 'Group'; 
-		
-		if($grp['editor'] == "text")
-		{
-		    $arr['editor'] 	= $grp['editor'];
-		}
-		else if($grp['editor'] == "combobox")
-		{
-		    $arr['editor'] 	= array('type' 		=> $grp['editor'],
-					    'options' 	=> array('data' => ${$grp['options']})
-					    );
-		}	    
-		array_push($result_array, $arr);
+	    {		
+		$arr[$grp] 	= $row[$column];	
 	    }
+	    array_push($result_array, $arr);
 	}
 	
 	else if ($row['procedure_type'] == 'ord')
 	{
+	    $arr['order_type_id'] 	= $row['procedure_type_id'];
+	    $arr['group'] 	= $row['procedure_type'];
 	    foreach($ord_array as $column => $ord)
 	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $ord['title'];
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Order';
+		$arr[$ord] 	= $row[$column];
 		
-		if($ord['editor'] == "text")
-		{		   
-		    $arr['editor'] 	= $ord['editor'];
-		}
-		else if($ord['editor'] == "combobox")
-		{
-		    $arr['editor'] 	= array('type' 		=> $ord['editor'],
-					    'options' 	=> array('data' => ${$ord['options']})
-					    );
-		}
-		array_push($result_array, $arr);
 	    }
+	    array_push($result_array, $arr);
 	}
 	
 	else if ($row['procedure_type'] == 'res')
-	{	
+	{
+	    $arr['result_type_id'] 	= $row['procedure_type_id'];
+	    $arr['group'] 	= $row['procedure_type'];
 	    foreach($res_array as $column => $res)
 	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $res['title'];
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Result';
-	       
-		if($res['editor'] == "text")
-		{		    
-		    $arr['editor'] 	= $res['editor'];
-		}
-		else if($res['editor'] == "combobox")
-		{
-		    $arr['editor'] 	= array('type' 		=> $res['editor'],
-					    'options' 	=> array('data' => ${$res['options']})
-					    );
-		}
-		array_push($result_array, $arr);
+		$arr[$res] 	= $row[$column];		
 	    }
+	    array_push($result_array, $arr);
 	}
 	
 	else if($row['procedure_type'] == 'rec')
 	{
-	    
-	    foreach($rec_array as $column => $rec)
-	    {		    
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $rec['title'];
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Recommendation';
-		
-		if($rec['editor'] == "text")
-		{		    
-		    $arr['editor'] 	= $rec['editor'];
-		}
-		else if($rec['editor'] == "combobox")
-		{
-		    $arr['editor'] 	= array('type' 	=> $rec['editor'],
-					    'options' 	=> array('data' => ${$rec['options']})
-					    );		    
-		}
-		array_push($result_array, $arr);
-	    }
-	}
-	
-	/*	
-	if ($row['procedure_type'] == 'grp') {	    
-	    foreach($grp_array as $column => $grp)
-	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $grp;
-		$arr['value'] 	= $row[$column];
-		$arr['group'] 	= 'Group';
-		$arr['editor'] 	= 'text';
-		$arr['state'] 	= 'closed';
-		array_push($result_array, $arr);
-	    }
-	}
-	
-	if ($row['procedure_type'] == 'ord') {
-	    foreach($ord_array as $column => $ord)
-	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $ord;
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Order';
-		$arr['editor'] 	= 'text';
-		array_push($result_array, $arr);
-	    }
-		
-	}
-	
-	if ($row['procedure_type'] == 'res') {
-	    foreach($res_array as $column => $res)
-	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $res;
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Result';
-		$arr['editor'] 	= 'text';
-		array_push($result_array, $arr);
-	    }
-	}
-	
-	if ($row['procedure_type'] == 'rec') {	    
+	    $arr['reccomendation_type_id'] 	= $row['procedure_type_id'];
+	    $arr['group'] 	= $row['procedure_type'];
 	    foreach($rec_array as $column => $rec)
 	    {
-		$arr['id'] 	= $row['procedure_type_id'];
-		$arr['name'] 	= $rec;
-		$arr['value'] 	= $row[$column];			
-		$arr['group'] 	= 'Recommendation';
-		$arr['editor'] 	= 'text';
-		$arr['state']	= "closed";
-		array_push($result_array, $arr);
+		$arr[$rec] 	= $row[$column];	
+		
 	    }
+	    array_push($result_array, $arr);
 	}
-	*/
 	
 	return $result_array;
     }
@@ -491,10 +321,14 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['procedure_code']	= $row['procedure_code'];
 	    $res_arr['procedure_type']	= $row['procedure_type'];
 	    $res_arr['range']		= $row['range'];
-	    $res_arr['discription']	= $row['description'];	    
+	    $res_arr['discription']	= $row['description'];
+	    
+	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
-		$res_arr['iconCls']	= "tree-folder";
+		$res_arr['iconCls']	= "icon-lab-group";
 		$res_arr['order']	= "Group";
 	    }
 	    else if($res_arr['procedure_type'] == "ord"){
@@ -506,7 +340,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "";
+		$res_arr['iconCls']	= "icon-lab-reccomendation";
 		$res_arr['order']	= "Recommendation";
 	    }	    
 	    
@@ -560,10 +394,14 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['procedure_code']	= $row['procedure_code'];
 	    $res_arr['procedure_type']	= $row['procedure_type'];
 	    $res_arr['range']		= $row['range'];
-	    $res_arr['discription']	= $row['description'];	
+	    $res_arr['discription']	= $row['description'];
+	    
+	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    
 	    if($res_arr['procedure_type'] == "grp"){
-		$res_arr['iconCls']	= "tree-folder";
+		$res_arr['iconCls']	= "icon-lab-group";
 		$res_arr['order']	= "Group";
 	    }
 	    else if($res_arr['procedure_type'] == "ord"){
@@ -575,7 +413,7 @@ class ConfigurationTable extends AbstractTableGateway
 		$res_arr['order']	= "Result";
 	    }
 	    else if($res_arr['procedure_type'] == "rec"){
-		$res_arr['iconCls']	= "";
+		$res_arr['iconCls']	= "icon-lab-reccomendation";
 		$res_arr['order']	= "Recommendation";
 	    }	
 	    
@@ -605,7 +443,7 @@ class ConfigurationTable extends AbstractTableGateway
     
     public function updateConfigDetails($request)
     {		
-	$upcols_array	= array('name' , 'procedure_code',  'body_site',  'specimen',
+	$upcols_array	= array('name' , 'procedure_code', 'lab_id', 'body_site',  'specimen',
 				'route_admin',  'laterality',  'description',  'standard_code',  'related_code',  'units',  'range',  'seq');
 	
 	$data  	    	= array(
@@ -613,7 +451,7 @@ class ConfigurationTable extends AbstractTableGateway
 				'name'    		=> $request->getQuery('name'),
 				'description'    	=> $request->getQuery('description'),
 				'seq'    		=> $request->getQuery('seq'),
-				'order_from'    	=> $request->getQuery('order_from'),
+				'lab_id'    		=> $request->getQuery('lab_id'),
 				'procedure_code'    	=> $request->getQuery('procedure_code'),
 				'standard_code'   	=> $request->getQuery('standard_code'),
 				'body_site'    		=> $request->getQuery('body_site'),
@@ -629,17 +467,20 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	foreach($upcols_array as $col)
 	{
-	    if($data[$col] <> "")
-	    {	    
+	    /*if($data[$col] <> "")
+	    {*/	    
 		$sel_col	.= "`".$col."` = ? ,";
 		$input_arr[]	= $data[$col];
-	    }	    
+	    /*}*/  
 	}
 	$input_arr[]	= $data['type_id'];	
 	$sel_col	= rtrim($sel_col,",");	
 	
 	$sql	= "UPDATE procedure_type SET $sel_col WHERE procedure_type_id = ? ";	
 	$res    = sqlStatement($sql,$input_arr);
+	
+	$fp	=fopen("D:/query.txt","a");
+	fwrite($fp,"\nSQL :".$sql);
 	
 	$return	= array();
 	
@@ -664,38 +505,44 @@ class ConfigurationTable extends AbstractTableGateway
 
 	foreach($bodysite as $bodysite_array)
 	{
-	    $bodysite_arr[]		= array('value' => $bodysite_array['label'],
+	    $bodysite_arr[]		= array('id' 	=> $bodysite_array['value'],
+						'value' => $bodysite_array['label'],
 						'text'  => $bodysite_array['label']);
 	}
 	
 	foreach($specimen as $specimen_array)
 	{
-	    $specimen_arr[]		= array('value' => $specimen_array['label'],
+	    $specimen_arr[]		= array('id' => $specimen_array['value'],
+						'value' => $specimen_array['label'],
 						'text'  => $specimen_array['label']);
 	}
 	
 	foreach($administervia as $administervia_array)
 	{
-	    $administervia_arr[]	= array('value' => $administervia_array['label'],
+	    $administervia_arr[]	= array('id' => $administervia_array['value'],
+						'value' => $administervia_array['label'],
 						'text'  => $administervia_array['label']);
 	}
 	
 	foreach($laterality as $laterality_array)
 	{
-	    $laterality_arr[]		= array('value' => $laterality_array['label'],
+	    $laterality_arr[]		= array('id' => $laterality_array['value'],
+						'value' => $laterality_array['label'],
 						'text'  => $laterality_array['label']);
 	}
 	
 	foreach($defaultunits as $defaultunits_array)
 	{
-	    $defaultunits_arr[]		= array('value' => $defaultunits_array['label'],
+	    $defaultunits_arr[]		= array('id' => $defaultunits_array['value'],
+						'value' => $defaultunits_array['label'],
 						'text'  => $defaultunits_array['label']);
 	}
 		
 	$ppres = sqlStatement("SELECT ppid, name FROM procedure_providers ORDER BY name, ppid");
 	while($pprow = sqlFetchArray($ppres))
 	{
-	    $orderfrom_arr[] = array('value' => $pprow['name'],
+	    $orderfrom_arr[] = array('id' => $pprow['ppid'],
+				     'value' => $pprow['name'],
 				     'text'  => $pprow['name']);
 	}
 	
@@ -863,7 +710,7 @@ class ConfigurationTable extends AbstractTableGateway
     
     public function addConfigDetails($request)
     {
-	$upcols_array	= array('procedure_type', 'parent', 'name' , 'procedure_code',  'body_site',  'specimen',
+	$upcols_array	= array('procedure_type', 'parent', 'name' , 'lab_id', 'procedure_code',  'body_site',  'specimen',
 				'route_admin',  'laterality',  'description',  'standard_code',  'related_code',  'units',  'range',  'seq');
 	
 	$data  	    	= array(
@@ -872,7 +719,7 @@ class ConfigurationTable extends AbstractTableGateway
 				'name'    		=> $request->getQuery('name'),
 				'description'    	=> $request->getQuery('description'),
 				'seq'    		=> $request->getQuery('seq'),
-				'order_from'    	=> $request->getQuery('order_from'),
+				'lab_id'    		=> $request->getQuery('lab_id'),
 				'procedure_code'    	=> $request->getQuery('procedure_code'),
 				'standard_code'   	=> $request->getQuery('standard_code'),
 				'body_site'    		=> $request->getQuery('body_site'),
@@ -887,7 +734,8 @@ class ConfigurationTable extends AbstractTableGateway
 	{
 	    $data[$key]	= (($data[$key] <> null)||(isset($data[$key]))) ? $data[$key] : "";	  
 	}
-		
+	
+	/*	
 	if($data['procedure_type'] == "Group")
 	{
 	    $data['procedure_type'] = "grp";
@@ -903,7 +751,7 @@ class ConfigurationTable extends AbstractTableGateway
 	else if($data['procedure_type'] == "Recommendation")
 	{
 	    $data['procedure_type'] = "rec";
-	}	
+	}*/	
 	
 	$sel_col	= "";
 	$input_arr	= array();
@@ -918,8 +766,11 @@ class ConfigurationTable extends AbstractTableGateway
 	$param_str	= str_repeat("?,",($param_count));
 	$params		= rtrim($param_str,",");	
 	$sel_col	= rtrim($sel_col,",");	
+	
 	$sql		= "INSERT INTO procedure_type ($sel_col) VALUES ($params)";		
 	$res    	= sqlInsert($sql,$input_arr);	
+	
+	
 	
 	$return	= array();
 	
