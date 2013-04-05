@@ -94,8 +94,8 @@ class ResultController extends AbstractActionController
 	//  header("Content-Length: " . filesize( $IMGING ) );
 	ob_end_clean();
 	ob_start();
-	imagejpeg($img);
-	////////$this->createImageBorder($img);
+	////////imagejpeg($img);
+	$this->createImageBorder($img);
 	$IMGING = ob_get_contents();
 	header("Content-Type: image/jpg");
 	header('Content-Disposition: attachment; filename=SpecimenLabel_'.$orderId.'.jpg' );
@@ -104,6 +104,68 @@ class ResultController extends AbstractActionController
 	// Remove image
 	imagedestroy($img);
 	exit;
+    }
+    function createImageBorder($imgName){
+
+	//$img     =  substr($imgName, 0, -4); // remove fileExtension
+	//$ext     = ".jpg";
+	//$quality = 95;
+	$borderColor = 0;  // 255 = white
+       
+	/*
+	a                         b
+	+-------------------------+
+	|                         
+	|          IMAGE          
+	|                         
+	+-------------------------+
+	c                         d  
+	*/
+      
+        //$scr_img = imagecreatefromjpeg($img.$ext);
+        $scr_img = $imgName;
+        $width   = imagesx($scr_img);
+        $height  = imagesy($scr_img);
+		
+	// line a - b
+	$abX  = 0;
+	$abY  = 0;
+	$abX1 = $width;
+	$abY1 = 0;
+       
+	// line a - c
+	$acX  = 0;
+	$acY  = 0;
+	$acX1 = 0;
+	$acY1 = $height;
+       
+	// line b - d
+	$bdX  = $width-1;
+	$bdY  = 0;
+	$bdX1 = $width-1;
+	$bdY1 = $height;
+       
+	// line c - d
+	$cdX  = 0;
+	$cdY  = $height-1;
+	$cdX1 = $width;
+	$cdY1 = $height-1;
+	
+	$w   = imagecolorallocate($scr_img, 255, 255, 255);
+	$b = imagecolorallocate($scr_img, 0, 0, 0);
+	
+	$style = array_merge(array_fill(0, 5, $b), array_fill(0, 5, $w));
+	imagesetstyle($scr_img, $style);
+	   
+       // DRAW LINES   
+	imageline($scr_img,$abX,$abY,$abX1,$abY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$acX,$acY,$acX1,$acY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$bdX,$bdY,$bdX1,$bdY1,IMG_COLOR_STYLED);
+	imageline($scr_img,$cdX,$cdY,$cdX1,$cdY1,IMG_COLOR_STYLED);
+       
+      // create copy from image   
+	imagejpeg($scr_img);
+	//imagedestroy($scr_img);
     }
     
     public function paginationAction()
@@ -438,7 +500,7 @@ class ResultController extends AbstractActionController
 		    
 		    //SEPERATES TEST SPECIFIC DETAILS
 		    $testdetails_arr    = explode("#!#",$testdetails);
-		    list($test_code, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
+		    list($test_code, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
 		  
 		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
 						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
@@ -461,12 +523,7 @@ class ResultController extends AbstractActionController
 		    //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
 		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
 		    
-		    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n test comments  ".$result_test_comments);
-		    
 		    $no_of_subtests	= substr_count($resultdetails_test, "!#@#!") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
-		     $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n no of subtests  ".$no_of_subtests);
 		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
 			if($no_of_subtests   < 2) {
 			    $subtest_comments	    = $resultcomments_arr[0];
@@ -475,10 +532,10 @@ class ResultController extends AbstractActionController
 			    list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 			   
 			    $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
-							    facility,units,result,`range`,abnormal,comments,result_status)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+							    facility,units,result,`range`,abnormal,comments,result_status,order_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
-						    $subtest_comments,$result_status);            
+						    $subtest_comments,$result_status,$order_title);            
 			    $this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
 			} else {
 			    
@@ -490,10 +547,10 @@ class ResultController extends AbstractActionController
 				list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 				
 				$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
-							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments,order_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
-							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments);
+							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title);
 				$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
 			    }                        
 			}

@@ -1,3 +1,33 @@
+<script type="text/javascript">
+$(document).ready(function() {
+$(function()  
+{  
+	// One instance that's reused to show info for the current person  
+	var container = $('<div id="personPopupContainer">'  
+	    + '  <div id="personPopupContent"></div>'  
+	    + '</div>');    
+	$('body').append(container);    
+	$('.personPopupTrigger').live('focus', function()  
+	{  
+	    // format of 'rel' tag: pageid,personguid  
+	    var reason = $(this).attr('rel');  
+	    var pos = $(this).offset();  
+	    var width = $(this).width();
+            //alert(pos.left+"-"+pos);
+	    container.css({  
+		left: (pos.left -( width+40)) + 'px',  
+		top: pos.top - 5 + 'px'  
+	    });  
+	    $('#personPopupContent').html(reason);    
+	    container.css('display', 'block');    
+	    $('.personPopupTrigger').live('blur', function()  
+	    {  
+	     container.css('display', 'none');  
+	    });  
+	});  
+});
+});
+</script>
          <?php $match = array(
               "/&lt;ref(?:[^\/&]|&(?!gt;))*\/&gt;/is","/&lt;ref[^\/]*&gt;(.*?)&lt;\/ref&gt;/s",);?> 
 	     <div class="panel-header" style="width: 98.9%;">
@@ -61,7 +91,7 @@
                  <tr>
 	          <th  colspan="5"><?php echo xlt('Order'); ?></th>     
                   <th  colspan="2"><?php echo xlt('Report'); ?></th>
-                  <th  colspan="6"><?php echo xlt('Results and Recommendations'); ?></th>
+                  <th  colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
 		   <?php $count=0;$cnt=0;?>
 		   <?php $i = 0; foreach ($labresults as $labresult) :
 		   
@@ -80,64 +110,58 @@
                  </tr>
                 </thead>
 	         <tr bor>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='3%'><b><?php echo xlt('PID'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='5%'><b><?php echo xlt('Order Date'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" ><b><?php echo xlt('Procedure Name'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='3%'><b><?php echo xlt('Ord.No.'); ?></b></td>
-			<!--<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='10%'><b><?php echo xlt('Encounter'); ?></b></td>-->
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='10%'><b><?php echo xlt('Status'); ?></b></td>
-			<!--<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='10%'><b><?php echo xlt('Reported'); ?></b></td>-->
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width="20%" title="<?php echo xlt('Time Collected'); ?>"><b><?php echo xlt('Time Collected'); ?></b></td>
-			<!--<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='10%'><b><?php echo xlt('Specimen'); ?></b></td>-->
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='10%'><b><?php echo xlt('Status'); ?></b></td>
-			<!--<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='10%'><b><?php echo xlt('Code'); ?></b></td>-->
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" ><b><?php echo xlt('Name'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='3%'><b><?php echo xlt('Abn'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='4%'><b><?php echo xlt('Value'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='5%'><b><?php echo xlt('Units'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='6%'><b><?php echo xlt('Range'); ?></b></td>
-			<td  style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='4%' title="<?php echo xlt('Comments'); ?>"><b><?php echo xlt('Comm'); ?></b></td>
+			<td  class="headtd" width='3%'><b><?php echo xlt('PID'); ?></b></td>
+			<td  class="headtd" width='5%'><b><?php echo xlt('Order Date'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Procedure Name'); ?></b></td>
+			<td  class="headtd" width='3%'><b><?php echo xlt('Ord.No.'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd" title="<?php echo xlt('Time Collected'); ?>"><b><?php echo xlt('Time Collected'); ?></b></td>
+			<td  class="headtd" width='10%'><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd" ><b><?php echo xlt('Name'); ?></b></td>
+			<td  class="headtd"  width='3%'><b><?php echo xlt('Abn'); ?></b></td>
+			<td  class="headtd"  width='4%'><b><?php echo xlt('Value'); ?></b></td>
+			<td  class="headtd"  width='5%'><b><?php echo xlt('Units'); ?></b></td>
+			<td  class="headtd"  width='6%'><b><?php echo xlt('Range'); ?></b></td>
+                        <td  class="headtd"  width='4%'><b><?php echo xlt('Status'); ?></b></td>
+			<td  class="headtd"  title="<?php echo xlt('Comments'); ?>"><b><?php echo xlt('Comm.'); ?></b></td>
 			<?php $count=0;$cnt=0;?>
 			<?php $i = 0; foreach ($labresults as $labresult) : 
 			if(($labresult['editor']==1) AND ($labresult['editor']!=0) AND $count==0){$check=1; ?>
-			<td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%'><b><?php echo xlt('Label'); ?></b></td>
-			<td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%' title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Reqsn'); ?></b></td>
-			<td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%'><b><?php echo xlt('Result'); ?></b></td>
+			<td class="headtd" title="<?php echo xlt('Label'); ?>"><b><?php echo xlt('Lbl.'); ?></b></td>
+			<td class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+			<td class="headtd" title="<?php echo xlt('Result'); ?>"><b><?php echo xlt('Res.'); ?></b></td>
 			 <?php $count=1; ?>
 			
 			<?php } elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)) {?>
-			<td style="display:none;border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%'><b><?php echo xlt('Label'); ?></b></td>
-			<td style="display:none;border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%' title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Reqsn'); ?></b></td>
-			<td style="display:none;border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='4%'> <?php echo xlt('Result'); ?></b></td>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Label'); ?>"><b><?php echo xlt('Lbl.'); ?></b></td>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+			<td style="display:none;" class="headtd" title="<?php echo xlt('Result'); ?>"> <?php echo xlt('Res.'); ?></b></td>
 			<?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1)) AND $cnt==0 AND $check!=1)  { ?>
-			<td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%'><b><?php echo xlt('Label'); ?></b></td>
-		        <td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%' title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Reqsn'); ?></b></td>
-		        <td style="border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0" width='4%'><b><?php echo xlt('Result'); ?></b></td>
+			<td class="headtd" ><b><?php echo xlt('Lbl.'); ?></b></td>
+		        <td class="headtd" title="<?php echo xlt('Requisition'); ?>"><b><?php echo xlt('Req.'); ?></b></td>
+		        <td class="headtd" title="<?php echo xlt('Result'); ?>"><b><?php echo xlt('Res.'); ?></b></td>
 		        <?php  $cnt=1; }
 			$i++; endforeach; ?>
-			<td  style="display:none;border-style:dotted;border-width:0 0 1px 0;border-color:#c0c0c0"  width='5%'><b><?php echo xlt('order'); ?></b></td>
+			<td  style="display:none;" class="headtd" width='5%'><b><?php echo xlt('order'); ?></b></td>
 	     
 	        </tr>
 	        <?php $i = 0; foreach ($labresults as $labresult) : 
 			$color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
 			$totrows = $labresult['totalRows'];
+                        //if($labresult[order_title]=="") continue;
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
-			 <td style="border-style:dotted;border-width:0 1px 1px 1px;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[patient_id]);?></td>	
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>" nowrap=nowrap> 
-						 <?php echo $this->escapeHtml($labresult[procedure_name]);?></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
-			 <!-- <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[encounter_id]);?></td>-->
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[order_status]);?></td>
-                         <!--<td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"> <?php echo $this->escapeHtml($labresult[date_report]);?></td>-->
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title="<?php echo $this->escapeHtml($labresult[date_collected]);?>">
-                            <?php echo $this->escapeHtml(substr($labresult[date_collected],0,10));?>
+			 <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?></td>	
+                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
+                         <td  class="tdfont childtd" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>" nowrap=nowrap> 
+						 <?php echo $labresult[order_title] ? $this->escapeHtml($labresult[order_title]) : $this->escapeHtml($labresult[procedure_name]);?></td>
+                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
+                         <td  class="tdfont childtd" nowrap=nowrap><?php echo $this->escapeHtml($labresult[order_status]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[date_collected]);?>" nowrap=nowrap>
+                            <?php echo $this->escapeHtml($labresult[date_collected]);?>
                          </td>
-                         <!--<td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"class="tdfont"><?php echo $this->escapeHtml($labresult[specimen_num]);?></td>-->
-		         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"class="tdfont" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
-                         <!--<td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont"><?php echo $this->escapeHtml($labresult[result_code]);?></td>-->
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title="<?php echo $this->escapeHtml($labresult[result_text]);?>" nowrap=nowrap>
+		         <td class="tdfont childtd" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[order_title]);?>" nowrap=nowrap>
 			    <?php echo $this->escapeHtml($labresult[result_text]);?>
                          </td>
                             <?php
@@ -168,28 +192,53 @@
                             else
                             $icon = $labresult[abnormal];
                             ?>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/pencil.png title=<?php echo xlt('Comments'); ?> ></td>
-
+                         <td  class="tdfont childtd <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
+                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
+                         <td  class="tdfont childtd" >
+                            <?php
+                            $resStat = '';
+                            if($labresult[result_status]=='F')
+                            $resStat = xlt('Final');
+                            elseif($labresult[result_status]=='P')
+                            $resStat = xlt('Preliminary');
+                            elseif($labresult[result_status]=='I')
+                            $resStat = xlt('Pending');
+                            elseif($labresult[result_status]=='C')
+                            $resStat = xlt('Correction');
+                            elseif($labresult[result_status]=='X')
+                            $resStat = xlt('Cancelled');
+                            else
+                            $resStat = ucwords($labresult[result_status]);
+                            echo $resStat;
+                            ?>
+                         </td>
+                         <!--<td  class="tdfont childtd" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>-->
+                         <?php
+                         $comments='';
+                         if(trim($labresult[comments]))
+                         $comments = $labresult[comments];
+                         else
+                         $comments = xlt('No Comments');
+                         ?>
+                         <td  class="tdfont childtd" align="center"><a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($comments);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>
 		       <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                         <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                         <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
                           
 		         
 			<?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
-		          <td class="tdfont" style="padding-left:5px; display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont" style="padding-left:12px; display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont" style="padding-left:5px; display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+		          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
 		         
 			 <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
 			 
-			  <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:12px;"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0" class="tdfont" style="padding-left:5px; "> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+			  <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                          <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                          <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
                           
 			 
 		      <?php } ?>

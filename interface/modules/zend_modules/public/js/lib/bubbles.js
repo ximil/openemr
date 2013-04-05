@@ -9,6 +9,7 @@ $(function()
       + '  <div id="personPopupContent"></div>'  
       + '</div>');  
   //alert(container);
+  //$('body').remove("#personPopupContainer");
   $('body').append(container);  
   
   $('.personPopupTrigger').live('focus', function()  
@@ -21,7 +22,6 @@ $(function()
           left: (pos.left + width+3) + 'px',  
           top: pos.top - 5 + 'px'  
       });  
-  
       $('#personPopupContent').html(reason);  
 
   

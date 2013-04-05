@@ -41,9 +41,20 @@ legend
 {
 	color:#0E2D5F;
 	font-family:helvetica,tahoma,verdana,sans-serif;
-    
-    font-size:13px;
-    font-weight:400;
-    font-style:italic;
+	font-size:13px;
+	font-weight:400;
+	font-style:italic;
 	
+}
+.headtd{
+	border-style:dotted;border-width:0 0 1px 0;
+	border-color:#c0c0c0;
+}
+.childtd{
+	border-style:dotted;border-width:0 1px 1px 0;
+	border-color:#c0c0c0;
+}
+.childtdF{
+	border-style:dotted;border-width:0 1px 1px 1px;
+	border-color:#c0c0c0;
 }
