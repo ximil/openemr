@@ -5,8 +5,8 @@
 $host	= 'localhost';
 $port	= '3306';
 $login	= 'root';
-$pass	= 'root';
-$dbase	= 'openemrquest';
+$pass	= 'navas';
+$dbase	= 'questlatest';
 
 //Added ability to disable
 //utf8 encoding - bm 05-2009
