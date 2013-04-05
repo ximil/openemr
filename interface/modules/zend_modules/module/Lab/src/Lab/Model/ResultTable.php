@@ -203,14 +203,14 @@ class ResultTable extends AbstractTableGateway
                                     "pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
                                     "pt2.name AS name, pt2.description, pt2.seq AS seq, " .
                                     "ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
-                                    "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments"; 
+                                    "ps.range, ps.result_status, ps.facility, ps.comments, ps.units, ps.comments as Mcomments,ps.order_title as Morder_title"; 
            $selects .= ", psr.procedure_subtest_result_id,
                                 psr.subtest_code,
                                 psr.subtest_desc AS sub_result_text,
                                 psr.result_value AS sub_result,
                                 psr.abnormal_flag AS sub_abnormal,
                                 psr.units AS sub_units,
-                                psr.range AS sub_range";
+                                psr.range AS sub_range,psr.comments as comments,psr.order_title as order_title";
             
             // Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
             $pt2cond = '';
@@ -238,8 +238,8 @@ class ResultTable extends AbstractTableGateway
                                             "SELECT $selects FROM procedure_result AS ps " .
                                             "LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
                                             "WHERE $pscond) " .
-                                            "ORDER BY seq, name, procedure_type_id, result_code";
-
+                                            "ORDER BY seq, name, procedure_type_id,Morder_title,order_title";
+//$fh = fopen("D:/txtxt.txt","a");fwrite($fh,$query."\r\n");
             $rres = sqlStatement($query);
             
             while ($rrow = sqlFetchArray($rres)) {
@@ -251,6 +251,7 @@ class ResultTable extends AbstractTableGateway
 
                 $result_id        = empty($rrow['procedure_result_id']) ? 0 : ($rrow['procedure_result_id'] + 0);
                 $result_code      = empty($rrow['result_code'     ]) ? $restyp_code : $rrow['result_code'];
+		$order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
                 if ($rrow['sub_result_text'] != '') {
                     $result_text = $rrow['sub_result_text'];
                 } else {
@@ -273,7 +274,9 @@ class ResultTable extends AbstractTableGateway
                 }
 
                 $result_facility  = empty($rrow['facility'        ]) ? '' : $rrow['facility'];
-                $result_comments  = empty($rrow['comments'        ]) ? '' : $rrow['comments'];
+		$comments = '';
+		$comments = $rrow['Mcomments'        ]." ".$rrow['comments'        ];
+                $result_comments  = empty($comments) ? '' : $comments;
                  if ($rrow['sub_range']) {
                     $result_range = $rrow['sub_range'];
                 } else {
@@ -377,6 +380,7 @@ class ResultTable extends AbstractTableGateway
                 $arr1[$i]['range'] = xlt($result_range);
                 $arr1[$i]['result_status'] = xlt($result_status);
                 $arr1[$i]['editor'] = $editor;
+		$arr1[$i]['order_title'] = $order_title;
 				 
                 $i++;
                 $lastpoid = $order_id;

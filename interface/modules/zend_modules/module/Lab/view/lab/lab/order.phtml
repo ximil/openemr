@@ -1,3 +1,32 @@
+<script type="text/javascript">
+$(document).ready(function() {
+$(function()  
+{  
+	// One instance that's reused to show info for the current person  
+	var container = $('<div id="personPopupContainer">'  
+	    + '  <div id="personPopupContent"></div>'  
+	    + '</div>');    
+	$('body').append(container);    
+	$('.personPopupTrigger').live('focus', function()  
+	{  
+	    // format of 'rel' tag: pageid,personguid  
+	    var reason = $(this).attr('rel');  
+	    var pos = $(this).offset();  
+	    var width = $(this).width();  
+	    container.css({  
+		left: (pos.left + width+3) + 'px',  
+		top: pos.top - 5 + 'px'  
+	    });  
+	    $('#personPopupContent').html(reason);    
+	    container.css('display', 'block');    
+	    $('.personPopupTrigger').live('blur', function()  
+	    {  
+	     container.css('display', 'none');  
+	    });  
+	});  
+});
+});
+</script>
 <?php
 	$form = $this->form;
 	$form->setAttribute('action', $this->url('lab', array('action' => 'savedata')));
@@ -138,16 +167,6 @@
     </div><!-- End main -->
   
 </div><!-- End accord -->
-
-<?php
-        }
-        echo $this->form()->closeTag();
-	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
-				->prependFile($this->basePath() . '/js/lab/lab.js')
-				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
-				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
-				->prependFile($this->basePath() . '/js/lib/bubbles.js')
-?>
 <!-- Start Row Template -->
 <div style="display:none" id="procedureclonetemplate">
 <table  id='cloneID_1' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
@@ -269,3 +288,12 @@
 </div>
 </div>
 <!-- End New Order Template -->
+
+<?php
+        }
+        echo $this->form()->closeTag();
+	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+				->prependFile($this->basePath() . '/js/lab/lab.js')
+				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+?>
