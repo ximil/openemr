@@ -360,3 +360,38 @@ UPDATE procedure_order SET date_transmitted = date_ordered WHERE
   date_transmitted IS NULL AND date_ordered IS NOT NULL;
 #EndIf
 
+#IfNotRow2D list_options list_id lists option_id dental
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','dental','Dental');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'dental',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='dental';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id allergy
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','allergy','Allergy');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'allergy',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='allergy';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id medical_problem
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','medical_problem','Medical Problem');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'medical_problem',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='medical_problem';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id medication
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','medication','Medication');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'medication',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='medication';
+#EndIf3
+
+#IfNotRow2D list_options list_id lists option_id surgery
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','surgery','Surgery');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'surgery',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='surgery';
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id general
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','general','General');
+INSERT INTO list_options(list_id,option_id,title)
+SELECT DISTINCT 'general',SUBSTRING_INDEX(title, ',', 1) ITEM1,SUBSTRING_INDEX(title, ',', 1) ITEM2 FROM lists WHERE TYPE='general';
+#EndIf

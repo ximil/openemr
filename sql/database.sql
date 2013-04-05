@@ -3158,6 +3158,47 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'last_calendar_year', 'Last Calendar Year', 70, 0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('date_master_criteria', 'custom', 'Custom', 80, 0);
 
+-- Medical Problem Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','medical_problem','Medical Problem');
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medical_problem', 'HTN', 'HTN', 10);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medical_problem', 'asthma', 'Asthma', 20);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medical_problem', 'diabetes', 'Diabetes', 30);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medical_problem', 'hyperlipidemia', 'Hyperlipidemia', 40);
+
+-- Medication Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','medication','Medication');
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medication', 'Norvasc', 'Norvasc', 10);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medication', 'Lipitor', 'Lipitor', 20);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('medication', 'Metformin', 'Metformin', 30);
+
+-- Allergy Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','allergy','Allergy');
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('allergy', 'penicillin', 'Penicillin', 10);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('allergy', 'sulfa', 'Sulfa', 20);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('allergy', 'iodine', 'Iodine', 30);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('allergy', 'codeine', 'Codeine', 40);
+
+-- Surgery Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','surgery','Surgery');
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('surgery', 'tonsillectomy', 'Tonsillectomy', 10);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('surgery', 'appendectomy', 'Appendectomy', 20);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('surgery', 'cholecystectomy', 'Cholecystectomy', 30);
+
+-- Dental Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','dental','Dental');
+
+-- General Titles
+INSERT INTO list_options(list_id,option_id,title) VALUES ('lists','general','General');
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Osteopathy', 'Osteopathy', 10);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Chiropractic', 'Chiropractic', 20);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Prevention Rehab', 'Prevention Rehab', 30);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Podiatry', 'Podiatry', 40);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Strength and Conditioning', 'Strength and Conditioning', 50);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Nutritional', 'Nutritional', 60);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Fitness Testing', 'Fitness Testing', 70);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Pre Participation Assessment', 'Pre Participation Assessment', 80);
+INSERT INTO list_options(list_id,option_id,title,seq) VALUES ('general', 'Screening / Testing', 'Screening / Testing', 90);
+
 -- Clinical Plan Titles
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('lists' ,'clinical_plans','Clinical Plans', 3, 0);
 INSERT INTO `list_options` ( `list_id`, `option_id`, `title`, `seq`, `is_default` ) VALUES ('clinical_plans', 'dm_plan_cqm', 'Diabetes Mellitus', 5, 0);
