@@ -64,11 +64,13 @@ function doSave(){
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="doSave()"><?php echo xlt('Save'); ?></a>
 		<table id="specimentable" class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;" >
 			<tr>
-					<th colspan="2" class="mainhead" >Order</th>
+					<th colspan="4" class="mainhead" >Order</th>
 					<th colspan="3" class="mainhead" >Report</th>
 			</tr>
 			<tr>
-					<td style="width:80px;" >Date</td>
+					<td style="width:40px;" >PID</td>
+					<td style="min-width:80px;" >Patient Name</td>
+					<td style="width:80px;" >Order Date</td>
 					<td style="min-width:200px;" >Name</td>
 					<td >Specimen</td>
 					<td >Specimen Time Collected</td>
@@ -76,6 +78,8 @@ function doSave(){
 			</tr>
 			<?php foreach($this->layout()->res as $val): ?>
 			<tr>
+				<td><?php echo $val['patient_id']; ?></td>
+				<td><?php echo $val['pname']; ?></td>
 				<?php echo $this->formRow($form->get('procedure_order_id[]')->setValue($val['poid'])); ?>
 				<td><?php echo $val['date_ordered']; ?></td>
 				<td><?php echo $val['procedure_name']; ?></td>

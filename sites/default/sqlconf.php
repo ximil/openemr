@@ -2,11 +2,11 @@
 //  OpenEMR
 //  MySQL Config
 
-$host	= 'localhost';
+$host	= '192.168.1.114';
 $port	= '3306';
-$login	= 'root';
-$pass	= 'navas';
-$dbase	= 'questlatest';
+$login	= 'remote';
+$pass	= 'remote123';
+$dbase	= 'vern';
 
 //Added ability to disable
 //utf8 encoding - bm 05-2009
