@@ -28,51 +28,227 @@ class LabTable extends AbstractTableGateway
      * Lab Order Row wise
      */
     
-    public function listLabOrders($data)
-    {
-	$sql = "SELECT po.*,
-			CONCAT(pa.lname, ',', pa.fname) AS patient_name,
-			pp.name AS provider_name 
-		    FROM procedure_order po 
-		    LEFT JOIN patient_data pa ON po.patient_id=pa.id 
-		    LEFT JOIN procedure_providers pp ON po.lab_id=pp.ppid 
-		    WHERE po.procedure_order_id='" . $data['ordId'] . "'";
+    public function listPatientLabOrders()
+    {	global $pid;
+	$sql = "SELECT po.date_ordered, po.procedure_order_id, po.ord_group  
+			FROM procedure_order po 
+			WHERE po.patient_id='$pid' ORDER BY po.ord_group DESC, po.procedure_order_id DESC" ;
 
-		    
 	$result = sqlStatement($sql);
-	$arr = array();
+	$arr 	= array();
+	$i 	= 0;
 	while ($row = sqlFetchArray($result)) {
-	    $arr[] = $row;
+	    $arr[$i]['date_ordered'] 		= htmlspecialchars($row['date_ordered'],ENT_QUOTES);
+	    $arr[$i]['procedure_order_id'] 	= htmlspecialchars($row['procedure_order_id'],ENT_QUOTES);
+	    $arr[$i]['ord_group'] 		= htmlspecialchars($row['ord_group'],ENT_QUOTES);
+	    $i++;
 	}
-	//echo '<pre>'; print_r($arr); echo '</pre>';
 	return $arr;
     }
     
-//   public function saveLab(Lab $lab,$aoe)
-//    {
-//	$fh = fopen("D:/SAVELAB.txt","a");
-//	fwrite($fh,print_r($lab->procedures,1));
-//	fwrite($fh,print_r($lab->procedure_code,1));
-//	fwrite($fh,print_r($aoe,1));
-//	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,order_status,
-//		  diagnoses,patient_instructions,lab_id,psc_hold) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-//		  array($lab->provider,$lab->pid,$lab->encounter,$lab->timecollected,$lab->orderdate,$lab->priority,$lab->status,
-//			"ICD9:".$lab->diagnoses,$lab->patient_instructions,$lab->lab_id,$lab->specimencollected));
-//	$seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix)
-//		     VALUES (?,?,?,?)",array($procedure_type_id,$lab->procedurecode,$lab->procedures,$lab->proceduresuffix));
-//	$fh = fopen("D:/AAOOEE.txt","a");
-//	fwrite($fh,print_r($aoe,1));
-//	foreach($aoe as $ProcedureOrder=>$QuestionArr){
-//	    if($ProcedureOrder==$lab->procedurecode){
-//		foreach($QuestionArr as $Question=>$Answer){
-//		    sqlStatement("INSERT INTO procedure_answers (procedure_order_id,procedure_order_seq,question_code,answer) VALUES (?,?,?,?)",
-//		    array($procedure_type_id,$seq,$Question,$Answer));
-//		}
-//	    }
-//	}
-//	return $procedure_type_id;
-//    }
+    public function listLabOrders($data)
+    {
+	$sql = "SELECT po.*,
+			poc.procedure_code,
+			poc.procedure_name,
+			poc.procedure_suffix,
+			poc.diagnoses,
+			poc.procedure_order_seq,
+			poc.patient_instructions, 
+			CONCAT(pd.lname, ',', pd.fname) AS patient_name,
+			pp.name AS provider_name 
+		    FROM procedure_order po 
+		    LEFT JOIN patient_data pd ON po.patient_id=pd.id 
+		    LEFT JOIN procedure_providers pp
+			ON po.lab_id=pp.ppid
+		    LEFT JOIN procedure_order_code poc
+			ON poc.procedure_order_id=po.procedure_order_id  
+		    WHERE po.ord_group=(SELECT ord_group FROM procedure_order WHERE procedure_order_id='" . $data['ordId'] . "')
+		    ORDER BY po.procedure_order_id, poc.procedure_order_seq";
+	
+	$result = sqlStatement($sql);
+	$arr 	= array();
+	$i 	= 0;
+	while ($row = sqlFetchArray($result)) {
+	    $arr[$i]['procedure_order_id'] 	=  htmlspecialchars($row['procedure_order_id'],ENT_QUOTES);
+	    $arr[$i]['provider_id'] 		=  htmlspecialchars($row['provider_id'],ENT_QUOTES);
+	    $arr[$i]['lab_id'] 			=  htmlspecialchars($row['lab_id'],ENT_QUOTES);
+	    $arr[$i]['date_ordered'] 		=  htmlspecialchars($row['date_ordered'],ENT_QUOTES);
+	    $arr[$i]['date_collected'] 		=  htmlspecialchars($row['date_collected'],ENT_QUOTES);
+	    $arr[$i]['internal_comments'] 	=  htmlspecialchars($row['internal_comments'],ENT_QUOTES);
+	    $arr[$i]['order_priority']		=  htmlspecialchars($row['order_priority'],ENT_QUOTES);
+	    $arr[$i]['order_status'] 		=  htmlspecialchars($row['order_status'],ENT_QUOTES);
+	    $arr[$i]['patient_instructions'] 	=  htmlspecialchars($row['patient_instructions'],ENT_QUOTES);
+	    $arr[$i]['diagnoses'] 		=  htmlspecialchars($row['diagnoses'],ENT_QUOTES);
+	    $arr[$i]['procedure_name'] 		=  htmlspecialchars($row['procedure_name'],ENT_QUOTES);
+	    $arr[$i]['procedure_code'] 		=  htmlspecialchars($row['procedure_code'],ENT_QUOTES);
+	    $arr[$i]['procedure_suffix'] 	=  htmlspecialchars($row['procedure_suffix'],ENT_QUOTES);
+	    $arr[$i]['procedure_order_seq'] 	=  htmlspecialchars($row['procedure_order_seq'],ENT_QUOTES);
+	    $arr[$i]['psc_hold'] 		=  htmlspecialchars($row['psc_hold'],ENT_QUOTES);
+	    $arr[$i]['order_status'] 		=  htmlspecialchars($row['order_status'],ENT_QUOTES);
+	    $i++;
+	}
+	return $arr;
+    }
+    
+    public function listLabOrderAOE($data)
+    {
+	$ordId 	= $data['ordId'];
+	$seq 	= $data['seq'];
+	$sql = "SELECT * FROM procedure_answers pa
+	 		LEFT JOIN procedure_order_code poc
+			    ON pa.procedure_order_id = poc.procedure_order_id
+			    AND pa.procedure_order_seq = poc.procedure_order_seq
+			LEFT JOIN procedure_questions pq
+			    ON pa.question_code=pq.question_code
+			    AND pq.procedure_code = poc.procedure_code 
+			WHERE pa.procedure_order_id='$ordId' 
+			AND pa.procedure_order_seq='$seq'";
+	$result = sqlStatement($sql);
+	$arr = array();
+	$i = 0;
+	while($tmp = sqlFetchArray($result)) {
+	    $arr[] = htmlspecialchars($tmp['question_text'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['required'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['question_code'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['tips'],ENT_QUOTES)."|-|".htmlspecialchars($tmp['answer'],ENT_QUOTES);
+	}
+	return $arr;
+    }
+    
+    public function removeLabOrders($data)
+    {	$ordId = $data['ordId'];
+	$result = sqlStatement("SELECT procedure_order_id FROM procedure_order WHERE procedure_order_id=?", array($ordId));
+	if (sqlNumRows($result) > 0) {
+	    sqlStatement("DELETE FROM procedure_order WHERE procedure_order_id=?", array($ordId));
+	}
+	$result = sqlStatement("SELECT procedure_order_id FROM procedure_order_code WHERE procedure_order_id=?", array($ordId));
+	if (sqlNumRows($result) > 0) {
+	    sqlStatement("DELETE FROM procedure_order_code WHERE procedure_order_id=?", array($ordId));
+	}
+	$result = sqlStatement("SELECT procedure_order_id FROM procedure_answers WHERE procedure_order_id=?", array($ordId));
+	if (sqlNumRows($result) > 0) {
+	    sqlStatement("DELETE FROM procedure_answers WHERE procedure_order_id=?", array($ordId));
+	}
+    }
+    
+    // Start Save Lab Data
+    public function updateProcedureMaster($post,$ordnum,$orderGroup){
+	$labvalArr = explode("|",$post['lab_id'][$ordnum][0]);
+	$labval = $labvalArr[0];
+	sqlStatement("UPDATE procedure_order SET provider_id=?,patient_id=?,encounter_id=?,date_collected=?,date_ordered=?,order_priority=?,order_status=?,lab_id=?,psc_hold=?,billto=?,internal_comments=?,ord_group=? WHERE procedure_order_id=?",
+		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
+		    'pending',$labval,$post['specimencollected'][$ordnum][0],$post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0],$orderGroup,$post['procedure_order_id'][$ordnum][0]));
+    }
+    
+    public function saveLab($post,$aoe)
+    {	
+	$papArray = array();
+	$specimenState = array();
+	$procedure_type_id_arr = array();
+	$j=0;
+	$prevState = '';
+	if ($post['procedure_order_id'][0][0] != '') {
+	    $max = sqlQuery("SELECT ord_group FROM procedure_order WHERE procedure_order_id=?", array($post['procedure_order_id'][0][0]));
+	    $orderGroup = $max['ord_group'];
+	} else {
+	    $max = sqlQuery("SELECT (MAX( ord_group ) + 1) AS ord_group FROM procedure_order");
+	    $orderGroup = $max['ord_group']; 
+	}
+	for($ordnum=0;$ordnum<$post['total_panel'];$ordnum++){
+	    if ($post['procedure_order_id'][$ordnum][0] != ''){
+		sqlStatement("DELETE FROM procedure_order_code WHERE procedure_order_id=?",array($post['procedure_order_id'][$ordnum][0]));
+		sqlStatement("DELETE FROM procedure_answers WHERE procedure_order_id=?",array($post['procedure_order_id'][$ordnum][0]));
+	    }
+	    for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
+		$PRow = sqlQuery("SELECT * FROM procedure_type WHERE procedure_code=? AND suffix=? ORDER BY pap_indicator,specimen_state",
+				 array($post['procedure_code'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]));
+		if(!isset(${$PRow['specimen_state']."_".$ordnum."_j"}))
+		${$PRow['specimen_state']."_".$ordnum."_j"} = 0;
+		if($PRow['pap_indicator']=="P"){
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['procedure'] = $PRow['name'];
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		    $papArray[$ordnum][$post['procedure_code'][$ordnum][$i]."|-|".$post['procedure_suffix'][$ordnum][$i]]['patient_instructions'] = $post['patient_instructions'][$ordnum][$i];
+		}
+		else{
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_code'] = $PRow['procedure_code'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure'] = $PRow['name'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['procedure_suffix'] = $PRow['suffix'];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['diagnoses'] = $post['diagnoses'][$ordnum][$i];
+		    $specimenState[$ordnum][$PRow['specimen_state']][${$PRow['specimen_state']."_".$ordnum."_j"}]['patient_instructions'] = $post['patient_instructions'][$ordnum][$i];
+		    ${$PRow['specimen_state']."_".$ordnum."_j"}++;
+		}
+	    }
+	    if(sizeof($papArray[$ordnum])>0){
+		foreach($papArray[$ordnum] as $procode_suffix=>$pronameArr ){
+		    $PSArray = explode("|-|",$procode_suffix);
+		    $procode = $PSArray[0];
+		    $prosuffix = $PSArray[1];
+		    $proname = $pronameArr['procedure'];
+		    $diagnoses = $pronameArr['diagnoses'];
+		    $patient_instructions = $pronameArr['patient_instructions'];
+		    if ($post['procedure_order_id'][$ordnum][0] != '') {
+			$this->updateProcedureMaster($post,$ordnum,$orderGroup);
+			$PAPprocedure_type_id = $post['procedure_order_id'][$ordnum][0];
+		    } else {
+			$PAPprocedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
+		    }
+			$procedure_type_id_arr[] = $PAPprocedure_type_id;
+			$PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+			    VALUES (?,?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
+			$this->insertAoe($PAPprocedure_type_id,$PAPseq,$aoe,$procode,$ordnum);
+		}
+	    }
+	    if($post['specimencollected'][$ordnum][0]=="onsite"){
+		if(sizeof($specimenState[$ordnum])>0){
+		    $idx = 0;
+		    foreach($specimenState[$ordnum] as $k=>$vArray){
+			if ($post['procedure_order_id'][$ordnum][0] != ''){
+			    $this->updateProcedureMaster($post,$ordnum,$orderGroup);
+			    $SPEprocedure_type_id = $post['procedure_order_id'][$ordnum][0];
+			} else {
+			    $SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
+			}
+			$procedure_type_id_arr[] = $SPEprocedure_type_id;
+			for($i=0;$i<sizeof($vArray);$i++){
+			    $procode = $vArray[$i]['procedure_code'];
+			    $proname = $vArray[$i]['procedure'];
+			    $prosuffix = $vArray[$i]['procedure_suffix'];
+			    $diagnoses = $vArray[$i]['diagnoses'];
+			    $patient_instructions = $vArray[$i]['patient_instructions'];
+			    
+			    $SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+					    VALUES (?,?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
+			    $this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode,$ordnum);
+			}
+			$idx++;
+		    }
+		}
+	    }
+	    else{
+		for($i=0;$i<sizeof($post['procedures'][$ordnum]);$i++){
+		    $procedure_code = $post['procedure_code'][$ordnum][$i];
+		    $procedure_suffix = $post['procedure_suffix'][$ordnum][$i];
+		    if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
+		    if($i==0){
+			if ($post['procedure_order_id'][$ordnum][$i] != '') {
+			    $this->updateProcedureMaster($post,$ordnum,$orderGroup);
+			    $procedure_type_id = $post['procedure_order_id'][$ordnum][$i];
+			} else {
+			    $procedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
+			}
+			$procedure_type_id_arr[] = $procedure_type_id;
+		    }
+		    $seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+			VALUES (?,?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$ordnum][$i],$post['procedures'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i],$post['diagnoses'][$ordnum][$i],$post['patient_instructions'][$ordnum][$i]));
+		    $this->insertAoe($procedure_type_id,$seq,$aoe,$post['procedure_code'][$ordnum][$i],$post['diagnoses'][$ordnum][$i],$ordnum);
+		}
+	    }
+	}
+	return $procedure_type_id_arr;
+    }
+    
+     
     public function insertAoe($procedure_type_id,$seq,$aoe,$procedure_code_i,$ordnum){
+	$fh = fopen(dirname(__FILE__)."/yyyy.txt","a");
+	fwrite($fh,print_r($procedure_type_id,1)."\r\n".print_r($seq,1)."\r\n".print_r($aoe,1)."\r\n".print_r($procedure_code_i,1)."\r\n".print_r($ordnum,1));
 	foreach($aoe[$ordnum] as $ProcedureOrder=>$QuestionArr){
 	    if($ProcedureOrder==$procedure_code_i){
 		foreach($QuestionArr as $Question=>$Answer){
@@ -82,23 +258,29 @@ class LabTable extends AbstractTableGateway
 	    }
 	}
     }
-    public function insertProcedureMaster($post,$ordnum){
+    
+    public function insertProcedureMaster($post,$ordnum,$orderGroup){
 	$labvalArr = explode("|",$post['lab_id'][$ordnum][0]);
 	$labval = $labvalArr[0];
+	
 	$procedure_type_id = sqlInsert("INSERT INTO procedure_order (provider_id,patient_id,encounter_id,date_collected,date_ordered,order_priority,
-				       order_status,lab_id,psc_hold,billto,internal_comments) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+				       order_status,lab_id,psc_hold,billto,internal_comments, ord_group) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
 		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
 		    'pending',$labval,$post['specimencollected'][$ordnum][0],
-		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0]));
+		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0],$orderGroup));
 	return $procedure_type_id;
     }
-    public function saveLab($post,$aoe)
+    // End Save Lab Data
+    
+    public function saveLabOLD($post,$aoe)
     {
 	$papArray = array();
 	$specimenState = array();
 	$procedure_type_id_arr = array();
 	$j=0;
 	$prevState = '';
+	$max = sqlQuery("SELECT (MAX( ord_group ) + 1) AS ord_group FROM procedure_order");
+	$orderGroup = $max['ord_group'];
 	//$fh = fopen(dirname(__FILE__)."/teeeewwwt.txt","a");
 	//fwrite($fh,"rrr:".print_r($post,1));
 	for($ordnum=0;$ordnum<$post['total_panel'];$ordnum++){
@@ -134,7 +316,7 @@ class LabTable extends AbstractTableGateway
 		    $proname = $pronameArr['procedure'];
 		    $diagnoses = $pronameArr['diagnoses'];
 		    $patient_instructions = $pronameArr['patient_instructions'];
-		    $PAPprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
+		    $PAPprocedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
 		    $procedure_type_id_arr[] = $PAPprocedure_type_id;
 		    $PAPseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
 			 VALUES (?,?,?,?,?,?)",array($PAPprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
@@ -146,7 +328,7 @@ class LabTable extends AbstractTableGateway
 		//fwrite($fh,print_r($specimenState[$ordnum],1));
 		if(sizeof($specimenState[$ordnum])>0){
 		    foreach($specimenState[$ordnum] as $k=>$vArray){
-			$SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum);
+			$SPEprocedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
 			$procedure_type_id_arr[] = $SPEprocedure_type_id;
 			for($i=0;$i<sizeof($vArray);$i++){
 			    $procode = $vArray[$i]['procedure_code'];
@@ -169,8 +351,8 @@ class LabTable extends AbstractTableGateway
 		    $procedure_suffix = $post['procedure_suffix'][$ordnum][$i];
 		    if(array_key_exists($procedure_code."|-|".$procedure_suffix,$papArray)) continue;
 		    if($i==0){
-		    $procedure_type_id = $this->insertProcedureMaster($post,$ordnum);
-		    $procedure_type_id_arr[] = $procedure_type_id;
+			$procedure_type_id = $this->insertProcedureMaster($post,$ordnum,$orderGroup);
+			$procedure_type_id_arr[] = $procedure_type_id;
 		    }
 		    $seq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
 			VALUES (?,?,?,?,?,?)",array($procedure_type_id,$post['procedure_code'][$ordnum][$i],$post['procedures'][$ordnum][$i],$post['procedure_suffix'][$ordnum][$i]
@@ -181,32 +363,17 @@ class LabTable extends AbstractTableGateway
 	}
 	return $procedure_type_id_arr;
     }
-    
-//    public function listLabLocation($inputString)
-//    {
-//	$sql = "SELECT * FROM labs WHERE lab_name=?,array($inputString)";
-//	$result = sqlStatement($sql);
-//	$i = 0;
-//	
-//	while($row=sqlFetchArray($res)) {
-//		$rows[$i] = array (
-//			'value' => $row['ppid'],
-//			'label' => $row['name'],
-//		);
-//		$i++;
-//	}
-//	return $rows;
-//
-//    }
+
     public function listProcedures($inputString,$labId)
-    {
-	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND (name LIKE ? OR procedure_code LIKE ?) AND pt.activity=1 AND procedure_type='ord'";
+    { 
+	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND pt.name LIKE ? OR pt.procedure_code LIKE ? AND pt.activity=1 AND pt.procedure_type='ord'";
 	$result = sqlStatement($sql,array($labId,$inputString."%",$inputString."%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
 	    $arr[] =  htmlspecialchars($tmp['procedure_type_id'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['procedure_code'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['suffix'],ENT_QUOTES).'|-|'.htmlspecialchars($tmp['name'],ENT_QUOTES);
 	}
+	
 	return $arr;
     }
     
@@ -280,7 +447,7 @@ class LabTable extends AbstractTableGateway
 	return $table_sql;		
     }
    
-    function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
+    public function importDataCheck($result,$column_map)//CHECK DATA IF ALREADY EXISTS
     {
 	
 	$result_col	= $this->getColumns($result);
@@ -786,7 +953,6 @@ class LabTable extends AbstractTableGateway
 	return $xmlconfig;
     }
 
-		    
     public function mapResultXmlToColumn()
     {			
 	$xmlconfig['procedure_report'] 	    = array(                      
