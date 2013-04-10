@@ -148,7 +148,7 @@ $(function()
 	        <?php $i = 0; foreach ($labresults as $labresult) : 
 			$color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
 			$totrows = $labresult['totalRows'];
-                        //if($labresult[order_title]=="") continue;
+                        if($labresult[order_title]=="" && $labresult[procedure_name] == "") continue;
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
 			 <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?></td>	

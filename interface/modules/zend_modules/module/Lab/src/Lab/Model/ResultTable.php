@@ -121,7 +121,7 @@ class ResultTable extends AbstractTableGateway
                 "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.patient_id,po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
                 "pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
                 "pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
-                "pr.report_status, pr.review_status";
+                "pr.report_status, pr.review_status,CONCAT_WS('',pc.procedure_code,pc.procedure_suffix) AS proc_code";
 
         $joins =
                 "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
@@ -135,7 +135,7 @@ class ResultTable extends AbstractTableGateway
             //$groupby = "GROUP By po.procedure_order_id";
         }
         $orderby =
-                "po.procedure_order_id DESC, po.date_ordered,  " .
+                "po.procedure_order_id DESC, proc_code, po.date_ordered,  " .
                 "pc.procedure_order_seq, pr.procedure_report_id";
 
         $where = "1 = 1";
@@ -251,7 +251,7 @@ class ResultTable extends AbstractTableGateway
 
                 $result_id        = empty($rrow['procedure_result_id']) ? 0 : ($rrow['procedure_result_id'] + 0);
                 $result_code      = empty($rrow['result_code'     ]) ? $restyp_code : $rrow['result_code'];
-		$order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
+                $order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
                 if ($rrow['sub_result_text'] != '') {
                     $result_text = $rrow['sub_result_text'];
                 } else {
