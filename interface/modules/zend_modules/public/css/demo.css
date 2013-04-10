@@ -53,8 +53,22 @@ legend
 .childtd{
 	border-style:dotted;border-width:0 1px 1px 0;
 	border-color:#c0c0c0;
+	height:25px;
 }
 .childtdF{
 	border-style:dotted;border-width:0 1px 1px 1px;
 	border-color:#c0c0c0;
+	height:25px;
+}
+.headchildtd{
+	border-style:dotted;border-width:0 1px 1px 0;
+	border-color:#c0c0c0;
+	height:25px;
+	font-size:9pt;
+}
+.subchildtd{
+	border-style:dotted;border-width:0 1px 1px 0;
+	border-color:#c0c0c0;
+	height:25px;
+	font-size:7.5pt;
 }

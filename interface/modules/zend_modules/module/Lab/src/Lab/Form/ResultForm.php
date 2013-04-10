@@ -33,7 +33,7 @@ class ResultForm extends Form
             'name' => 'abnormal[]',
 						'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(
-								'class' => 'combo mediumtb',
+								'class' => 'combo smalltb',
 								'editable' => 'true',
             ),
 						'options' => array(
@@ -87,9 +87,11 @@ class ResultForm extends Form
 				$this->add(array(
             'name' => 'comments[]',
             'attributes' => array(
-                'type'  => 'text',
+                'type'  => 'textarea',
 								'id'	=> 'comments',
 								'class' => 'combo mediumtb',
+								'style' => 'height:100px;width:260px !important;' ,
+								
             ),
         ));
 				$this->add(array(
@@ -105,7 +107,7 @@ class ResultForm extends Form
             'attributes' => array(
                 'type'  => 'text',
 								'id'	=> 'range',
-								'class' => 'combo mediumtb',
+								'class' => 'combo smalltb',
             ),
         ));
         $this->add(array(

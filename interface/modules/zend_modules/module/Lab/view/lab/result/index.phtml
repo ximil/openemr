@@ -79,7 +79,22 @@ $(function()
 			 <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
 			 <!-- <input type="submit" value="Search" ></a>-->
                            <?php echo xlt('Search'); ?> </a>
-            
+			 <br/>
+			 <br/>
+                         <span style="text-align: left; padding-right: 10px;float:right;">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td class="icon-ok tdfont">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Normal');?></td><td>&nbsp;&nbsp;</td>
+                                <td class="icon-LL tdfont">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Very Low');?></td><td>&nbsp;&nbsp;</td>
+                            
+                                <td class="icon-A tdfont ">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Abnormal');?></td><td>&nbsp;&nbsp;</td>
+                                <td class="icon-HH tdfont">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Very High');?></td><td>&nbsp;&nbsp;</td>
+                            
+                                <td class="icon-L tdfont ">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Low');?></td><td>&nbsp;&nbsp;</td>
+                                <td class="icon-H tdfont ">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('High');?></td>
+                            </tr>
+                        </table>
+                         </span>
 		  </div>
 		  </form>
 	     </div>
@@ -89,7 +104,7 @@ $(function()
 	<table id="labresult"  class="dv-table gridview2 thcolor" cellspacing="0" cellpadding="0" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
 	       <thead">
                  <tr>
-	          <th  colspan="5"><?php echo xlt('Order'); ?></th>     
+	          <th  colspan="4"><?php echo xlt('Order'); ?></th>     
                   <th  colspan="2"><?php echo xlt('Report'); ?></th>
                   <th  colspan="7"><?php echo xlt('Results and Recommendations'); ?></th>
 		   <?php $count=0;$cnt=0;?>
@@ -109,10 +124,10 @@ $(function()
 		         
                  </tr>
                 </thead>
-	         <tr bor>
-			<td  class="headtd" width='3%'><b><?php echo xlt('PID'); ?></b></td>
+	         <tr>
+			<td  class="headtd" width='4%'><b><?php echo xlt('PID'); ?></b></td>
 			<td  class="headtd" width='5%'><b><?php echo xlt('Order Date'); ?></b></td>
-			<td  class="headtd" ><b><?php echo xlt('Procedure Name'); ?></b></td>
+			<!--<td  class="headtd" ><b><?php echo xlt('Procedure Name'); ?></b></td>-->
 			<td  class="headtd" width='3%'><b><?php echo xlt('Ord.No.'); ?></b></td>
 			<td  class="headtd" ><b><?php echo xlt('Status'); ?></b></td>
 			<td  class="headtd" title="<?php echo xlt('Time Collected'); ?>"><b><?php echo xlt('Time Collected'); ?></b></td>
@@ -145,106 +160,226 @@ $(function()
 			<td  style="display:none;" class="headtd" width='5%'><b><?php echo xlt('order'); ?></b></td>
 	     
 	        </tr>
-	        <?php $i = 0; foreach ($labresults as $labresult) : 
-			$color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
-			$totrows = $labresult['totalRows'];
-                        //if($labresult[order_title]=="") continue;
-			?>
-                <tr style="background-color:<?php echo $color; ?>">
-			 <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?></td>	
-                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
-                         <td  class="tdfont childtd" title=" <?php echo $this->escapeHtml($labresult[procedure_name]);?>" nowrap=nowrap> 
-						 <?php echo $labresult[order_title] ? $this->escapeHtml($labresult[order_title]) : $this->escapeHtml($labresult[procedure_name]);?></td>
-                         <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
-                         <td  class="tdfont childtd" nowrap=nowrap><?php echo $this->escapeHtml($labresult[order_status]);?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[date_collected]);?>" nowrap=nowrap>
-                            <?php echo $this->escapeHtml($labresult[date_collected]);?>
-                         </td>
-		         <td class="tdfont childtd" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[order_title]);?>" nowrap=nowrap>
-			    <?php echo $this->escapeHtml($labresult[result_text]);?>
-                         </td>
+	        <?php $i = 0;
+                $main_grp = '';
+                $profile_grp = '';
+                foreach ($labresults as $labresult) : 
+                    $color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
+                    $totrows = $labresult['totalRows'];
+                    if(($labresult[order_title]=="" && $labresult[procedure_name] == "")) continue;
+                    $patient_instructions = substr($labresult[patient_instructions],0,60);
+                    if($main_grp != $labresult[order_title]){
+                    ?>
+                        <tr style="background-color:<?php echo $color; ?>">
+                                <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?>
+                                <?php
+                                if($labresult[patient_id] && $patient_instructions){?>
+                                <a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($patient_instructions);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Internal Comments'); ?> >
+                                <?php
+                                }
+                                ?>
+                                </td>	
+                                <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[date_ordered]);?></td>
+                                <td  class="tdfont childtd"><?php echo $this->escapeHtml($labresult[order_id]);?></td>
+                                <td  class="tdfont childtd" nowrap=nowrap><?php echo $this->escapeHtml($labresult[order_status]);?></td>
+                                <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[date_collected]);?>" nowrap=nowrap>
+                                         <?php echo $this->escapeHtml($labresult[date_collected]);?>
+                                </td>
+                                <td class="tdfont childtd" ><?php echo $this->escapeHtml($labresult[report_status]);?></td>
+                                <td  class="tdfont headchildtd" colspan="10" title="<?php echo $this->escapeHtml($labresult[order_title]);?>" nowrap=nowrap><b><?php echo $this->escapeHtml($labresult[order_title]);?></b></td>
+                                <!--<td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" align="center">&nbsp;</td>-->
+                                <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
+                                <!--<td  class="tdfont childtd" > &nbsp; </td>
+                                <td  class="tdfont childtd" > &nbsp;</td>
+                                <td  class="tdfont childtd" > &nbsp;</td>-->
+                                 
+                                
+                                <?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
+                                <!--<td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp;</td>
+                                <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp;</td>
+                                <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp;</td>
+                                -->
+                                <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
+                                
+                                <!--<td  class="tdfont childtd" > &nbsp;</td>
+                                <td  class="tdfont childtd" > &nbsp;</td>
+                                <td  class="tdfont childtd" > &nbsp;</td>-->
+                                 
+                                
+                                <?php } ?>
+                                <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
+                        </tr>
+		    <?php
+                    }
+                    if($labresult[profile_title] && $profile_grp != $labresult[profile_title]){
+                    ?>
+                        <tr style="background-color:<?php echo $color; ?>">
+                                <td  class="tdfont childtdF">&nbsp;</td>	
+                                <td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd" nowrap=nowrap>&nbsp;</td>
+                                <td  class="tdfont childtd" nowrap=nowrap>&nbsp;</td>
+                                <td class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont subchildtd" colspan="10" nowrap=nowrap>&nbsp;&nbsp;&nbsp;<b><?php echo $this->escapeHtml($labresult[profile_title]); ?></b></td>
+                                <!--<td  class="tdfont childtd >&nbsp;</td>
+                                <td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd">&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" align="center">&nbsp;</td>-->
+                                <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
+                                <!--<td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>-->
+                                <?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
+                                <!--<td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0">&nbsp;</td>
+                                <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0">&nbsp;</td>
+                                <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0">&nbsp;</td>-->
+                                <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
+                                <!--<td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>
+                                <td  class="tdfont childtd" >&nbsp;</td>-->
+                                <?php } ?>
+                                <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
+                        </tr>
                             <?php
-                            $icclas=$title='';
-                            if($labresult[abnormal]=="H" || $labresult[abnormal]=="high"){
-                               $icclas='icon-H';
-                               $title = xlt('HIGH');
-                            }
-                            elseif($labresult[abnormal]=="HH"){
-                               $icclas='icon-HH';
-                               $title = xlt('VERY HIGH');
-                            }elseif($labresult[abnormal]=="L" || $labresult[abnormal]=="low"){
-                               $icclas='icon-L';
-                               $title = xlt('LOW');
-                            }
-                            elseif($labresult[abnormal]=="LL"){
-                               $icclas='icon-LL';
-                               $title = xlt('VERY LOW');
-                            }
-                            elseif($labresult[abnormal]=="N" || $labresult[abnormal]=="no"){
-                               $icclas='icon-ok';
-                               $title = xlt('NORMAL');
-                            }
-                            elseif($labresult[abnormal]=="A" || $labresult[abnormal]=="yes"){
-                               $icclas='icon-cancel';
-                               $title = xlt('ABNORMAL');
-                            }
-                            else
-                            $icon = $labresult[abnormal];
-                            ?>
-                         <td  class="tdfont childtd <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml(substr($labresult[units],0,5));?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags(substr($labresult[range],0,9));?> </td>
-                         <td  class="tdfont childtd" >
-                            <?php
-                            $resStat = '';
-                            if($labresult[result_status]=='F')
-                            $resStat = xlt('Final');
-                            elseif($labresult[result_status]=='P')
-                            $resStat = xlt('Preliminary');
-                            elseif($labresult[result_status]=='I')
-                            $resStat = xlt('Pending');
-                            elseif($labresult[result_status]=='C')
-                            $resStat = xlt('Correction');
-                            elseif($labresult[result_status]=='X')
-                            $resStat = xlt('Cancelled');
-                            else
-                            $resStat = ucwords($labresult[result_status]);
-                            echo $resStat;
-                            ?>
-                         </td>
-                         <!--<td  class="tdfont childtd" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>-->
-                         <?php
-                         $comments='';
-                         if(trim($labresult[comments]))
-                         $comments = $labresult[comments];
-                         else
-                         $comments = xlt('No Comments');
-                         ?>
-                         <td  class="tdfont childtd" align="center"><a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($comments);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>
-		       <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
-                         <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                         <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                         <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-                          
-		         
-			<?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
-		          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-		         
-			 <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
-			 
-			  <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
-                          
-			 
-		      <?php } ?>
-		      <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
-            </tr>  
-              <?php $i++; endforeach; ?>
+                        }
+                        if($labresult[result]=='DNR') {
+                            $profile_grp = $labresult[profile_title];
+                            $main_grp = $labresult[order_title];
+                            continue;
+                        }
+                        ?>
+                            <tr style="background-color:<?php echo $color; ?>">
+                                            <td  class="tdfont childtdF">&nbsp;
+                                            <?php
+                                            if($labresult[order_title]==NULL){
+                                            echo $this->escapeHtml($labresult[patient_id]);
+                                                if($labresult[patient_id] && $patient_instructions){?>
+                                                <a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($patient_instructions);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Internal Comments'); ?> >
+                                                <?php
+                                                }
+                                            }
+                                            else
+                                            echo '&nbsp;';
+                                            ?>
+                                            </td>	
+                                            <td  class="tdfont childtd"><?php echo $labresult[order_title]==NULL ? $this->escapeHtml($labresult[date_ordered]) : '&nbsp;';?></td>
+                                            <td  class="tdfont childtd"><?php echo $labresult[order_title]==NULL ? $this->escapeHtml($labresult[order_id]) : '&nbsp;';?></td>
+                                            <td  class="tdfont childtd" nowrap=nowrap><?php echo $labresult[order_title]==NULL ? $this->escapeHtml($labresult[order_status]) : '&nbsp;';?></td>
+                                            <td  class="tdfont childtd" nowrap=nowrap><?php echo $labresult[order_title]==NULL ? $this->escapeHtml($labresult[date_collected]) : '&nbsp;';?></td>
+                                            <td class="tdfont childtd" ><?php echo $labresult[order_title]==NULL ? $this->escapeHtml($labresult[report_status]) : '&nbsp;';?></td>
+                                            <td  class="tdfont childtd" nowrap=nowrap>
+                                                    <?php if($labresult[order_title]==NULL){
+                                                    ?>
+                                                    <b><?php echo $this->escapeHtml($labresult[result_text]);?></b>
+                                                    <?php
+                                                    }
+                                                    else{?>
+                                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $this->escapeHtml($labresult[result_text]);?>
+                                                    <?php
+                                                    }
+                                                    ?>
+                                            </td>
+                                                     <?php
+                                                     $icclas=$title='';
+                                                     if($labresult[abnormal]=="H" || $labresult[abnormal]=="high"){
+                                                                    $icclas='icon-H';
+                                                                    $title = xlt('HIGH');
+                                                     }
+                                                     elseif($labresult[abnormal]=="HH"){
+                                                                    $icclas='icon-HH';
+                                                                    $title = xlt('VERY HIGH');
+                                                     }elseif($labresult[abnormal]=="L" || $labresult[abnormal]=="low"){
+                                                                    $icclas='icon-L';
+                                                                    $title = xlt('LOW');
+                                                     }
+                                                     elseif($labresult[abnormal]=="LL"){
+                                                                    $icclas='icon-LL';
+                                                                    $title = xlt('VERY LOW');
+                                                     }
+                                                     elseif($labresult[abnormal]=="N" || $labresult[abnormal]=="no"){
+                                                                    $icclas='icon-ok';
+                                                                    $title = xlt('NORMAL');
+                                                     }
+                                                     elseif($labresult[abnormal]=="A" || $labresult[abnormal]=="yes"){
+                                                                    $icclas='icon-A';
+                                                                    $title = xlt('ABNORMAL');
+                                                     }
+                                                     else
+                                                     $icon = $labresult[abnormal];
+                                                     $helper = $this->getHelperPluginManager()->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+                                                     $res_units = $helper->getDropdownValAsText("proc_unit",$labresult[units]);
+                                                     ?>
+                                            <td  class="tdfont childtd <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
+                                            <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
+                                            <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml($labresult[units]);?></td>
+                                            <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags($labresult[range]);?> </td>
+                                            <td  class="tdfont childtd" >
+                                                     <?php
+                                                     $resStat = '';
+                                                     if($labresult[result_status]=='F')
+                                                     $resStat = xlt('Final');
+                                                     elseif($labresult[result_status]=='P')
+                                                     $resStat = xlt('Preliminary');
+                                                     elseif($labresult[result_status]=='I')
+                                                     $resStat = xlt('Pending');
+                                                     elseif($labresult[result_status]=='C')
+                                                     $resStat = xlt('Correction');
+                                                     elseif($labresult[result_status]=='X')
+                                                     $resStat = xlt('Cancelled');
+                                                     else
+                                                     $resStat = ucwords($labresult[result_status]);
+                                                     echo $resStat;
+                                                     ?>
+                                            </td>
+                                            <!--<td  class="tdfont childtd" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>-->
+                                            <td  class="tdfont childtd" align="center">
+                                                     <?php
+                                                     $comments='';
+                                                     if(trim($labresult[comments])){
+                                                     $comments = $labresult[comments];
+                                                     ?>
+                                                     <a id="<?php echo $i;?>" name="<?php echo $i;?>"  onclick="showcomments(this.id,'<?php echo $labresult[order_id1];?>','<?php echo $labresult[result_text];?>','<?php echo $comments;?>')">
+                                                                     <img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> >
+                                                     </a>
+                                                     <?php
+                                                     }
+                                                     ?>
+                                            </td>
+                                            <?php  if(($labresult['editor']==1) AND ($labresult['editor']!=0)){ $check=1; ?>
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                                             
+                                            
+                                            <?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
+                                            <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                                            <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                                            <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                                            
+                                            <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
+                                            
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
+                                            <td  class="tdfont childtd" > <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img <?php if($labresult['editor']==0){?> style="display:none;" <?php }?>   src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                                             
+                                            
+                                            <?php } ?>
+                                            <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
+                            </tr>
+                <?php
+                        $i++;
+                        $profile_grp = $labresult[profile_title];
+                        $main_grp = $labresult[order_title];
+                        endforeach;
+                ?>
 	
       </table>
 	<!-- Result listing ends  here------------------------------------->
@@ -290,36 +425,11 @@ $(function()
 	   </div>
       </div>
 	    
-	    <div id="dlg" class="easyui-dialog" style="width:500px;height:380px;padding:10px 20px"  
+	    <div id="dlg" class="easyui-dialog" style="top:150;width:550px;padding:10px 20px"  
             closed="true" buttons="#dlg-buttons">  
-            <div class="ftitle" id='titleShow'></div>  
-             <form id="fm" method="post" novalidate>
-		       <input type='hidden' name='rep_id' id='rep_id' value='' />
-               <div class="fitem">  
-                <label><?php echo xlt('Status'); ?>:</label>  
-			      <input id="cc1" class="easyui-combobox" name="formResultStatus" 
-                                data-options="valueField:'value',textField:'label',
-                                url:'./result/getLabOptions?opt=status&optId=result'" />
-                   </div>  
-                  <div class="fitem">  
-                   <label><?php echo xlt('Facility'); ?>:</label>  
-                   <input name="formResultFacility" class="easyui-validatebox" style="width: 280px"; >  
-                  </div>  
-                  <div class="fitem">  
-                  <label><?php echo xlt('Comments'); ?>:</label>  
-		          <textarea id='formResultComments' name="formResultComments" style="height:60px; width: 280px;"></textarea>  
-                  </div>  
-                  <div class="fitem">  
-                  <label><?php echo xlt('Notes'); ?>:</label>  
-		          <textarea id='formResultNotes' name="formResultNotes" style="height:60px; width: 280px;"></textarea>
-                 </div>  
-             </form>  
-        </div>  
-        <div id="dlg-buttons">  
-          <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveComments()">
-            <?php echo xlt('Save'); ?>
-          </a>  
-        </div> 
+                <div class="ftitle" id='titleShow'></div>  
+                <div id="commentsF"></div>
+            </div>  
       
    
   

@@ -26,7 +26,7 @@ class SpecimenTable extends AbstractTableGateway
     
     public function listOrders($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,po.procedure_order_id AS poid FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id";
+				$sql = "SELECT *,po.procedure_order_id AS poid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE";
 						$cond = 0;

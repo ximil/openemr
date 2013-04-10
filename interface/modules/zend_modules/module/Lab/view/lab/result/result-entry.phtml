@@ -23,10 +23,20 @@ table.thcolor th{
 		position: absolute;
 		left: 360px;
 		top: 220px;
-		background-color: #ddd;
-		border-width: 1px;
+		background-color: #FFFFFF;
+		border-width:2px;
 		padding: 5px;
 		border-style: solid;
+		width:350px;
+		height:178px;
+		border-color:#CCCCCC;
+}
+ .centerdiv{
+  position:absolute;
+  left: 40%;
+  top: 50%;
+  margin-left: -50px;
+  margin-top: -50px;
 }
 </style>
 <script type="text/javascript">
@@ -54,6 +64,11 @@ function doSave(){
 function showMore(val){
 		$("#hid_div_"+val).css('display','block');
 }
+function closedlg(){
+ $('.hid_div').hide();
+}
+
+
 </script>
 <div style="margin:10px 0;"></div>
 <div class="easyui-panel" title="<?php echo xlt('Result Entry');?>" >
@@ -82,18 +97,20 @@ function showMore(val){
 		<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="doSave()"><?php echo xlt('Save'); ?></a>
 		<table id="specimentable" class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;" >
 			<tr>
-					<th colspan="2" class="mainhead" >Order</th>
+					<th colspan="4" class="mainhead" >Order</th>
 					<th colspan="3" class="mainhead" >Report</th>
 					<th colspan="7" class="mainhead" >Results and Recommendations</th>
 			</tr>
 			<tr>
-					<td style="width:80px;" >Date</td>
-					<td style="min-width:200px;" >Name</td>
+					<td style="width:20px;" >PID</td>
+					<td style="min-width:75px;" >Patient Name</td>
+					<td style="width:65px;" >Date</td>
+					<td style="min-width:110px;" >Name</td>
 					<td >Specimen</td>
-					<td >Specimen Time Collected</td>
+					<td style="min-width:150px;" >Specimen Time Collected</td>
 					<td >Specimen Status</td>
 					<td >Group</td>
-					<td >Name</td>
+					<td style="min-width:110px;" >Name</td>
 					<td >Abn</td>
 					<td >Value</td>
 					<td >Units</td>
@@ -105,6 +122,8 @@ function showMore(val){
 			$rep_status = $helper->getDropdownValAsText("proc_rep_status",$val['report_status']);
 			?>
 			<tr>
+				<td><?php echo $val['patient_id']; ?></td>
+				<td><?php echo $val['pname']; ?></td>
 				<?php echo $this->formRow($form->get('procedure_report_id[]')->setValue($val['prid'])); ?>
 				<td><?php echo $val['date_ordered']; ?></td>
 				<td><?php echo $val['procedure_name']; ?></td>
@@ -112,35 +131,37 @@ function showMore(val){
 				<td><?php echo $val['date_collected']; ?></td>
 				<td><?php echo $rep_status; ?></td>
 				<td><?php echo ""; ?></td>
-				<td><?php echo $val['result_text']; ?></td>
+				<td><?php echo $val['procedure_name']; ?></td><!-- need to fix -->
 				<td><?php echo $this->formRow($form->get('abnormal[]')->setValue($val['abnormal'])); ?></td>
 				<td><?php echo $this->formRow($form->get('result[]')->setValue($val['result'])); ?></td>
 				<td><?php echo $this->formRow($form->get('units[]')->setValue($val['units'])); ?></td>
 				<td><?php echo $this->formRow($form->get('range[]')->setValue($val['range'])); ?></td>
-				<td><a href="javascript:showMore('<?php echo $val['prid']; ?>')" >More</a></td>
-			</tr>
-			<tr>
-				<td>
-						<div id="hid_div_<?php echo $val['prid']; ?>" class="hid_div gridview2" style="display:none;" >
-							<table>
-								<tr>
-									<td>Status</td>
-									<td><?php echo $this->formRow($form->get('result_status[]')->setValue($val['result_status'])); ?></td>
-								</tr>
-								<tr>
-									<td>Facility</td>
-									<td><?php echo $this->formRow($form->get('facility[]')->setValue($val['facility'])); ?></td>
-								</tr>
-								<tr>
-									<td>Comments</td>
-									<td><?php echo $this->formRow($form->get('comments[]')->setValue($val['comments'])); ?></td>
-								</tr>
-								<tr>
-									<td>Notes</td>
-									<td><?php echo $this->formRow($form->get('notes[]')->setValue($val['notes'])); ?></td>
-								</tr>
-							</table>
-						</div>
+				<td><a href="javascript:showMore('<?php echo $val['prid']; ?>')" ><img src=<?php echo $this->basePath() .'/css/icons/pencil.png'; ?> ></a>
+					<div  id="hid_div_<?php echo $val['prid']; ?>" class="hid_div gridview2 centerdiv" style="display:none;" >
+					<div><img style="margin-left:330px;" src=<?php echo $this->basePath() .'/css/icons/no.png'; ?> onclick="closedlg()">   </div>
+					  
+						<table>
+							<tr>
+								<td style="border:none !important;">Status</td>
+								<td style="border:none !important;"><?php echo $this->formRow($form->get('result_status[]')->setValue($val['result_status'])); ?></td>
+							</tr>
+							<!--<tr>
+								<td>Facility</td>
+								<td><?php echo $this->formRow($form->get('facility[]')->setValue($val['facility'])); ?></td>
+							</tr>-->
+							<tr>
+								<td style="border:none !important">Comments</td>
+								<td><?php echo $this->formRow($form->get('comments[]')->setValue($val['comments'])); ?></td>
+							</tr>
+							<!--<tr>
+								<td>Notes</td>
+								<td><?php echo $this->formRow($form->get('notes[]')->setValue($val['notes'])); ?></td>
+							</tr>
+							<tr>  -->
+							<td style="border:none !important" colspan="2" align="center"> <img  src=<?php echo $this->basePath() .'/css/icons/ok.png'; ?> onclick="closedlg()"></td>
+							</tr>
+						</table>
+					</div>
 				</td>
 			</tr>
 			<?php endforeach; ?>

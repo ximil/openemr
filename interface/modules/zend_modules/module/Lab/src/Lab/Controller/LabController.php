@@ -76,7 +76,7 @@ class LabController extends AbstractActionController
 	$providers = $helper->getProviders();
 	$form->get('provider[0][]')->setValueOptions($providers);
 	
-	$form->get('specimencollected[0][]')->setValue('onsite');
+	//$form->get('specimencollected[0][]')->setValue('onsite');
 	
 	$labs = $helper->getLabs('y');
 	$form->get('lab_id[0][]')->setValueOptions($labs);
@@ -125,6 +125,8 @@ class LabController extends AbstractActionController
     public function saveDataAction()
     {
 	$request = $this->getRequest();
+	//$fh = fopen("d:/tttt.txt","a");
+	//fwrite($fh,print_r($request,1));
 	$data =array();
 	$form = new LabForm();
         $request = $this->getRequest();

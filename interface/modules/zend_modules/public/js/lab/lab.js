@@ -30,6 +30,7 @@ function HideTheAjaxDivs(){
 }
 function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
 	//alert(ProcedureCode+"-"+procedure+"-"+count);
+	$('#procedures_' + count).focus();
 	$('#procedures_' + count).val(procedure);
 	$('#procedure_code_'+count).val(ProcedureCode);
 	$('#procedure_suffix_'+count).val(suffix);
@@ -176,11 +177,12 @@ function getProcedures(inputString,thisID) {
 			j+="</ul>";
 			//alert(j);
 			//$("#prodiv_"+count).css('display','block');
-			//$("#prodiv_"+count).html(j);
+			//$("#"+thisID).focus();
 			$("#prodiv_" + arr[1]).css('display','block');
 			$("#prodiv_" + arr[1]).html(j);
 		    }
 		    else{
+			//$("#"+thisID).val("");
 			//$("#prodiv_"+count).html("");
 			//$("#prodiv_"+count).css('display','none');
 			$("#prodiv_" + arr[1]).html("");

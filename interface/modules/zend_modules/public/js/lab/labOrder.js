@@ -21,22 +21,24 @@
     // Save the data
     var url = './savedata'
     function saveFrm() {
-        url = 'savedata';
-        $('#lab').form('submit',{
-            url: url,  
-            onSubmit: function(){  
-                return; //$(this).form('validate');  
-            },  
-            success: function(result){
-                var result = eval('('+result+')');  
-                if (result.errorMsg){
-                    $.messager.show({  
-                        title: 'Error',  
-                        msg: result.errorMsg  
-                    });  
-                }
-            }  
-        });  
+        /*alert("DSf");*/
+        $("#hiddensubmit").click();
+        //url = 'savedata';
+        //$('#lab').form('submit',{
+        //    url: url,  
+        //    onSubmit: function(){  
+        //       return;//$(this).form('validate');  
+        //    },  
+        //    success: function(result){
+        //        var result = eval('('+result+')');  alert(result);
+        //        if (result.errorMsg){
+        //            $.messager.show({  
+        //                title: 'Error',  
+        //                msg: result.errorMsg  
+        //            });  
+        //        }
+        //    }  
+        //});  
     }
     
     // Remove the dynamically added rows

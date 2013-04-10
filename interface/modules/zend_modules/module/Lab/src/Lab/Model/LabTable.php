@@ -154,6 +154,8 @@ class LabTable extends AbstractTableGateway
 			    $prosuffix = $vArray[$i]['procedure_suffix'];
 			    $diagnoses = $vArray[$i]['diagnoses'];
 			    $patient_instructions = $vArray[$i]['patient_instructions'];
+			    $sss ="INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
+					    VALUES ($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions)";
 			    $SPEseq = sqlInsert("INSERT INTO procedure_order_code (procedure_order_id,procedure_code,procedure_name,procedure_suffix,diagnoses,patient_instructions)
 					    VALUES (?,?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
 			    $this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode,$ordnum);
