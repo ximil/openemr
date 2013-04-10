@@ -93,9 +93,9 @@ $(function()
                         <td valign='top'>
                             <?php echo $this->formRow($form->get('orderdate[0][]'));?>
                         </td>
-                        <!--<td valign='top' id="internaltime_1_1" style="display:none">
+                        <td valign='top' id="internaltime_1_1" style="display:none">
                                 <?php echo $this->formRow($form->get('timecollected[0][]'));?>
-                        </td>-->
+                        </td>
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
                         <td valign='top' id='specimencollectedtd_1_1' style="display:none">
                             <?php echo $this->formRadio($form->get('specimencollected[0][]'), 'prepend');?>
@@ -167,6 +167,14 @@ $(function()
     </div><!-- End main -->
   
 </div><!-- End accord -->
+<?php
+        }
+        echo $this->form()->closeTag();
+	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+				->prependFile($this->basePath() . '/js/lab/lab.js')
+				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+?>
 <!-- Start Row Template -->
 <div style="display:none" id="procedureclonetemplate">
 <table  id='cloneID_1' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:5px;">
@@ -288,12 +296,3 @@ $(function()
 </div>
 </div>
 <!-- End New Order Template -->
-
-<?php
-        }
-        echo $this->form()->closeTag();
-	echo $this->headScript()//->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
-				->prependFile($this->basePath() . '/js/lab/lab.js')
-				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
-				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
-?>
