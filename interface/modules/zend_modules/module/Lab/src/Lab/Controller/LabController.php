@@ -52,7 +52,7 @@ class LabController extends AbstractActionController
 	if ($pid == '' && $_SESSION['encounter'] == '') {
 	    $msg = 'N';  
 	}
-	$form = new LabForm();
+	$form 	= new LabForm();
 	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	$providers = $helper->getProviders();
 	$form->get('provider[0][]')->setValueOptions($providers);
@@ -71,6 +71,11 @@ class LabController extends AbstractActionController
     
     public function ordereditAction()
     {
+	global $pid;
+	$msg = '';
+	if ($pid == '') {
+	    $msg = 'N';  
+	}
 	$form = new LabForm();
 	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 	$providers = $helper->getProviders();
@@ -87,39 +92,71 @@ class LabController extends AbstractActionController
 	$status = $helper->getList("ord_status",'pending');
 	$form->get('status[0][]')->setValueOptions($status);
 	
-	return array('form' => $form,);
+	return array('form' => $form, 'message' => $msg,);
+    }
+    
+    public function getPatientLabOrdersAction()
+    {
+	$labOrders = $this->getLabTable()->listPatientLabOrders();
+        $data 	= new JsonModel($labOrders);
+        return $data;
     }
     
     public function getOrderListAction()
     {
-	$data = array(
-		    'ordId'  => '247',
-            ); 
+        $request = $this->getRequest();
+	 if($request->isPost()){
+            $data = array(
+		    'ordId'  => $request->getPost('id'),
+		);
+        }
 	$labOrders = $this->getLabTable()->listLabOrders($data);
         $data = new JsonModel($labOrders);
         return $data;
     }
-   
-    public function formAction()
+    
+    public function getLabOrderAOEAction()
     {
-	$form = new LabForm();
-	$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
-	$providers = $helper->getProviders();
-	$form->get('provider[0][]')->setValueOptions($providers);
+	$request = $this->getRequest();
+	$response = $this->getResponse();
+        $data = array(
+		    'ordId' 	=> $request->getPost('inputValue'),
+		    'seq'	=> $request->getPost('seq'),
+		);
+	$aoe = $this->getLabTable()->listLabOrderAOE($data);
+	$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'aoeArray' => $aoe)));
+	return $response;
+    }
+    
+    /*public function updateDataAction()
+    {
+	$request = $this->getRequest();
+	if($request->isPost()){
+	    //$fh = fopen("D:/test.txt","a");
+	    //fwrite($fh,print_r($request->getPost(),1));
+        }
+	$Lab = new Lab();
+	$aoeArr = array();
+	foreach($request->getPost() as $key=>$val){
+	    if(substr($key,0,4)==='AOE_'){
+		$NewArr = explode("_",$key);
+		$aoeArr[$NewArr[1]-1][$NewArr[2]][$NewArr[3]] = $val;
+	    }
+	}
 	
-	$labs = $helper->getLabs();
-	$form->get('lab_id[0][]')->setValueOptions($labs);
-	
-	$priority = $helper->getList("ord_priority");
-	$form->get('priority[0][]')->setValueOptions($priority);
-	
-	$status = $helper->getList("ord_status",'pending');
-	$form->get('status[0][]')->setValueOptions($status);
-	
-	// disable layout in the form
-	$result = new ViewModel(array('form' => $form));
-	$result->setTerminal(true);
-	return $result;
+	$clientorder_id = $this->getLabTable()->saveLab123($request->getPost(),$aoeArr);
+    }*/
+    
+   public function removeLabOrderAction()
+    {
+	$request = $this->getRequest();
+	if($request->isPost()){
+	    $data = array(
+		    'ordId'  => $request->getPost('orderID'),
+		);
+        }
+	$result = $this->getLabTable()->removeLabOrders($data);
+	return true;
     }
     
     public function saveDataAction()
@@ -138,54 +175,54 @@ class LabController extends AbstractActionController
 		}
 	    }
             
-	    	$clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
-                
-		//------------- STARTING PROCEDURE ORDER XML IMPORT -------------
-		for($i=0;$i<sizeof($clientorder_id);$i++){
-                //GET CLIENT CREDENTIALS OF INITIATING ORDER
-                $cred           = $this->getLabTable()->getClientCredentials($clientorder_id[$i]);                
-                $username       = $cred['login'];
-                $password       = $cred['password'];
-                $remote_host    = trim($cred['remote_host']);
-                $site_dir       = $GLOBALS['OE_SITE_DIR'];
-                
-                if(($username <> "")&&($password <> "")&&($remote_host <> "")) {//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
-		    $labPost = $request->getPost('lab_id');
-                    $labArr = explode("|",$labPost[$i]);
-		    //RETURNS AN ARRAY OF ALL PENDING ORDERS OF THE PATIENT
-                    $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$labArr[0],"");
-                    ini_set("soap.wsdl_cache_enabled","0");            
-                    ini_set('memory_limit', '-1');
-                    
-                    $options    = array('location' => $remote_host,
-				'uri'      => "urn://zhhealthcare/lab"
-				);
-                    $client     = new Client(null,$options);                    
-                    
-                    $lab_id     = $labArr[0]; 
-                    foreach($xmlresult_arr as $xmlresult){
-                        $order_id   = $xmlresult['order_id'];
-                        $xmlstring  = $xmlresult['xmlstring'];
-			
-			//GET CLIENT CREDENTIALS OF EACH PENDING ORDER OF A PARTICULAR PATIENT   
-                        $cred           = $this->getLabTable()->getClientCredentials($order_id);                    
-                        $username       = $cred['login'];
-                        $password       = $cred['password'];
-                        $remote_host    = trim($cred['remote_host']);
-                        $site_dir       = $GLOBALS['OE_SITE_DIR'];
-                        
-                        if(($username <> "")&&($password <> "")&&($remote_host <> "")){//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
-                            $result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
-                            if(is_numeric($result))// CHECKS IF ORDER IS SUCCESSFULLY IMPORTED
-                            {
-                                $this->getLabTable()->setOrderStatus($order_id,"routed");
-                            }
-                        }                        
-                    }                    
-                }
-		//------------- END PROCEDURE ORDER XML IMPORT -------------
-		}
-                return $this->redirect()->toRoute('result');
+	    $clientorder_id = $this->getLabTable()->saveLab($request->getPost(),$aoeArr);
+	    
+	    //------------- STARTING PROCEDURE ORDER XML IMPORT -------------
+	    for($i=0;$i<sizeof($clientorder_id);$i++){
+	    //GET CLIENT CREDENTIALS OF INITIATING ORDER
+	    $cred           = $this->getLabTable()->getClientCredentials($clientorder_id[$i]);                
+	    $username       = $cred['login'];
+	    $password       = $cred['password'];
+	    $remote_host    = trim($cred['remote_host']);
+	    $site_dir       = $GLOBALS['OE_SITE_DIR'];
+	    
+	    if(($username <> "")&&($password <> "")&&($remote_host <> "")) {//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
+		$labPost = $request->getPost('lab_id');
+		$labArr = explode("|",$labPost[$i]);
+		//RETURNS AN ARRAY OF ALL PENDING ORDERS OF THE PATIENT
+		$xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$labArr[0],"");
+		ini_set("soap.wsdl_cache_enabled","0");            
+		ini_set('memory_limit', '-1');
+		
+		$options    = array('location' => $remote_host,
+			    'uri'      => "urn://zhhealthcare/lab"
+			    );
+		$client     = new Client(null,$options);                    
+		
+		$lab_id     = $labArr[0]; 
+		foreach($xmlresult_arr as $xmlresult){
+		    $order_id   = $xmlresult['order_id'];
+		    $xmlstring  = $xmlresult['xmlstring'];
+		    
+		    //GET CLIENT CREDENTIALS OF EACH PENDING ORDER OF A PARTICULAR PATIENT   
+		    $cred           = $this->getLabTable()->getClientCredentials($order_id);                    
+		    $username       = $cred['login'];
+		    $password       = $cred['password'];
+		    $remote_host    = trim($cred['remote_host']);
+		    $site_dir       = $GLOBALS['OE_SITE_DIR'];
+		    
+		    if(($username <> "")&&($password <> "")&&($remote_host <> "")){//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
+			$result = $client->importOrder($username,$password,$site_dir,$order_id,$lab_id,$xmlstring);
+			if(is_numeric($result))// CHECKS IF ORDER IS SUCCESSFULLY IMPORTED
+			{
+			    $this->getLabTable()->setOrderStatus($order_id,"routed");
+			}
+		    }                        
+		}                    
+	    }
+	    //------------- END PROCEDURE ORDER XML IMPORT -------------
+	    }
+	    return $this->redirect()->toRoute('result');
         }
         return array('form' => $form);
     }
@@ -222,6 +259,8 @@ class LabController extends AbstractActionController
 	    if($request->getPost('type') == 'getProcedures' ){ 
 		$procedures = $this->getProcedures($inputString,$dependentId);
 		$response->setContent(\Zend\Json\Json::encode(array('response' => true, 'procedureArray' => $procedures)));
+		//$fh = fopen("D:/test.txt","a");
+        //fwrite($fh,print_r($response,1));
 		return $response;
 	    }
 	    if($request->getPost('type') == 'loadAOE'){
