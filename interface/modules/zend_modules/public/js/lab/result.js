@@ -200,7 +200,7 @@ function saveComments() {
 //$("table> tr:last").hide();? ...
 $(function(){ 
 
-    $('#labresult tr:last').hide();
+    //$('#labresult tr:last').hide();
 	$('#dg').edatagrid({
 		rowStyler: function(index,row){
 			if (row.editor == 1) {
