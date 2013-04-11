@@ -180,7 +180,7 @@ class LabForm extends Form
 		'onKeyup' => 'getDiagnoses(this.value, this.id)',
 		'onfocus' => 'readDiagnoses(this.value, this.id)',
 		'class' => 'easyui-validatebox combo',
-		'required' => 'required',
+		//'required' => 'required',
 		'placeholder' => 'Seperated by semicolon(;)'
             ),
         ));
