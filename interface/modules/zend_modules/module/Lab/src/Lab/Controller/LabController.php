@@ -152,7 +152,8 @@ class LabController extends AbstractActionController
                 $site_dir       = $GLOBALS['OE_SITE_DIR'];
                 
                 if(($username <> "")&&($password <> "")&&($remote_host <> "")) {//GENERATE ORDER XML OF EXTERNAL LAB ONLY, NOT FOR LOCAL LAB
-		    $labPost = $request->getPost('lab_id');
+		    $post = $request->getPost();
+		    $labPost = $post['lab_id'][$i][0];
                     $labArr = explode("|",$labPost[$i]);
 		    //RETURNS AN ARRAY OF ALL PENDING ORDERS OF THE PATIENT
                     $xmlresult_arr = $this->getLabTable()->generateOrderXml($request->getPost('patient_id'),$labArr[0],"");
