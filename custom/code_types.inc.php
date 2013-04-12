@@ -246,7 +246,7 @@ function code_set_search($form_code_type,$search_term="",$count=false,$active=tr
             "( d.name LIKE ? OR " .
             "dt.selector LIKE ? ) " .
             "AND d.drug_id = dt.drug_id " .
-            "ORDER BY d.name, dt.selector, dt.drug_id $limit_query";
+            "ORDER BY d.name, dt.selector, dt.drug_id $limit_query"; 
    $res = sqlStatement($query, array("%".$search_term."%", "%".$search_term."%") );
   }
   else if ($form_code_type == '--ALL--') { // Search all codes from the default codes table
