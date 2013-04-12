@@ -200,7 +200,8 @@ class ConfigurationForm extends Form
 		'class' => 'easyui-validatebox combo',
 		'style'	=> 'width:300px',
 		'required' => 'required',
-		'placeholder' => ''
+		'placeholder' => '',
+		'onblur' => 'checkCode(this.value)',
             ),
         ));
 	
@@ -212,7 +213,8 @@ class ConfigurationForm extends Form
 		'class' => 'easyui-validatebox combo',
 		'style'	=> 'width:300px',
 		'required' => 'required',
-		'placeholder' => ''
+		'placeholder' => '',
+		'onkeyup' => 'lookup(this.value, this.id)',
             ),
         ));	
 	
@@ -405,6 +407,24 @@ class ConfigurationForm extends Form
 		'placeholder' => ''
             ),
         ));
+	
+	$this->add(array(
+	    'name' => 'standard_code',
+	    'type' => 'Zend\Form\Element\Radio',
+	    'attributes' => array(
+		//'required' => 'required',
+		'id' => 'standard_code',
+            ),
+	    'options' => array(
+		'value_options' => array(
+		    'ICD9' => xlt(' ICD9 '),
+		    'CPT4' => xlt(' CPT4 '),
+		    'HCPCS' => xlt(' HCPCS '),
+		    'CVX' => xlt(' CVX '),
+		    'PROD' => xlt(' Product '),
+		),
+	    ),
+	));
 	
 	
 	

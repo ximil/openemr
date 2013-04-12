@@ -146,6 +146,43 @@ class ConfigurationController extends AbstractActionController
 	return $ret_arr;
     }*/
     
+    /**
+     * Check Procedure Code
+     * Avoid Duplicaye code
+     */
+    public function checkProcedureCodeAction()
+    {
+	$request = $this->getRequest();
+        $data = array();
+	if ($request->isPost()) {
+	    $data = array(
+		    'code'  => $request->getPost('code'),
+		);
+	    $result = $this->getConfigurationTable()->checkProcedureCodeExist($data);
+	    $data = new JsonModel($result);
+	    return $data;
+	}
+    }
     
-    
+     /**
+     * SstandardCode Auto suggest
+     * ICD9, CPT, HCPCS, CVX and Product 
+     */
+    public function getStandardCodeAction()
+    {
+	$response = $this->getResponse();
+	$request = $this->getRequest();
+        $data = array();
+	if ($request->isPost()) {
+	//$fh = fopen("D:/test.txt","a");
+	//fwrite($fh,"rrr:".print_r($request->getPost(),1));
+	    $data = array(
+		    'inputString'	=> $request->getPost('queryString'),
+		    'codeType'		=> $request->getPost('codeType'),
+		);
+	    $result = $this->getConfigurationTable()->listStandardCode($data);
+	    $response->setContent(\Zend\Json\Json::encode(array('response' => true, 'resultArray' => $result)));
+	    return $response;
+	}
+    }
 }

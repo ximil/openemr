@@ -868,6 +868,111 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	return $arr;
     }
+    
+    /**
+     * Check Procedure Code Exist
+     *  Avoid Duplicates
+     */
+    public function checkProcedureCodeExist($data)
+    {
+	$sql 	= "SELECT procedure_code FROM procedure_type WHERE procedure_code=?";
+	$result = sqlStatement($sql, array($data['code']));
+	if (sqlNumRows($result) > 0) {
+	    return array(1); 
+	} else {
+	    return array(0);
+	}
+    }
+    
+    /**
+     * SstandardCode Auto suggest
+     * ICD9, CPT, HCPCS, CVX and Product 
+     */
+    public function listStandardCode($data)
+    {
+	$inputString	= $data['inputString'];
+	$codeType	= $data['codeType'];
+	$codeTypeValue 	=  sqlQuery("SELECT ct_id FROM code_types WHERE ct_key=?", array($codeType));
+
+	// Search code type ICD9
+	if ($codeType == 'ICD9') {
+	    $sql = "SELECT ref.formatted_dx_code as code, 
+			    ref.long_desc as code_text 
+			FROM `icd9_dx_code` as ref 
+			LEFT OUTER JOIN `codes` as c 
+				ON ref.formatted_dx_code = c.code 
+				AND c.code_type = ? 
+				WHERE (ref.long_desc LIKE ? OR ref.formatted_dx_code LIKE ?) 
+				AND ref.active = '1'
+				AND (c.active = 1 || c.active IS NULL) 
+				ORDER BY ref.formatted_dx_code+0, ref.formatted_dx_code";
+	    $result = sqlStatement($sql,array($codeTypeValue['ct_id'], "%" . $inputString . "%", "%" . $inputString . "%"));
+	}
+	
+	// Search code type CPT4
+	if ($codeType == 'CPT4') {
+	    $sql = "SELECT c.id,
+				c.code, 
+				c.code_text  
+			FROM `codes` as c 
+			WHERE (c.code_text LIKE ? OR c.code LIKE ?) 
+			AND c.code_type = ? 
+			AND c.active = 1 
+			ORDER BY c.code+0,c.code";
+	    $result = sqlStatement($sql,array("%" . $inputString . "%", "%" . $inputString . "%", $codeTypeValue['ct_id']));
+	}
+	
+	// Seach code type HCPCS
+	if ($codeType == 'HCPCS') {
+	    $sql = "SELECT c.id,
+			c.code, 
+			c.code_text 
+		FROM `codes` as c 
+		WHERE (c.code_text LIKE ? OR c.code LIKE ?) 
+		AND c.code_type = ?
+		AND c.active = 1 
+		ORDER BY c.code+0,c.code";
+	    $result = sqlStatement($sql,array("%" . $inputString . "%", "%" . $inputString . "%", $codeTypeValue['ct_id']));
+	}
+	
+	// Seach code type CVX
+	if ($codeType == 'CVX') {
+	    $sql = "SELECT c.id, 
+			c.code_text, 
+			c.code  
+		FROM `codes` as c 
+		WHERE (c.code_text LIKE ? OR c.code LIKE ?) 
+		AND c.code_type = ?
+		AND c.active = 1 
+		ORDER BY c.code+0,c.code";
+	    $result = sqlStatement($sql,array("%" . $inputString . "%", "%" . $inputString . "%", $codeTypeValue['ct_id']));
+	}
+	
+	// Seach code type Product
+	if ($codeType == 'PROD') {
+	    $sql = "SELECT dt.drug_id, 
+			dt.selector, 
+			d.name 
+		FROM drug_templates AS dt, drugs AS d 
+		WHERE ( d.name LIKE ? OR dt.selector LIKE ? ) 
+		AND d.drug_id = dt.drug_id 
+		ORDER BY d.name, dt.selector, dt.drug_id";
+	    $result = sqlStatement($sql,array("%" . $inputString . "%", "%" . $inputString . "%"));
+	}
+	
+	$arr = array();
+	$i = 0;
+	if ($codeType == 'PROD') {
+	    while($tmp = sqlFetchArray($result)) {
+		$arr[] =  htmlspecialchars($tmp['drug_id'],ENT_QUOTES) . '|-|' . htmlspecialchars($tmp['selector'],ENT_QUOTES) . '|-|' . htmlspecialchars($tmp['name'],ENT_QUOTES);
+	    }  
+	} else {
+	    while($tmp = sqlFetchArray($result)) {
+		$arr[] =  htmlspecialchars($tmp['code'],ENT_QUOTES) . '|-|' . htmlspecialchars($tmp['code_text'],ENT_QUOTES);
+	    }  
+	}
+	return $arr;
+    }
 }
 ?>
 
