@@ -533,28 +533,32 @@
      */
     var txt
     function saveEditFrm(){
-        var url = './saveData';//'./updateData';
-        if (order != '') {
-            $('#p').progressbar('setValue', 0);
-            txt = 'Saving ';
-            start();
-            $('#lab').form('submit',{
-                url: url,  
-                onSubmit: function(){  
-                    return;  
-                },  
-                success: function(result){
-                    var result = eval('('+result+')');  
-                    if (result.errorMsg){
-                        $.messager.show({  
-                            title: 'Error',  
-                            msg: result.errorMsg  
-                        });  
-                    }
-                }  
-            }); 
+        if (status == 'pending') {
+            var url = './saveData';//'./updateData';
+            if (order != '') {
+                $('#p').progressbar('setValue', 0);
+                txt = 'Saving ';
+                start();
+                $('#lab').form('submit',{
+                    url: url,  
+                    onSubmit: function(){  
+                        return;  
+                    },  
+                    success: function(result){
+                        var result = eval('('+result+')');  
+                        if (result.errorMsg){
+                            $.messager.show({  
+                                title: 'Error',  
+                                msg: result.errorMsg  
+                            });  
+                        }
+                    }  
+                }); 
+            } else {
+                alert('Please select a procedure order ... !');
+            }
         } else {
-            alert('Please select a procedure order ... !');
+            alert('Could not save, Order Status is ' + status);
         }
     }
     
@@ -562,28 +566,32 @@
      * Remove Procedure order and its group
      */
     function removeOrder(){
-         var url = './removeLabOrder';
-        if (orderNo != '') {
-            $('#p').progressbar('setValue', 0);
-            txt = 'Removing ';
-            start();
-            $.ajax({
-                type: "POST",
-                cache: false,
-                url: url,
-                data: {
-                    orderID: orderNo
+        if (status == 'pending') {
+            var url = './removeLabOrder';
+            if (orderNo != '') {
+                $('#p').progressbar('setValue', 0);
+                txt = 'Removing ';
+                start();
+                $.ajax({
+                    type: "POST",
+                    cache: false,
+                    url: url,
+                    data: {
+                        orderID: orderNo
+                        },
+                    success: function(data) {
+                        //alert("Successfully removed");
+                        removeAccord();
                     },
-                success: function(data) {
-                    //alert("Successfully removed");
-                    removeAccord();
-                },
-                error: function(data){
-                    alert("Ajax Fail");
-                }
-            });
+                    error: function(data){
+                        alert("Ajax Fail");
+                    }
+                });
+            } else {
+                alert('Please select a procedure order ... !');
+            }
         } else {
-            alert('Please select a procedure order ... !');
+            alert('Could not remove, Order Status is ' + status);
         }
     }
     
@@ -623,4 +631,29 @@
                 toggleDisabled(el.childNodes[x]);
             }
         }
-    } 
+    }
+    
+    function addRowEdit(thisId) {
+        if (status == 'pending') {
+            addRow(thisId);
+        }
+    }
+    
+    function cancelItemEdit(thisId) {
+        if (status == 'pending') {
+            cancelItem(thisId);
+        }
+    }
+    
+    function newOrderEdit() {
+        if (status == 'pending') {
+            newOrder();
+        }
+    }
+    
+    function removeOrderEdit() {
+        if (status == 'pending') {
+            removeOrder();
+        }
+    }
+    
