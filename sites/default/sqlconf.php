@@ -2,10 +2,10 @@
 //  OpenEMR
 //  MySQL Config
 
-$host	= '192.168.1.114';
+$host	= 'localhost';
 $port	= '3306';
-$login	= 'remote';
-$pass	= 'remote123';
+$login	= 'root';
+$pass	= 'navas';
 $dbase	= 'vern';
 
 //Added ability to disable

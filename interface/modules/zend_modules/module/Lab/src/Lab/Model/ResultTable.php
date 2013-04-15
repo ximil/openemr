@@ -767,7 +767,11 @@ class ResultTable extends AbstractTableGateway
 						array_push($param,$request->result[$i]);
 						array_push($param,$request->range[$i]);
 						array_push($param,$request->abnormal[$i]);
-            array_push($param,$request->facility[$i]);
+            if($request->facility[$i]){
+                array_push($param,$request->facility[$i]);
+            }else{
+                array_push($param,'');
+            }
             array_push($param,$request->comments[$i]);
             array_push($param,$request->result_status[$i]);
             array_push($param,$request->procedure_report_id[$i]);

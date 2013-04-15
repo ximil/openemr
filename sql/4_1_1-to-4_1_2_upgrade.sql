@@ -293,3 +293,65 @@ CREATE TABLE `modules` (
   PRIMARY KEY (`mod_id`,`mod_directory`)
 ) ENGINE=InnoDB;
 #EndIf
+
+#IfMissingColumn procedure_type suffix
+ALTER TABLE procedure_type
+  ADD COLUMN `suffix`         varchar(50) NOT NULL DEFAULT '',
+  ADD COLUMN `pap_indicator`  varchar(5)  DEFAULT NULL,
+  ADD COLUMN `specimen_state` varchar(5)  DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_questions question_component
+ALTER TABLE procedure_questions
+  ADD COLUMN `question_component` varchar(255) DEFAULT NULL;
+#EndIf
+
+#IfMissingColumn procedure_order psc_hold
+ALTER TABLE procedure_order
+  ADD COLUMN `psc_hold`             varchar(30)       DEFAULT NULL,
+  ADD COLUMN `requisition_file_url` varchar(50)       DEFAULT NULL,
+  ADD COLUMN `result_file_url`      varchar(50)       DEFAULT NULL,
+  ADD COLUMN `billto`               varchar(5)        DEFAULT NULL,
+  ADD COLUMN `internal_comments`    text,
+  ADD COLUMN `ord_group`            int(10) unsigned  NOT NULL;
+#EndIf
+
+#IfMissingColumn procedure_order_code procedure_suffix
+ALTER TABLE procedure_order_code
+  ADD COLUMN `procedure_suffix`     varchar(50) DEFAULT NULL,
+  ADD COLUMN `diagnoses`            text        NOT NULL      COMMENT 'diagnoses and maybe other coding (e.g. ICD9:111.11)',
+  ADD COLUMN `patient_instructions` text;
+UPDATE procedure_order AS po, procedure_order_code AS poc
+  SET poc.patient_instructions = po.patient_instructions
+  WHERE po.procedure_order_id = poc.procedure_order_id;
+ALTER TABLE procedure_order DROP COLUMN patient_instructions;
+#EndIf
+
+#IfMissingColumn procedure_result order_title
+ALTER TABLE procedure_result
+  ADD COLUMN `order_title`    varchar(255) DEFAULT NULL,
+  ADD COLUMN `order_code`     varchar(255) DEFAULT NULL,
+  ADD COLUMN `profile_title`  varchar(255) DEFAULT NULL;
+#EndIf
+
+#IfNotTable procedure_subtest_result
+CREATE TABLE `procedure_subtest_result` (
+  `procedure_subtest_result_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `procedure_report_id` bigint(20) NOT NULL COMMENT 'references procedure_report.procedure_report_id',
+  `subtest_code` varchar(30) NOT NULL DEFAULT '',
+  `subtest_desc` varchar(255) NOT NULL DEFAULT '',
+  `result_value` varchar(255) NOT NULL DEFAULT '',
+  `units` varchar(30) NOT NULL DEFAULT '',
+  `range` varchar(255) NOT NULL DEFAULT '',
+  `abnormal_flag` varchar(31) NOT NULL DEFAULT '' COMMENT 'no,yes,high,low',
+  `result_status` varchar(31) NOT NULL DEFAULT '' COMMENT 'preliminary, cannot be done, final, corrected, incompete...etc.',
+  `result_time` datetime DEFAULT NULL,
+  `providers_id` bigint(20) NOT NULL DEFAULT '0',
+  `comments` text NOT NULL COMMENT 'comments of subtest',
+  `order_title` varchar(255) DEFAULT NULL,
+  `order_code` varchar(255) DEFAULT NULL,
+  `profile_title` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`procedure_subtest_result_id`),
+  KEY `procedure_report_id` (`procedure_report_id`)
+);
+#EndIf
