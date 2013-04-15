@@ -463,8 +463,6 @@ class ResultController extends AbstractActionController
 	
 	//CHECKS IF THE RESULT DETAIL IS ALREADY PULLED
 	$pulled_count 	= $this->getResultTable()->getOrderResultPulledCount($order_id);
-	$fp = fopen("D:/sql.txt","w");
-		    fwrite($fp,"\n Pulled count ....................  :".print_r($pulled_count,1));
 	if($pulled_count == 0)
 	{
 	    //SEPERATES EACH TEST DETAILS
@@ -472,20 +470,6 @@ class ResultController extends AbstractActionController
 	    $result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
 	    $resultcomments_test_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
 	    
-	    $fp	= fopen("D:/abc.txt", "w");
-		    fwrite($fp," \n XML  array ".print_r($result,1));
-	    
-	    
-	    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n\n\n res_report_comments ".$xmldata['res_report_comments']);
-	    
-	    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n test comments  array ".print_r($resultcomments_test_arr,1));
-		 
-	    $fp	= fopen("D:/abc.txt", "a");
-	    fwrite($fp," \n test array ".print_r($test_arr,1));
-	    fwrite($fp," \n test array count ....".count($test_arr));
-		    
 	    $test_count = count($test_arr) - 1;
 	    
 	    /* HARD CODED */
@@ -507,25 +491,18 @@ class ResultController extends AbstractActionController
 		    
 		    //SEPERATES TEST SPECIFIC DETAILS
 		    $testdetails_arr    = explode("#!#",$testdetails);
-		    list($test_code, $code_suffix, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
-		  
-		    
+		    list($test_code, $profile_title, $code_suffix, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
 					
 		    $order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$code_suffix);
 		    
-		    fwrite($fp," \n order seq of order id ".$data['procedure_order_id']." :".$order_seq);
-		  
+		    if(empty($order_seq))
+			$order_seq = 1;
+		    
 		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
 						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
 					    
 		    $report_inarray = array($data['procedure_order_id'],$order_seq,$spec_collected_time,$res_reported_time,$source,
 					    '','','received',$report_notes);
-		    
-		    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n\n\n procedure_report SQL ".$sql_report);
-	    
-		    $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n procedure_report  array ".print_r($report_inarray,1));
 		    
 		    $procedure_report_id = $this->getResultTable()->insertProcedureReport($sql_report,$report_inarray);   
 		    
@@ -547,45 +524,31 @@ class ResultController extends AbstractActionController
 		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
 			if($no_of_subtests   < 2) {
 			    $subtest_comments	    = $resultcomments_arr[0];
-				
+			    $subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
 			    $subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[0]);
 			    list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 			   
 			    $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
-							    facility,units,result,`range`,abnormal,comments,result_status,order_title,profile_title)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+							    facility,units,result,`range`,abnormal,comments,result_status,order_title,code_suffix,profile_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
-						    $subtest_comments,$result_status,$order_title,$code_suffix);
-			    
-			    $fp	= fopen("D:/abc.txt", "a");
-			    fwrite($fp," \n\n\n procedure_result SQL ".$sql_test_result);
-		    
-			    $fp	= fopen("D:/abc.txt", "a");
-			    fwrite($fp," \n procedure_result  array ".print_r($result_inarray,1));
-		    
+						    $subtest_comments,$result_status,$order_title,$code_suffix,$profile_title);
 			    $this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
 			} else {
 			    
 			    for($j=0;$j<$no_of_subtests;$j++)
 			    {
 				$subtest_comments	    = $resultcomments_arr[$j];
-				
+	    			$subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
 				$subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[$j]);
 				list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
 				
 				$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
 							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments,
-							    order_title,profile_title)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+							    order_title,code_suffix,profile_title)
+							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
-							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title,$code_suffix);
-				
-				$fp	= fopen("D:/abc.txt", "a");
-				fwrite($fp," \n\n\n procedure_subtest_result SQL ".$sql_subtest_result);
-			
-				$fp	= fopen("D:/abc.txt", "a");
-				fwrite($fp," \n procedure_subtest_result  array ".print_r($result_inarray,1));
-			    
+							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title,$code_suffix,$profile_title);
 				$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
 			    }                        
 			}

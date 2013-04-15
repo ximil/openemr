@@ -37,6 +37,12 @@
 		});
 		*/
 		$('#w').window('open');
+		$('#save').show();
+		keyWord = '';
+		var $radios = $('#standard_code');
+		if($radios.is(':checked') === false) {
+		    $radios.filter('[value=icd9]').attr('checked', true);
+		}
 		
 		//collapseChildGroups();			
 	}
@@ -77,7 +83,7 @@
 	
 	function editItem(row_id) {
 		
-		
+
 		grp_inc = 0;
 		ord_inc = 0;
 		res_inc = 0;
@@ -227,6 +233,12 @@
 		document.getElementById('edit_div').style.display="block";
 		
 		$('#w').window('open');
+		$('#save').show();
+		keyWord = '';
+		var $radios = $('#standard_code');
+		if($radios.is(':checked') === false) {
+		    $radios.filter('[value=icd9]').attr('checked', true);
+		}
 		
 		
 			
@@ -484,6 +496,7 @@
 			
 			$('#w').window('close');
 			
+			keyWord = '';
 			
 			//alert('parent_typeid last '+parent_typeid);
 			
@@ -533,6 +546,7 @@
 	function cancelItem()
 	{
 		$('#w').window('close');
+		keyWord = '';
 	}
 	
 	function addItem()
@@ -717,6 +731,7 @@
 		}
 				
 		$('#w').window('close');
+		keyWord = '';
 		alert('Configuration Added Successfully');
 		$('#tg').treegrid('reload');
 		
@@ -983,6 +998,7 @@
 	 // Dynamically add new rows in the Procedure order
 	
 	function cloneDiv(category) {
+		
 			//alert("clone");
 		
 		
@@ -1012,6 +1028,7 @@
 		{
 			ord_inc++;
 			
+			
 			$('#edit_div').find('#'+category+'_title').attr('id', category+'_title_'+ord_inc);
 			$('#edit_div').find('#'+category+'_indicator').attr('id', category+'_indicator_'+ord_inc);
 			 
@@ -1027,6 +1044,7 @@
 			$('#edit_div').find('#'+category+'_from').attr('id', category+'_from_'+ord_inc);
 			$('#edit_div').find('#'+category+'_procedurecode').attr('id', category+'_procedurecode_'+ord_inc);
 			$('#edit_div').find('#'+category+'_standardcode').attr('id', category+'_standardcode_'+ord_inc);
+			$('#edit_div').find('#resultdiv_0').attr('id', 'resultdiv_'+ord_inc);
 			$('#edit_div').find('#'+category+'_bodysite').attr('id', category+'_bodysite_'+ord_inc);
 			$('#edit_div').find('#'+category+'_specimentype').attr('id', category+'_specimentype_'+ord_inc);
 			$('#edit_div').find('#'+category+'_administervia').attr('id', category+'_administervia_'+ord_inc);
@@ -1099,5 +1117,90 @@
 	   
 	}
 	
+/**
+ * Check Procedure Code is exist
+ */
+
+function checkCode(thisValue) {
+	$.ajax({
+		type: "POST",
+		cache: false,
+                dataType: "json",
+		url: "./configuration/checkProcedureCode",
+		data: {
+			code: thisValue
+		    },
+		success: function(data) {
+			if (data == 1) {
+				$('#save').hide();
+				$('#dlg').dialog('open');
+			} else {
+				$('#save').show();
+			}
+		},
+		error: function(data){
+			alert("Ajax Fail");
+		}
+	});
+}
+$(function(){
+	$('#dlg').dialog('close');
+	$('#save').show();
+});
+
+/**
+ * Standard Code  Auto suggest
+ */
+
+function lookup(inputString, thisID) {
+	arr = thisID.split("order_standardcode");
+	var divid = '';
+	if (arr[1]) {
+		divid =  arr[1];	
+	}
+	inputString = $.trim(inputString.substring(inputString.lastIndexOf(';') + 1));
+	if (inputString == '') return false;
+	var codeType 		= $("#config_form input[type='radio']:checked").val();
+        $.post("./configuration/getStandardCode",{
+            queryString: inputString,
+	    codeType: codeType
+        },
+	function(data) {
+	    if(data.response == true) {
+		    if(data.resultArray.length>0) {
+			resultArray = data.resultArray;
+			j = '<ul class="suggestion">';
+			if (codeType == 'PROD') {
+				for(var results in resultArray) {
+				    splitArr = resultArray[results].split("|-|");
+				    j +="<li onclick=loadResult('" + splitArr[0] + "','" + codeType + "','" + divid + "')><a href='#'>"+splitArr[0]+" - "+splitArr[1]+","+splitArr[2]+"</a></li>";
+				}	
+			} else {
+				for(var results in resultArray) {
+				    splitArr = resultArray[results].split("|-|");
+				    j +="<li onclick=loadResult('" + splitArr[0] + "','" + codeType + "','" + divid + "')><a href='#'>"+splitArr[0]+" - "+splitArr[1]+"</a></li>";
+				}
+			}
+			j += "</ul>"; 
+			$("#resultdiv" + divid).css('display','block');
+			$("#resultdiv" + divid).html(j);
+		    }
+		    else {
+			$("#resultdiv" + divid).html("");
+			$("#resultdiv" + divid).css('display','none');
+		    }
+	    } else {
+		alert("Failed");
+		console.log('could not add');
+	    }
+	}, 'json');
+}
+
+var keyWord = '';
+function loadResult(data, codeType, divid){
+
+	keyWord += codeType + ':' + data + ';';	
 	
-	
+	$('#order_standardcode' + divid).val(keyWord);
+	$("#resultdiv" + divid).css('display','none');
+}

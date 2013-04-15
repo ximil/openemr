@@ -560,11 +560,6 @@ class ResultTable extends AbstractTableGateway
         $value_arr['procedure_order_id']   	= $proc_order_id;
 	$value_arr['code_suffix']   		= $code_suffix;
 	
-	 $fp	= fopen("D:/abc.txt", "a");
-		    fwrite($fp," \n\n\n getProcedureOrderSequence.. SQL ".$sql_orderseq);
-	    
-		    fwrite($fp," \n getProcedureOrderSequence..  array ".print_r($value_arr,1));
-	
 	$result = sqlStatement($sql_orderseq,$value_arr);
 	$row 	= sqlFetchArray($result);
 	

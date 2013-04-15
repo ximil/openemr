@@ -360,9 +360,9 @@ $(function()
                           
 		         
 			<?php }elseif(($labresult['editor']==0) AND ($labresult['editor']!=1)){ ?>
-		          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getLabelDownload(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/label_download.png'; ?> > </td>
-                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getRequisition(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/request.png'; ?> > </a></td>
-                          <td class="tdfont childtd" style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> <a href="#" onclick="getResult(<?php echo $this->escapeHtml($labresult[order_id1]);?>)"> <img  src=<?php echo $this->basePath() .'/css/icons/pdf_icon.png'; ?> > </a></td>
+                                            <td class="tdfont childtd" style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp; </td>
+                                            <td class="tdfont childtd" style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp; </a></td>
+                                            <td class="tdfont childtd" style="border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"> &nbsp; </a></td>
 		         
 			 <?php } elseif((($labresult['editor']==0) OR ($labresult['editor']==1))  AND $check!=1)  { ?>
 			 

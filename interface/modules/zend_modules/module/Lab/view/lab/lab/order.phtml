@@ -1,32 +1,3 @@
-<script type="text/javascript">
-$(document).ready(function() {
-$(function()  
-{  
-	// One instance that's reused to show info for the current person  
-	var container = $('<div id="personPopupContainer">'  
-	    + '  <div id="personPopupContent"></div>'  
-	    + '</div>');    
-	$('body').append(container);    
-	$('.personPopupTrigger').live('focus', function()  
-	{  
-	    // format of 'rel' tag: pageid,personguid  
-	    var reason = $(this).attr('rel');  
-	    var pos = $(this).offset();  
-	    var width = $(this).width();  
-	    container.css({  
-		left: (pos.left + width+3) + 'px',  
-		top: pos.top - 5 + 'px'  
-	    });  
-	    $('#personPopupContent').html(reason);    
-	    container.css('display', 'block');    
-	    $('.personPopupTrigger').live('blur', function()  
-	    {  
-	     container.css('display', 'none');  
-	    });  
-	});  
-});
-});
-</script>
 <?php
 	$form = $this->form;
 	$form->setAttribute('action', $this->url('lab', array('action' => 'savedata')));
@@ -43,8 +14,8 @@ $(function()
 <?php if ($this->message == 'N') { ?>
     <div class="easyui-accordion" style="width:auto;height:550px;">
         <div  title="<?php echo xlt('Procedur Order'); ?>" style="overflow:auto;padding:10px;">
-            <div id="dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-save'" style="width:400px;height:200px;padding:10px">
-                    Please select patient and encounter .. !
+            <div id="dlg" class="easyui-dialog" title="<?php echo xlt('Message');?>" data-options="iconCls:'icon-save'" style="width:400px;height:200px;padding:10px">
+                    <div style="margin: 50px; font-size: 14px;"><?php echo xlt('Please select a patient and encounter .. !');?></div>
             </div>
         </div>
     </div>
@@ -58,11 +29,11 @@ $(function()
     <?php echo xlt('Save'); ?>
 </a>
 
-<div id='accord' class="easyui-accordion" style="width:auto;height:550px;">
-    <div id='main_1' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
+<div id='accord' class="easyui-accordion" style="width:1080px;height:550px;overflow:auto">
+    <div id='main_1' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px; width:auto;">
             <div id="toolbar_1">
                 <span style="padding-left: 10px;" >
-                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                    <a href="javascript:void(0)" id='addButton_1'  plain="true" onclick="addRow(this.id);">
                         <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                         <?php echo xlt('Add Procedure'); ?>
                     </a>
@@ -94,7 +65,7 @@ $(function()
                             <?php echo $this->formRow($form->get('orderdate[0][]'));?>
                         </td>
                         <td valign='top' id="internaltime_1_1" style="display:none">
-                                <?php echo $this->formRow($form->get('timecollected[0][]'));?>
+                                <?php //echo $this->formRow($form->get('timecollected[0][]'));?>
                         </td>
                         <td  valign='top'><?php echo $this->formRow($form->get('internal_comments[0][]'));?></td>
                         <td valign='top' id='specimencollectedtd_1_1' style="display:none">
@@ -114,7 +85,7 @@ $(function()
                                     <td width='40%' valign='top'><?php echo xlt('Patient Instructions');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Diagnoses');?></td>
                                     <td width='20%' valign='top'><?php echo xlt('Procedure');?></td>
-                                    <td align='left'><?php echo xlt('Action'); ?></td>
+                                    <td align='center'><?php echo xlt('Action'); ?></td>
                             </tr>
                             </table>
                         </td>
@@ -138,19 +109,19 @@ $(function()
                                              <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
                                         </span>
                                     </td>
-                                    <td valign='top' align='left'>
-                                        <!--<span style="padding-left: 10px;" >-->
+                                    <td valign='top' align='center'>
+                                        <span style="padding-left: 10px;" >
                                             <a href="#" id='deleteButton_1_1'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                                                 <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                                                 <?php echo xlt('Cancel'); ?>
                                             </a>
-                                       <!-- </span>
-                                        <span style="padding-left: 10px;" >-->
-                                            <a href="javascript:void(0)" id='addButton_1_1'  plain="true" onclick="addRow();">
+                                        </span>
+                                        <span style="padding-left: 10px;" >
+                                            <a href="javascript:void(0)" id='addButton_1_1'  plain="true" onclick="addRow(this.id);">
                                                 <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                                                 <?php echo xlt('Add'); ?>
                                             </a>
-                                       <!-- </span>-->
+                                        </span>
                                     </td> 
                             </tr>
                             <tr id="AOEtemplate_1_1"  style="display:none">
@@ -167,6 +138,7 @@ $(function()
     </div><!-- End main -->
   
 </div><!-- End accord -->
+
 <?php
         }
         echo $this->form()->closeTag();
@@ -174,6 +146,7 @@ $(function()
 				->prependFile($this->basePath() . '/js/lab/lab.js')
 				->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
 				->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+				->prependFile($this->basePath() . '/js/lib/bubbles.js')
 ?>
 <!-- Start Row Template -->
 <div style="display:none" id="procedureclonetemplate">
@@ -194,19 +167,19 @@ $(function()
                  <?php echo $this->formRow($form->get('procedure_suffix[0][]'));?>
             </span>
         </td>
-        <td valign='top' align='left'>
-            <!--<span style="padding-left: 10px;" >-->
+        <td valign='top' align='center'>
+            <span style="padding-left: 10px;" >
                 <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
                     <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                     <?php echo xlt('Cancel'); ?>
                 </a>
-            <!--</span>
-            <span style="padding-left: 10px;" >-->
-                <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+            </span>
+            <span style="padding-left: 10px;" >
+                <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow(this.id);">
                     <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                     <?php echo xlt('Add'); ?>
                 </a>
-            <!--</span>-->
+            </span>
         </td> 
 </tr>
 <tr id="AOEtemplate"  style="display:none">
@@ -225,7 +198,7 @@ $(function()
     <div id='main' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
             <div id="toolbar">
                 <span style="padding-left: 10px;" >
-                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow();">
+                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow(this.id);">
                         <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                         <?php echo xlt('Add Procedure'); ?>
                     </a>

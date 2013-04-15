@@ -180,7 +180,8 @@ class LabForm extends Form
 		'onKeyup' => 'getDiagnoses(this.value, this.id)',
 		'onfocus' => 'readDiagnoses(this.value, this.id)',
 		'class' => 'easyui-validatebox combo',
-		'required' => 'required',
+		'style' => 'width:100%',
+		//'required' => 'required',
 		'placeholder' => 'Seperated by semicolon(;)'
             ),
         ));
@@ -189,7 +190,7 @@ class LabForm extends Form
             'name' => 'patient_instructions[0][]',
 	    'attributes' => array(
                 'class' => 'easyui-validatebox combo',
-		'style' => 'height:20px; width:370px',
+		'style' => 'height:20px; width:100%',
 		'id' => 'patient_instructions_1_1',
             ),
         ));
@@ -223,8 +224,10 @@ class LabForm extends Form
 		'autocomplete' 	=> 'off',
                 'type'  => 'text',
 		'class' => 'easyui-validatebox combo',
+		'style' => 'width:100%',
 		'onKeyup' => 'getProcedures(this.value, this.id)',
-		'required' => 'required'
+		'required' => 'required',
+		'placeholder' => xlt('Enter Valid Procedure')
             ),
         ));
 	$this->add(array(

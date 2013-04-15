@@ -185,6 +185,7 @@ function getProcedures(inputString,thisID) {
 			//$("#"+thisID).val("");
 			//$("#prodiv_"+count).html("");
 			//$("#prodiv_"+count).css('display','none');
+			$('#' + thisID).value('');
 			$("#prodiv_" + arr[1]).html("");
 			$("#prodiv_" + arr[1]).css('display','none');
 		    }
