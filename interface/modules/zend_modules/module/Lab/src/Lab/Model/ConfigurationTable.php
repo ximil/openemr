@@ -81,8 +81,8 @@ class ConfigurationTable extends AbstractTableGateway
 	
 	$ret_arr        	= new JsonModel($comb_arr);
 	
-	$fp	= fopen("D:/arr.txt","w");
-	fwrite($fp,"\n comb arr \n ".print_r($ret_arr,1));
+	//$fp	= fopen("D:/arr.txt","w");
+	//fwrite($fp,"\n comb arr \n ".print_r($ret_arr,1));
 	
 	return $ret_arr;
 	
@@ -298,6 +298,9 @@ class ConfigurationTable extends AbstractTableGateway
 	    $exists	= 0;
 	    foreach($this->result as $result)
 	    {
+		$fh = fopen(dirname(__FILE__)."/test.txt","a");
+		fwrite($fh,$result['id'] ."==". $row['procedure_type_id']."\r\n");
+		
 		if($result['id'] == $row['procedure_type_id'])
 		{
 		    $exists	= 1;
@@ -322,10 +325,20 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['procedure_type']	= $row['procedure_type'];
 	    $res_arr['range']		= $row['range'];
 	    $res_arr['discription']	= $row['description'];
-	    
+	    $cnt ='';
+	    if($row['procedure_code']){
+	    $ro = sqlQuery("SELECT count(*) AS cnt FROM procedure_order_code WHERE procedure_code=?",array($row['procedure_code']));
+	    $cnt = $ro['cnt'];
+	    }
 	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    if(!$cnt){
 	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    }
+	    else{
+	    $res_arr['action']		.= "<div class=\"icon_disedit\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_disdelete\">&nbsp;</div>";
+	    }
 	    
 	    if($res_arr['procedure_type'] == "grp"){
 		$res_arr['iconCls']	= "icon-lab-group";
@@ -365,11 +378,13 @@ class ConfigurationTable extends AbstractTableGateway
 	   
 	    if($numchilds > 0)
 	    {
-		$this->saveAllChildConfigArray($row['procedure_type_id']);
+		//$this->saveAllChildConfigArray($row['procedure_type_id']);
 	    }	    
 	}	
 	
-	$json_arr['rows']	= $this->result;	
+	$json_arr['rows']	= $this->result;
+	//$fh = fopen("D:/ttt.txt","a");
+	//fwrite($fh,print_r($json_arr,1));
 	$result_arr        	= new JsonModel($json_arr);	
 	
 	return $result_arr;
@@ -396,9 +411,20 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['range']		= $row['range'];
 	    $res_arr['discription']	= $row['description'];
 	    
+	    $cnt ='';
+	    if($row['procedure_code']){
+	    $ro = sqlQuery("SELECT count(*) AS cnt FROM procedure_order_code WHERE procedure_code=?",array($row['procedure_code']));
+	    $cnt = $ro['cnt'];
+	    }
 	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    if(!$cnt){
 	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
 	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+	    }
+	    else{
+	    $res_arr['action']		.= "<div class=\"icon_disedit\">&nbsp;</div>";
+	    $res_arr['action']		.= "<div class=\"icon_disdelete\">&nbsp;</div>";
+	    }
 	    
 	    if($res_arr['procedure_type'] == "grp"){
 		$res_arr['iconCls']	= "icon-lab-group";

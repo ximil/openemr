@@ -45,7 +45,26 @@ table.gridtable td {
 	cursor:pointer;
 	cursor:hand;
 }
+.icon_disedit
+{
+	float:left;
+	width:20px;
+	background-image:url("<?php echo $this->basePath(); ?>/css/icons/dispencil.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
   
+  
+.icon_disdelete
+{
+	float:left;
+	width:20px;
+	background-image:url("<?php echo $this->basePath(); ?>/css/icons/discancel.png");
+	background-repeat:no-repeat;
+	cursor:pointer;
+	cursor:hand;
+}
 
 </style>
 <div style="margin:10px 0;"></div>
@@ -344,7 +363,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('reccomendation_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('reccomendation_type_id[]'));?>	
 					<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						<?php echo xlt('Reccomendation');?>
+						<?php echo xlt('Recomendation');?>
 					</div>
 					
 				</div>
