@@ -22,24 +22,23 @@
     // Save the data
     var url = './savedata'
     function saveFrm() {
-        /*alert("DSf");*/
+        Code = '';
+        for (var i = 0; i < $("#total_panel").val(); i++) {
+            if(document.getElementsByName('procedure_code['+(i+1)+'][]'))
+            SubLen = document.getElementsByName('procedure_code['+i+'][]').length;
+            else
+            continue;
+            for(j=0;j<SubLen;j++){
+                if($("#procedure_code_"+(i+1)+"_"+(j+1))){
+                    if($("#procedure_code_"+(i+1)+"_"+(j+1)).val()=="")
+                        Code += $("#procedures_"+(i+1)+"_"+(j+1)).val()+"\r\n";
+                }
+            }
+        }
+        if(Code=='')
         $("#hiddensubmit").click();
-        //url = 'savedata';
-        //$('#lab').form('submit',{
-        //    url: url,  
-        //    onSubmit: function(){  
-        //       return;//$(this).form('validate');  
-        //    },  
-        //    success: function(result){
-        //        var result = eval('('+result+')');  alert(result);
-        //        if (result.errorMsg){
-        //            $.messager.show({  
-        //                title: 'Error',  
-        //                msg: result.errorMsg  
-        //            });  
-        //        }
-        //    }  
-        //});  
+        else
+        alert("Inalid Procedures \r\n"+Code);
     }
     
     // Remove the dynamically added rows
