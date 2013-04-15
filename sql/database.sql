@@ -5370,6 +5370,9 @@ CREATE TABLE `procedure_type` (
   `seq`                 int(11)      NOT NULL default 0  COMMENT 'sequence number for ordering',
   `activity`            tinyint(1)   NOT NULL default 1  COMMENT '1=active, 0=inactive',
   `notes`               varchar(255) NOT NULL default '' COMMENT 'additional notes to enhance description',
+  `suffix`              varchar(50) NOT NULL DEFAULT '',
+  `pap_indicator`       varchar(5) DEFAULT NULL,
+  `specimen_state`      varchar(5) DEFAULT NULL,
   PRIMARY KEY (`procedure_type_id`),
   KEY parent (parent)
 ) ENGINE=MyISAM;
@@ -5386,37 +5389,45 @@ CREATE TABLE `procedure_questions` (
   `options`             text         NOT NULL DEFAULT ''  COMMENT 'choices for fldtype S and T',
   `tips`                varchar(255) NOT NULL DEFAULT ''  COMMENT 'Additional instructions for answering the question',
   `activity`            tinyint(1)   NOT NULL DEFAULT 1   COMMENT '1 = active, 0 = inactive',
+  `question_component`  varchar(255) DEFAULT NULL,
   PRIMARY KEY (`lab_id`, `procedure_code`, `question_code`)
 ) ENGINE=MyISAM;
 
 CREATE TABLE `procedure_order` (
-  `procedure_order_id`     bigint(20)   NOT NULL AUTO_INCREMENT,
-  `provider_id`            bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references users.id, the ordering provider',
-  `patient_id`             bigint(20)   NOT NULL            COMMENT 'references patient_data.pid',
-  `encounter_id`           bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references form_encounter.encounter',
-  `date_collected`         datetime     DEFAULT NULL        COMMENT 'time specimen collected',
-  `date_ordered`           date         DEFAULT NULL,
-  `order_priority`         varchar(31)  NOT NULL DEFAULT '',
-  `order_status`           varchar(31)  NOT NULL DEFAULT '' COMMENT 'pending,routed,complete,canceled',
-  `diagnoses`              text         NOT NULL DEFAULT '' COMMENT 'diagnoses and maybe other coding (e.g. ICD9:111.11)',
-  `patient_instructions`   text         NOT NULL DEFAULT '',
-  `activity`               tinyint(1)   NOT NULL DEFAULT 1  COMMENT '0 if deleted',
-  `control_id`             bigint(20)   NOT NULL            COMMENT 'This is the CONTROL ID that is sent back from lab',
-  `lab_id`                 bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references procedure_providers.ppid',
-  `specimen_type`          varchar(31)  NOT NULL DEFAULT '' COMMENT 'from the Specimen_Type list',
-  `specimen_location`      varchar(31)  NOT NULL DEFAULT '' COMMENT 'from the Specimen_Location list',
-  `specimen_volume`        varchar(30)  NOT NULL DEFAULT '' COMMENT 'from a text input field',
+  `procedure_order_id`     bigint(20)       NOT NULL AUTO_INCREMENT,
+  `provider_id`            bigint(20)       NOT NULL DEFAULT 0  COMMENT 'references users.id, the ordering provider',
+  `patient_id`             bigint(20)       NOT NULL            COMMENT 'references patient_data.pid',
+  `encounter_id`           bigint(20)       NOT NULL DEFAULT 0  COMMENT 'references form_encounter.encounter',
+  `date_collected`         datetime         DEFAULT NULL        COMMENT 'time specimen collected',
+  `date_ordered`           date             DEFAULT NULL,
+  `order_priority`         varchar(31)      NOT NULL DEFAULT '',
+  `order_status`           varchar(31)      NOT NULL DEFAULT '' COMMENT 'pending,routed,complete,canceled',
+  `activity`               tinyint(1)       NOT NULL DEFAULT 1  COMMENT '0 if deleted',
+  `control_id`             bigint(20)       NOT NULL            COMMENT 'This is the CONTROL ID that is sent back from lab',
+  `lab_id`                 bigint(20)       NOT NULL DEFAULT 0  COMMENT 'references procedure_providers.ppid',
+  `specimen_type`          varchar(31)      NOT NULL DEFAULT '' COMMENT 'from the Specimen_Type list',
+  `specimen_location`      varchar(31)      NOT NULL DEFAULT '' COMMENT 'from the Specimen_Location list',
+  `specimen_volume`        varchar(30)      NOT NULL DEFAULT '' COMMENT 'from a text input field',
+  `psc_hold`               varchar(30)      DEFAULT NULL,
+  `requisition_file_url`   varchar(50)      DEFAULT NULL,
+  `result_file_url`        varchar(50)      DEFAULT NULL,
+  `billto`                 varchar(5)       DEFAULT NULL,
+  `internal_comments`      text,
+  `ord_group`              int(10) unsigned NOT NULL,
   PRIMARY KEY (`procedure_order_id`),
   KEY datepid (date_ordered, patient_id),
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM;
 
 CREATE TABLE `procedure_order_code` (
-  `procedure_order_id`  bigint(20)  NOT NULL                COMMENT 'references procedure_order.procedure_order_id',
-  `procedure_order_seq` int(11)     NOT NULL AUTO_INCREMENT COMMENT 'supports multiple tests per order',
-  `procedure_code`      varchar(31) NOT NULL DEFAULT ''     COMMENT 'like procedure_type.procedure_code',
-  `procedure_name`      varchar(255) NOT NULL DEFAULT ''    COMMENT 'descriptive name of the procedure code',
-  `procedure_source`    char(1)     NOT NULL DEFAULT '1'    COMMENT '1=original order, 2=added after order sent',
+  `procedure_order_id`    bigint(20)    NOT NULL                COMMENT 'references procedure_order.procedure_order_id',
+  `procedure_order_seq`   int(11)       NOT NULL AUTO_INCREMENT COMMENT 'supports multiple tests per order',
+  `procedure_code`        varchar(31)   NOT NULL DEFAULT ''     COMMENT 'like procedure_type.procedure_code',
+  `procedure_name`        varchar(255)  NOT NULL DEFAULT ''    COMMENT 'descriptive name of the procedure code',
+  `procedure_source`      char(1)       NOT NULL DEFAULT '1'    COMMENT '1=original order, 2=added after order sent',
+  `procedure_suffix`      varchar(50)   DEFAULT NULL,
+  `diagnoses`             text          NOT NULL COMMENT 'diagnoses and maybe other coding (e.g. ICD9:111.11)',
+  `patient_instructions`  text,
   PRIMARY KEY (`procedure_order_id`, `procedure_order_seq`)
 ) ENGINE=MyISAM;
 
@@ -5459,6 +5470,9 @@ CREATE TABLE `procedure_result` (
   `comments`            text         NOT NULL DEFAULT '' COMMENT 'comments from the lab',
   `document_id`         bigint(20)   NOT NULL DEFAULT 0  COMMENT 'references documents.id if this result is a document',
   `result_status`       varchar(31)  NOT NULL DEFAULT '' COMMENT 'preliminary, cannot be done, final, corrected, incompete...etc.',
+  `order_title`         varchar(255) DEFAULT NULL,
+  `order_code`          varchar(255) DEFAULT NULL,
+  `profile_title`       varchar(255) DEFAULT NULL,
   PRIMARY KEY (`procedure_result_id`),
   KEY procedure_report_id (procedure_report_id)
 ) ENGINE=MyISAM; 
@@ -5634,3 +5648,28 @@ CREATE TABLE `modules` (
   `type` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`mod_id`,`mod_directory`)
 ) ENGINE=InnoDB;
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `procedure_subtest_result`
+--
+
+CREATE TABLE `procedure_subtest_result` (
+  `procedure_subtest_result_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `procedure_report_id` bigint(20) NOT NULL COMMENT 'references procedure_report.procedure_report_id',
+  `subtest_code` varchar(30) NOT NULL DEFAULT '',
+  `subtest_desc` varchar(255) NOT NULL DEFAULT '',
+  `result_value` varchar(255) NOT NULL DEFAULT '',
+  `units` varchar(30) NOT NULL DEFAULT '',
+  `range` varchar(255) NOT NULL DEFAULT '',
+  `abnormal_flag` varchar(31) NOT NULL DEFAULT '' COMMENT 'no,yes,high,low',
+  `result_status` varchar(31) NOT NULL DEFAULT '' COMMENT 'preliminary, cannot be done, final, corrected, incompete...etc.',
+  `result_time` datetime DEFAULT NULL,
+  `providers_id` bigint(20) NOT NULL DEFAULT '0',
+  `comments` text NOT NULL COMMENT 'comments of subtest',
+  `order_title` varchar(255) DEFAULT NULL,
+  `order_code` varchar(255) DEFAULT NULL,
+  `profile_title` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`procedure_subtest_result_id`),
+  KEY `procedure_report_id` (`procedure_report_id`)
+);
