@@ -49,7 +49,7 @@ class LabController extends AbstractActionController
     {
 	global $pid;
 	$msg = '';
-	if ($pid == '' && $_SESSION['encounter'] == '') {
+	if ($pid == '' || $_SESSION['encounter'] == '') {
 	    $msg = 'N';  
 	}
 	$form 	= new LabForm();
