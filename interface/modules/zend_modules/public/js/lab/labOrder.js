@@ -22,24 +22,23 @@
     // Save the data
     var url = './savedata'
     function saveFrm() {
-        /*alert("DSf");*/
+        Code = '';
+        for (var i = 0; i < $("#total_panel").val(); i++) {
+            if(document.getElementsByName('procedure_code['+(i+1)+'][]'))
+            SubLen = document.getElementsByName('procedure_code['+i+'][]').length;
+            else
+            continue;
+            for(j=0;j<SubLen;j++){
+                if($("#procedure_code_"+(i+1)+"_"+(j+1))){
+                    if($("#procedure_code_"+(i+1)+"_"+(j+1)).val()=="")
+                        Code += $("#procedures_"+(i+1)+"_"+(j+1)).val()+"\r\n";
+                }
+            }
+        }
+        if(Code=='')
         $("#hiddensubmit").click();
-        //url = 'savedata';
-        //$('#lab').form('submit',{
-        //    url: url,  
-        //    onSubmit: function(){  
-        //       return;//$(this).form('validate');  
-        //    },  
-        //    success: function(result){
-        //        var result = eval('('+result+')');  alert(result);
-        //        if (result.errorMsg){
-        //            $.messager.show({  
-        //                title: 'Error',  
-        //                msg: result.errorMsg  
-        //            });  
-        //        }
-        //    }  
-        //});  
+        else
+        alert("Inalid Procedures \r\n"+Code);
     }
     
     // Remove the dynamically added rows
@@ -533,28 +532,32 @@
      */
     var txt
     function saveEditFrm(){
-        var url = './saveData';//'./updateData';
-        if (order != '') {
-            $('#p').progressbar('setValue', 0);
-            txt = 'Saving ';
-            start();
-            $('#lab').form('submit',{
-                url: url,  
-                onSubmit: function(){  
-                    return;  
-                },  
-                success: function(result){
-                    var result = eval('('+result+')');  
-                    if (result.errorMsg){
-                        $.messager.show({  
-                            title: 'Error',  
-                            msg: result.errorMsg  
-                        });  
-                    }
-                }  
-            }); 
+        if (status == 'pending') {
+            var url = './saveData';//'./updateData';
+            if (order != '') {
+                $('#p').progressbar('setValue', 0);
+                txt = 'Saving ';
+                start();
+                $('#lab').form('submit',{
+                    url: url,  
+                    onSubmit: function(){  
+                        return;  
+                    },  
+                    success: function(result){
+                        var result = eval('('+result+')');  
+                        if (result.errorMsg){
+                            $.messager.show({  
+                                title: 'Error',  
+                                msg: result.errorMsg  
+                            });  
+                        }
+                    }  
+                }); 
+            } else {
+                alert('Please select a procedure order ... !');
+            }
         } else {
-            alert('Please select a procedure order ... !');
+            alert('Could not save, Order Status is ' + status);
         }
     }
     
@@ -562,28 +565,32 @@
      * Remove Procedure order and its group
      */
     function removeOrder(){
-         var url = './removeLabOrder';
-        if (orderNo != '') {
-            $('#p').progressbar('setValue', 0);
-            txt = 'Removing ';
-            start();
-            $.ajax({
-                type: "POST",
-                cache: false,
-                url: url,
-                data: {
-                    orderID: orderNo
+        if (status == 'pending') {
+            var url = './removeLabOrder';
+            if (orderNo != '') {
+                $('#p').progressbar('setValue', 0);
+                txt = 'Removing ';
+                start();
+                $.ajax({
+                    type: "POST",
+                    cache: false,
+                    url: url,
+                    data: {
+                        orderID: orderNo
+                        },
+                    success: function(data) {
+                        //alert("Successfully removed");
+                        removeAccord();
                     },
-                success: function(data) {
-                    //alert("Successfully removed");
-                    removeAccord();
-                },
-                error: function(data){
-                    alert("Ajax Fail");
-                }
-            });
+                    error: function(data){
+                        alert("Ajax Fail");
+                    }
+                });
+            } else {
+                alert('Please select a procedure order ... !');
+            }
         } else {
-            alert('Please select a procedure order ... !');
+            alert('Could not remove, Order Status is ' + status);
         }
     }
     
@@ -623,4 +630,29 @@
                 toggleDisabled(el.childNodes[x]);
             }
         }
-    } 
+    }
+    
+    function addRowEdit(thisId) {
+        if (status == 'pending') {
+            addRow(thisId);
+        }
+    }
+    
+    function cancelItemEdit(thisId) {
+        if (status == 'pending') {
+            cancelItem(thisId);
+        }
+    }
+    
+    function newOrderEdit() {
+        if (status == 'pending') {
+            newOrder();
+        }
+    }
+    
+    function removeOrderEdit() {
+        if (status == 'pending') {
+            removeOrder();
+        }
+    }
+    

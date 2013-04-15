@@ -88,13 +88,13 @@
             </td>
             <td valign='top' align='center'>
                 <span style="padding-left: 10px;" >
-                    <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItem(this.id)">
+                    <a href="#" id='deleteButton'  style="height: 20px;"  plain="true" onclick="cancelItemEdit(this.id)">
                         <img  class="easyui-linkbutton" iconCls="icon-cancel" src=<?php echo $this->basePath() .'/css/icons/cancel.png'; ?> title=<?php echo xlt('Cancel'); ?> border=0 />
                         <?php echo xlt('Cancel'); ?>
                     </a>
                 </span>
                 <span style="padding-left: 10px;" >
-                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow(this.id);">
+                    <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRowEdit(this.id);">
                         <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                         <?php echo xlt('Add'); ?>
                     </a>
@@ -117,19 +117,19 @@
         <div id='main' title="<?php echo xlt('Procedur Order'); ?>" data-options="iconCls:'icon-single'" style="overflow:auto;padding:10px;">
                 <div id="toolbar">
                     <span style="padding-left: 10px;" >
-                        <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRow(this.id);">
+                        <a href="javascript:void(0)" id='addButton'  plain="true" onclick="addRowEdit(this.id);">
                             <img  src=<?php echo $this->basePath() .'/css/icons/edit_add.png'; ?> title=<?php echo xlt('Add'); ?> border=0 />
                             <?php echo xlt('Add Procedure'); ?>
                         </a>
                     </span>
                     <span style="padding-left: 10px;" >
-                        <a href="#"  plain="true" onclick="newOrder();">
+                        <a href="#"  plain="true" onclick="newOrderEdit();">
                             <img  class="easyui-linkbutton" iconCls="icon-multiple" src=<?php echo $this->basePath() .'/css/icons/multiple.png'; ?> title=<?php echo xlt('Order'); ?> border=0 />
                             <?php echo xlt('New Order'); ?>
                         </a>
                     </span>
                     <span style="margin-left: 67%;">
-                        <a href="javascript:void(0)"  onclick="removeOrder();">
+                        <a href="javascript:void(0)"  onclick="removeOrderEdit();">
                             <img  class="easyui-linkbutton" iconCls="icon-no" src=<?php echo $this->basePath() .'/css/icons/no.png'; ?> title=<?php echo xlt('Remove Order'); ?> border=0 />
                             <?php echo xlt('Remove Order'); ?>
                         </a>

@@ -1,4 +1,9 @@
 function getPatient(inputString,thisID,url){
+	if(inputString.length == 0){
+		$("#patdiv").html("");
+		$("#patdiv").css('display','none');
+		return;
+	}
   $.post(url,{
 		type: "getPatient",
 	  inputValue : inputString

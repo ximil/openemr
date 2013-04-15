@@ -260,6 +260,7 @@ class LabTable extends AbstractTableGateway
     }
     
     public function insertProcedureMaster($post,$ordnum,$orderGroup){
+	global $pid,$encounter;
 	$labvalArr = explode("|",$post['lab_id'][$ordnum][0]);
 	$labval = $labvalArr[0];
 	
@@ -268,6 +269,7 @@ class LabTable extends AbstractTableGateway
 		    array($post['provider'][$ordnum][0],$post['patient_id'],$post['encounter_id'],$post['timecollected'][$ordnum][0],$post['orderdate'][$ordnum][0],$post['priority'][$ordnum][0],
 		    'pending',$labval,$post['specimencollected'][$ordnum][0],
 		    $post['billto'][$ordnum][0],$post['internal_comments'][$ordnum][0],$orderGroup));
+	addForm($encounter, "Procedure Order", $procedure_type_id, "procedure_order", $pid, $userauthorized);
 	return $procedure_type_id;
     }
     // End Save Lab Data
