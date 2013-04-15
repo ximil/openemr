@@ -122,7 +122,7 @@ class ResultTable extends AbstractTableGateway
                 "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.patient_id,po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
                 "pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
                 "pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
-                "pr.report_status, pr.review_status,CONCAT_WS('',pc.procedure_code,pc.procedure_suffix) AS proc_code,po.patient_instructions";
+                "pr.report_status, pr.review_status,CONCAT_WS('',pc.procedure_code,pc.procedure_suffix) AS proc_code,pc.patient_instructions";
 
         $joins =
                 "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .

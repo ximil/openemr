@@ -58,6 +58,9 @@ class LabController extends AbstractActionController
 	$form->get('provider[0][]')->setValueOptions($providers);
 	
 	$labs = $helper->getLabs('y');
+	if(count($labs) == 0){
+		die("Please Provide Lab Details in 'Procedures->Providers' To Start Using This Functionality");
+  }
 	$form->get('lab_id[0][]')->setValueOptions($labs);
 	
 	$priority = $helper->getList("ord_priority");
