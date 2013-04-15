@@ -86,7 +86,13 @@ echo $this->doctype(); ?>
 		<a href="<?php echo $this->url('specimen', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $specimen_collection_active; ?>" data-options="plain:true"><?php echo xlt('Specimen Collection');?></a>
 		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
 		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
+		<?php
+		if(acl_check("module_lab","pull_compendium")){
+		?>
 		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
+		<?php
+		}
+		?>
 	    </div>
             <?php echo $this->content; ?>
             <hr>

@@ -61,14 +61,22 @@
 				data: {							
 					},
 				success: function(data) {
+					if(data.unremoved){
+						alert("Already used for lab ordering. So it can't be deleted");
+						$('#tg').treegrid('reload');
+					}
+					else{
+						alert('Items Deleted Successfully');
+						$('#tg').treegrid('reload');
+					}
 					//alert("Ajax success");
 				},
 				error: function(data){
 					alert("Ajax Fail");
 				}
 			});
-			alert('Items Deleted Successfully');
-			$('#tg').treegrid('reload'); 		
+			
+			 		
 		}
 		
 			
@@ -264,7 +272,7 @@
 		$('#pg').propertygrid({
 				onExpand: function(row)
 				{
-					alert("hihihihi");
+					alert("N");
 				}
 			});
 					
@@ -289,6 +297,20 @@
 	
 	function saveItem()
 	{
+		if($('#order_name').val()){
+			if(!$('#order_procedurecode').val())
+			{
+				alert("Please Enter Procedure Code");
+				return false;
+			}
+		}
+		else{
+			if($('#order_procedurecode').val())
+			{
+				alert("Please Enter Procedure Name");
+				return false;
+			}
+		}
 		var parent_typeid = document.getElementById('init_edit_id').value;
 		
 		if((document.getElementById('action').value == "add")||(document.getElementById('action').value == "addExist"))

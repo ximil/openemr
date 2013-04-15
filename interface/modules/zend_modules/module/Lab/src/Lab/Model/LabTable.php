@@ -399,11 +399,28 @@ class LabTable extends AbstractTableGateway
     
     public function listDiagnoses($inputString)
     {
-	$sql = "SELECT * FROM codes
-			    WHERE code_type='2' 
-				AND (code LIKE ? 
-				    OR   code_text LIKE ?) ORDER BY code ";
-	$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
+	
+	$codeTypeValue 	=  sqlQuery("SELECT ct_id FROM code_types WHERE ct_key='ICD9'");
+
+	// Search code type ICD9
+	
+	    $sql = "SELECT ref.formatted_dx_code as code, 
+			    ref.long_desc as code_text 
+			FROM `icd9_dx_code` as ref 
+			LEFT OUTER JOIN `codes` as c 
+				ON ref.formatted_dx_code = c.code 
+				AND c.code_type = ? 
+				WHERE (ref.long_desc LIKE ? OR ref.formatted_dx_code LIKE ?) 
+				AND ref.active = '1'
+				AND (c.active = 1 || c.active IS NULL) 
+				ORDER BY ref.formatted_dx_code+0, ref.formatted_dx_code";
+	    $result = sqlStatement($sql,array($codeTypeValue['ct_id'], "%" . $inputString . "%", "%" . $inputString . "%"));
+	
+	//$sql = "SELECT * FROM codes
+	//		    WHERE code_type='2' 
+	//			AND (code LIKE ? 
+	//			    OR   code_text LIKE ?) ORDER BY code ";
+	//$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {

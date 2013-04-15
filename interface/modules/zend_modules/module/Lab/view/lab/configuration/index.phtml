@@ -74,12 +74,12 @@ table.gridtable td {
 		">
 		<thead>			
 			<tr>
-				<th data-options="field:'pk',width:25,editor:'text'">Type ID</th>
-				<th data-options="field:'name',width:180,editor:'text'">Name</th>
-				<th data-options="field:'order',width:60,align:'left',editor:'text'">Type</th>
-				<th data-options="field:'procedure_code',width:50,editor:'text'">Code</th>
-				<th data-options="field:'range',width:50,editor:'text'">Normal Value</th>
-				<th data-options="field:'discription',width:170,editor:'text'">Description</th>
+				<th data-options="field:'pk',width:25,editor:'text'"><?php echo xlt('Type ID');?></th>
+				<th data-options="field:'name',width:180,editor:'text'"><?php echo xlt('Name');?></th>
+				<th data-options="field:'order',width:60,align:'left',editor:'text'"><?php echo xlt('Type');?></th>
+				<th data-options="field:'procedure_code',width:50,editor:'text'"><?php echo xlt('Code');?></th>
+				<th data-options="field:'range',width:50,editor:'text'"><?php echo xlt('Normal Value');?></th>
+				<th data-options="field:'discription',width:170,editor:'text'"><?php echo xlt('Description');?></th>
 				<th data-options="field:'action',title:'Action',width:39,align:'centre'"></th>
 				
 				<!-- Start Action -->
@@ -138,7 +138,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">							
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('group_name[]'));?>
@@ -146,7 +146,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('group_description[]'));?>
@@ -164,7 +164,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('order_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('order_type_id[]'));?>
 					<div id="order_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Order
+						<?php echo xlt('Order');?>
 					</div>
 					
 				</div>
@@ -173,7 +173,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px" class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('order_name[]'));?>
@@ -181,7 +181,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_description[]'));?>
@@ -190,7 +190,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_sequence[]'));?>
@@ -199,7 +199,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Order From
+								<?php echo xlt('Order From');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_from'));?>
@@ -208,7 +208,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Procedure Code
+								<?php echo xlt('Procedure Code');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_procedurecode[]'));?>
@@ -218,7 +218,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Standard Code
+								<?php echo xlt('Standard Code');?>
 							</td>
 							<td>
 								<div><?php echo $this->formRadio($form->get('standard_code'), 'prepend');?></div>
@@ -229,7 +229,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Body Site
+								<?php echo xlt('Body Site');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_bodysite'));?>
@@ -237,7 +237,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Specimen_type
+								<?php echo xlt('Specimen_type');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_specimentype'));?>
@@ -246,7 +246,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Administer Via
+								<?php echo xlt('Administer Via');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_administervia'));?>
@@ -255,7 +255,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Laterality
+								<?php echo xlt('Laterality');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_laterality'));?>
@@ -273,7 +273,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('result_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('result_type_id[]'));?>	
 					<div id="result_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Result
+						<?php echo xlt('Result');?>
 					</div>
 					
 				</div>
@@ -282,7 +282,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('result_name[]'));?>
@@ -290,7 +290,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_description[]'));?>
@@ -299,7 +299,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_sequence[]'));?>
@@ -308,7 +308,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Units
+								<?php echo xlt('Default Units');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_defaultunits'));?>
@@ -317,7 +317,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Range
+								<?php echo xlt('Default Range');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_defaultrange[]'));?>
@@ -326,7 +326,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Followup Services
+								<?php echo xlt('Followup Services');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_followupservices[]'));?>
@@ -344,7 +344,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('reccomendation_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('reccomendation_type_id[]'));?>	
 					<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Reccomendation
+						<?php echo xlt('Reccomendation');?>
 					</div>
 					
 				</div>
@@ -354,7 +354,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('reccomendation_name[]'));?>
@@ -362,7 +362,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_description[]'));?>
@@ -371,7 +371,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_sequence[]'));?>
@@ -380,7 +380,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Units
+								<?php echo xlt('Default Units');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_defaultunits'));?>
@@ -389,7 +389,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Range
+								<?php echo xlt('Default Range');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_defaultrange[]'));?>
@@ -398,7 +398,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Followup Services
+								<?php echo xlt('Followup Services');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_followupservices[]'));?>
@@ -421,7 +421,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('group_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('group_type_id[]'));?>
 					<div id="group_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Group
+						<?php echo xlt('Group');?>
 					</div>
 					
 				</div>	
@@ -429,7 +429,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">							
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('group_name[]'));?>
@@ -437,7 +437,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('group_description[]'));?>
@@ -458,7 +458,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('order_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('order_type_id[]'));?>
 					<div id="order_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Order
+						<?php echo xlt('Order');?>
 					</div>
 					
 				</div>	
@@ -466,7 +466,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px" class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('order_name[]'));?>
@@ -474,7 +474,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_description[]'));?>
@@ -483,7 +483,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_sequence[]'));?>
@@ -492,7 +492,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Order From
+								<?php echo xlt('Order From');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_from'));?>
@@ -501,7 +501,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Procedure Code
+								<?php echo xlt('Procedure Code');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_procedurecode[]'));?>
@@ -510,7 +510,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Standard Code
+								<?php echo xlt('Standard Code');?>
 							</td>
 							<td>
 								<div><?php echo $this->formRadio($form->get('standard_code'), 'prepend');?></div>
@@ -521,7 +521,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Body Site
+								<?php echo xlt('Body Site');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_bodysite'));?>
@@ -529,7 +529,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Specimen_type
+								<?php echo xlt('Specimen_type');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_specimentype'));?>
@@ -538,7 +538,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Administer Via
+								<?php echo xlt('Administer Via');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_administervia'));?>
@@ -547,7 +547,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Laterality
+								<?php echo xlt('Laterality');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('order_laterality'));?>
@@ -567,7 +567,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('result_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('result_type_id[]'));?>	
 					<div id="result_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Result
+						<?php echo xlt('Result');?>
 					</div>
 					
 				</div>
@@ -575,7 +575,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('result_name[]'));?>
@@ -583,7 +583,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_description[]'));?>
@@ -592,7 +592,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_sequence[]'));?>
@@ -601,7 +601,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Units
+								<?php echo xlt('Default Units');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_defaultunits'));?>
@@ -610,7 +610,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Range
+								<?php echo xlt('Default Range');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_defaultrange[]'));?>
@@ -619,7 +619,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Followup Services
+								<?php echo xlt('Followup Services');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('result_followupservices[]'));?>
@@ -639,7 +639,7 @@ table.gridtable td {
 					<?php echo $this->formRow($form->get('reccomendation_indicator_value[]'));?>
 					<?php echo $this->formRow($form->get('reccomendation_type_id[]'));?>	
 					<div id="reccomendation_heading" style="margin-left:5px;font-weight:bold;color:#666666">
-						Reccomendation
+						<?php echo xlt('Reccomendation');?>
 					</div>
 					
 				</div>
@@ -647,7 +647,7 @@ table.gridtable td {
 					<table style="width:600px;min-height:280px"  class="gridtable">
 						<tr>
 							<td width="150">
-								Name
+								<?php echo xlt('Name');?>
 							</td>
 							<td width="430">
 								<?php echo $this->formRow($form->get('reccomendation_name[]'));?>
@@ -655,7 +655,7 @@ table.gridtable td {
 						</tr>
 						<tr>
 							<td>
-								Description
+								<?php echo xlt('Description');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_description[]'));?>
@@ -664,7 +664,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Sequence
+								<?php echo xlt('Sequence');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_sequence[]'));?>
@@ -673,7 +673,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Units
+								<?php echo xlt('Default Units');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_defaultunits'));?>
@@ -682,7 +682,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Default Range
+								<?php echo xlt('Default Range');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_defaultrange[]'));?>
@@ -691,7 +691,7 @@ table.gridtable td {
 						
 						<tr>
 							<td>
-								Followup Services
+								<?php echo xlt('Followup Services');?>
 							</td>
 							<td>
 								<?php echo $this->formRow($form->get('reccomendation_followupservices[]'));?>
