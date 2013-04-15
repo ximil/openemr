@@ -255,7 +255,7 @@ class ResultTable extends AbstractTableGateway
 
                 $result_id        = empty($rrow['procedure_result_id']) ? 0 : ($rrow['procedure_result_id'] + 0);
                 $result_code      = empty($rrow['result_code'     ]) ? $restyp_code : $rrow['result_code'];
-		$order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
+                $order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
                 $profile_title = empty($rrow['profile_title']) ? $rrow['Mprofile_title'] : $rrow['profile_title'];
                 if ($rrow['sub_result_text'] != '') {
                     $result_text = $rrow['sub_result_text'];
@@ -339,7 +339,7 @@ class ResultTable extends AbstractTableGateway
 		  }
 				  
 				  
-		if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
+		  if ($arr1[$i - 1]['procedure_name'] != $row['procedure_name'] || $arr1[$i - 1]['order_id'] != $row['order_id']) {
                     $arr1[$i]['date_report'] = $date_report;
                     $arr1[$i]['order_id1']=$order_id;
                     $arr1[$i]['encounter_id'] = $row['encounter_id'];
@@ -385,7 +385,7 @@ class ResultTable extends AbstractTableGateway
                 $arr1[$i]['range'] = xlt($result_range);
                 $arr1[$i]['result_status'] = xlt($result_status);
                 $arr1[$i]['editor'] = $editor;
-                $arr1[$i]['order_title'] = $order_title;
+		$arr1[$i]['order_title'] = $order_title;
                 $arr1[$i]['profile_title'] = $profile_title;
 		$arr1[$i]['patient_instructions'] = $patient_instructions;
 				 
@@ -767,7 +767,11 @@ class ResultTable extends AbstractTableGateway
 						array_push($param,$request->result[$i]);
 						array_push($param,$request->range[$i]);
 						array_push($param,$request->abnormal[$i]);
-            array_push($param,$request->facility[$i]);
+            if($request->facility[$i]){
+                array_push($param,$request->facility[$i]);
+            }else{
+                array_push($param,'');
+            }
             array_push($param,$request->comments[$i]);
             array_push($param,$request->result_status[$i]);
             array_push($param,$request->procedure_report_id[$i]);
