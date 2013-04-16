@@ -282,11 +282,11 @@ class ConfigurationTable extends AbstractTableGateway
             $start = (($_POST['page'] - 1) * $rows);
         }	
 	
-	$sql	= "SELECT procedure_type_id, parent, name, procedure_code, procedure_type, `range`, description
-			FROM procedure_type LIMIT $start, $rows ";
+	$sql	= "SELECT procedure_type_id, parent, p.name, procedure_code, procedure_type, `range`, description,
+	    remote_host, login, password FROM procedure_type p LEFT JOIN procedure_providers pp ON pp.ppid = p.lab_id LIMIT $start, $rows ";
 	$res    = sqlStatement($sql);	
 	
-	$sql_count	= "SELECT procedure_type_id FROM procedure_type ";
+	$sql_count	= "SELECT procedure_type_id FROM procedure_type";
 	$res_count    	= sqlStatement($sql_count);	
 	$numrows	= sqlNumRows($res_count);
 	
@@ -298,8 +298,6 @@ class ConfigurationTable extends AbstractTableGateway
 	    $exists	= 0;
 	    foreach($this->result as $result)
 	    {
-		$fh = fopen(dirname(__FILE__)."/test.txt","a");
-		fwrite($fh,$result['id'] ."==". $row['procedure_type_id']."\r\n");
 		
 		if($result['id'] == $row['procedure_type_id'])
 		{
@@ -326,20 +324,25 @@ class ConfigurationTable extends AbstractTableGateway
 	    $res_arr['range']		= $row['range'];
 	    $res_arr['discription']	= $row['description'];
 	    $cnt ='';
-	    if($row['procedure_code']){
-	    $ro = sqlQuery("SELECT count(*) AS cnt FROM procedure_order_code WHERE procedure_code=?",array($row['procedure_code']));
-	    $cnt = $ro['cnt'];
+	    if($row['remote_host'] || $row['login'] || $row['password']){
+		$res_arr['action']		= "<div class=\"icon_disadd\" \">&nbsp;</div>";
+		$res_arr['action']		.= "<div class=\"icon_disedit\">&nbsp;</div>";
+		$res_arr['action']		.= "<div class=\"icon_disdelete\">&nbsp;</div>";
+	    }else{
+		if($row['procedure_code']){
+		$ro = sqlQuery("SELECT count(*) AS cnt FROM procedure_order_code WHERE procedure_code=?",array($row['procedure_code']));
+		$cnt = $ro['cnt'];
+		}
+		$res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
+		if(!$cnt){
+		$res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+		$res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
+		}
+		else{
+		$res_arr['action']		.= "<div class=\"icon_disedit\">&nbsp;</div>";
+		$res_arr['action']		.= "<div class=\"icon_disdelete\">&nbsp;</div>";
+		}
 	    }
-	    $res_arr['action']		= "<div class=\"icon_add\" onclick=\"addExist(".$row['procedure_type_id'].")\">&nbsp;</div>";
-	    if(!$cnt){
-	    $res_arr['action']		.= "<div class=\"icon_edit\" onclick=\"editItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
-	    $res_arr['action']		.= "<div class=\"icon_delete\" onclick=\"deleteItem(".$row['procedure_type_id'].")\">&nbsp;</div>";
-	    }
-	    else{
-	    $res_arr['action']		.= "<div class=\"icon_disedit\">&nbsp;</div>";
-	    $res_arr['action']		.= "<div class=\"icon_disdelete\">&nbsp;</div>";
-	    }
-	    
 	    if($res_arr['procedure_type'] == "grp"){
 		$res_arr['iconCls']	= "icon-lab-group";
 		$res_arr['order']	= "Group";
