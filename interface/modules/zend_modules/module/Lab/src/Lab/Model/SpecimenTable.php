@@ -61,8 +61,10 @@ class SpecimenTable extends AbstractTableGateway
 								}
 								array_push($param,$to_dt);
 						}
+						$sql .= " ORDER BY po.procedure_order_id DESC";
 						$result = sqlStatement($sql,$param);
 				}else{
+						$sql .= " ORDER BY po.procedure_order_id DESC";
 						$result = sqlStatement($sql);
 				}
 				$arr = array();
