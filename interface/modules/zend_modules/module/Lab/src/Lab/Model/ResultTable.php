@@ -731,14 +731,15 @@ class ResultTable extends AbstractTableGateway
 								array_push($param,$to_dt);
 						}
 						if($cond){
-										$sql .= " AND  pr.procedure_report_id IS NOT NULL";
-								}else{
-										$sql .= " pr.procedure_report_id IS NOT NULL";
-										$cond = 1;
-								}
+                $sql .= " AND  pr.procedure_report_id IS NOT NULL";
+            }else{
+                $sql .= " pr.procedure_report_id IS NOT NULL";
+                $cond = 1;
+            }
+            $sql .= " ORDER BY po.procedure_order_id DESC";
 						$result = sqlStatement($sql,$param);
 				}else{
-						$sql .= " WHERE pr.procedure_report_id IS NOT NULL";
+						$sql .= " WHERE pr.procedure_report_id IS NOT NULL ORDER BY po.procedure_order_id DESC";
 						$result = sqlStatement($sql);
 				}
 				$arr = array();
