@@ -5413,6 +5413,7 @@ CREATE TABLE `procedure_order` (
   `result_file_url`        varchar(50)      DEFAULT NULL,
   `billto`                 varchar(5)       DEFAULT NULL,
   `internal_comments`      text,
+  `return_comments`        text,
   `ord_group`              int(10) unsigned NOT NULL,
   PRIMARY KEY (`procedure_order_id`),
   KEY datepid (date_ordered, patient_id),

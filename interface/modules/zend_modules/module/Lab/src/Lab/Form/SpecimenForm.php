@@ -30,6 +30,13 @@ class SpecimenForm extends Form
             ),
         ));
 				$this->add(array(
+            'name' => 'procedure_order_seq[]',
+            'attributes' => array(
+				        'type'  => 'hidden',
+								'id' => 'procedure_order_seq',
+            ),
+        ));
+				$this->add(array(
             'name' => 'specimen[]',
             'attributes' => array(
                 'type'  => 'text',
