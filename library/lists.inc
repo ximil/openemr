@@ -32,28 +32,18 @@ else if (!empty($GLOBALS['athletic_team'])) {
   );
 }
 else { // default version
-  $ISSUE_TYPES = array(
-    // table type, plural, singular, abbrev, style, force show patient summary screen
-    'medical_problem' => array(xl('Medical Problems'),xl('Problem')   ,xl('P'),0,1),
-    'allergy'         => array(xl('Allergies')       ,xl('Allergy')   ,xl('A'),0,1),
-    'medication'      => array(xl('Medications')     ,xl('Medication'),xl('M'),0,1),
-    'surgery'         => array(xl('Surgeries')       ,xl('Surgery')   ,xl('S'),0,0),
-    'dental'          => array(xl('Dental Issues')   ,xl('Dental')    ,xl('D'),0,0),
-    //
-    // Styles are:
-    // 0 - Normal, as in 2.8.1.
-    // 1 - Simplified: only title, start date, comments and an Active checkbox;
-    //     no diagnosis, occurrence, end date, referred-by or sports fields.
-    //     Internally we'll still use a null end date to indicate active.
-    // 2 - Football Injury.
-    //
-    // force show patient summary screen is:
-    // 0 - Do not show this category on the patient summary screen if there have
-    //     been no issues entered in for this category.
-    // 1 - Show this category on the patient summary screen even if no issues have
-    //     been entered for this category.
-    //
-  );
+    $table_exists = "SHOW TABLES LIKE 'issue_types'";
+    $table_result = sqlStatement($table_exists);
+    $tableExists  = sqlNumRows($table_result) > 0;
+    if($tableExists){
+      $sql = "SELECT * FROM issue_types";
+      $res = sqlStatement($sql);
+      if ($res) {
+       while($row = sqlFetchArray($res)){
+	 $ISSUE_TYPES[$row['type']] = array(xl($row['plural']),xl($row['singular']),xl($row['abbreviation']),$row['style'],$row['force_show']);	      
+       }
+      }
+    }
 }
 
 //

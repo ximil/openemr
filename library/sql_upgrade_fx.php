@@ -25,6 +25,118 @@
 */
 
 /**
+* Check if issue_types tables exists.
+*
+*/
+function issueTypes() {
+  if(!tableExists('issue_types')){
+    sqlQuery("CREATE TABLE `issue_types` (
+      `id` smallint(6) NOT NULL AUTO_INCREMENT,
+      `type` varchar(75) NOT NULL,
+      `plural` varchar(75) DEFAULT NULL,
+      `singular` varchar(75) DEFAULT NULL,
+      `abbreviation` varchar(75) DEFAULT NULL,
+      `style` smallint(6) DEFAULT NULL,
+      `force_show` smallint(6) DEFAULT NULL,
+      PRIMARY KEY (`type`),
+      KEY `id` (`id`)
+    )");
+    
+    $file_handle = fopen(dirname(__FILE__)."/../sites/".$_SESSION['site_id']."/clickoptions.txt", "rb");
+    $seq  = 10;
+    $prev = '';
+    
+    while (!feof($file_handle) ) {
+      $line_of_text = fgets($file_handle);
+      if (preg_match('/^#/', $line_of_text)) continue;
+      if ($line_of_text == "") continue;      
+      $parts = explode('::', $line_of_text);      
+      $parts[0] = str_replace("\r\n","",$parts[0]);
+      $parts[1] = str_replace("\r\n","",$parts[1]);
+      
+      $sql1 = "INSERT INTO list_options (`list_id`,`option_id`,`title`,`seq`) VALUES (?,?,?,?)";
+      SqlStatement($sql1, array($parts[0].'_issue_list', $parts[1], ucwords($parts[1]), $seq) );
+      $seq = $seq + 10;
+        
+      if($prev != $parts[0]){
+        if($parts[0]    == 'medical_problem'){
+          $option_id    = 'medical_problem_issue_list';
+          $title        = 'Medical Problem Issue List';
+          $type         = 'medical_problem';
+          $plural       = 'Medical Problems';
+          $singular     = 'Problem';
+          $abbreviation = 'P';
+          $style        = '0';
+          $force_show   = '1';        
+        }elseif($parts[0] == 'medication'){
+          $option_id    = 'medication_issue_list';
+          $title        = 'Medication Issue List';
+          $type         = 'medication';
+          $plural       = 'Medications';
+          $singular     = 'Medication';
+          $abbreviation = 'M';
+          $style        = '0';
+          $force_show   = '1';        
+        }elseif($parts[0] == 'allergy'){
+          $option_id    = 'allergy_issue_list';
+          $title        = 'Allergy Issue List';
+          $type         = 'allergy';
+          $plural       = 'Allergies';
+          $singular     = 'Allergy';
+          $abbreviation = 'A';
+          $style        = '0';
+          $force_show   = '1';        
+        }elseif($parts[0] == 'surgery'){
+          $option_id    = 'surgery_issue_list';
+          $title        = 'Surgery Issue List';
+          $type         = 'surgery';
+          $plural       = 'Surgeries';
+          $singular     = 'Surgery';
+          $abbreviation = 'S';
+          $style        = '0';
+          $force_show   = '0';        
+        }elseif($parts[0] == 'immunizations'){
+          $option_id    = 'immunizations_issue_list';
+          $title        = 'Immunizations Issue List';
+          $type         = 'immunizations';
+          $plural       = 'Immunizations';
+          $singular     = 'Immunization';
+          $abbreviation = 'I';
+          $style        = '0';
+          $force_show   = '0';        
+        }elseif($parts[0] == 'general'){
+          $option_id    = 'general_issue_list';
+          $title        = 'General Issue List';
+          $type         = 'general';
+          $plural       = 'General Issues';
+          $singular     = 'General';
+          $abbreviation = 'G';
+          $style        = '0';
+          $force_show   = '0';        
+        }elseif($parts[0] == 'dental'){
+          $option_id    = 'dental_issue_list';
+          $title        = 'Dental Issue List';
+          $type         = 'dental';
+          $plural       = 'Dental Issues';
+          $singular     = 'Dental';
+          $abbreviation = 'D';
+          $style        = '0';
+          $force_show   = '0';        
+        }        
+        $sql2 = "INSERT INTO list_options (`list_id`,`option_id`,`title`) VALUES (?,?,?)";
+        SqlStatement($sql2, array('lists', $option_id, $title));      
+        $sql3 = "INSERT INTO issue_types(type,plural,singular,abbreviation,style,force_show) VALUES (?,?,?,?,?,?)";
+        SqlStatement($sql3, array($type, $plural, $singular, $abbreviation, $style, $force_show));         
+      }
+      $prev = $parts[0];
+    }
+    $sql4 = "INSERT INTO list_options (`list_id`,`option_id`,`title`) VALUES (?,?,?)";
+    SqlStatement($sql4, array('lists', 'issue_types', 'Issue Types'));     
+    fclose($file_handle);
+  }
+}
+
+/**
 * Check if a Sql table exists.
 *
 * @param  string  $tblname  Sql Table Name
@@ -367,6 +479,7 @@ function upgradeFromSqlFile($filename) {
       $query = '';
     }
   }
+  issueTypes();
   flush();
 } // end function
 
