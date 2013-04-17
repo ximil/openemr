@@ -313,6 +313,7 @@ ALTER TABLE procedure_order
   ADD COLUMN `result_file_url`      varchar(50)       DEFAULT NULL,
   ADD COLUMN `billto`               varchar(5)        DEFAULT NULL,
   ADD COLUMN `internal_comments`    text,
+  ADD COLUMN `return_comments`      text,
   ADD COLUMN `ord_group`            int(10) unsigned  NOT NULL;
 #EndIf
 

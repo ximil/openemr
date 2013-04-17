@@ -103,20 +103,20 @@ function closedlg(){
 					<th colspan="7" class="mainhead" >Results and Recommendations</th>
 			</tr>
 			<tr>
-					<td style="width:20px;" >PID</td>
-					<td style="min-width:75px;" >Patient Name</td>
-					<td style="width:65px;" >Date</td>
-					<td style="min-width:110px;" >Name</td>
-					<td >Specimen</td>
-					<td style="min-width:150px;" >Specimen Time Collected</td>
-					<td >Specimen Status</td>
-					<td >Group</td>
-					<td style="min-width:110px;" >Name</td>
-					<td >Abn</td>
-					<td >Value</td>
-					<td >Units</td>
-					<td >Range</td>
-					<td >More</td>
+					<td class="bold smallfont" style="width:20px;" >PID</td>
+					<td class="bold smallfont" style="min-width:75px;" >Patient Name</td>
+					<td class="bold smallfont" style="width:65px;" >Date</td>
+					<td class="bold smallfont" style="min-width:110px;" >Name</td>
+					<td class="bold smallfont" >Specimen</td>
+					<td class="bold smallfont" style="min-width:150px;" >Specimen Time Collected</td>
+					<td class="bold smallfont" >Specimen Status</td>
+					<td class="bold smallfont" >Group</td>
+					<td class="bold smallfont" style="min-width:110px;" >Name</td>
+					<td class="bold smallfont" >Abn</td>
+					<td class="bold smallfont" >Value</td>
+					<td class="bold smallfont" >Units</td>
+					<td class="bold smallfont" >Range</td>
+					<td class="bold smallfont" >More</td>
 			</tr>
 			<?php foreach($this->layout()->res as $val):
 			$helper = $this->getHelperPluginManager()->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');

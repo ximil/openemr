@@ -465,6 +465,10 @@ class ResultController extends AbstractActionController
 	$pulled_count 	= $this->getResultTable()->getOrderResultPulledCount($order_id);
 	if($pulled_count == 0)
 	{
+	    $patient_comments = $xmldata['pat_report_comments'];
+	    $sql_return_comments     = "UPDATE procedure_order SET return_comments = ? WHERE procedure_order_id = ?";
+	    $sql_return_comments_array = array($patient_comments,$data['procedure_order_id']);
+	    $this->getResultTable()->updateReturnComments($sql_return_comments,$sql_return_comments_array);   
 	    //SEPERATES EACH TEST DETAILS
 	    $test_arr              	= explode("#--#",$xmldata['test_ids']);
 	    $result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
@@ -480,6 +484,7 @@ class ResultController extends AbstractActionController
 	    
 	   // $index = 0;
 	    //$order_seq = $this->getResultTable()->getProcedureOrderSequences($data['procedure_order_id']);
+			$prev_seq = "";
 	    
 	    
 	    for($index=0; $index < $test_count; $index++ ) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
@@ -495,8 +500,11 @@ class ResultController extends AbstractActionController
 					
 		    $order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$code_suffix);
 		    
-		    if(empty($order_seq))
-			$order_seq = 1;
+		    if(empty($order_seq)){
+						$order_seq = $prev_seq;
+				}else{
+						$prev_seq = $order_seq;
+				}
 		    
 		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
 						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";

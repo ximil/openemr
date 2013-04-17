@@ -26,7 +26,7 @@ class SpecimenTable extends AbstractTableGateway
     
     public function listOrders($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,po.procedure_order_id AS poid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id";
+				$sql = "SELECT *,poc.procedure_order_id AS poid, poc.procedure_order_seq AS poseq, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE";
 						$cond = 0;
@@ -96,16 +96,17 @@ class SpecimenTable extends AbstractTableGateway
 		
 		public function saveSpecimenDetails($request)
     {
-				$existing_query = "SELECT * FROM procedure_report WHERE procedure_order_id = ?";
-				$sqlins = "INSERT INTO procedure_report SET specimen_num = ?, date_collected = ?, report_status = ?, procedure_order_id = ?";
-				$sqlupd = "UPDATE procedure_report SET specimen_num = ?, date_collected = ?, report_status = ? WHERE procedure_order_id = ?";
+				$existing_query = "SELECT * FROM procedure_report WHERE procedure_order_id = ? AND procedure_order_seq = ?";
+				$sqlins = "INSERT INTO procedure_report SET specimen_num = ?, date_collected = ?, report_status = ?, procedure_order_id = ?, procedure_order_seq = ?";
+				$sqlupd = "UPDATE procedure_report SET specimen_num = ?, date_collected = ?, report_status = ? WHERE procedure_order_id = ? AND procedure_order_seq = ?";
 				for($i=0;$i<count($request->procedure_order_id);$i++){
 						$param = array();
 						array_push($param,$request->specimen[$i]);
 						array_push($param,$request->specimen_collected_time[$i]);
 						array_push($param,$request->specimen_status[$i]);
 						array_push($param,$request->procedure_order_id[$i]);
-						$existing_res = sqlStatement($existing_query,array($request->procedure_order_id[$i]));
+						array_push($param,$request->procedure_order_seq[$i]);
+						$existing_res = sqlStatement($existing_query,array($request->procedure_order_id[$i],$request->procedure_order_seq[$i]));
 						if(sqlNumRows($existing_res) > 0){
 								$result = sqlQuery($sqlupd,$param);
 						}else{

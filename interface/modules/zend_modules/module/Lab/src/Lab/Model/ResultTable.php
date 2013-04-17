@@ -122,7 +122,7 @@ class ResultTable extends AbstractTableGateway
                 "CONCAT(pa.lname, ',', pa.fname) AS patient_name, po.patient_id,po.encounter_id, po.lab_id, pp.remote_host, pp.login, pp.password, po.order_status, po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, " .
                 "pt1.procedure_type_id AS order_type_id, pc.procedure_name, " .
                 "pr.procedure_report_id, pr.date_report, pr.date_collected, pr.specimen_num, " .
-                "pr.report_status, pr.review_status,CONCAT_WS('',pc.procedure_code,pc.procedure_suffix) AS proc_code,pc.patient_instructions";
+                "pr.report_status, pr.review_status,CONCAT_WS('',pc.procedure_code,pc.procedure_suffix) AS proc_code,po.return_comments";
 
         $joins =
                 "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
@@ -136,7 +136,7 @@ class ResultTable extends AbstractTableGateway
         }
         $orderby =
                 "po.procedure_order_id DESC, proc_code, po.date_ordered,  " .
-                "pc.procedure_order_seq, pr.procedure_report_id";
+                "pc.procedure_order_seq, pr.procedure_report_id, pr.procedure_order_seq";
 
         $where = "1 = 1";
         if($statusReport) {
@@ -193,7 +193,7 @@ class ResultTable extends AbstractTableGateway
             $remoteHost	    = empty($row['remote_host'      ]) ? '' : $row['remote_host'];
             $remoteUser	    = empty($row['login']) ? '' : $row['login' ];
             $remotePass	    = empty($row['password']) ? '' : $row['password' ];
-	    $patient_instructions = empty($row['patient_instructions']) ? '' : $row['patient_instructions' ];
+	    $patient_instructions = empty($row['return_comments']) ? '' : $row['return_comments' ];
             
             if ($flagSearch == 0) {
                 if ($form_review) {
@@ -243,7 +243,6 @@ class ResultTable extends AbstractTableGateway
                                             "LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
                                             "WHERE $pscond) " .
                                             "ORDER BY seq, name, procedure_type_id";
-//$fh = fopen("D:/txtxt.txt","a");fwrite($fh,$query."\r\n");
             $rres = sqlStatement($query);
             
             while ($rrow = sqlFetchArray($rres)) {
@@ -567,6 +566,11 @@ class ResultTable extends AbstractTableGateway
 	return ($row['procedure_order_seq'] <> "") ? $row['procedure_order_seq'] : 0;        
     }
     
+    public function updateReturnComments($sql, $in_array)
+    {
+	sqlInsert($sql, $in_array);
+    }
+    
     public function insertProcedureReport($sql, $in_array)
     {
 	$procedure_report_id = sqlInsert($sql, $in_array);
@@ -695,7 +699,7 @@ class ResultTable extends AbstractTableGateway
     
     public function listResults($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,pr.procedure_report_id AS prid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = po.procedure_order_id LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
+				$sql = "SELECT *,pr.procedure_report_id AS prid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE ";
 						$cond = 0;

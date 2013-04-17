@@ -15,7 +15,7 @@ $(function()
 	    var width = $(this).width();
             //alert(pos.left+"-"+pos);
 	    container.css({  
-		left: (pos.left -( width+40)) + 'px',  
+		left: (pos.left - width + 40) + 'px',  
 		top: pos.top - 5 + 'px'  
 	    });  
 	    $('#personPopupContent').html(reason);    
@@ -167,14 +167,14 @@ $(function()
                     $color = ($labresult['color'] <> "") ? $labresult['color'] : $color;
                     $totrows = $labresult['totalRows'];
                     if($labresult[order_title]=="" && $labresult[procedure_name] == "") continue;
-                    $patient_instructions = substr($labresult[patient_instructions],0,60);
+                    $patient_instructions = $labresult[patient_instructions];
                     if($main_grp != $labresult[order_title]){
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
                                 <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?>
                                 <?php
                                 if($labresult[patient_id] && $patient_instructions){?>
-                                <a href="#" class="personPopupTrigger" rel="<?php echo $this->escapeHtml($patient_instructions);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Internal Comments'); ?> >
+                                <a href="javascript:void(0)" class="personPopupTrigger" rel="<?php echo str_replace("\n","",$patient_instructions);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Internal Comments'); ?> >
                                 <?php
                                 }
                                 ?>
