@@ -87,6 +87,32 @@ if ($_POST['formaction']=='save' && $list_id) {
         }
       }
     }
+    else if ($list_id == 'issue_types') {
+      // special case for issue_types
+      sqlStatement("DELETE FROM issue_types");
+      for ($lino = 1; isset($opt["$lino"]['type']); ++$lino) {
+        $iter        = $opt["$lino"];
+        $it_type     = formTrim($iter['type']);
+        $it_plural   = formTrim($iter['plural']);
+        $it_singular = formTrim($iter['singular']);
+        $it_abbr     = formTrim($iter['abbreviation']);
+        $it_style    = formTrim($iter['style']);
+        $it_fshow    = formTrim($iter['force_show']);
+        
+        if (strlen($it_id) > 0) {
+          sqlInsert("INSERT INTO issue_types ( " .
+            "type, plural, singular, abbreviation, style, force_show " .
+            ") VALUES ( "   .
+            "'$it_type' , " .
+            "'$it_plural'  , " .
+            "'$it_singular' , " .
+            "'$it_abbr' , " .
+            "'$it_style', " .
+            "'$it_fshow' " .
+            ")");
+        }
+      }
+    }    
     else {
         // all other lists
         //
@@ -350,6 +376,21 @@ function writeFSLine($category, $option, $codes) {
   echo " </tr>\n";
 }
 
+
+// Helper functions for writeITLine():
+
+function itGenCell($opt_line_no, $it_array, $name, $size, $maxlength, $title='') {
+  $value = isset($it_array[$name]) ? $it_array[$name] : '';
+  $s = "  <td align='center' class='optcell'";
+  if ($title) $s .= " title='" . addslashes($title) . "'";
+  $s .= ">";
+  $s .= "<input type='text' name='opt[$opt_line_no][$name]' value='";
+  $s .= htmlspecialchars($value, ENT_QUOTES);
+  $s .= "' size='$size' maxlength='$maxlength' class='optin' />";
+  $s .= "</td>\n";
+  return $s;
+}
+
 // Helper functions for writeCTLine():
 
 function ctGenCell($opt_line_no, $ct_array, $name, $size, $maxlength, $title='') {
@@ -430,6 +471,21 @@ function writeCTLine($ct_array) {
   echo "</td>\n";
   echo " </tr>\n";
 }
+
+function writeITLine($it_array) {        
+  global $opt_line_no;
+  ++$opt_line_no;
+  $bgcolor = "#" . (($opt_line_no & 1) ? "ddddff" : "ffdddd");
+  echo " <tr bgcolor='$bgcolor'>\n";
+  echo itGenCell($opt_line_no, $it_array, 'type'  , 20, 75, xl('Type')); 
+  echo itGenCell($opt_line_no, $it_array, 'plural' , 20, 75, xl('Plural'));
+  echo itGenCell($opt_line_no, $it_array, 'singular' , 20,  75, xl('Singular'));
+  echo itGenCell($opt_line_no, $it_array, 'abbreviation' , 10,  10, xl('Abbreviation'));
+  echo itGenCell($opt_line_no, $it_array, 'style', 6, 6, xl('Style'));
+  echo itGenCell($opt_line_no, $it_array, 'force_show', 10,  10, xl('Force Show'));
+  echo " </tr>\n";
+}
+
 ?>
 <html>
 
@@ -699,6 +755,13 @@ while ($row = sqlFetchArray($res)) {
   <td><b><?php xl('Clinical Term','e'); ?></b></td>
   <td><b><?php xl('Medical Problem'     ,'e'); ?></b></td>
   <td><b><?php xl('External'    ,'e'); ?></b></td>
+<?php } else if ($list_id == 'issue_types') { ?>
+  <td><b><?php xl('Type'        ,'e'); ?></b></td>
+  <td><b><?php xl('Plural'      ,'e'); ?></b></td>
+  <td><b><?php xl('Singular'    ,'e'); ?></b></td>
+  <td><b><?php xl('Abbreviation','e'); ?></b></td>
+  <td><b><?php xl('Style'       ,'e'); ?></b></td>
+  <td><b><?php xl('Force Show'  ,'e'); ?></b></td>
 <?php } else { ?>
   <td title=<?php xl('Click to edit','e','\'','\''); ?>><b><?php  xl('ID','e'); ?></b></td>
   <td><b><?php xl('Title'  ,'e'); ?></b></td>	
@@ -751,6 +814,16 @@ if ($list_id) {
       writeCTLine(array());
     }
   }
+  else if ($list_id == 'issue_types') {
+    $res = sqlStatement("SELECT * FROM issue_types " .
+      "ORDER BY type");  
+    while ($row = sqlFetchArray($res)) {
+      writeITLine($row);
+    }
+    for ($i = 0; $i < 3; ++$i) {
+      writeITLine(array());
+    }
+  }  
   else {
     $res = sqlStatement("SELECT * FROM list_options WHERE " .
       "list_id = '$list_id' ORDER BY seq,title");
