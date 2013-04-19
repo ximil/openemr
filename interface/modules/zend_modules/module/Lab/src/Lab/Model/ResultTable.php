@@ -135,8 +135,8 @@ class ResultTable extends AbstractTableGateway
             //$groupby = "GROUP By po.procedure_order_id";
         }
         $orderby =
-                "po.procedure_order_id DESC, proc_code, po.date_ordered,  " .
-                "pc.procedure_order_seq, pr.procedure_report_id, pr.procedure_order_seq";
+                "po.procedure_order_id DESC, pr.procedure_report_id, proc_code, po.date_ordered,  " .
+                "pc.procedure_order_seq, pr.procedure_order_seq";
 
         $where = "1 = 1";
         if($statusReport) {
