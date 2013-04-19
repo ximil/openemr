@@ -16,6 +16,11 @@ class ResultController extends AbstractActionController
 	
     public function indexAction()
     {
+	global $pid;
+	$msg = '';
+	if ($pid == '') {
+	    $msg = 'N';  
+	}
 	$request = $this->getRequest();
 	$pageno = 1;
 	if($request->isGet()){
@@ -26,7 +31,8 @@ class ResultController extends AbstractActionController
      $labresult1=$this->resultShowAction($pageno); 
 	 //$data = new JsonModel($labresult1);
 	    $viewModel = new ViewModel(array(
-	    "labresults"=>$labresult1
+	    "labresults"=>$labresult1,
+	    "message" => $msg
 		));
 	return $viewModel;	  
 		

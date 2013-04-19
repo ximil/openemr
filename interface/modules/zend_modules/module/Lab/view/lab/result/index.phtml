@@ -28,7 +28,18 @@ $(function()
 });
 });
 </script>
-         <?php $match = array(
+         <?php
+	 if ($this->message == 'N') { ?>
+	    <div class="easyui-accordion" style="width:auto;height:550px;">
+		<div  title="<?php echo xlt('Results'); ?>" style="overflow:auto;padding:10px;">
+		    <div id="dlg" class="easyui-dialog" title="<?php echo xlt('Message');?>" data-options="iconCls:'icon-save'" style="width:400px;height:200px;padding:10px">
+			    <div style="margin: 50px; font-size: 14px;"><?php echo xlt('Please select a patient!');?></div>
+		    </div>
+		</div>
+	    </div>
+	<?php }
+	else{
+	 $match = array(
               "/&lt;ref(?:[^\/&]|&(?!gt;))*\/&gt;/is","/&lt;ref[^\/]*&gt;(.*?)&lt;\/ref&gt;/s",);?> 
 	     <div class="panel-header" style="width: 98.9%;">
              <div class="panel-title">Lab Result</div>
@@ -171,7 +182,7 @@ $(function()
                     if($main_grp != $labresult[order_title]){
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
-                                <td  class="tdfont childtdF"><?php echo $this->escapeHtml($labresult[patient_id]);?>
+                                <td  class="tdfont childtdF" ><?php echo $this->escapeHtml($labresult[patient_id]);?>
                                 <?php
                                 if($labresult[patient_id] && $patient_instructions){?>
                                 <a href="javascript:void(0)" class="personPopupTrigger" rel="<?php echo str_replace("\n","",$patient_instructions);?>"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Internal Comments'); ?> >
@@ -318,7 +329,7 @@ $(function()
                                                      $res_units = $helper->getDropdownValAsText("proc_unit",$labresult[units]);
                             ?>
                          <td  class="tdfont childtd <?php echo $icclas;?>" title="<?php echo $title;?>"><?php echo $icon;?></td>
-                         <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[result]);?>"><?php echo $this->escapeHtml($labresult[result]);?></td>
+                         <td  class="tdfont childtd" title="<?php echo $labresult[result];?>"><?php echo $labresult[result];?></td>
                                             <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[units]);?>"><?php echo $this->escapeHtml($labresult[units]);?></td>
                                             <td  class="tdfont childtd" title="<?php echo $this->escapeHtml($labresult[range]);?>"><?php echo strip_tags($labresult[range]);?> </td>
                          <td  class="tdfont childtd" >
@@ -430,7 +441,4 @@ $(function()
             <div class="ftitle" id='titleShow'></div>  
                 <div id="commentsF"></div>
                    </div>  
-      
-   
-  
-	
+	<?php } ?>
