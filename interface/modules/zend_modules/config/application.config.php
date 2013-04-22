@@ -1,5 +1,1 @@
-<?php return array( 'modules' =>  array( '0' => 'Installer', '1' => 'Application', '2' => 'Lab'),
-                   'module_listener_options' =>  array( 'config_glob_paths' =>  array( '0' => 'config/autoload/{,*.}{global,local}.php', ),
-                                                       'module_paths' =>  array( '0' => './module', '1' => './vendor', ),
-                                                       ),
-                   );
+<?php return array( 'modules' =>  array( '0' => 'Installer', '1' => 'Application', '2' => 'Lab', '3' => 'Lab', '4' => 'Lab', '5' => 'Lab', '6' => 'Lab', '7' => 'Lab', '8' => 'Lab', '9' => 'Lab', '10' => 'Lab', '11' => 'Lab', '12' => 'Lab', ), 'module_listener_options' =>  array( 'config_glob_paths' =>  array( '0' => 'config/autoload/{,*.}{global,local}.php', ), 'module_paths' =>  array( '0' => './module', '1' => './vendor', ), ),);

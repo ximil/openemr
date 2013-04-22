@@ -242,7 +242,8 @@ class ResultTable extends AbstractTableGateway
                                             "SELECT $selects FROM procedure_result AS ps " .
                                             "LEFT JOIN procedure_type AS pt2 ON $pt2cond AND $joincond " .
                                             "WHERE $pscond) " .
-                                            "ORDER BY seq, name, procedure_type_id";
+                                            "ORDER BY procedure_subtest_result_id, seq, name, procedure_type_id";
+                                            //echo $query."<br><br>";
             $rres = sqlStatement($query);
             
             while ($rrow = sqlFetchArray($rres)) {

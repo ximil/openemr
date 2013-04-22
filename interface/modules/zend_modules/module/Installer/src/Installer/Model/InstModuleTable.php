@@ -88,7 +88,7 @@ class InstModuleTable
     		}else
     			$name = $directory;
     		$uiname = ucwords(strtolower($directory));
-    		return sqlInsert("insert into modules set
+    		$moduleInsertId = sqlInsert("insert into modules set
     				mod_name='$name',
     				mod_active='$state',
     				mod_ui_name= '$uiname',
@@ -96,6 +96,32 @@ class InstModuleTable
 				mod_directory='".mysql_escape_string($directory)."',
 				date=NOW()
 				");
+		 
+		if($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php"){
+		    $ModuleObject = 'modules_'.strtolower($directory);
+		    $ModuleObjectTitle = 'Module '.ucwords($directory);
+		    global $MODULESETTINGS;
+		    include_once($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php");
+		    foreach($MODULESETTINGS as $Settings=>$SettingsArray){
+			if($Settings=='ACL')
+			$SettingsVal =1;
+			elseif($Settings=='preferences')
+			$SettingsVal =2;
+			else
+			$SettingsVal =3;
+			$i = 0;
+			foreach($SettingsArray as $k=>$v){
+			    if($SettingsVal==1){
+				if($i==0)
+				addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
+				addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v);
+				$i++;
+			    }
+			    sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v));
+			}
+		    }
+		}
+		return $moduleInsertId;
     	}
     	return false;
     	
@@ -193,6 +219,20 @@ class InstModuleTable
     	if($res){
     		while($m = sqlFetchArray($res)){
 		    $all[$m['group_id']][$m['id']] = $m['user'];
+    		}
+    	}
+    	return $all;
+    }
+    /**
+     * Function to get Active Users
+     */
+    public function getActiveUsers(){
+	$all = array();
+    	$sql = "SELECT id,CONCAT_WS(' ',fname,mname,lname) AS USER FROM users WHERE active=1";
+    	$res = sqlStatement($sql);
+    	if($res){
+    		while($m = sqlFetchArray($res)){
+		    $all[$m['id']] = $m['USER'];
     		}
     	}
     	return $all;
