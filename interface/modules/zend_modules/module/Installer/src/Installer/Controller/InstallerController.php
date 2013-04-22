@@ -199,6 +199,7 @@ class InstallerController extends AbstractActionController
 	    'ACL' => $this->getInstallerTable()->getACL($request->getPost('mod_id')),
 	    'OemrUserGroup' => $this->getInstallerTable()->getOemrUserGroup(),
 	    'OemrUserGroupAroMap' => $this->getInstallerTable()->getOemrUserGroupAroMap(),
+	    'ListActiveUsers' => $this->getInstallerTable()->getActiveUsers(),
 	));
     }
 }

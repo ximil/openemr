@@ -46,32 +46,15 @@ if(count($TabSettings)>0){
     <?php foreach($ACL as $obj_acl){ ?>
         <div title="<?php echo xlt($obj_acl->menu_name);?>" style="overflow:auto;padding:10px;">
             <table>
-            <?php
-            foreach($OemrUserGroup as $OUG){
-            ?>
-            <tr valign="top">
-                <td>
-                    <input type="checkbox" name="oemruser_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>" value="<?php echo $OUG->id;?>"><?php echo $OUG->name;?>
-                   
-                </td>
-                <td onclick="custom_toggle('users_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>')">
-                    <div class="icon-more" style="width:15px"  style="float:left">&nbsp;</div>
-                </td>
-                <td id="users_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>" style="display:none">
-                    <select name="selctedUsers_-_-_<?php echo $obj_acl->obj_name."_-_-_".$OUG->id;?>[]" multiple="multiple" size="5">
-                    <?php
-                    foreach($OemrUserGroupAroMap[$OUG->id] as $k=>$v){
-                    ?>
-                    <option value="<?php echo $k;?>"><?php echo $v;?></option>
-                    <?php
-                    }
-                    ?>
-                    </select>
-                </td>
-            </tr>
-            <?php
-            }
-            ?>
+            <select name="<?php echo $obj_acl->obj_name;?>[]" multiple="multiple" size="5">
+                <?php
+                foreach($ListActiveUsers as $k=>$v){
+                ?>
+                <option value="<?php echo $k;?>"><?php echo $v;?></option>
+                <?php
+                }
+                ?>
+            </select>
             </table>
         </div>
         <?php
