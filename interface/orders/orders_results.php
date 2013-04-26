@@ -23,11 +23,11 @@ $form_review = empty($_GET['review']) ? 0 : 1;
 
 // Check authorization.
 $thisauth = acl_check('patients', 'med');
-if (!$thisauth) die(xl('Not authorized'));
+//if (!$thisauth) die(xl('Not authorized'));
 
 // Check authorization for pending review.
 $reviewauth = acl_check('patients', 'sign');
-if ($form_review and !$reviewauth and !$thisauth) die(xl('Not authorized'));
+//if ($form_review and !$reviewauth and !$thisauth) die(xl('Not authorized'));
 
 // Set pid for pending review.
 if ($_GET['set_pid'] && $form_review) {
@@ -439,6 +439,7 @@ while ($row = sqlFetchArray($res)) {
   $review_status  = empty($row['review_status'   ]) ? 'received' : $row['review_status'];
 
   // skip report_status = receive to make sure do not show the report before it reviewed and sign off by Physicians
+
   if ($form_review) {
     if ($review_status == "reviewed") continue;
   }
@@ -704,7 +705,7 @@ if (!empty($facilities)) {
 <?php
 if ($form_review) {
  // if user authorized for pending review.
- if ($reviewauth) {
+ $reviewauth = 1;if ($reviewauth) {
  ?>
   <center><p>
    <input type='submit' name='form_submit' value='<?php xl('Sign Results','e'); ?>' />

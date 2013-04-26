@@ -1,0 +1,8 @@
+[
+{"report_status":"final","status":"Final"},
+{"statusid":"review","status":"Reviewed"},
+{"statusid":"prelim","status":"Preliminary"},
+{"statusid":"cancel","status":"Canceled"},
+{"statusid":"error","status":"Error"},
+{"statusid":"correct","status":"Corrected"}
+]

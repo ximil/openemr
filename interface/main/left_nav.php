@@ -926,6 +926,7 @@ $(document).ready(function(){
     $("#navigation-slide > li  > a#admimg").prepend('<img src="../../images/admin.png" class="nav-menu-img" />');
     $("#navigation-slide > li  > a#misimg").prepend('<img src="../../images/misc.png" class="nav-menu-img" />');
     $("#navigation-slide > li  > a#proimg").prepend('<img src="../../images/procedures.png" class="nav-menu-img" />');
+    $("#navigation-slide > li  > a#modimg").prepend('<img src="../../images/module.png" class="nav-menu-img" />');
     $("#navigation-slide > li").each(function(index) {
       if($(" > ul > li", this).size() == 0){
         $(" > a", this).addClass("collapsed");
@@ -1207,6 +1208,37 @@ if (!empty($reg)) {
     </ul>
   </li>
   <?php } ?>
+    <?php // if (acl_check('menus', 'modle')) {?>
+   <li><a class="collapsed" id="modimg" ><span><?php xl('Modules','e') ?></span></a>
+    <ul>
+	<?php if (acl_check('admin', 'forms')) genMiscLink('RTop','adm','0',xl('Manage Modules'),'modules/zend_modules/public/Installer'); ?>
+	 <?php //genTreeLink('RTop','ort',xl('Settings')); ?>
+      
+	<?php 	
+		$module_query = sqlStatement("select mod_name,mod_nick_name,mod_relative_link,type from modules where mod_active = 1 AND sql_run= 1 order by mod_ui_order asc");
+		if (sqlNumRows($module_query)) {
+		  while ($modulerow = sqlFetchArray($module_query)) {
+				$modulePath = "";
+				$added 		= "";
+		  		if($modulerow['type'] == 0) {
+		  			$modulePath = $GLOBALS['customDir'];
+		  			$added		= "";
+		  		}
+		  		else{ 	
+					$added		= "index";
+		  			$modulePath = $GLOBALS['zendModDir'];
+		  		}
+		  			
+		 		$relative_link ="modules/".$modulePath."/".$modulerow['mod_relative_link'].$added;
+                                $mod_nick_name = $modulerow['mod_nick_name'] ? $modulerow['mod_nick_name'] : $modulerow['mod_name'];
+			?>
+		      <?php genMiscLink('RTop','adm','0',xlt($mod_nick_name),$relative_link);
+			  //genTreeLink('RTop','0',xl($modulerow['mod_name']),$relative_link); ?>
+			  <?php }
+		} ?>
+    </ul>
+  </li>
+  <?php //}?>
   <?php // if ($GLOBALS['inhouse_pharmacy'] && acl_check('admin', 'drugs')) genMiscLink('RTop','adm','0',xl('Inventory'),'drugs/drug_inventory.php'); ?>
 <?php if ($GLOBALS['inhouse_pharmacy'] && acl_check('admin', 'drugs')) { ?>
   <li><a class="collapsed" id="invimg" ><span><?php xl('Inventory','e') ?></span></a>
