@@ -93,6 +93,50 @@
 			modal: 			true,
 		}); 
 	}
+	
+	function togle_nation(id,Source){
+	 expandedField = $("#nationnote_expand_field").val();
+	 if(expandedField){
+	    var isiPad = navigator.userAgent.match(/iPad/i) != null;
+	    if(!isiPad){
+	    var textAreaContent = window.frames['iframe_'+expandedField][0].document.body.innerHTML;
+	    }
+	    else{
+	    var textAreaContent = document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('textarea1').value;
+	    }
+	    textara = expandedField;
+	    textara1 = 'form_'+expandedField;
+	    mainform=window.parent.document;
+	    if(document.getElementById(textara1+'_div'))
+	    document.getElementById(textara1+'_div').innerHTML = textAreaContent;
+	    if(document.getElementById(textara1))
+	    document.getElementById(textara1).value = textAreaContent;
+	    if(document.getElementById(textara1+'_optionTD')){
+	    if(!isiPad){
+	    document.getElementById(textara1+'_optionTD').innerHTML =window.frames['iframe_'+textara].document.getElementById('options').innerHTML;
+	    }
+	    else{
+	    document.getElementById(textara1+'_optionTD').innerHTML =document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('options').innerHTML; 
+	    }
+	    }
+	    if(document.getElementById(textara1)){
+	    document.getElementById(textara1).value = textAreaContent;
+	    if(!isiPad){
+	    document.getElementById(textara1).value +="|*|*|*|"+window.frames['iframe_'+textara].document.getElementById('options').innerHTML;
+	    }
+	    else{
+	    document.getElementById(textara1).value +="|*|*|*|"+document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('options').innerHTML; 
+	    }
+	    }
+	    $("#nationtextarea_"+expandedField).slideDown();
+	    $("#nationdiv_"+expandedField).slideUp();
+	 }
+	 //document.getElementById("nationnote_expand_field").value=id;
+	 $("#nationtextarea_"+id).slideUp();
+	 document.getElementById("iframe_"+id).src=Source;
+	 $("#nationdiv_"+id).slideDown();
+	 $('.hide_other_divs').hide();
+	}
 
 </script>
 <!-- Panel -->
@@ -391,14 +435,52 @@
 	            	<tr>
 	            		<td>&nbsp;</td>
 	            		<td>
-			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
-				            <table>
-				            	<tr>
-				            		<td width='95%'>&nbsp;</td>
-				            	</tr>
-				            </table>
-			            </div>
-			         </td>
+				    <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
+				            <table width='100%'>
+							<tr>
+								<td>
+									<!--NATION NOTES CODE START-->
+									<div id='nationtextarea_1'>
+										<div id='form_1_div' class='text-area' style='cursor:pointer;height:55px !important;border:none !important' 
+											onclick='togle_nation("1","<?php echo $GLOBALS['webroot']; ?>/library/custom_template/embed_template.php?type=form_1&contextName=Assessment");'
+										>
+										</div>
+										<div style='display:none'>
+											<textarea name='form_1' class='text-area' id='form_1'
+												stye='display:none'></textarea>
+										</div>
+									</div>
+									<div id='nationdiv_1' style='display:none'>
+										<iframe id='iframe_1' name='iframe_1' width='100%' height='650px' frameborder='0'
+											src=''>								
+										</iframe>
+									</div>
+									<div id='form_1_optionTD'>
+										<table width='100%'>
+											<tr class='text'>
+												<td></td>
+												<td id='optionsPrescribe'></td>
+											</tr>
+											<tr class='text'>
+												<td></td>
+												<td id='optionsDiagnosis'></td>
+											</tr>
+											<tr class='text'>
+												<td></td>
+												<td id='optionsCpt'></td>
+											</tr>
+											<tr class='text'>
+												<td></td>
+												<td id='optionsIssue'></td>
+											</tr>
+										</table>
+									</div>
+									<!--NATION NOTES CODE END-->
+								</td>
+							</tr>
+						</table>
+					</div>
+			        </td>
 	            	</tr>  
             </table>
         </div>  

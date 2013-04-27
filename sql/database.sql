@@ -5673,3 +5673,20 @@ CREATE TABLE `procedure_subtest_result` (
   PRIMARY KEY (`procedure_subtest_result_id`),
   KEY `procedure_report_id` (`procedure_report_id`)
 );
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `nation_notes_mapping`
+--
+
+CREATE TABLE `nation_notes_mapping` (
+  `map_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `map_table_name` VARCHAR(100) DEFAULT NULL,
+  `map_field_name` VARCHAR(100) DEFAULT NULL,
+  `map_user_defined_name` VARCHAR(100) DEFAULT NULL,
+  `map_user_id` INT(11) DEFAULT NULL,
+  `map_field_type` VARCHAR(2) DEFAULT NULL,
+  `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`map_id`)
+);
+

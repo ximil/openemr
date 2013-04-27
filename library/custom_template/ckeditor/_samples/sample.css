@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -8,7 +8,7 @@ html, body, h1, h2, h3, h4, h5, h6, div, span, blockquote, p, address, form, fie
 }
 
 body {
-	padding:0px 0px;
+	padding:10px 30px;
 }
 
 input, textarea, select, option, optgroup, button, td, th {
@@ -154,10 +154,4 @@ pre.samples
 label {
 	display: block;
 	margin-bottom:6px;
-}
-
-.cke_dialog label
-{
-	display: inline;
-	margin-bottom: auto;
 }
