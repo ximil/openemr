@@ -198,7 +198,6 @@ class LabTable extends AbstractTableGateway
 	    }
 	    if($post['specimencollected'][$ordnum][0]=="onsite"){
 		if(sizeof($specimenState[$ordnum])>0){
-		    $idx = 0;
 		    foreach($specimenState[$ordnum] as $k=>$vArray){
 			if ($post['procedure_order_id'][$ordnum][0] != ''){
 			    $this->updateProcedureMaster($post,$ordnum,$orderGroup);
@@ -218,7 +217,6 @@ class LabTable extends AbstractTableGateway
 					    VALUES (?,?,?,?,?,?)",array($SPEprocedure_type_id,$procode,$proname,$prosuffix,$diagnoses,$patient_instructions));
 			    $this->insertAoe($SPEprocedure_type_id,$SPEseq,$aoe,$procode,$ordnum);
 			}
-			$idx++;
 		    }
 		}
 	    }

@@ -1,0 +1,416 @@
+<?php 
+	// module/Encounter/view/encounter/encounter/show.phtml:
+
+	foreach ($this->visitCategory as $category) {
+		if ($category['value'] == $this->result[0]['pc_catid']) {
+			$categoryName = $category['label'];
+		}
+	}
+	// Age Calculation
+	$birthDate = $this->patient[0]['DOB'];
+	$birthDate = explode("-", $birthDate);
+	$age = (date("md", date("U", mktime(0, 0, 0, $birthDate[1], $birthDate[2], $birthDate[0]))) > date("md") ? ((date("Y")-$birthDate[0])-1):(date("Y")-$birthDate[0]));
+
+?>
+<style>
+	ul,li {
+		list-style-type: none;
+	}
+</style>
+<script>
+	$(function(){
+		// Popup window border background color chage
+		$('.window').css({"background":"#0068A4"});
+
+		// Charting shortcut open and close on mosue event 
+		$("div.panel-title").mouseover(function() {
+				$('#p').panel('expand').panel('refresh');
+		  }).mouseout(function(){
+			  	//$('#p').panel('collapse');
+		  });
+	  	$(document).click(function(e){
+	  		$('#p').panel('collapse');
+		});
+		
+		// Seen By combo box setting
+		$.ajax({
+	        type: "POST",
+	        cache: false,
+	        dataType: "json",
+	        url: "./getProviders",
+	        data: {
+	        	type: 1,
+	            },
+	        success: function(data) {
+				var options;
+	        	for (var i = 0; i < data.length; i++) {
+	            	options += '<option value="' + data[i].value+ '">' + data[i].label+ '</option>';
+	        	}
+	        	 $("#providerstest").html(options);
+
+	        },
+	        error: function(data){
+	                alert("Ajax Fail");
+	        }
+	    });
+	
+		setTimeout('valueSet()', 1000);
+	
+	});
+
+	function valueSet() {
+		$('#visitCategory').val("<?php echo $this->result[0]['pc_catid']; ?>");
+		$('#provider').val("<?php echo $this->result[0]['provider_id']; ?>");
+		$('#facility').val("<?php echo $this->result[0]['facility_id']; ?>");
+		$('#billingFacility').val("<?php echo $this->result[0]['billing_facility']; ?>");
+		$('#sensitivity').val("<?php echo $this->result[0]['sensitivity']; ?>");
+		//$('#dtService').val(<?php echo $this->result[0]['date']; ?>);
+		//$('#dtOnset').val(<?php echo $this->result[0]['onset_date']; ?>);
+		$('#cc').combobox('setValue',"<?php echo $this->result[0]['provider_id']; ?>");
+		$('#description').val("<?php echo htmlspecialchars($this->result[0]['reason'],ENT_QUOTES); ?>");
+	}
+
+	function openNewForm(url, title) {
+		var arr = title.split('_');
+		var title = '';
+		for (var i = 0; i < arr.length; i++) {
+			title += arr[i].toUpperCase() + ' ';
+		}
+		title = '<span style="color:#fff">' + title + '</span>';
+		$('#urlWindow').attr('src','../../../..' + url);
+		$('#dlg').dialog({  
+			title: 			title,  
+			width:  		850,  
+			height: 		400,  
+			closed: 		false,  
+			cache: 			false,
+			autoOpen: 		false,  
+			//href: 			'../../../..' + url,
+			iconCls:		'icon-ok',
+			resizable:		true,
+			minimizable:	true,
+			maximizable:	true,
+			modal: 			true,
+		}); 
+	}
+
+</script>
+<!-- Panel -->
+<div id="toppanel">
+	<div id="panel">
+		<div class="content clearfix">
+			<div class="">
+				<!-- Form -->
+				<?php 
+					$form = $this->form;
+					$form->setAttribute('action', $this->url('encounter', array('action' => 'index')));
+					$form->prepare();
+					echo $this->form()->openTag($form);
+					?>
+					<table border='0' width='100%' style="background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;">
+				 	<tr >
+					 	<td style="color: #0E2D5F; font-weight: bold;height: 20px;line-height: 20px;">
+					 		<div><?php echo xlt('Encounter');?></div>
+					 	</td>
+				 	<td align='right'>
+				 		<div>
+				 			<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="save();"><?php echo xlt('Save'); ?></a>
+				 			<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="closePanel();"><?php echo xlt('Cancel'); ?></a>
+				 		</div>
+				 	</td>
+				 	</tr>
+				 	</table>
+				 	<input type='hidden' name='mode' value='Edit' />
+				 	<input type='hidden' name='id' value="<?php echo $this->result[0]['id']; ?>" />
+				 	<table width='100% id='tt' border='0' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:0px;margin-top:0px;margin-bottom:15px;z-index: 9999">
+				        <tr>
+				        <td valign='top' width='30%'>
+					        <table style="width:100%;height:185px;padding:10px;border:1px solid #95B8E7;">
+					        <tr>
+					            <td><?php  echo xlt('Visit Category');?>:</td>
+					            <td><?php echo $this->formRow($form->get('visitCategory'));?></td>
+					        </tr>
+					        <tr>
+					            <td><?php  echo xlt('Provider');?>:</td>
+					            <td><?php echo $this->formRow($form->get('provider'));?></td>
+					        </tr>
+					        <tr>
+					            <td><?php echo xlt('Facility');?>:</td>
+					            <td><?php echo $this->formRow($form->get('facility'));?></td>
+					        </tr>
+					        <tr>
+					        	<td><?php echo xlt('Billing Facility');?>:</td> 
+					            <td><?php echo $this->formRow($form->get('billingFacility'));?></td>
+					        </tr>
+					        <tr>
+					           	<td><?php echo xlt('Sensitivity');?>:</td>
+					            <td><?php echo $this->formRow($form->get('sensitivity'));?></td>
+					        </tr>
+					   		<tr>
+					            <td><?php echo xlt('Date of Service');?>:</td>
+					            <td><?php echo $this->formRow($form->get('dtService'));?></td>
+					        </tr>
+					        <tr>
+					        	<td><?php echo xlt('Onset / hosp. Date');?></td>
+					            <td><?php echo $this->formRow($form->get('dtOnset'));?></td>
+					        </tr>
+					        </table>
+				        </td>
+				        <td valign='top' width='40%'>
+					        <table border='0' align='left' style="width:100%;height:196px;padding:10px;border:1px solid #95B8E7;">
+					        <tr>
+					       		<td><?php echo xlt('Consultation Brief Description');?>:</td>
+					       		<td>
+					       			<?php echo xlt('Issues (Injuries/Medical/Allergy)');?>
+					       			<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addIssues();"><?php echo xlt('Add'); ?></a>
+					       		</td>
+					        </tr>
+					        <tr>
+					        	<td><?php echo $this->formRow($form->get('description'));?></td>
+					        	<td><?php echo $this->formRow($form->get('issues[]'));?></td>
+					        </tr>
+					        <tr>
+					        	<td>&nbsp;</td>
+					        	<td style="font-size: 9px;">
+					        		<?php xl('To link this encounter/consult to an existing issue, click the '
+				   						. 'desired issue above to highlight it and then click [Save]. '
+				   						. 'Hold down [Ctrl] button to select multiple issues.','e'); ?>
+				   				</td>
+					        </tr>
+					        
+					        </table>
+				        </td>
+				        <?php if ($this->mode == 'Edit') { ?>
+				        <td valign='top' width='30%'>
+					        <?php if ($GLOBALS['enable_amc_prompting']) { ?>
+						      <table border='0' style="width:100%;height:196px;padding:1px;border:1px solid #95B8E7;">
+						        <tr height='10%'>
+							        <td>
+							        	<script>checkAMC('PER')</script>
+							        	<?php echo $this->formRow($form->get('provEduRes'));?>
+							        </td>
+							        <td><?php echo xl('Provided Education Resource(s)?') ?></td>
+						        </tr>
+						         <tr height='10%'>
+							        <td>
+							        	<script>checkAMC('PCS')</script>
+							        	<?php echo $this->formRow($form->get('provCliSum'));?>
+							        </td>
+							        <td><?php echo xl('Provided Clinical Summary?') ?></td>
+						        </tr>
+						         <tr height='10%'>
+							        <td>
+							        	<script>checkAMC('TTC')</script>
+							        	<?php echo $this->formRow($form->get('transTrandCare'));?>
+							        </td>
+							        <td>
+							        	<?php echo xl('Transition/Transfer of Care?') ?>
+							        </td>
+						        </tr>
+						        <tr>
+						        	<td colspan='2' height='10px'>
+							        	<table border='0' valign='top'  style="margin-left:2em;">
+								        	<tr>
+									        	<td>
+										        	<script>checkAMC('TTC')</script>
+									        		<?php echo $this->formRow($form->get('medReconcPerf'));?>
+									        	</td>
+									        	<td>
+									        		<?php echo xl('Medication Reconciliation Performed?') ?>
+									        	</td>
+								        	</tr>
+							        	</table>
+						        	</td>
+						        </tr>
+						        <tr><td></td></tr>
+						       </table>
+						   	<?php } ?>
+				        </td>
+				        <?php } ?>
+				        </tr>
+				   </table>
+				 <?php echo $this->form()->closeTag(); ?>
+			</div>
+			
+		</div>
+	</div> <!-- id panel -->	
+
+	<!-- The tab on top -->	
+	<div class="slidetab">
+		<ul class="encounteredit">
+			<li class="left">&nbsp;</li>
+			<li id="toggle">
+				<a id="open" class="open" href="#">&nbsp;</a>
+				<a id="close" style="display: none;" class="close" href="#">&nbsp;</a>		
+			</li> 
+			<li class="right">&nbsp;</li>
+		</ul> 
+	</div> <!-- class slidetab -->
+</div> <!-- toppanel -->
+
+<table border='0' width='100%' style="padding-top: 20px; background:#d2e0ef;border:1px solid #95B8E7;">
+	<tr>
+		<td>
+			<table border='0' >
+				<tr>
+					<td width='60%' style="font-size: 18px; font-weight: bold; color: #0E2D5F">
+						<?php echo $this->patient[0]['title'] . ' ' . $this->patient[0]['lname'] . ',' . $this->patient[0]['fname']; ?>
+					</td>
+					<td>
+						<span style="font-size:9px; color:#0E2D5F">age on </span>
+						<span style="font-size:11px; color:#0E2D5F"> DOS</span>
+						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo $age; ?> yrs</span> 
+						<span style="font-size:11px; color:#0E2D5F">  DoB:</span> 
+						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo $this->patient[0]['DOB']; ?></span>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td>
+			<table border='0' align='right'>
+				<tr align='right'>
+					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'""><?php echo xlt('Delete'); ?></a></td>
+					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'""><?php echo xlt('Edit'); ?></a></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			 <table border='0' align='left'>
+				<tr>
+					<td rowspan='3'>
+						<span style="fond-size:18px;font-weight: bold;color:#0E2D5F;width: 80px;padding:10px">
+							<?php echo substr($this->result[0]['date'],0,10); ?>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td><span style="font-size:9px; color:#0E2D5F"><div id='target'>(No vitals enterd)</div></span></td>
+				</tr>
+				<tr>
+					<td><span style="font-size:9px; color:#0E2D5F"><div id='targetCC'>(No chif complaint enterd)</div></span></td>
+				</tr>
+			</table> 
+		</td>
+	</tr>
+</table>
+<br>
+<!-- Start Charting Shorcuts -->
+<table width='100%' border='0' style="background:#d2e0ef;height:auto;padding:10px;border:1px solid #95B8E7;">
+	<tr>
+		<td valign='top' width='60%'>
+			<span style="position: relative;font-size:18px; font-weight: bold; color:#0E2D5F">
+				<?php echo $categoryName; ?>
+			</span>
+		</td>
+		<td id='chartingpanel' width='40%'>
+			<div id="p" class="easyui-panel"  title="Charting Shortcuts" 
+						style="z-index: 99999;position: absolute;width:500px;height:300px;padding:10px;"  
+		                data-options="iconCls:'icon-ok',collapsible:true, collapse:true,">  
+	            <span id='menu' style="color:#0E2D5F; background:#0E2D5F"><script>getChartingMenu()</script></span>
+	            <span id='menu2'></span>
+	            <span id='menu3' ></span>
+	            	<!-- Menu List -->
+		    </div>
+		</td>
+	</tr>
+</table>
+<br />
+<!-- End Charting Shorcuts -->
+
+<!-- Start Nots -->
+
+<div class="easyui-tabs" style="width:auto;height:450px">  
+        <div title="Note" style="padding:10px">  
+            <table  border='0'>
+            	<tr>
+            		<td colspan='2' align='right'>
+			            <table border='0'>
+			            	<tr>
+			            		<td>
+			            			<span style="color:#0E2D5F; font-weight: bold">Seen by:</span>
+			            		</td>
+			            		<td colspan='0' align='right'>
+			            		<!-- <select id='providerstest' name='providerstest'></select>  -->
+			            			 <input  style="width:180px;" id="cc" class="easyui-combobox" name="providers"  
+    												data-options="valueField:'value',textField:'label',url:'./getProviders'">  
+ 			            		</td>
+			            	</tr>
+			            </table>
+			        </td>
+			    </tr>
+			    <tr>
+            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;">Vs</span></td>
+            		<td>
+			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
+				            <table cellspacing='3' cellpadding='3'>
+				            	<tr>
+				            		<td colspan='2' style="font-weight: bold">Height:</td>
+				            		<td colspan='2' style="font-weight: bold">Weight:</td>
+				            		<td colspan='2' style="font-weight: bold">BMI(% tile):</td>
+				            		<td colspan='2' style="font-weight: bold">Blood Pressure:</td>
+				            		<td colspan='2' style="font-weight: bold">Temp:</td>
+				            		<td colspan='2' style="font-weight: bold">Pulse:</td>
+				            		<td colspan='2' style="font-weight: bold">Resp Rate:</td>
+				            		
+				            	</tr>
+				            	<tr>
+				            		<td width='10%'><input type='text' id='h' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span>in</span></td>
+				            		<td width='10%'><input type='text' id='w' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span>lb</span></td>
+				            		<td width='10%'><input type='text' id='bmi' size='10' onkeyup="rewirte();" /></td>
+				            		<td>&nbsp;</td>
+				            		<td><input type='text' id='bp' size='5' onkeyup="rewirte();" />
+				            		&nbsp;/&nbsp;<input type='text' id='bp2' size='5' onChange="rewirte();" /></td>
+				            		<td><span>mmHg</span></td>
+				            		<td><input type='text' id='tmp' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span>F</span></td>
+				            		<td><input type='text' id='pl' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span>bpm</span></td>
+				            		<td><input type='text' id='rrate' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span>rpm</span></td>
+				            	</tr>
+				            </table>
+			            </div>
+			         </td>
+			       </tr>
+	            	<tr>
+	            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;">Cc</td>
+	            		<td>
+			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
+				            <table>
+				            	<tr>
+				            		<td><textarea rows="" cols="110" id='ccomplaint' onkeyup="rewirte();"></textarea></td>
+				            	</tr>
+				            </table>
+			            </div>
+			         </td>
+	            	</tr>
+	            	<tr>
+	            		<td>&nbsp;</td>
+	            		<td>
+			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
+				            <table>
+				            	<tr>
+				            		<td width='95%'>&nbsp;</td>
+				            	</tr>
+				            </table>
+			            </div>
+			         </td>
+	            	</tr>  
+            </table>
+        </div>  
+    </div>
+<!-- End Nots -->
+
+<!-- Start Popup Form -->
+
+<div id="dlg" class="easyui-dialog" style="width:750px;height:415px;padding:10px 20px"  
+            closed="true" buttons="#dlg-buttons">  
+	<div class="ftitle" id='titleShow'></div> 
+        <iframe id="urlWindow" src="" style="width:100%; height:100%; border: none;"></iframe> 
+</div>
+ 
+   

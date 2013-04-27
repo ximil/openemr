@@ -1,9 +1,11 @@
 /**
  * Lab Multiple Procedure Order Screen
- * New Procedure Order and Procedure Order Edit
+ * New Procedure Order
+ * and
+ * Procedure Order Edit
  */
 
-// Hidden Value Settings
+    // Hidden Value Settings
     $(function(){
         //Hidden value setting for first panel and row count
         if ($('#accord_panel_0').length < 1) {
@@ -528,7 +530,7 @@
     }
     
     /**
-     * Save Data
+     * Save Edit Data
      */
     var txt
     function saveEditFrm(){
@@ -614,7 +616,8 @@
     };
     
     /**
-     * Disable edit if status is not pending 
+     * Disable edit
+     * if status is not pending 
      */
     function disableElements() {
         toggleDisabled(document.getElementById("orderlist"));
@@ -632,6 +635,11 @@
         }
     }
     
+    /**
+     * Check if status id pending
+     * Row add and remove
+     * New order and remove order
+     */
     function addRowEdit(thisId) {
         if (status == 'pending') {
             addRow(thisId);

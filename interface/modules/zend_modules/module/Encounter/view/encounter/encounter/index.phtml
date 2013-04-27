@@ -1,0 +1,306 @@
+<?php 
+	// module/Encounter/view/encounter/encounter/index.phtml:
+
+	$form = $this->form;
+	$form->setAttribute('action', $this->url('encounter', array('action' => 'index')));
+	$form->prepare();
+	echo $this->form()->openTag($form);
+	
+	if ($this->view == 'N') {
+		echo "<p>" . xl('You are not authorized to see this encounter.') . "</p>\n";
+	} else {
+?>
+<script>
+
+</script>	
+ 	<!--  <div style="background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;">
+ 		<div style="color: #0E2D5F; font-weight: bold;height: 20px;line-height: 20px;"><?php echo xlt('Encounter');?></div>
+ 		<div style="float:left;">
+ 			<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="save();"><?php echo xlt('Save'); ?></a>
+ 		</div>
+ 	</div>-->
+ 	<table width='100%' style="background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;">
+ 	<tr >
+	 	<td style="color: #0E2D5F; font-weight: bold;height: 20px;line-height: 20px;">
+	 		<div><?php echo xlt('Encounter');?></div>
+	 	</td>
+ 	<td align='right'>
+ 		<div>
+ 			<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="save();"><?php echo xlt('Save'); ?></a>
+ 			<a href="../../../../patient_file/history/encounters.php" class="easyui-linkbutton" iconCls="icon-cancel"><?php echo xlt('Cancel'); ?></a>
+ 		</div>
+ 	</td>
+ 	</tr>
+ 	</table>
+ 	
+	<table id='tt' border='0' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:0px;margin-top:0px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+        <tr>
+        <td valign='top' width='30%'>
+	        <table style="width:100%;height:185px;padding:10px;border:1px solid #95B8E7;">
+	        <tr>
+	            <td><?php  echo xlt('Visit Category');?>:</td>
+	            <td><?php echo $this->formRow($form->get('visitCategory'));?></td>
+	        </tr>
+	        <tr>
+	            <td><?php  echo xlt('Provider');?>:</td>
+	            <td><?php echo $this->formRow($form->get('provider'));?></td>
+	        </tr>
+	        <tr>
+	            <td><?php echo xlt('Facility');?>:</td>
+	            <td><?php echo $this->formRow($form->get('facility'));?></td>
+	        </tr>
+	        <tr>
+	        	<td><?php echo xlt('Billing Facility');?>:</td> 
+	            <td><?php echo $this->formRow($form->get('billingFacility'));?></td>
+	        </tr>
+	        <tr>
+	           	<td><?php echo xlt('Sensitivity');?>:</td>
+	            <td><?php echo $this->formRow($form->get('sensitivity'));?></td>
+	        </tr>
+	   		<tr>
+	            <td><?php echo xlt('Date of Service');?>:</td>
+	            <td><?php echo $this->formRow($form->get('dtService'));?></td>
+	        </tr>
+	        <tr>
+	        	<td><?php echo xlt('Onset / hosp. Date');?></td>
+	            <td><?php echo $this->formRow($form->get('dtOnset'));?></td>
+	        </tr>
+	        </table>
+        </td>
+        <td valign='top' width='40%'>
+	        <table border='0' align='left' style="width:100%;height:196px;padding:10px;border:1px solid #95B8E7;">
+	        <tr>
+	       		<td><?php echo xlt('Consultation Brief Description');?>:</td>
+	       		<td>
+	       			<?php echo xlt('Issues (Injuries/Medical/Allergy)');?>
+	       			<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addIssues();"><?php echo xlt('Add'); ?></a>
+	       		</td>
+	        </tr>
+	        <tr>
+	        	<td><?php echo $this->formRow($form->get('description'));?></td>
+	        	<td><?php echo $this->formRow($form->get('issues[]'));?></td>
+	        </tr>
+	        <tr>
+	        	<td>&nbsp;</td>
+	        	<td style="font-size: 9px;">
+	        		<?php xl('To link this encounter/consult to an existing issue, click the '
+   						. 'desired issue above to highlight it and then click [Save]. '
+   						. 'Hold down [Ctrl] button to select multiple issues.','e'); ?>
+   				</td>
+	        </tr>
+	        
+	        </table>
+        </td>
+        <?php if ($this->mode == 'Edit') { ?>
+        <td valign='top' width='30%'>
+	        <?php if ($GLOBALS['enable_amc_prompting']) { ?>
+		      <table border='0' style="width:100%;height:185px;padding:1px;border:1px solid #95B8E7;">
+		        <tr height='10%'>
+			        <td>
+			        	<script>checkAMC('PER')</script>
+			        	<?php echo $this->formRow($form->get('provEduRes'));?>
+			        </td>
+			        <td><?php echo xl('Provided Education Resource(s)?') ?></td>
+		        </tr>
+		         <tr height='10%'>
+			        <td>
+			        	<script>checkAMC('PCS')</script>
+			        	<?php echo $this->formRow($form->get('provCliSum'));?>
+			        </td>
+			        <td><?php echo xl('Provided Clinical Summary?') ?></td>
+		        </tr>
+		         <tr height='10%'>
+			        <td>
+			        	<script>checkAMC('TTC')</script>
+			        	<?php echo $this->formRow($form->get('transTrandCare'));?>
+			        </td>
+			        <td>
+			        	<?php echo xl('Transition/Transfer of Care?') ?>
+			        </td>
+		        </tr>
+		        <tr>
+		        	<td colspan='2' height='10px'>
+			        	<table border='0' valign='top'  style="margin-left:2em;">
+				        	<tr>
+					        	<td>
+						        	<script>checkAMC('TTC')</script>
+					        		<?php echo $this->formRow($form->get('medReconcPerf'));?>
+					        	</td>
+					        	<td>
+					        		<?php echo xl('Medication Reconciliation Performed?') ?>
+					        	</td>
+				        	</tr>
+			        	</table>
+		        	</td>
+		        </tr>
+		        <tr><td></td></tr>
+		       </table>
+		   	<?php } ?>
+        </td>
+        <?php } ?>
+        </tr>
+   </table>
+<?php
+	}
+    echo $this->form()->closeTag();
+?>
+
+	<div id="dlg" class="easyui-dialog" style="width:750px;height:415px;padding:10px 20px"  
+            closed="true" buttons="#dlg-buttons">  
+        <div class="ftitle" id='titleShow'></div>  
+        <form id="fm" method="post" novalidate>  
+        	<!-- <table width='100%'>
+	          	 <tr>
+	           		<td>
+		           		<table border='0' style="width:100%;padding:10px;border:1px solid #95B8E7;">
+		           		<tr >
+		           		<td>
+		                	<label><?php echo xlt('Tyepe'); ?>:</label>  
+		        		</td>
+		        		
+		        		<td>
+						<?php
+						$type_index = 0;
+						if (!empty($irow['type'])) {
+							foreach ($ISSUE_TYPES as $key => $value) {
+								if ($key == $irow['type']) break;
+								++$type_index;
+							}
+						}
+						$index = 0;
+						foreach ($ISSUE_TYPES as $value) {
+							if ($issue || $thistype) {
+								if ($index == $type_index) {
+									echo htmlspecialchars($value[1], ENT_NOQUOTES);
+									echo "<input type='hidden' name='form_type' value='".attr($index)."'>\n";
+								}
+							} else {
+								echo "<input type='radio' name='form_type' value='".attr($index)."' onclick='newtype($index)'";
+								 if ($index == $type_index) echo " checked";
+									echo " />" . htmlspecialchars($value[1], ENT_NOQUOTES) . "&nbsp;\n";
+							}
+							++$index;
+						}
+						?>
+        					
+						 	--><!-- <input type='radio' name='type' value='Problem' />Problem
+						 	<input type='radio' name='type' value='Allergy' />Allergy
+						 	<input type='radio' name='type' value='Medication' />Medication
+						 	<input type='radio' name='type' value='Surgery' />Surgery
+						 	<input type='radio' name='type' value='Dental' />Dental--><!-- 
+						</td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td>
+							<select class="easyui-combobox" id='issue' name="issue" onClick="selectIssue(this.value)" style="width:300px;">  
+						        <option value="HTN">HTN</option>
+						        <option value="hyperlipidemia">Hyperlipidemia</option>  
+						        <option value="asthma">Asthma</option>  
+						        <option value="diabetes">Diabetes</option>  
+						        
+						    </select>
+						</td>
+						<td rowspan='3' width='30%'>
+					        <div class="demo-info" style="margin-bottom:10px">
+					        <div class="demo-tip icon-tip">&nbsp;</div>  
+					        	<div><?php echo xlt('Select one of these, or type your own title');?></div>  
+					    	</div>
+				    	</td>      
+					</tr>
+					
+					<tr>
+						<td>
+		                	<label><?php echo xlt('Title'); ?>:</label> 
+		                </td>
+		                <td> 
+		                	<input name="title" id='title' class="easyui-validatebox" style="width: 280px"; >  
+		 				</td>
+		 			</tr>
+		 			</table>
+	 			</td>
+	 			</tr>
+	 			<tr>
+	           		<td>
+			           	<table style="width:100%;padding:10px;border:1px solid #95B8E7;">
+			 			<tr>
+			 			<td>
+			                	<label><?php echo xlt('Diagnosis Code'); ?>:</label>
+			                </td>
+			                <td> 
+								<input type='test' id='code' name="code" />  
+			 				</td>
+			 			</tr>
+			 			<tr>
+			 				<td>
+			                	<label><?php echo xlt('Begin Date'); ?>:</label>
+			                </td>
+			                <td>  
+								<input class="easyui-datebox"></input> 
+							</td>
+						</tr>
+						<tr>
+			 				<td>
+			                	<label><?php echo xlt('End Date'); ?>:</label>
+			                </td>
+			                <td> 
+								<input class="easyui-datebox"></input> 
+								<label>&nbsp;&nbsp;<?php echo xlt('Leave blank if still active'); ?></label>   
+			 				</td>
+			 			</tr>
+			 			<tr>
+			 				<td>
+			                	<label><?php echo xlt('Occurrence'); ?>:</label>
+			                </td>
+			                <td>  
+								<select  class="easyui-combobox" name="occurrence" style="width:145px;">  
+						        <option value="HTN">HTN</option>
+						        <option value="hyperlipidemia">Hyperlipidemia</option>  
+						        <option value="asthma">Asthma</option>  
+						        <option value="diabetes">Diabetes</option>  
+						        
+						    </select>   
+							</td>
+						</tr>
+						<tr>
+			 				<td>
+			                	<label><?php echo xlt('Referred by'); ?>:</label>
+			                </td>
+			                <td>  
+								<input type='text' id='referred_by' name="referred_by" />   
+							</td>
+						</tr>
+						<tr>
+			 				<td>
+			                	<label><?php echo xlt('Outcome'); ?>:</label>
+			                </td>
+			                <td>  
+								<select  class="easyui-combobox" name="outcome" style="width:145px;">  
+						        <option value="HTN">HTN</option>
+						        <option value="hyperlipidemia">Hyperlipidemia</option>  
+						        <option value="asthma">Asthma</option>  
+						        <option value="diabetes">Diabetes</option>  
+						        
+						    </select>  
+							</td>
+						</tr>
+						<tr>
+			 				<td>
+			                	<label><?php echo xlt('Destination'); ?>:</label>
+			                </td>
+			                <td>  
+								<input type='text' id='destination' name="destination" />   
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+			</table>  -->
+        </form>  
+    </div> 
+    <!--  
+    <div id="dlg-buttons">  
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveIssues()"><?php echo xlt('Save'); ?></a>  
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')"><?php echo xlt('Cancel'); ?></a>
+    </div>
+     -->
