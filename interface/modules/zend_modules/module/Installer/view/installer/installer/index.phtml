@@ -69,7 +69,6 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 								<th scope="col" ><?php echo xlt('Status'); ?> </th>
 								<th scope="col" ><?php echo xlt('Menu Text'); ?> </th>
 								<th scope="col" ><?php echo xlt('Nick Name'); ?> </th>
-								<th scope="col" ><?php echo xlt('Encounter Menu'); ?> </th>
 								<th scope="col" ><?php echo xlt('Type'); ?> </th>			
 								<th scope="col" ><?php echo xlt('Action'); ?> </th>
 								<th scope="col" ><?php echo xlt('Config'); ?> </th>
@@ -115,21 +114,6 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 								  }
 								  ?>
 								</td>
-								<td >
-								  <?php
-								  if ($moduleResult -> sqlRun==0){
-								  ?>
-								  <select name="mod_enc_menu" id="mod_enc_menu">
-										<option value="no"><?php echo xlt('No');?></option>
-										<option value="yes"><?php echo xlt('Yes');?></option>
-								  </select>
-								  <?php
-								  }
-								  else{
-								  echo xl_form_title(ucwords($moduleResult -> modencmenu));
-								  }
-								  ?>
-								</td>
 								<td>
 									<?php echo xl_form_title(($moduleResult -> type == 1)? "Zend" : "Custom");?>
 								</td>
@@ -162,7 +146,7 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 										}?>
 								</td>
 							</tr>
-							<tr style="display:none" id="ConfigRow_<?php echo $moduleResult -> modId;?>">
+							<tr style="display:none" class="config" id="ConfigRow_<?php echo $moduleResult -> modId;?>">
 								<td colspan="10" align="center">
 								</td>
 							</tr>

@@ -352,79 +352,83 @@ class ResultController extends AbstractActionController
         $result_dir         = $site_dir."/lab/result/";
         $result             = array();
         $request = $this->getRequest();
-	if($request->isPost()) {
-	    $data   = array('procedure_order_id'    => $request->getPost('order_id'));
-	} elseif ($request->isGet()) {
-	    $data   = array('procedure_order_id'    => $request->getQuery('order_id'));
-	}
-
+				if($request->isPost()) {
+						$data   = array('procedure_order_id'    => $request->getPost('order_id'));
+				} elseif ($request->isGet()) {
+						$data   = array('procedure_order_id'    => $request->getQuery('order_id'));
+				}
         $curr_status    = $this->getResultTable()->getOrderStatus($data['procedure_order_id']);
-        if($curr_status == "final") {
+				if($request->isPost()) {
+						$cred = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
+						$username   = $cred['login'];
+						$password   = $cred['password'];        
+						$site_dir   = $_SESSION['site_id'];
+						$remote_host   	= trim($cred['remote_host']);
+						if(($username == "")||($password == "")) {
+								$return[0]  = array('return' => 1, 'msg' => xlt("Lab Credentials not found"));
+								$arr        = new JsonModel($return);
+								return $arr;
+						} else if($remote_host == "") {
+								$return[0]  = array('return' => 1, 'msg' =>  xlt("Remote Host not found"));
+								$arr        = new JsonModel($return);
+								return $arr;
+						} else {
+								ini_set("soap.wsdl_cache_enabled","0");	
+								ini_set('memory_limit', '-1');
+								$options    = array('location' => $remote_host,
+									'uri'      => "urn://zhhealthcare/lab"
+								);
+								try {
+										$client     = new Client(null,$options);
+										$stresult     = $client->getLabResultStatus($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+								} catch(\Exception $e){
+										$return[0]  = array('return' => 1, 'msg' => xlt("Could not connect to the web service"));
+										$arr        = new JsonModel($return);
+										return $arr;
+								}
+								//if ($stresult['status'] != $curr_status) {
+										try {
+												$result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+										} catch(\Exception $e){
+												$return[0]  = array('return' => 1, 'msg' => xlt("Could not connect to the web service"));
+												$arr        = new JsonModel($return);
+												return $arr;
+										}
+										// Ajax Handling (Result success or failed)
+										if ($result['status'] == 'failed') {
+												$return[0]  = array('return' => 1, 'msg' => xlt($result['content']));
+												$arr        = new JsonModel($return);
+												return $arr;
+										}else { //IF THE RESULT RETURNS VALID OUTPUT
+												//if($curr_status <> "final" || $labresultfile == "") { //IF DOESN'T HAVE RESULT FILE
+														$labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
+														if (!is_dir($result_dir)) {
+																mkdir($result_dir,0777,true);
+														}
+														$fp = fopen($result_dir.$labresultfile,"wb");
+														fwrite($fp,base64_decode($result['content']));
+														//PULING RESULT DETAILS INTO THE OPENEMR TABLES
+														$this->getLabResultDetails($data['procedure_order_id']);
+														$status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],$stresult['status'],$labresultfile);
+												//}
+												$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
+												$arr        = new JsonModel($return);
+												return $arr;
+										}
+								/*}else{
+										$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
+										$arr        = new JsonModel($return);
+										return $arr;
+								}*/
+						}
+				}
+				
+        if($curr_status == "completed" || $curr_status == "partial") {
             $labresultfile    = $this->getResultTable()->getOrderResultFile($data['procedure_order_id']);
-        } else {
-            $cred = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
-                
-            $username   = $cred['login'];
-            $password   = $cred['password'];        
-            $site_dir   = $_SESSION['site_id'];
-            $remote_host   	= trim($cred['remote_host']);
-	 
-            if(($username == "")||($password == "")) {
-                $return[0]  = array('return' => 1, 'msg' => xlt("Lab Credentials not found"));
-		$arr        = new JsonModel($return);
-		return $arr;
-            } else if($remote_host == "") {
-                $return[0]  = array('return' => 1, 'msg' =>  xlt("Remote Host not found"));
-		$arr        = new JsonModel($return);
-		return $arr;
-            } else {
-                ini_set("soap.wsdl_cache_enabled","0");	
-                ini_set('memory_limit', '-1');
-                
-                $options    = array('location' => $remote_host,
-				'uri'      => "urn://zhhealthcare/lab"
-				);
-                try {
-                    $client     = new Client(null,$options);
-                    $result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
-                } catch(\Exception $e){
-                    $return[0]  = array('return' => 1, 'msg' => xlt("Could not connect to the web service"));
-                    $arr        = new JsonModel($return);
-                    return $arr;
-                }
-            }
         }
-        
-	// Ajax Handling (Result success or failed)
-        if($request->isPost()) {
-	    if ($result['status'] == 'failed') {
-		$return[0]  = array('return' => 1, 'msg' => xlt($result['content']));
-		$arr        = new JsonModel($return);
-		return $arr;
-	    }else { //IF THE RESULT RETURNS VALID OUTPUT
-                if($curr_status <> "final" || $labresultfile == "") { //IF DOESN'T HAVE RESULT FILE
-                    $labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
-                    if (!is_dir($result_dir)) {
-                        mkdir($result_dir,0777,true);
-                    }
-                    $fp = fopen($result_dir.$labresultfile,"wb");
-                    fwrite($fp,base64_decode($result['content']));
-                    $status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],"final",$labresultfile);
-		    //PULING RESULT DETAILS INTO THE OPENEMR TABLES
-		    $this->getLabResultDetails($data['procedure_order_id']);
-                }
-		
-		$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
-		$arr        = new JsonModel($return);
-		return $arr;
-	    }
-                    
-	}
-        
         if($labresultfile <> "") {
-            
             while(ob_get_level()) {
-                ob_get_clean();
+                ob_end_clean();
             }
             header('Content-Disposition: attachment; filename='.$labresultfile );
             header("Content-Type: application/octet-stream" );
@@ -439,138 +443,144 @@ class ResultController extends AbstractActionController
         $site_dir               = $GLOBALS['OE_SITE_DIR'];        
         $resultdetails_dir      = $site_dir."/lab/resultdetails/";
         
-	$data['procedure_order_id'] = $order_id;
+				$data['procedure_order_id'] = $order_id;
         $cred = $this->getResultTable()->getClientCredentials($data['procedure_order_id']);
 	  
-	$username       = $cred['login'];
-	$password       = $cred['password'];
+				$username       = $cred['login'];
+				$password       = $cred['password'];
         $remote_host   	= trim($cred['remote_host']);
-	$site_dir       = $GLOBALS['site_id'];
+				$site_dir       = $GLOBALS['site_id'];
 	    
-	ini_set("soap.wsdl_cache_enabled","0");	
-	ini_set('memory_limit', '-1');
+				ini_set("soap.wsdl_cache_enabled","0");	
+				ini_set('memory_limit', '-1');
 	
-	$options    = array('location' => $remote_host,
-				'uri'      => "urn://zhhealthcare/lab"
+				$options    = array('location' => $remote_host,
+						'uri'      => "urn://zhhealthcare/lab"
 				);
        	$client     = new Client(null,$options);
-	$result     = $client->getLabResultDetails($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
+				$result     = $client->getLabResultDetails($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID       
         $labresultdetailsfile  = "labresultdetails_".gmdate('YmdHis').".xml";
 	
         if (!is_dir($resultdetails_dir)) {
             mkdir($resultdetails_dir,0777,true);
         }
             
-	$fp = fopen($resultdetails_dir.$labresultdetailsfile,"wb");
-	fwrite($fp,$result);	
+				$fp = fopen($resultdetails_dir.$labresultdetailsfile,"wb");
+				fwrite($fp,$result);	
 	
-	$reader     = new Config\Reader\Xml();
-	$xmldata    = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
+				$reader     = new Config\Reader\Xml();
+				$xmldata    = $reader->fromFile($resultdetails_dir.$labresultdetailsfile);
 	
-	//CHECKS IF THE RESULT DETAIL IS ALREADY PULLED
-	$pulled_count 	= $this->getResultTable()->getOrderResultPulledCount($order_id);
-	if($pulled_count == 0)
-	{
-	    $patient_comments = $xmldata['pat_report_comments'];
-	    $sql_return_comments     = "UPDATE procedure_order SET return_comments = ? WHERE procedure_order_id = ?";
-	    $sql_return_comments_array = array($patient_comments,$data['procedure_order_id']);
-	    $this->getResultTable()->updateReturnComments($sql_return_comments,$sql_return_comments_array);   
-	    //SEPERATES EACH TEST DETAILS
-	    $test_arr              	= explode("#--#",$xmldata['test_ids']);
-	    $result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
-	    $resultcomments_test_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
-	    
-	    $test_count = count($test_arr) - 1;
-	    
-	    /* HARD CODED */
-	    $source         = "source";
-	    $report_notes   = "report_notes";
-	    $comments       = 'comments';
-	    /* HARD CODED */
-	    
-	   // $index = 0;
-	    //$order_seq = $this->getResultTable()->getProcedureOrderSequences($data['procedure_order_id']);
-			$prev_seq = "";
-	    
-	    
-	    for($index=0; $index < $test_count; $index++ ) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
-		
-		$has_subtest    = 0;    //FLAG FOR INDICATING IF ith TEST HAS SUBTEST OR NOT
-		$testdetails    = $test_arr[$index]; // i th  test
-	       
-		if(trim($testdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE TEST
-		    
-		    //SEPERATES TEST SPECIFIC DETAILS
-		    $testdetails_arr    = explode("#!#",$testdetails);
-		    list($test_code, $profile_title, $code_suffix, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
-					
-		    $order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$code_suffix);
-		    
-		    if(empty($order_seq)){
-						$order_seq = $prev_seq;
-				}else{
-						$prev_seq = $order_seq;
-				}
-		    
-		    $sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
-						    specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
-					    
-		    $report_inarray = array($data['procedure_order_id'],$order_seq,$spec_collected_time,$res_reported_time,$source,
-					    '','','received',$report_notes);
-		    
-		    $procedure_report_id = $this->getResultTable()->insertProcedureReport($sql_report,$report_inarray);   
-		    
-		    // RESULT REPORT COMMENTS OF ith TEST	
-		    $result_test_comments    = $resultcomments_test_arr[$index];
-		    
-		    //SEPERATES RESULT REPORT COMMENTS OF EACH SUBTEST OF ith TEST
-		    $resultcomments_arr = explode("#!!#",$result_test_comments);
-		    
-		    //RESULT VALUES/DETAILS OF ith TEST
-		    $resultdetails_test      = $result_test_arr[$index];
-		    //SEPERATES RESULT VALUES/DETAILS OF EACH SUBTEST OF ith TEST
-		    $resultdetails_subtest_arr  = explode("!#@#!",$resultdetails_test);
-		    
-		    //CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
-		    //SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
-		    
-		    $no_of_subtests	= substr_count($resultdetails_test, "!#@#!") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
-		    if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
-			if($no_of_subtests   < 2) {
-			    $subtest_comments	    = $resultcomments_arr[0];
-			    $subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
-			    $subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[0]);
-			    list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
-			   
-			    $sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
-							    facility,units,result,`range`,abnormal,comments,result_status,order_title,code_suffix,profile_title)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			    $result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
-						    $subtest_comments,$result_status,$order_title,$code_suffix,$profile_title);
-			    $this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
-			} else {
-			    
-			    for($j=0;$j<$no_of_subtests;$j++)
-			    {
-				$subtest_comments	    = $resultcomments_arr[$j];
-	    			$subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
-				$subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[$j]);
-				list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
+				//CHECKS IF THE RESULT DETAIL IS ALREADY PULLED
+				$pulled_count 	= $this->getResultTable()->getOrderResultPulledCount($order_id);
 				
-				$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
-							    result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments,
-							    order_title,code_suffix,profile_title)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-				$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
-							$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title,$code_suffix,$profile_title);
-				$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
-			    }                        
-			}
-		    }
-		}
-		
-	    }
-	}
+				if($pulled_count > 0)
+				{
+					$this->getResultTable()->deleteResults($order_id);
+					$pulled_count = 0;
+				}
+	
+				if($pulled_count == 0)
+				{
+						$patient_comments = $xmldata['pat_report_comments'];
+						$sql_return_comments     = "UPDATE procedure_order SET return_comments = ? WHERE procedure_order_id = ?";
+						$sql_return_comments_array = array($patient_comments,$data['procedure_order_id']);
+						$this->getResultTable()->updateReturnComments($sql_return_comments,$sql_return_comments_array);   
+						//SEPERATES EACH TEST DETAILS
+						$test_arr              	= explode("#--#",$xmldata['test_ids']);
+						$result_test_arr        	= explode("!-#@#-!",$xmldata['result_values']);
+						$resultcomments_test_arr    = explode("#-!!-#",$xmldata['res_report_comments']);
+						
+						$test_count = count($test_arr) - 1;
+						
+						/* HARD CODED */
+						$source         = "source";
+						$report_notes   = "report_notes";
+						$comments       = 'comments';
+						/* HARD CODED */
+						
+					 // $index = 0;
+						//$order_seq = $this->getResultTable()->getProcedureOrderSequences($data['procedure_order_id']);
+						$prev_seq = "";
+						
+						
+						for($index=0; $index < $test_count; $index++ ) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
+					
+								$has_subtest    = 0;    //FLAG FOR INDICATING IF ith TEST HAS SUBTEST OR NOT
+								$testdetails    = $test_arr[$index]; // i th  test
+							 
+								if(trim($testdetails) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE TEST
+										
+										//SEPERATES TEST SPECIFIC DETAILS
+										$testdetails_arr    = explode("#!#",$testdetails);
+										list($test_code, $profile_title, $code_suffix, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
+											
+										$order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$code_suffix);
+										
+										if(empty($order_seq)){
+												$order_seq = $prev_seq;
+										}else{
+												$prev_seq = $order_seq;
+										}
+										
+										$sql_report     = "INSERT INTO procedure_report (procedure_order_id,procedure_order_seq,date_collected,date_report,source,
+														specimen_num,report_status,review_status,report_notes) VALUES (?,?,?,?,?,?,?,?,?)";
+													
+										$report_inarray = array($data['procedure_order_id'],$order_seq,$spec_collected_time,$res_reported_time,$source,
+													'','','received',$report_notes);
+										
+										$procedure_report_id = $this->getResultTable()->insertProcedureReport($sql_report,$report_inarray);   
+										
+										// RESULT REPORT COMMENTS OF ith TEST	
+										$result_test_comments    = $resultcomments_test_arr[$index];
+										
+										//SEPERATES RESULT REPORT COMMENTS OF EACH SUBTEST OF ith TEST
+										$resultcomments_arr = explode("#!!#",$result_test_comments);
+										
+										//RESULT VALUES/DETAILS OF ith TEST
+										$resultdetails_test      = $result_test_arr[$index];
+										//SEPERATES RESULT VALUES/DETAILS OF EACH SUBTEST OF ith TEST
+										$resultdetails_subtest_arr  = explode("!#@#!",$resultdetails_test);
+										
+										//CHECKING THE NO OF SUBTESTS IN A TEST, IF IT HAS MORE THAN ONE SUBTEST, THE RESULT DETAILS WLL BE ENTERD INTO THE
+										//SUBTEST RESULT DETAILS TABLE, OTHER WISE INSERT DETAILS INTO THE PROCEDURE RESULT TABLE.
+										
+										$no_of_subtests	= substr_count($resultdetails_test, "!#@#!") ; //IF THERE IS ONE SEPERATOR, THERE WILL BE TWO SUBTESTS, SO ADD ONE TO THE NO OF SEPERATORS
+										if(trim($resultdetails_test) <> "") { //CHECKING IF THE RESULT CONTAINS DATA FOR THE SUBTEST OR TEST DETAILS
+												if($no_of_subtests   < 2) {
+														$subtest_comments	    = $resultcomments_arr[0];
+														$subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
+														$subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[0]);
+														list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
+													 
+														$sql_test_result = "INSERT INTO procedure_result(procedure_report_id,result_code,result_text,date,
+																		facility,units,result,`range`,abnormal,comments,result_status,order_title,code_suffix,profile_title)
+																VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+														$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,'','',$units,$result_value,$range,$abn_flag,
+																	$subtest_comments,$result_status,$order_title,$code_suffix,$profile_title);
+														$this->getResultTable()->insertProcedureResult($sql_test_result,$result_inarray);
+												} else {
+														
+														for($j=0;$j<$no_of_subtests;$j++)
+														{
+															$subtest_comments	    = $resultcomments_arr[$j];
+																	$subtest_comments = str_replace("\n","\\r\\n",$subtest_comments);
+															$subtest_resultdetails_arr  = explode("!@!",$resultdetails_subtest_arr[$j]);
+															list($subtest_code,$subtest_name,$result_value,$units,$range,$abn_flag,$result_status,$result_time,$providers_id) = $subtest_resultdetails_arr;
+															
+															$sql_subtest_result = "INSERT INTO procedure_subtest_result(procedure_report_id,subtest_code,subtest_desc,
+																				result_value,units,`range`,abnormal_flag,result_status,result_time,providers_id,comments,
+																				order_title,code_suffix,profile_title)
+																		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+															$result_inarray = array($procedure_report_id,$subtest_code,$subtest_name,$result_value,$units,$range,
+																		$abn_flag,$result_status,$result_time,$providers_id,$subtest_comments,$order_title,$code_suffix,$profile_title);
+															$this->getResultTable()->insertProcedureResult($sql_subtest_result,$result_inarray);
+														}                        
+												}
+										}
+								}
+						}
+				}
     }
     
     public function getLabRequisitionPDFAction()

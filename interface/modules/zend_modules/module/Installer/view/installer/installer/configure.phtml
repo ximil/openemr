@@ -23,60 +23,152 @@
 // Author:   Jacob T.Paul <jacob@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
-echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/images/favicon.ico'))
-        		->prependStylesheet($this->basePath() . '/css/easyui.css')
-                        ->prependStylesheet($this->basePath() . '/css/icon.css');
-echo $this->headScript()->appendFile($this->basePath() . '/js/installer/action.js')
-                        ->appendFile($this->basePath() . '/js/lib/jquery.easyui.min.js')
-                        ->appendFile($this->basePath() . '/js/lib/jquery-1.7.2.min.js');
+
 $title = xlt('Module Installer');
 $this->headTitle($title);
 $baseModuleDir 	= $GLOBALS['baseModuleDir'];
 $customDir 	= $GLOBALS['customDir'];
 $zendModDir 	= $GLOBALS['zendModDir'];
+$confirmationMSG = xlt("Do you really want to delete?");
 if(count($TabSettings)>0){
 ?>
-<div class="easyui-tabs" style="width:800px;height:auto;">
+<div class="easyui-tabs" id="tab" style="width:800px;height:auto;">
     <?php
     if($TabSettings[1]['cnt'] > 0){
     ?>
-    <div title="ACL" iconCls="icon-acl">
+    <div title="<?php echo xlt('ACL');?>" id="tab_acl" iconCls="icon-acl">
         <form name="aclform" id="aclform">
-        <div class="easyui-accordion" style="width:787px;height:auto;align:center;margin:5px">
+        <div class="easyui-accordion" id="configaccord" style="width:787px;height:auto;align:center;margin:5px">
     <?php foreach($ACL as $obj_acl){ ?>
         <div title="<?php echo xlt($obj_acl->menu_name);?>" style="overflow:auto;padding:10px;">
-            <table>
-            <select name="<?php echo $obj_acl->obj_name;?>[]" multiple="multiple" size="5">
-                <?php
-                foreach($ListActiveUsers as $k=>$v){
-                ?>
-                <option value="<?php echo $k;?>"><?php echo $v;?></option>
-                <?php
-                }
-                ?>
-            </select>
-            </table>
+        <table>
+            <tr>
+              <td>
+                <?php echo xlt("Add New ACL");?>
+              </td>
+              <td>
+                <?php echo xlt("Saved ACL");?>
+              </td>
+            </tr>
+            <tr>
+                <td>
+                    <table>
+                    <select name="modules_<?php echo strtolower($obj_acl->mod_directory)."_-_-_".$obj_acl->obj_name;?>[]" multiple="multiple" size="5">
+                        <?php
+                        foreach($ListActiveUsers as $k=>$v){
+                        ?>
+                        <option value="<?php echo $k;?>"><?php echo xlt($v);?></option>
+                        <?php
+                        }
+                        ?>
+                    </select>
+                    </table>
+                </td>
+                <td>
+                    <table border="0">
+                        <?php
+                        foreach($ListActiveACL[$obj_acl->obj_name] as $k=>$ActiveACL){
+                        ?>
+                        <tr>
+                            <td><?php echo $ActiveACL['user'];?>
+                            </td>
+                            <td>
+                              <a href="#"  onclick="javascript:DeleteACL(<?php echo $ActiveACL['acl_id'];?>,'<?php echo $ActiveACL['value'];?>',<?php echo $mod_id;?>,'<?php echo $confirmationMSG;?>')"><div class="icon-cancel" style="width:20px">&nbsp;</div></a>
+                            </td>
+                        </tr>
+                        <?php
+                        }
+                        ?>
+                    </table>
+                </td>
+            </tr>
+        </table>
         </div>
         <?php
     }
     ?>
         </div>
-        <div style="text-align:center"><a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:SaveMe('aclform')"><?php echo xlt('Save'); ?></a></div>
+        <div style="text-align:center"><a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:SaveMe('aclform',<?php echo $mod_id;?>)"><?php echo xlt('Save'); ?></a></div>
         </form>
     </div>
     <?php
     }
     if($TabSettings[2]['cnt'] > 0){
     ?>
-    <div title="Preference" iconCls="icon-preference">  
+    <div title="Preference" id="tab_preference" iconCls="icon-preference">  
         Second Tab  
     </div>
     <?php
     }
     if($TabSettings[3]['cnt'] > 0){
+      $modID = '';
     ?>
-    <div title="Hooks" iconCls="icon-plug"> 
-        Third Tab  
+    <div title="<?php echo xlt('Hooks');?>" id="tab_hooks" iconCls="icon-plug" > 
+      <table>
+            <tr>
+              <td colspan="2" align="center">
+                <?php echo xlt("Add New Hooks");?>
+              </td>
+            </tr>
+            <tr>
+                <td>
+                  <form name="hooksform" id="hooksform">
+                    <table>
+                      <tr>
+                        <td>
+                          <select name="Hooks">
+                              <?php foreach($Hooks as $obj_hooks){ 
+                              ?>
+                              <option value="<?php echo $obj_hooks->obj_name;?>"><?php echo xlt($obj_hooks->menu_name);?></option>
+                              <?php
+                              }
+                              ?>
+                          </select>
+                        </td>
+                        <td>
+                          <select name="AttachedTo">
+                            <option value="reports"><?php echo xlt("Reports");?></option>
+                            <option value="encounter"><?php echo xlt("Encounter");?></option>
+                          </select>
+                        </td>
+                        <td>
+                          <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:SaveMe('hooksform',<?php echo $mod_id;?>)"><?php echo xlt('Save'); ?></a>
+                        </td>
+                      </tr>
+                    </table>
+                    <input type="hidden" name="mod_id" value="<?php echo $mod_id;?>">
+                  </form>
+                </td>
+            </tr>
+            <tr>
+              <td colspan="2" align="center">
+                <?php echo xlt("Saved Hooks");?>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table>
+                  <tr>
+                    <td><?php echo xlt("Hooks");?></td>
+                    <td><?php echo xlt("Attached To");?></td>
+                    <td><?php echo xlt("Action");?></td>
+                  </tr>
+                  <?php
+                  foreach($ListActiveHooks as $hookslist){?>
+                  <tr>
+                    <td style="color:blue"><?php echo xlt($hookslist->menu_name);?></td>
+                    <td style="color:blue"><?php echo ucwords(xlt($hookslist->attached_to));?></td>
+                    <td style="display:inline">
+                      <a href="#"  onclick="javascript:DeleteHooks(<?php echo $hookslist->id;?>,<?php echo $mod_id;?>,'<?php echo $confirmationMSG;?>')"><div class="icon-cancel" style="width:20px;float:left">&nbsp;</div></a>
+                    </td>
+                  </tr>
+                  <?php
+                  }
+                  ?>
+                </table>
+              </td>
+            </tr>
+        </table>
     </div>
     <?php
     }

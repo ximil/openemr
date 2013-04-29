@@ -215,25 +215,36 @@ if (sqlNumRows($lres)) {
 }
 
 
-  $module_query = sqlStatement("SELECT mod_name,mod_nick_name,mod_relative_link,type FROM modules WHERE mod_active = 1 AND sql_run= 1 AND mod_enc_menu='yes' ORDER BY mod_ui_order ASC");
+  $module_query = sqlStatement("SELECT msh.*,ms.menu_name,ms.path,m.mod_ui_name,m.type FROM modules_hooks_settings AS msh LEFT OUTER JOIN modules_settings AS ms ON
+                                    obj_name=enabled_hooks AND ms.mod_id=msh.mod_id LEFT OUTER JOIN modules AS m ON m.mod_id=ms.mod_id 
+                                    WHERE fld_type=3 AND mod_active=1 AND sql_run=1 AND attached_to='encounter' ORDER BY mod_id");
   $DivId = 'mod_installer';
-  $new_category = 'Modules';
-  $StringEcho.= "<li><a href='JavaScript:void(0);' onClick=\"mopen('$DivId');\" >$new_category</a><div id='$DivId' ><table border='0' cellspacing='0' cellpadding='0'>";
   if (sqlNumRows($module_query)) {
+    $jid = 0;
+    $modid = '';
     while ($modulerow = sqlFetchArray($module_query)) {
-     $modulePath = "";
-     $added      = "";
-     if($modulerow['type'] == 0) {
-	     $modulePath = $GLOBALS['customDir'];
-	     $added		= "";
-     }
-     else{ 	
-	     $added		= "index";
-	     $modulePath = $GLOBALS['zendModDir'];
-     }
-     $relative_link = "../../modules/".$modulePath."/".$modulerow['mod_relative_link'].$added;
-     $nickname = $modulerow['mod_nick_name'] ? $modulerow['mod_nick_name'] : $modulerow['mod_name'];
-     $StringEcho.= "<tr><td style='border-top: 1px solid #000000;padding:0px;'><a onclick=\"openNewForm('$relative_link')\" href='JavaScript:void(0);'>" . xl_form_title($nickname) . "</a></td></tr>";
+      $DivId = 'mod_'.$modulerow['mod_id'];
+      $new_category = $modulerow['mod_ui_name'];
+      $modulePath = "";
+      $added      = "";
+      if($modulerow['type'] == 0) {
+        $modulePath = $GLOBALS['customDir'];
+        $added		= "";
+      }
+      else{ 	
+        $added		= "index";
+        $modulePath = $GLOBALS['zendModDir'];
+      }
+      $relative_link = "../../modules/".$modulePath."/".$modulerow['path'];
+      $nickname = $modulerow['menu_name'] ? $modulerow['menu_name'] : 'Noname';
+      if($jid==0 || ($modid!=$modulerow['mod_id'])){
+        if($modid!='')
+        $StringEcho.= '</table></div></li>';
+      $StringEcho.= "<li><a href='JavaScript:void(0);' onClick=\"mopen('$DivId');\" >$new_category</a><div id='$DivId' ><table border='0' cellspacing='0' cellpadding='0'>";
+      }
+      $jid++;
+      $modid = $modulerow['mod_id'];
+      $StringEcho.= "<tr><td style='border-top: 1px solid #000000;padding:0px;'><a onclick=\"openNewForm('$relative_link')\" href='JavaScript:void(0);'>" . xl_form_title($nickname) . "</a></td></tr>";
    }
   }
   $StringEcho.= '</table></div></li></ul>'.$StringEcho2;
