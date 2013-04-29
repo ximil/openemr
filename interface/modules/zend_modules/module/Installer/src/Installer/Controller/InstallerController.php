@@ -28,6 +28,8 @@ namespace Installer\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\View\Model\JsonModel;
+use Zend\Json\Json;
 use Installer\Model\InstModule;          
 //use Album\Form\AlbumForm;      
     
@@ -111,8 +113,8 @@ class InstallerController extends AbstractActionController
     		}
     		elseif ($request->getPost('modAction') == "install"){    
     			$dirModule = $this -> getInstallerTable() -> getRegistryEntry ( $request->getPost('modId'), "mod_directory" );
-			$mod_enc_menu = $request->getPost('mod_enc_menu');
-			$mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
+          $mod_enc_menu = $request->getPost('mod_enc_menu');
+          $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
     			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
 				$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
     				$this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
@@ -188,18 +190,50 @@ class InstallerController extends AbstractActionController
     }
     
     public function SaveConfigurationsAction(){
-	$request = $this->getRequest();
-	$fh = fopen("D:/tttt.txt","a");
-	fwrite($fh,print_r($request->getPost(),1));
+      $request = $this->getRequest();
+      $this->getInstallerTable()->SaveConfigurations($request->getPost());
+      $return[0]  = array('return' => 1,'msg' => xlt("Saved Successfully"));
+      $arr        = new JsonModel($return);
+      return $arr;
     }
+    
+    public function SaveHooksAction(){
+      $request = $this->getRequest();
+      $fh = fopen("D:/ddd.txt","a");fwrite($fh,print_r($request->getPost(),1));
+      $this->getInstallerTable()->SaveHooks($request->getPost());
+      $return[0]  = array('return' => 1,'msg' => xlt("Saved Successfully"));
+      $arr        = new JsonModel($return);
+      return $arr;
+    }
+    
     public function configureAction(){
-	$request = $this->getRequest();
-	return new ViewModel(array(
-	    'TabSettings' => $this->getInstallerTable()->getTabSettings($request->getPost('mod_id')),
-	    'ACL' => $this->getInstallerTable()->getACL($request->getPost('mod_id')),
-	    'OemrUserGroup' => $this->getInstallerTable()->getOemrUserGroup(),
-	    'OemrUserGroupAroMap' => $this->getInstallerTable()->getOemrUserGroupAroMap(),
-	    'ListActiveUsers' => $this->getInstallerTable()->getActiveUsers(),
-	));
+      $request = $this->getRequest();
+      return new ViewModel(array(
+          'mod_id' => $request->getPost('mod_id'),
+          'TabSettings' => $this->getInstallerTable()->getTabSettings($request->getPost('mod_id')),
+          'ACL' => $this->getInstallerTable()->getSettings('ACL',$request->getPost('mod_id')),
+          'OemrUserGroup' => $this->getInstallerTable()->getOemrUserGroup(),
+          'OemrUserGroupAroMap' => $this->getInstallerTable()->getOemrUserGroupAroMap(),
+          'ListActiveUsers' => $this->getInstallerTable()->getActiveUsers(),
+          'ListActiveACL' => $this->getInstallerTable()->getActiveACL($request->getPost('mod_id')),
+          'Hooks' => $this->getInstallerTable()->getSettings('Hooks',$request->getPost('mod_id')),
+          'ListActiveHooks' => $this->getInstallerTable()->getActiveHooks($request->getPost('mod_id')),
+      ));
+    }
+    
+    public function DeleteAclAction(){
+      $request = $this->getRequest();
+      $this->getInstallerTable()->DeleteAcl($request->getPost());
+      $return[0]  = array('return' => 1,'msg' => xlt("Deleted Successfully"));
+      $arr        = new JsonModel($return);
+      return $arr;
+    }
+    
+    public function DeleteHooksAction(){
+      $request = $this->getRequest();
+      $this->getInstallerTable()->DeleteHooks($request->getPost());
+      $return[0]  = array('return' => 1,'msg' => xlt("Deleted Successfully"));
+      $arr        = new JsonModel($return);
+      return $arr;
     }
 }

@@ -290,6 +290,8 @@ class ResultTable extends AbstractTableGateway
 
                 
                 $result_status    = $rrow['Mresult_status'   ] ? $rrow['Mresult_status'] : $rrow['result_status'];
+                
+                if(!$result_status && ($row['order_status'] == 'partial' || $row['order_status'] == 'completed')) continue;
 
                 // if sub tests are in the table 'procedure_subtest_result'
                 if (!empty($rrow['subtest_code'])) {
@@ -764,15 +766,15 @@ class ResultTable extends AbstractTableGateway
     
     public function saveResultEntryDetails($request)
     {
-				$existing_query = "SELECT * FROM procedure_result WHERE procedure_report_id = ?";
-				$sqlins = "INSERT INTO procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ?, procedure_report_id = ?";
-				$sqlupd = "UPDATE procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ? WHERE procedure_report_id = ?";
-				for($i=0;$i<count($request->procedure_report_id);$i++){
-						$param = array();
-						array_push($param,$request->units[$i]);
-						array_push($param,$request->result[$i]);
-						array_push($param,$request->range[$i]);
-						array_push($param,$request->abnormal[$i]);
+            $existing_query = "SELECT * FROM procedure_result WHERE procedure_report_id = ?";
+            $sqlins = "INSERT INTO procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ?, procedure_report_id = ?";
+            $sqlupd = "UPDATE procedure_result SET units = ?, result = ?, `range` = ?, abnormal = ?, facility = ?, comments = ?, result_status = ? WHERE procedure_report_id = ?";
+            for($i=0;$i<count($request->procedure_report_id);$i++){
+                            $param = array();
+                            array_push($param,$request->units[$i]);
+                            array_push($param,$request->result[$i]);
+                            array_push($param,$request->range[$i]);
+                            array_push($param,$request->abnormal[$i]);
             if($request->facility[$i]){
                 array_push($param,$request->facility[$i]);
             }else{
@@ -781,14 +783,22 @@ class ResultTable extends AbstractTableGateway
             array_push($param,$request->comments[$i]);
             array_push($param,$request->result_status[$i]);
             array_push($param,$request->procedure_report_id[$i]);
-						$existing_res = sqlStatement($existing_query,array($request->procedure_report_id[$i]));
-						if(sqlNumRows($existing_res) > 0){
-								$result = sqlQuery($sqlupd,$param);
-						}else{
-								if($request->result[$i] || $request->range[$i] || $request->abnormal[$i]){
-										$result = sqlQuery($sqlins,$param);
-								}
-						}
-				}
+                $existing_res = sqlStatement($existing_query,array($request->procedure_report_id[$i]));
+                if(sqlNumRows($existing_res) > 0){
+                                $result = sqlQuery($sqlupd,$param);
+                }else{
+                                if($request->result[$i] || $request->range[$i] || $request->abnormal[$i]){
+                                                $result = sqlQuery($sqlins,$param);
+                                }
+                }
+            }
+    }
+    
+    public function deleteResults($order_id)
+    {
+				$sql = "DELETE pr.*,prs.*,psr.* FROM procedure_report pr LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id
+            LEFT JOIN procedure_subtest_result psr ON psr.procedure_report_id = pr.procedure_report_id WHERE pr.procedure_order_id = ?";
+				$param = array($order_id);
+				$pres = sqlQuery($sql,$param);
     }
 }

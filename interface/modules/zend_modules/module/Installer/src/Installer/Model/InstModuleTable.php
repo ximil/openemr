@@ -97,31 +97,31 @@ class InstModuleTable
 				date=NOW()
 				");
 		 
-		if($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php"){
-		    $ModuleObject = 'modules_'.strtolower($directory);
-		    $ModuleObjectTitle = 'Module '.ucwords($directory);
-		    global $MODULESETTINGS;
-		    include_once($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php");
-		    foreach($MODULESETTINGS as $Settings=>$SettingsArray){
-			if($Settings=='ACL')
-			$SettingsVal =1;
-			elseif($Settings=='preferences')
-			$SettingsVal =2;
-			else
-			$SettingsVal =3;
-			$i = 0;
-			foreach($SettingsArray as $k=>$v){
-			    if($SettingsVal==1){
-				if($i==0)
-				addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
-				addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v);
-				$i++;
-			    }
-			    sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v));
-			}
-		    }
-		}
-		return $moduleInsertId;
+      if($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php"){
+          $ModuleObject = 'modules_'.strtolower($directory);
+          $ModuleObjectTitle = 'Module '.ucwords($directory);
+          global $MODULESETTINGS;
+          include_once($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php");
+          foreach($MODULESETTINGS as $Settings=>$SettingsArray){
+            if($Settings=='ACL')
+            $SettingsVal =1;
+            elseif($Settings=='preferences')
+            $SettingsVal =2;
+            else
+            $SettingsVal =3;
+            $i = 0;
+            foreach($SettingsArray as $k=>$v){
+                if($SettingsVal==1){
+              if($i==0)
+              addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
+              addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v);
+              $i++;
+                }
+                sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v));
+            }
+          }
+      }
+      return $moduleInsertId;
     	}
     	return false;
     	
@@ -177,10 +177,16 @@ class InstModuleTable
      * Function to get ACL objects for module
      * @param int 		$mod_id		Module PK
      */
-    public function getACL($mod_id){
-	$all = array();
-    	$sql = "SELECT * FROM modules_settings WHERE mod_id=?";
-    	$res = sqlStatement($sql,array($mod_id));
+    public function getSettings($type,$mod_id){
+      if($type=='ACL')
+      $type = 1;
+      elseif($type=='Hooks')
+      $type = 3;
+      else
+      $type = 2;
+      $all = array();
+    	$sql = "SELECT ms.*,mod_directory FROM modules_settings AS ms LEFT OUTER JOIN modules AS m ON ms.mod_id=m.mod_id WHERE m.mod_id=? AND fld_type=?";
+    	$res = sqlStatement($sql,array($mod_id,$type));
     	if($res){
     		while($m = sqlFetchArray($res)){
 		    $mod = new InstModule();
@@ -194,9 +200,9 @@ class InstModuleTable
      * Function to get Oemr User Group
      */
     public function getOemrUserGroup(){
-	$all = array();
+      $all = array();
     	$sql = "SELECT * FROM gacl_aro_groups AS gag LEFT OUTER JOIN gacl_groups_aro_map AS ggam ON gag.id=ggam.group_id
-		WHERE parent_id<>0 AND group_id IS NOT NULL GROUP BY id ";
+      WHERE parent_id<>0 AND group_id IS NOT NULL GROUP BY id ";
     	$res = sqlStatement($sql);
     	if($res){
     		while($m = sqlFetchArray($res)){
@@ -211,10 +217,10 @@ class InstModuleTable
      * Function to get Oemr User Group and Aro Map
      */
     public function getOemrUserGroupAroMap(){
-	$all = array();
+      $all = array();
     	$sql = "SELECT group_id,u.id AS id,CONCAT_WS(' ',CONCAT_WS(',',u.lname,u.fname),u.mname) AS user,u.username FROM gacl_aro_groups gag
-		LEFT OUTER JOIN gacl_groups_aro_map AS ggam ON gag.id=ggam.group_id LEFT OUTER JOIN gacl_aro AS ga ON ggam.aro_id=ga.id
-		LEFT OUTER JOIN users AS u ON u.username=ga.value WHERE group_id IS NOT NULL ORDER BY gag.id";
+      LEFT OUTER JOIN gacl_groups_aro_map AS ggam ON gag.id=ggam.group_id LEFT OUTER JOIN gacl_aro AS ga ON ggam.aro_id=ga.id
+      LEFT OUTER JOIN users AS u ON u.username=ga.value WHERE group_id IS NOT NULL ORDER BY gag.id";
     	$res = sqlStatement($sql);
     	if($res){
     		while($m = sqlFetchArray($res)){
@@ -227,18 +233,18 @@ class InstModuleTable
      * Function to get Active Users
      */
     public function getActiveUsers(){
-	$all = array();
-    	$sql = "SELECT id,CONCAT_WS(' ',fname,mname,lname) AS USER FROM users WHERE active=1";
+      $all = array();
+    	$sql = "SELECT id,username,CONCAT_WS(' ',fname,mname,lname) AS USER FROM users WHERE active=1 AND username IS NOT NULL AND username<>''";
     	$res = sqlStatement($sql);
     	if($res){
     		while($m = sqlFetchArray($res)){
-		    $all[$m['id']] = $m['USER'];
+		    $all[$m['username']] = $m['USER'];
     		}
     	}
     	return $all;
     }
     public function getTabSettings($mod_id){
-	$all = array();
+      $all = array();
     	$sql = "SELECT fld_type,COUNT(*) AS cnt  FROM modules_settings WHERE mod_id=? GROUP BY fld_type ORDER BY fld_type ";
     	$res = sqlStatement($sql,array($mod_id));
     	if($res){
@@ -248,5 +254,90 @@ class InstModuleTable
     	}
     	return $all;
     }
+    /**
+     *Function To Get Active ACL for this Module
+     */
+    public function getActiveACL($mod_id){
+      $arr = array();
+      $Section = sqlQuery("SELECT mod_directory FROM modules WHERE mod_id=?",array($mod_id));
+      $aco = "modules_".$Section['mod_directory'];
+      $MapRes = sqlStatement("SELECT * FROM gacl_aco_map WHERE section_value=?",array($aco));
+      while($MapRow = sqlFetchArray($MapRes)){
+        $aroRes = sqlStatement("SELECT acl_id,value,CONCAT_WS(' ',fname,mname,lname) AS user FROM gacl_aro_map LEFT OUTER JOIN users ON
+                               value=username WHERE active=1 AND acl_id=?",array($MapRow['acl_id']));
+        $i=0;
+        while($aroRow = sqlFetchArray($aroRes)){
+          $arr[$MapRow['value']][$i]['acl_id']  = $aroRow['acl_id'];
+          $arr[$MapRow['value']][$i]['value']   = $aroRow['value'];
+          $arr[$MapRow['value']][$i]['user']    = $aroRow['user'];
+          $i++;
+        }
+      }
+      return $arr;
+    }
+    /**
+     *Function To Get Saved Hooks For this Module
+     */
+    public function getActiveHooks($mod_id){
+      $all = array();
+      $HooksRes = sqlStatement("SELECT msh.*,ms.menu_name FROM modules_hooks_settings AS msh LEFT OUTER JOIN modules_settings AS ms ON
+                               obj_name=enabled_hooks AND ms.mod_id=msh.mod_id LEFT OUTER JOIN modules AS m ON msh.mod_id=m.mod_id 
+                               WHERE fld_type=3 AND mod_active=1 AND msh.mod_id=?",array($mod_id));
+      while($HooksRow = sqlFetchArray($HooksRes)){
+        $mod = new InstModule();
+		    $mod -> exchangeArray($HooksRow);
+		    array_push($all,$mod);        
+      }
+      return $all;
+    }
+    /**
+     * Function to Save Configurations
+     */
+    public function SaveConfigurations($post){
+      foreach($post as $aco=>$acoArray){
+        $Arr = explode("_-_-_",$aco);
+        $acoSection = $Arr[0];
+        $acoValue = $Arr[1];
+        foreach($acoArray as $aroKey=>$aro){
+        $ACLARR = sqlQuery("SELECT acl_id FROM gacl_aco_map WHERE section_value=? AND value=?",array($acoSection,$acoValue));
+        if($ACLARR['acl_id']){
+          $aclSeq = $ACLARR['acl_id'];
+        }
+        else{
+          sqlStatement("UPDATE gacl_acl_seq SET id=LAST_INSERT_ID(id+1)");
+          $aclSeqArr = sqlQuery("SELECT id FROM gacl_acl_seq");
+          $aclSeq = $aclSeqArr['id'];
+          sqlStatement("INSERT INTO gacl_acl (id,section_value,allow,enabled,return_value,note)
+                 VALUES(?,?,1,1,?,?)",array($aclSeq,'user','',''));
+          sqlStatement("INSERT INTO gacl_aco_map (acl_id,section_value,value) VALUES (?,?,?)",array($aclSeq,$acoSection,$acoValue));
+        }
+        sqlStatement("INSERT INTO gacl_aro_map (acl_id,section_value,value) VALUES (?,?,?)",array($aclSeq,'users',$aro));
+        }
+      }
+    }
+    /**
+     * Function to Save Hooks
+     */
+    public function SaveHooks($post){
+      SqlStatement("INSERT INTO modules_hooks_settings (mod_id,enabled_hooks,attached_to) VALUES(?,?,?)",
+                   array($post['mod_id'],$post['Hooks'],$post['AttachedTo']));
+    }
+    /**
+     * Function to Delete ACL
+     */
+    public function DeleteAcl($post){
+      if($post['aclID'] && $post['user']){
+        sqlStatement("DELETE FROM gacl_aro_map WHERE acl_id=? AND value=?",array($post['aclID'],$post['user']));
+      }
+    }
+    /**
+     * Function to Delete Hooks
+     */
+    public function DeleteHooks($post){
+      if($post['hooksID']){
+        sqlStatement("DELETE FROM modules_hooks_settings WHERE id=?",array($post['hooksID']));
+      }
+    }
+    
 }
 ?>
