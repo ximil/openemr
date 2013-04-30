@@ -5686,7 +5686,7 @@ CREATE TABLE `modules_settings` (
   `obj_name` varchar(255) DEFAULT NULL,
   `menu_name` varchar(255) DEFAULT NULL,
   `path` varchar(255) DEFAULT NULL
-)
+);
 -- --------------------------------------------------------
 
 --
