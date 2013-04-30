@@ -36,7 +36,7 @@ $MODULESETTINGS = array(
       "pending_review"    =>  array("menu_name"=>"Pending/Review")
     ),
     'HOOKS' => array(
-      "procedure_order"   => array("menu_name"=>"Procedure Order","path"=>"")
+      "procedure_order"   => array("menu_name"=>"Procedure Order","path"=>"puiblic/lab/index")
     )
     );
 
