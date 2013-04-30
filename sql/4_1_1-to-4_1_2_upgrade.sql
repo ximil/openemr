@@ -314,7 +314,7 @@ ALTER TABLE procedure_order
   ADD COLUMN `billto`               varchar(5)        DEFAULT NULL,
   ADD COLUMN `internal_comments`    text,
   ADD COLUMN `return_comments`      text,
-  ADD COLUMN `ord_group`            int(10) unsigned  NOT NULL;
+  ADD COLUMN `ord_group`            int(10) DEFAULT 0;
 #EndIf
 
 #IfMissingColumn procedure_order_code procedure_suffix

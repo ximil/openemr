@@ -5414,7 +5414,7 @@ CREATE TABLE `procedure_order` (
   `billto`                 varchar(5)       DEFAULT NULL,
   `internal_comments`      text,
   `return_comments`        text,
-  `ord_group`              int(10) unsigned NOT NULL,
+  `ord_group`              int(10) DEFAULT 0,
   PRIMARY KEY (`procedure_order_id`),
   KEY datepid (date_ordered, patient_id),
   KEY `patient_id` (`patient_id`)
