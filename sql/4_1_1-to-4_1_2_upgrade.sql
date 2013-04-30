@@ -356,3 +356,33 @@ CREATE TABLE `procedure_subtest_result` (
   KEY `procedure_report_id` (`procedure_report_id`)
 );
 #EndIf
+
+#IfNotTable modules_settings
+CREATE TABLE `modules_settings` (
+  `mod_id` int(11) DEFAULT NULL,
+  `fld_type` smallint(6) DEFAULT NULL COMMENT '1=>ACL,2=>preferences,3=>hooks',
+  `obj_name` varchar(255) DEFAULT NULL,
+  `menu_name` varchar(255) DEFAULT NULL,
+  `path` varchar(255) DEFAULT NULL
+)
+#EndIf
+
+#IfNotTable modules_pref_settings
+CREATE TABLE `modules_pref_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mod_id` int(11) DEFAULT NULL,
+  `field` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+#EndIf
+
+#IfNotTable modules_hooks_settings
+CREATE TABLE `modules_hooks_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mod_id` int(11) DEFAULT NULL,
+  `enabled_hooks` varchar(255) DEFAULT NULL,
+  `attached_to` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+#EndIf
