@@ -59,7 +59,7 @@ class Emr extends AbstractHelper
 	return $rows;
     }
     
-    /*
+    /**
     * function getLabs
     * @param $type
     * @value 'y' - for type of Labs (Loacal or External)
@@ -100,7 +100,8 @@ class Emr extends AbstractHelper
         $res = sqlQuery("SELECT title FROM list_options WHERE list_id = ? AND option_id = ?",array($list_id,$option_id)); 
         return $res['title'];
     }
-	/**
+    
+    /**
      * Encounter Module Functions
      * function getEncounter
      * if viewmode is true
@@ -353,6 +354,9 @@ class Emr extends AbstractHelper
      */
     public function getChartingMenuList($data)
     {
+    	global $pid;
+    	global $encounter;
+
     	$type	= $data['type'];
   	
     	$arr = array();
@@ -377,8 +381,32 @@ class Emr extends AbstractHelper
 					    ORDER BY category, priority, name";
 	    	if ($limit != "unlimited") $sql .= " limit $limit, $offset";
 	    	$result = sqlStatement($sql, array($state));
+	    	$i = 0;
 	    	while ($row = sqlFetchArray($result)) {
-	    		array_push($arr, $row);
+	    		$formId = 0;
+	    		if ($pid && $encounter && $row['directory']) {
+	    			$query 			= "SELECT form_id FROM forms WHERE pid=? AND encounter=? AND formdir=? AND deleted=0";
+	    			$resultQuery 	= sqlStatement($query, array($pid, $encounter, $row['directory']));
+	    			while ($tmp = sqlFetchArray($resultQuery)) {
+	    				$formId = $tmp['form_id'];
+	    			}
+	    		}
+	    		
+	    		$arr[$i]['category'] = htmlspecialchars($row['category'],ENT_QUOTES);
+	    		$arr[$i]['nickname'] = htmlspecialchars($row['nickname'],ENT_QUOTES);
+	    		$arr[$i]['name'] = htmlspecialchars($row['name'],ENT_QUOTES);
+	    		$arr[$i]['state'] = htmlspecialchars($row['state'],ENT_QUOTES);
+	    		$arr[$i]['directory'] = htmlspecialchars($row['directory'],ENT_QUOTES);
+	    		$arr[$i]['id'] = htmlspecialchars($row['id'],ENT_QUOTES);
+	    		$arr[$i]['sql_run'] = htmlspecialchars($row['sql_run'],ENT_QUOTES);
+	    		$arr[$i]['unpackaged'] = htmlspecialchars($row['unpackaged'],ENT_QUOTES);
+	    		$arr[$i]['date'] = htmlspecialchars($row['date'],ENT_QUOTES);
+	    		if ($formId > 0) {
+	    			$arr[$i]['form_id'] = htmlspecialchars($formId,ENT_QUOTES);
+	    		} else {
+	    			$arr[$i]['form_id'] = 0;
+	    		}
+	    		$i++;
 	    	}
     	}
     	
@@ -435,4 +463,16 @@ class Emr extends AbstractHelper
     	}
     	return $arr;
     }
+    
+    public function getVitals($pid)
+    {
+    	$arr = array();
+    	$sql = "SELECT * FROM form_vitals WHERE pid=?";
+    	$result = sqlStatement($sql, array($pid));
+    	while ($row = sqlFetchArray($result)) {
+    		array_push($arr, $row);
+    	}
+    	return $arr;
+    }
+    
 }

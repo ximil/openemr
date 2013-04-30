@@ -1,5 +1,6 @@
 <?php
 include_once("../globals.php");
+
 ?>
 
 <html>
@@ -18,6 +19,16 @@ include_once("../globals.php");
 function toencounter(rawdata) {
 //This is called in the on change event of the Encounter list.
 //It opens the corresponding pages.
+	<?php
+		$sql 	= "SELECT mod_name, type FROM modules WHERE mod_active=1";
+		$result = sqlStatement($sql);
+		$zendEnc = '';
+		while ($tmp = sqlFetchArray($result)) {
+			if ($tmp['mod_name'] == 'Encounter' && $tmp['type'] == 1) {
+				$zendEnc 	= htmlspecialchars($tmp['mod_name'],ENT_QUOTES);
+			}
+		}
+	?>
 	document.getElementById('EncounterHistory').selectedIndex=0;
 	if(rawdata=='')
 	 {
@@ -25,7 +36,11 @@ function toencounter(rawdata) {
 	 }
 	else if(rawdata=='New Encounter')
 	 {
-	 	top.window.parent.left_nav.loadFrame2('nen1','RBot','forms/newpatient/new.php?autoloaded=1&calenc=')
+	 	<?php if ($zendEnc == 'Encounter') { ?>
+			top.window.parent.left_nav.loadFrame2('nen1','RBot','/../modules/zend_modules/public/encounter/index')
+		<?php } else { ?>
+			top.window.parent.left_nav.loadFrame2('nen1','RBot','forms/newpatient/new.php?autoloaded=1&calenc=')
+		<?php } ?>
 		return true;
 	 }
 	else if(rawdata=='Past Encounter List')
@@ -44,7 +59,11 @@ function toencounter(rawdata) {
 <?php if ($GLOBALS['concurrent_layout']) { ?>
     parent.left_nav.setEncounter(datestr, enc, frame);
     parent.left_nav.setRadio(frame, 'enc');
-    top.frames[frame].location.href  = '../patient_file/encounter/encounter_top.php?set_encounter=' + enc;
+	<?php if ($zendEnc == 'Encounter') { ?>
+		top.frames[frame].location.href  = '../modules/zend_modules/public/encounter/show?enc=' + enc;
+	<?php } else { ?>
+		top.frames[frame].location.href  = '../patient_file/encounter/encounter_top.php?set_encounter=' + enc;
+	<?php } ?>
 <?php } else { ?>
     top.Title.location.href = '../patient_file/encounter/encounter_title.php?set_encounter='   + enc;
     top.Main.location.href  = '../patient_file/encounter/patient_encounter.php?set_encounter=' + enc;

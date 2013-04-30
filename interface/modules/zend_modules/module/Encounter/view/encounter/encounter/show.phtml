@@ -1,6 +1,6 @@
 <?php 
 	// module/Encounter/view/encounter/encounter/show.phtml:
-
+	//echo '<pre>'; print_r($this->vitals); echo '</pre>';
 	foreach ($this->visitCategory as $category) {
 		if ($category['value'] == $this->result[0]['pc_catid']) {
 			$categoryName = $category['label'];
@@ -16,48 +16,23 @@
 	ul,li {
 		list-style-type: none;
 	}
+	.selection {
+	    -webkit-transition: text-shadow 0.2s linear;
+	    -moz-transition: text-shadow 0.2s linear;
+	    -ms-transition: text-shadow 0.2s linear;
+	    -o-transition: text-shadow 0.2s linear;
+	    transition: text-shadow 0.2s linear;
+	}
+	.selection:hover {
+		color: #0E2D5F; 
+		padding: 1px;
+		text-shadow: 0 0 10px #079FB3;
+	}
+	
+	
 </style>
 <script>
-	$(function(){
-		// Popup window border background color chage
-		$('.window').css({"background":"#0068A4"});
-
-		// Charting shortcut open and close on mosue event 
-		$("div.panel-title").mouseover(function() {
-				$('#p').panel('expand').panel('refresh');
-		  }).mouseout(function(){
-			  	//$('#p').panel('collapse');
-		  });
-	  	$(document).click(function(e){
-	  		$('#p').panel('collapse');
-		});
-		
-		// Seen By combo box setting
-		$.ajax({
-	        type: "POST",
-	        cache: false,
-	        dataType: "json",
-	        url: "./getProviders",
-	        data: {
-	        	type: 1,
-	            },
-	        success: function(data) {
-				var options;
-	        	for (var i = 0; i < data.length; i++) {
-	            	options += '<option value="' + data[i].value+ '">' + data[i].label+ '</option>';
-	        	}
-	        	 $("#providerstest").html(options);
-
-	        },
-	        error: function(data){
-	                alert("Ajax Fail");
-	        }
-	    });
-	
-		setTimeout('valueSet()', 1000);
-	
-	});
-
+	// Setting values to fields
 	function valueSet() {
 		$('#visitCategory').val("<?php echo $this->result[0]['pc_catid']; ?>");
 		$('#provider').val("<?php echo $this->result[0]['provider_id']; ?>");
@@ -68,76 +43,56 @@
 		//$('#dtOnset').val(<?php echo $this->result[0]['onset_date']; ?>);
 		$('#cc').combobox('setValue',"<?php echo $this->result[0]['provider_id']; ?>");
 		$('#description').val("<?php echo htmlspecialchars($this->result[0]['reason'],ENT_QUOTES); ?>");
+		$('#ccomplaint').val("<?php echo htmlspecialchars($this->result[0]['reason'],ENT_QUOTES); ?>");
+		$('#targetCC').html("<?php echo htmlspecialchars($this->result[0]['reason'],ENT_QUOTES); ?>");
+
+		$('#h').val("<?php echo $this->vitals[0]['height']; ?>");
+		$('#w').val("<?php echo $this->vitals[0]['weight']; ?>");
+		$('#tmp').val("<?php echo $this->vitals[0]['temperature']; ?>");
+		$('#pl').val("<?php echo $this->vitals[0]['pulse']; ?>");
+		$('#bmi').val("<?php echo $this->vitals[0]['BMI']; ?>");
+		$('#rrate').val("<?php echo $this->vitals[0]['respiration']; ?>");
+		rewirte();
 	}
 
-	function openNewForm(url, title) {
-		var arr = title.split('_');
-		var title = '';
-		for (var i = 0; i < arr.length; i++) {
-			title += arr[i].toUpperCase() + ' ';
-		}
-		title = '<span style="color:#fff">' + title + '</span>';
-		$('#urlWindow').attr('src','../../../..' + url);
-		$('#dlg').dialog({  
-			title: 			title,  
-			width:  		850,  
-			height: 		400,  
-			closed: 		false,  
-			cache: 			false,
-			autoOpen: 		false,  
-			//href: 			'../../../..' + url,
-			iconCls:		'icon-ok',
-			resizable:		true,
-			minimizable:	true,
-			maximizable:	true,
-			modal: 			true,
-		}); 
-	}
-	
-	function togle_nation(id,Source){
-	 expandedField = $("#nationnote_expand_field").val();
-	 if(expandedField){
-	    var isiPad = navigator.userAgent.match(/iPad/i) != null;
-	    if(!isiPad){
-	    var textAreaContent = window.frames['iframe_'+expandedField][0].document.body.innerHTML;
-	    }
-	    else{
-	    var textAreaContent = document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('textarea1').value;
-	    }
-	    textara = expandedField;
-	    textara1 = 'form_'+expandedField;
-	    mainform=window.parent.document;
-	    if(document.getElementById(textara1+'_div'))
-	    document.getElementById(textara1+'_div').innerHTML = textAreaContent;
-	    if(document.getElementById(textara1))
-	    document.getElementById(textara1).value = textAreaContent;
-	    if(document.getElementById(textara1+'_optionTD')){
-	    if(!isiPad){
-	    document.getElementById(textara1+'_optionTD').innerHTML =window.frames['iframe_'+textara].document.getElementById('options').innerHTML;
-	    }
-	    else{
-	    document.getElementById(textara1+'_optionTD').innerHTML =document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('options').innerHTML; 
-	    }
-	    }
-	    if(document.getElementById(textara1)){
-	    document.getElementById(textara1).value = textAreaContent;
-	    if(!isiPad){
-	    document.getElementById(textara1).value +="|*|*|*|"+window.frames['iframe_'+textara].document.getElementById('options').innerHTML;
-	    }
-	    else{
-	    document.getElementById(textara1).value +="|*|*|*|"+document.getElementById('iframe_'+expandedField).contentWindow.document.getElementById('options').innerHTML; 
-	    }
-	    }
-	    $("#nationtextarea_"+expandedField).slideDown();
-	    $("#nationdiv_"+expandedField).slideUp();
-	 }
-	 //document.getElementById("nationnote_expand_field").value=id;
-	 $("#nationtextarea_"+id).slideUp();
-	 document.getElementById("iframe_"+id).src=Source;
-	 $("#nationdiv_"+id).slideDown();
-	 $('.hide_other_divs').hide();
-	}
+	$(document).ready(function () {
+		//
+		/*$('#urlWindow').contents().find("body").mousedown(function(event) {
+		    switch (event.which) {
+		        case 1:
+		            alert('Left mouse button pressed');
+		            break;
+		        case 2:
+		            alert('Middle mouse button pressed');
+		            break;
+		        case 3:
+		            alert('Right mouse button pressed');
+		            break;
+		        default:
+		            alert('You have a strange mouse');
+		    }
+		});*/
 
+		
+		//
+	    var $MyFrame = $("iframe[name='urlWindow']");
+	    $MyFrame.load(function () {
+	        var frameBody = $MyFrame.contents().find('body');
+	        //var cancelButton = frameBody.find('#cancel123');
+	       // var cancelButton = frameBody.find('input[type=submit]');
+	        //var cancelButton = frameBody.find('input[name=bn_refresh]');
+	        //var htmlsr = $("#urlWindow").contents().find("body").html();
+	        
+	        var cancelButton = frameBody.find('input[name=bn_refresh]');
+	        cancelButton.click(function(e){
+	        	//alert("myObject is " + e.toSource());
+	        	//alert(cancelButton.val());
+	        	//$('[name=urlWindow]').contents().find('button').click(function() {
+	        	    //alert('click');
+	        	//});
+		   });
+	    });
+	});
 </script>
 <!-- Panel -->
 <div id="toppanel">
@@ -166,7 +121,8 @@
 				 	</table>
 				 	<input type='hidden' name='mode' value='Edit' />
 				 	<input type='hidden' name='id' value="<?php echo $this->result[0]['id']; ?>" />
-				 	<table width='100% id='tt' border='0' class="dv-table gridtable" style="width:100%;background:#fafafa;padding:0px;margin-top:0px;margin-bottom:15px;z-index: 9999">
+				 	<table width='100% id='tt' border='0' class="dv-table gridtable" 
+				 					style="width:100%;background:#fafafa;padding:0px;margin-top:0px;margin-bottom:15px;z-index: 9999">
 				        <tr>
 				        <td valign='top' width='30%'>
 					        <table style="width:100%;height:185px;padding:10px;border:1px solid #95B8E7;">
@@ -298,14 +254,17 @@
 			<table border='0' >
 				<tr>
 					<td width='60%' style="font-size: 18px; font-weight: bold; color: #0E2D5F">
-						<?php echo $this->patient[0]['title'] . ' ' . $this->patient[0]['lname'] . ',' . $this->patient[0]['fname']; ?>
+						<?php 
+							$patientName = $this->patient[0]['title'] . ' ' . $this->patient[0]['lname'] . ',' . $this->patient[0]['fname'];
+							echo  xlt($patientName);
+						?>
 					</td>
 					<td>
 						<span style="font-size:9px; color:#0E2D5F">age on </span>
 						<span style="font-size:11px; color:#0E2D5F"> DOS</span>
-						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo $age; ?> yrs</span> 
-						<span style="font-size:11px; color:#0E2D5F">  DoB:</span> 
-						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo $this->patient[0]['DOB']; ?></span>
+						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo xlt($age); ?>&nbsp;<?php echo xlt('yrs'); ?></span> 
+						<span style="font-size:11px; color:#0E2D5F">  <?php echo xlt('DoB'); ?>:</span> 
+						<span style="font-size:12px; font-weight: bold; color:#0E2D5F"><?php echo xlt($this->patient[0]['DOB']); ?></span>
 					</td>
 				</tr>
 			</table>
@@ -313,8 +272,8 @@
 		<td>
 			<table border='0' align='right'>
 				<tr align='right'>
-					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'""><?php echo xlt('Delete'); ?></a></td>
-					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'""><?php echo xlt('Edit'); ?></a></td>
+					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'"><?php echo xlt('Delete'); ?></a></td>
+					<td><a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" onclick="saveNote();"><?php echo xlt('Edit'); ?></a></td>
 				</tr>
 			</table>
 		</td>
@@ -330,10 +289,10 @@
 					</td>
 				</tr>
 				<tr>
-					<td><span style="font-size:9px; color:#0E2D5F"><div id='target'>(No vitals enterd)</div></span></td>
+					<td><span style="font-size:9px; color:#0E2D5F"><div id='target'><?php echo xlt('(No vitals enterd)'); ?></div></span></td>
 				</tr>
 				<tr>
-					<td><span style="font-size:9px; color:#0E2D5F"><div id='targetCC'>(No chif complaint enterd)</div></span></td>
+					<td><span style="font-size:9px; color:#0E2D5F"><div id='targetCC'><?php echo xlt('(No chif complaint enterd)'); ?></div></span></td>
 				</tr>
 			</table> 
 		</td>
@@ -345,13 +304,13 @@
 	<tr>
 		<td valign='top' width='60%'>
 			<span style="position: relative;font-size:18px; font-weight: bold; color:#0E2D5F">
-				<?php echo $categoryName; ?>
+				<?php echo xlt($categoryName); ?>
 			</span>
 		</td>
 		<td id='chartingpanel' width='40%'>
 			<div id="p" class="easyui-panel"  title="Charting Shortcuts" 
 						style="z-index: 99999;position: absolute;width:500px;height:300px;padding:10px;"  
-		                data-options="iconCls:'icon-ok',collapsible:true, collapse:true,">  
+		                data-options="iconCls:'icon-ok',collapsible:true, collapse:true,"  >  
 	            <span id='menu' style="color:#0E2D5F; background:#0E2D5F"><script>getChartingMenu()</script></span>
 	            <span id='menu2'></span>
 	            <span id='menu3' ></span>
@@ -364,7 +323,7 @@
 <!-- End Charting Shorcuts -->
 
 <!-- Start Nots -->
-
+<form id='notes' name='notes' >
 <div class="easyui-tabs" style="width:auto;height:450px">  
         <div title="Note" style="padding:10px">  
             <table  border='0'>
@@ -373,10 +332,9 @@
 			            <table border='0'>
 			            	<tr>
 			            		<td>
-			            			<span style="color:#0E2D5F; font-weight: bold">Seen by:</span>
+			            			<span style="color:#0E2D5F; font-weight: bold"><?php echo xlt('Seen by'); ?>:</span>
 			            		</td>
 			            		<td colspan='0' align='right'>
-			            		<!-- <select id='providerstest' name='providerstest'></select>  -->
 			            			 <input  style="width:180px;" id="cc" class="easyui-combobox" name="providers"  
     												data-options="valueField:'value',textField:'label',url:'./getProviders'">  
  			            		</td>
@@ -385,48 +343,48 @@
 			        </td>
 			    </tr>
 			    <tr>
-            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;">Vs</span></td>
+            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;"><?php echo xlt('Vs'); ?></span></td>
             		<td>
 			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
 				            <table cellspacing='3' cellpadding='3'>
 				            	<tr>
-				            		<td colspan='2' style="font-weight: bold">Height:</td>
-				            		<td colspan='2' style="font-weight: bold">Weight:</td>
-				            		<td colspan='2' style="font-weight: bold">BMI(% tile):</td>
-				            		<td colspan='2' style="font-weight: bold">Blood Pressure:</td>
-				            		<td colspan='2' style="font-weight: bold">Temp:</td>
-				            		<td colspan='2' style="font-weight: bold">Pulse:</td>
-				            		<td colspan='2' style="font-weight: bold">Resp Rate:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Height'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Weight'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('BMI(% tile)'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Blood Pressure'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Temp'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Pulse'); ?>:</td>
+				            		<td colspan='2' style="font-weight: bold"><?php echo xlt('Resp Rate'); ?>:</td>
 				            		
 				            	</tr>
 				            	<tr>
-				            		<td width='10%'><input type='text' id='h' size='10' onkeyup="rewirte();" /></td>
-				            		<td><span>in</span></td>
-				            		<td width='10%'><input type='text' id='w' size='10' onkeyup="rewirte();" /></td>
-				            		<td><span>lb</span></td>
-				            		<td width='10%'><input type='text' id='bmi' size='10' onkeyup="rewirte();" /></td>
+				            		<td width='10%'><input type='text' id='h' name='height' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span><?php echo xlt('in'); ?></span></td>
+				            		<td width='10%'><input type='text' id='w' name='weight' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span><?php echo xlt('lb'); ?></span></td>
+				            		<td width='10%'><input type='text' id='bmi' name='bmi' size='10' onkeyup="rewirte();" /></td>
 				            		<td>&nbsp;</td>
-				            		<td><input type='text' id='bp' size='5' onkeyup="rewirte();" />
-				            		&nbsp;/&nbsp;<input type='text' id='bp2' size='5' onChange="rewirte();" /></td>
-				            		<td><span>mmHg</span></td>
-				            		<td><input type='text' id='tmp' size='10' onkeyup="rewirte();" /></td>
-				            		<td><span>F</span></td>
-				            		<td><input type='text' id='pl' size='10' onkeyup="rewirte();" /></td>
-				            		<td><span>bpm</span></td>
-				            		<td><input type='text' id='rrate' size='10' onkeyup="rewirte();" /></td>
-				            		<td><span>rpm</span></td>
+				            		<td><input type='text' id='bp' name='bp' size='5' onkeyup="rewirte();" />
+				            		&nbsp;/&nbsp;<input type='text' id='bp2' name='bp2' size='5' onChange="rewirte();" /></td>
+				            		<td><span><?php echo xlt('mmHg'); ?></span></td>
+				            		<td><input type='text' id='tmp' name='tmp' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span><?php echo xlt('F'); ?></span></td>
+				            		<td><input type='text' id='pl' name='pl' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span><?php echo xlt('bpm'); ?></span></td>
+				            		<td><input type='text' id='rrate' name='rrate' size='10' onkeyup="rewirte();" /></td>
+				            		<td><span><?php echo xlt('rpm'); ?></span></td>
 				            	</tr>
 				            </table>
 			            </div>
 			         </td>
 			       </tr>
 	            	<tr>
-	            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;">Cc</td>
+	            		<td valign='top' width='5%'><span style="font-siz: 14px; color:#0E2D5F;font-weight: bold;"><?php echo xlt('Cc'); ?></td>
 	            		<td>
 			            <div style="background: #E6EEF8;width:97%;height:auto;padding:10px;border:1px solid #95B8E7;">
 				            <table>
 				            	<tr>
-				            		<td><textarea rows="" cols="110" id='ccomplaint' onkeyup="rewirte();"></textarea></td>
+				            		<td><textarea rows="" cols="110" id='ccomplaint' name='ccomplaint' onkeyup="rewirte();"></textarea></td>
 				            	</tr>
 				            </table>
 			            </div>
@@ -485,6 +443,7 @@
             </table>
         </div>  
     </div>
+</form>
 <!-- End Nots -->
 
 <!-- Start Popup Form -->
@@ -492,7 +451,7 @@
 <div id="dlg" class="easyui-dialog" style="width:750px;height:415px;padding:10px 20px"  
             closed="true" buttons="#dlg-buttons">  
 	<div class="ftitle" id='titleShow'></div> 
-        <iframe id="urlWindow" src="" style="width:100%; height:100%; border: none;"></iframe> 
+        <iframe id="urlWindow" name='urlWindow' src="" style="width:100%; height:100%; border: none;"></iframe> 
 </div>
  
    

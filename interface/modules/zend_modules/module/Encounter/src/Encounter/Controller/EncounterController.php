@@ -101,30 +101,11 @@ class EncounterController extends AbstractActionController
     
     public function saveDataAction()
     {
-    	//$form = new EncounterForm();
     	$request = $this->getRequest();
     	
     	if ($request->isPost()) {
     		$this->getEncounterTable()->saveEncounter($request->getPost());
-    		//$encounter = new Encounter();
-    		//$form->setInputFilter($encounter->getInputFilter());
-    		//$form->setData($request->getPost());
-    		/*if ($form->isValid()) {
-    			//$fh = fopen("D:/test.txt","a");
-    			//fwrite($fh,print_r($request->getPost(),1));
-    			$encounter->exchangeArray($form->getData());
-    			$this->getEncounterTable()->saveEncounter($encounter);
-    		} else {
-    			echo 'Error while processing ..';
-    			foreach ($form->getMessages() as $messageId => $message) {
-    				echo "Validation failure '$messageId':"; print_r($message);
-    				$fh = fopen("D:/test.txt","a");
-    				fwrite($fh,$messageId);
-    				fwrite($fh,print_r($message,1));
-    			}
-    		}*/
     	}
-    	//return array('form' => $form);
     	return $this->redirect()->toRoute('show');
     }
     
@@ -139,13 +120,16 @@ class EncounterController extends AbstractActionController
     	$row 	= array();
     	$authUser = $_SESSION['authUser'];
     	require_once ($phpgacl_location.'/../library/lists.inc');
-    	
+    	require_once ($phpgacl_location.'/../library/encounter.inc');
     	//if (function_exists('amcCollect')) echo 'ok'; else echo 'no';
     	
     	$form = new EncounterForm();
+    	$request = $this->getRequest();
+    	if($request->isGet()){
+    		$encounter		= $request->getQuery('enc');
+    	}
     	
     	if ($viewmode) {
-    		$request = $this->getRequest();
     		if($request->isGet()){
     			$id 		= $request->getQuery('id');
     			$issue 		= $request->getQuery('issue');
@@ -207,6 +191,8 @@ class EncounterController extends AbstractActionController
     	$data['patient'] = $result[0]['pid'];
     	$patient = $helper->getPatientDetails($data);
     	
+    	$vitals	= $helper->getVitals($pid);
+    	setencounter($encounter);
     	$index = new ViewModel(array(
     			'form' 			=> $form,
     			'view' 			=> $view,
@@ -217,8 +203,19 @@ class EncounterController extends AbstractActionController
     			'visitCategory'	=> $visitCategory,
     			'result'		=> $result,
     			'patient'		=> $patient,
+    			'vitals'		=> $vitals,
     	));
     	return $index;
+    }
+    
+    public function saveNoteDataAction()
+    {
+    	$request = $this->getRequest();
+    	if ($request->isGet()) {
+    		$this->getEncounterTable()->saveEncounterNote($request->getQuery());
+     	}
+    	return array('form' => $form);
+    	//return $this->redirect()->toRoute('show');
     }
     
     public function checkAMCAction()
@@ -293,7 +290,7 @@ class EncounterController extends AbstractActionController
     		$data = new JsonModel($menu);
     		return $data;
     	}
-    }
+      }
 
         
     public function getEncounterTable()

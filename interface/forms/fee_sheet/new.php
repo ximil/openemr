@@ -1230,7 +1230,7 @@ if (true) {
 &nbsp;
 <?php } ?>
 
-<input type='button' value='<?php echo xla('Cancel');?>'
+<input type='button' id='cancel123' value='<?php echo xla('Cancel');?>'
  onclick="top.restoreSession();location='<?php echo "$rootdir/patient_file/encounter/$returnurl" ?>'" />
 
 <?php if ($code_types['UCSMC']) { ?>

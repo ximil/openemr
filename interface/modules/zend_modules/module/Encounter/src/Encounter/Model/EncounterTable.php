@@ -129,6 +129,49 @@ class EncounterTable extends AbstractTableGateway
     	
     }
     
+    public function saveEncounterNote($post)
+    {
+    	global $pid;
+    	global $encounter;
+    	global $userauthorized;
+    	$dt = date('Y-m-d');
+    	// Save vitals to Table form_vitals
+    	$sql = "INSERT INTO form_vitals SET pid = ?, 
+    										weight = ?, 
+    										height = ?, 
+									    	bps = ?, 
+									    	temperature = ?, 
+									    	pulse = ?, 
+									    	BMI = ?, 
+									    	respiration = ?, 
+    										date = ?";
+    	
+    	$lastId = sqlInsert($sql, array(
+    							$pid, 
+    							$post['weight'], 
+    							$post['height'], 
+    							$post['bp'], 
+    							$post['tmp'], 
+    							$post['pl'], 
+    							$post['bmi'], 
+    							$post['rrate'],
+    							$dt
+    			));
+    	addForm($encounter, "Vitals", $lastId, "vitals", $pid, $userauthorized, $dt);
+    	
+    	/*[providers] =>
+    	[height] => 111
+    	[weight] =>
+    	[bmi] =>
+    	[bp;_size=] =>
+    	[bp2] =>
+    	[tmp] =>
+    	[pl] =>
+    	[rrate] =>
+    	[ccomplaint] => test
+    	id, date, pid, user, groupname, authorized, activity, bps, bpd, weight, height, temperature, temp_method, pulse, respiration, note, BMI, BMI_status, waist_circ, head_circ, oxygen_saturation*/
+    }
+    
     public function listEncounter($encounter)
     {
     	$arr = array();
