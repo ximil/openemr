@@ -179,7 +179,7 @@ $(function()
                     $totrows = $labresult['totalRows'];
                     if($labresult[order_title]=="" && $labresult[procedure_name] == "") continue;
                     $patient_instructions = $labresult[patient_instructions];
-                    if($main_grp != $labresult[order_title]){
+                    if($main_grp != $labresult[order_title] || $labresult[order_id]){
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
                                 <td  class="tdfont childtdF" ><?php echo $this->escapeHtml($labresult[patient_id]);?>
