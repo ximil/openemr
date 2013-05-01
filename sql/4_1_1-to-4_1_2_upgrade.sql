@@ -446,3 +446,56 @@ ALTER TABLE `immunizations`
 ALTER TABLE `documents` ADD COLUMN `path_depth` TINYINT DEFAULT '1' COMMENT 'Depth of path to use in url to find document. Not applicable for CouchDB.';
 #Endif
 
+#IfNotTable modules
+CREATE TABLE `modules` (
+  `mod_id` int(11) NOT NULL AUTO_INCREMENT,
+  `mod_name` varchar(64) NOT NULL DEFAULT '0',
+  `mod_directory` varchar(64) NOT NULL DEFAULT '',
+  `mod_parent` varchar(64) NOT NULL DEFAULT '',
+  `mod_type` varchar(64) NOT NULL DEFAULT '',
+  `mod_active` int(1) unsigned NOT NULL DEFAULT '0',
+  `mod_ui_name` varchar(20) NOT NULL DEFAULT '''',
+  `mod_relative_link` varchar(64) NOT NULL DEFAULT '',
+  `mod_ui_order` tinyint(3) NOT NULL DEFAULT '0',
+  `mod_ui_active` int(1) unsigned NOT NULL DEFAULT '0',
+  `mod_description` varchar(255) NOT NULL DEFAULT '',
+  `mod_nick_name` varchar(25) NOT NULL DEFAULT '',
+  `mod_enc_menu` varchar(10) NOT NULL DEFAULT 'no',
+  `permissions_item_table` char(100) DEFAULT NULL,
+  `directory` varchar(255) NOT NULL,
+  `date` datetime NOT NULL,
+  `sql_run` tinyint(4) DEFAULT '0',
+  `type` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`mod_id`,`mod_directory`)
+) ENGINE=InnoDB;
+#EndIf
+
+#IfNotTable modules_settings
+CREATE TABLE `modules_settings` (
+  `mod_id` int(11) DEFAULT NULL,
+  `fld_type` smallint(6) DEFAULT NULL COMMENT '1=>ACL,2=>preferences,3=>hooks',
+  `obj_name` varchar(255) DEFAULT NULL,
+  `menu_name` varchar(255) DEFAULT NULL,
+  `path` varchar(255) DEFAULT NULL
+);
+#EndIf
+
+#IfNotTable modules_pref_settings
+CREATE TABLE `modules_pref_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mod_id` int(11) DEFAULT NULL,
+  `field` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+#EndIf
+
+#IfNotTable modules_hooks_settings
+CREATE TABLE `modules_hooks_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mod_id` int(11) DEFAULT NULL,
+  `enabled_hooks` varchar(255) DEFAULT NULL,
+  `attached_to` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+#EndIf
