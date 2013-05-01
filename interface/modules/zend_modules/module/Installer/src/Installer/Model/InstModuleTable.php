@@ -97,7 +97,7 @@ class InstModuleTable
 				date=NOW()
 				");
 		 
-      if($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php"){
+      if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
           $ModuleObject = 'modules_'.strtolower($directory);
           $ModuleObjectTitle = 'Module '.ucwords($directory);
           global $MODULESETTINGS;
