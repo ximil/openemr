@@ -97,7 +97,7 @@ class InstModuleTable
 				date=NOW()
 				");
 		 
-      if($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php"){
+      if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
           $ModuleObject = 'modules_'.strtolower($directory);
           $ModuleObjectTitle = 'Module '.ucwords($directory);
           global $MODULESETTINGS;
@@ -112,12 +112,12 @@ class InstModuleTable
             $i = 0;
             foreach($SettingsArray as $k=>$v){
                 if($SettingsVal==1){
-              if($i==0)
-              addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
-              addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v);
-              $i++;
+                  if($i==0)
+                  addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
+                  addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v['menu_name']);
+                  $i++;
                 }
-                sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v));
+                sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']));
             }
           }
       }

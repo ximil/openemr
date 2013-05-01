@@ -62,6 +62,15 @@
 .icon-mini-refresh{
 	background:url('icons/mini_refresh.png') no-repeat center center;
 }
+/**
+* Zend Lab Module
+*/
+.icon-single{
+	background:url('icons/single.png') no-repeat center center;
+}
+.icon-multiple{
+	background:url('icons/multiple.png') no-repeat center center;
+}
 .icon-acl{
 	background:url('icons/acl.png') no-repeat center center;
 }
@@ -73,27 +82,6 @@
 }
 .icon-more{
 	background:url('icons/more.png') no-repeat center center;
-}
-/**
-* Zend Lab Module
-*/
-.icon-single{
-	background:url('icons/single.png') no-repeat center center;
-}
-.icon-multiple{
-	background:url('icons/multiple.png') no-repeat center center;
-}
-.icon-HH{
-	background:url('icons/HH.png') no-repeat center center;
-}
-.icon-LL{
-	background:url('icons/LL.png') no-repeat center center;
-}
-.icon-H{
-	background:url('icons/H.png') no-repeat center center;
-}
-.icon-L{
-	background:url('icons/L.png') no-repeat center center;
 }
 .icon-HH{
 	background:url('icons/HH.png') no-repeat center center;

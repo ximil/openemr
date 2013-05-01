@@ -1,0 +1,1071 @@
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT 'remesh' AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT('Remesh',' ','Babu',' ','S') AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT('Remesh',' ','Babu',' ','S') AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 20, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 2
+    [rows] => 20
+)
+data is :SELECT CONCAT('Remesh',' ','Babu',' ','S') AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => 
+    [patient] => 
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)
+data is :SELECT CONCAT(u.fname,' ',u.mname,' ',u.lname) AS `Encounter_Provider` ,
+			DATE_FORMAT(e.pc_eventDate,'%m/%d/%y,%W') AS `Date` ,
+			DATE_FORMAT(e.pc_startTime,'%h:%i %p') AS `Time` ,
+			p.pubpid AS `ID` ,
+			CONCAT(p.fname,' ', p.mname,' ',p.lname) AS `Patient` ,
+			p.pid AS `PID` ,
+			p.DOB AS `DOB` ,
+			p.phone_home AS `Phone` ,
+			e.pc_hometext AS `Comments` ,
+			c.pc_catname AS `Type` ,
+			lp.title AS `Status` ,
+			'###3###' AS `Primary_Insurance` ,
+			'###2###' AS `Insurance_Balance` ,
+			'###1###' AS `Patient_Balance` ,
+			pc_eventDate AS `Event_Date` ,
+			pc_startTime AS `Start_Time` ,
+			lower(u.lname) AS `Middle Name` , lower(u.fname) AS `Patient_Id`
+		    FROM openemr_postcalendar_events AS e
+		    LEFT OUTER JOIN patient_data AS p
+			ON p.pid = e.pc_pid
+		    LEFT OUTER JOIN users AS u
+			ON u.id = e.pc_aid
+		    LEFT OUTER JOIN openemr_postcalendar_categories AS c
+			ON c.pc_catid = e.pc_catid
+		    LEFT OUTER JOIN facility as bf
+			ON e.pc_billing_location=bf.id
+		    LEFT OUTER JOIN facility as sf
+			ON e.pc_facility=sf.id
+		    LEFT OUTER JOIN list_options AS lp
+			ON e.`pc_apptstatus`=lp.`option_id`
+			AND lp.list_id='apptstat'
+		    WHERE 1 = '1' AND 2 = '2' 
+			 AND p.pid='2' 
+		    ORDER BY CONCAT(u.fname,' ',u.mname,' ',u.lname),
+			pc_eventDate,
+			pc_startTime,
+			lower(u.lname),
+			lower(u.fname)   LIMIT 0, 20Array
+(
+    [criteria] => patient
+    [patient] => 2
+    [dos] => 
+    [dtFrom] => 
+    [dtTo] => 
+    [page] => 1
+    [rows] => 20
+)

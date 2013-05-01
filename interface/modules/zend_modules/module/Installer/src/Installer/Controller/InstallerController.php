@@ -46,7 +46,7 @@ class InstallerController extends AbstractActionController
         return $viewModel;
     }
     
-    public function indexAction(){    	   
+    public function indexAction(){ 
     		
     	//get the list of installed and new modules
  		return new ViewModel(array(
@@ -116,7 +116,7 @@ class InstallerController extends AbstractActionController
           $mod_enc_menu = $request->getPost('mod_enc_menu');
           $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
     			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
-				$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
+            //$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
     				$this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
     				$status = "Success";
     			}else{

@@ -1,0 +1,170 @@
+<?php 
+	// module/Appointments/view/appointments/appointments/index.phtml:
+?>
+<script>
+
+$(function(){
+	$('#dg').datagrid({
+		url: './getAppointmentsData',
+		groupField:'Encounter_Provider',  
+		view: groupview,  
+		groupFormatter:function(value, rows){  
+			return value;  
+		},
+		rowStyler: function(index,row){
+				return 'background-color:#E0ECFF;color:#0E2D5F;';
+		},
+		onLoadSuccess: function() {
+			var lastIndex = $('#dg').datagrid('getRows').length-1;
+			if (lastIndex > 0) {
+				//$("#datagrid-row-r1-1-" + lastIndex).hide();
+				//$("#datagrid-row-r2-2-" + lastIndex).hide();
+			}
+			
+		},
+	});
+	$('#criteria').combobox({  
+		onSelect: function(rec){  
+			if (rec.value == 'patient') {
+				$("#criteriaDOS").hide("slow");
+				$("#criteriaPID").show("slow");
+			}
+			if (rec.value == 'DOS') {
+				$("#criteriaDOS").show("slow");
+				$("#criteriaPID").hide("slow");
+			}
+		}
+	});
+	
+});
+
+function doSearch(){
+	var criteria 	= $('input[name="criteria"]').val();
+	var patient 	= '';
+	var dos 	= '';
+	var dtFrom 	= '';
+	var dtTo 	= ''
+	if (criteria == 'patient') {
+		patient = $('#patient').val();
+	}
+	if (criteria == 'DOS') {
+		dos 	= $('#dos').val();
+		dtFrom 	= $('input[name="dtFrom"]').val();
+		dtTo 	= $('input[name="dtTo"]').val();
+	}
+	$('#dg').datagrid('load',{  
+		criteria:criteria,
+		patient:patient,
+		dos:dos,
+		dtFrom:dtFrom,
+		dtTo:dtTo,
+	}) 
+}
+function doSearch123() {
+	var criteria 	= $('input[name="criteria"]').val();
+	var patient 	= '';
+	var dos 	= '';
+	var dtFrom 	= '';
+	var dtTo 	= ''
+	if (criteria == 'patient') {
+		patient = $('#patient').val();
+	}
+	if (criteria == 'DOS') {
+		dos 	= $('#dos').val();
+		dtFrom 	= $('input[name="dtFrom"]').val();
+		dtTo 	= $('input[name="dtTo"]').val();
+	}
+	
+	$.ajax({
+		type: "POST",
+		cache: false,
+		dataType: "json",
+		url: "./getAppointmentsData",
+		data: {
+			criteria:criteria,
+			patient:patient,
+			dos:dos,
+			dtFrom:dtFrom,
+			dtTo:dtTo,
+		    },
+		success: function(result) {
+			
+		},
+		error: function(data){
+			alert("Ajax Fail");
+		}
+	});
+}
+</script>
+ <table id="dg" title="Appointments"  style="width:auto;height:600px"
+                toolbar="#toolbar"
+		pagination="true" 
+		rownumbers="true"
+		pageSize="20"
+		fitColumns="true"
+		>
+	
+  
+                 
+    <thead>  
+	<tr>  
+		<!--<th data-options="field:'Encounter_Provider'"><?php echo xlt('Encounter Provider'); ?></th>-->
+		<th data-options="field:'Date'"><?php echo xlt('Date'); ?></th>  
+		<th data-options="field:'Time'"><?php echo xlt('Time'); ?></th>  
+		<th data-options="field:'ID',align:'right'"><?php echo xlt('ID'); ?></th>  
+		<th data-options="field:'Patient'"><?php echo xlt('PATIENT'); ?></th>  
+		<th data-options="field:'PID',align:'center'"><?php echo xlt('PID'); ?></th>
+		<th data-options="field:'DOB',align:'center'"><?php echo xlt('DOB'); ?></th>
+		<th data-options="field:'Phone',align:'center'"><?php echo xlt('PHONE'); ?></th>
+		<th data-options="field:'Comments',align:'center'"><?php echo xlt('COMMENTS'); ?></th>
+		<th data-options="field:'Type',align:'center'"><?php echo xlt('TYPE'); ?></th>
+		<th data-options="field:'Status',align:'center'"><?php echo xlt('STATUS'); ?></th>
+		<th data-options="field:'PRIMARY_INSURANCE',align:'center'"><?php echo xlt('PRIMARY INSURANCE'); ?></th>
+		<th data-options="field:'INSURANCE_BALANCE',align:'center'"><?php echo xlt('INSURANCE BALANCE'); ?></th>
+		<th data-options="field:'PATIENT_BALANCE',align:'center'"><?php echo xlt('PATIENT BALANCE'); ?></th>
+		
+
+	</tr>  
+    </thead>  
+</table>
+ <div id="toolbar">
+	<div style="text-align: left; padding-left:20px; 
+			background: #E6EEF8;width:98%;height:auto;padding:10px;border:1px solid #95B8E7;">
+	    <div style="text-align: left;">
+		<span style="text-align: left; font-weight: bold; margin-left: 1px;">
+			<?php echo xlt('Criteria'); ?>
+		</span>
+			<select id="criteria" class="easyui-combobox" name="criteria" onchange="getOption(this.value);" style="width:200px;">  
+				<option value="DOS">DOS</option>  
+				<option value='patient'>PID</option>  
+			</select> 
+		</span>
+		<span id='criteriaDOS' style="text-align: left; font-weight: bold; margin-left: 1px;">
+			<?php echo xlt('DOS(between)'); ?>
+			<select id="dos" class="easyui-combobox" name="dos" onchange="" style="width:200px;">  
+				<option value="all">All</option>  
+			</select>
+			<span style="text-align: left; padding-right: 10px;">
+				<?php echo xlt('From'); ?>:
+				<input class="easyui-datebox" style="width:100px" name='dtFrom' >
+			</span>
+			<span style="text-align: left; padding-right: 50px;">
+				<?php echo xlt('To'); ?>:
+				<input class="easyui-datebox" style="width:100px" name='dtTo' >
+			</span>
+		</span>
+		
+		<span id='criteriaPID' style="text-align: left; font-weight: bold; margin-left: 1px; display:none">
+			<?php echo xlt('PID'); ?>
+			<input type='text' id='patient' name='patient' value='' />
+		</span>
+
+		<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
+		    <?php echo xlt('Search'); ?>
+		</a>
+		
+	    </div>
+		
+
+	</div>
+</div>
