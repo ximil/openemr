@@ -22,6 +22,7 @@
 // 
 // Author:   Jacob T.Paul <jacob@zhservices.com>
 //           Shalini Balakrishnan  <shalini@zhservices.com>
+//           Eldho Chacko <eldho@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
 namespace Installer\Controller;
@@ -30,32 +31,27 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\JsonModel;
 use Zend\Json\Json;
-use Installer\Model\InstModule;          
-//use Album\Form\AlbumForm;      
+use Installer\Model\InstModule;  
     
 
 class InstallerController extends AbstractActionController
 {
     protected $InstallerTable;
     
-    public function nolayout()
-    {
-        // Turn off the layout, i.e. only render the view script.
-        $viewModel = new ViewModel();
-        $viewModel->setTerminal(true);
-        return $viewModel;
+    public function nolayout(){
+      // Turn off the layout, i.e. only render the view script.
+      $viewModel = new ViewModel();
+      $viewModel->setTerminal(true);
+      return $viewModel;
     }
     
-    public function indexAction(){ 
-    		
+    public function indexAction(){    		
     	//get the list of installed and new modules
- 		return new ViewModel(array(
-             'InstallersExisting' => $this -> getInstallerTable() -> fetchAll(""),
- 			 'InstallersAll' => $this -> getInstallerTable() -> allModules(),
-         ));
- 		
-    }       
-   
+      return new ViewModel(array(
+        'InstallersExisting' => $this -> getInstallerTable() -> fetchAll(""),
+        'InstallersAll' => $this -> getInstallerTable() -> allModules(),
+      )); 		
+    }  
 
     public function getInstallerTable()
     {
@@ -100,7 +96,7 @@ class InstallerController extends AbstractActionController
     }
     
     public function manageAction(){
-	$request = $this->getRequest();
+    $request = $this->getRequest();
     	$status  = "Failure";
     	if ($request->isPost()) {
     		if ($request->getPost('modAction') == "enable"){
@@ -116,8 +112,7 @@ class InstallerController extends AbstractActionController
           $mod_enc_menu = $request->getPost('mod_enc_menu');
           $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
     			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
-            //$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
-    				$this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
+            $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
     				$status = "Success";
     			}else{
     				$status = "ERROR: could not open table.sql, broken form?";
@@ -152,21 +147,6 @@ class InstallerController extends AbstractActionController
     		return true;
     	}else
     		return true;
-    }
-    
-    /**
-     * Function to install ACL for the installed modules
-     * @param 	string 	$dir Location of the php file which calling functions to add sections,aco etc.
-     * @return boolean
-     */
-    private function installACL ( $dir )
-    {
-    	
-    	$aclfile = $dir."/moduleACL.php";
-    	if (file_exists($aclfile))
-    	{
-    		include_once($aclfile);
-    	}
     }
     
     /**

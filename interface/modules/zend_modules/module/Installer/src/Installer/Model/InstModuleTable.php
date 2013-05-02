@@ -22,6 +22,7 @@
 // 
 // Author:   Jacob T.Paul <jacob@zhservices.com>
 //           Shalini Balakrishnan  <shalini@zhservices.com>
+//           Eldho Chacko <eldho@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
 namespace Installer\Model;
@@ -73,7 +74,7 @@ class InstModuleTable
      * @return boolean
      */
     public function register($directory,$rel_path,$state=0, $base = "custom_modules" ){
-    	$check = sqlQuery("select mod_active from modules where mod_directory='$directory'");
+    	$check = sqlQuery("select mod_active from modules where mod_directory=?",array($directory));
 		if ($check == false)
     	{
     		$added = "";
@@ -88,14 +89,13 @@ class InstModuleTable
     		}else
     			$name = $directory;
     		$uiname = ucwords(strtolower($directory));
-    		$moduleInsertId = sqlInsert("insert into modules set
-    				mod_name='$name',
-    				mod_active='$state',
-    				mod_ui_name= '$uiname',
-    				mod_relative_link= '" . strtolower($rel_path) . "',".$typeSet."
-				mod_directory='".mysql_escape_string($directory)."',
-				date=NOW()
-				");
+    		$moduleInsertId = sqlInsert("INSERT INTO modules SET
+    				mod_name=?,
+    				mod_active=?,
+    				mod_ui_name=?,
+    				mod_relative_link=?,".$typeSet."
+            mod_directory=?,
+            date=NOW()",array($name,$state,$uiname,strtolower($rel_path),mysql_escape_string($directory)));
 		 
       if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
           $ModuleObject = 'modules_'.strtolower($directory);
@@ -135,7 +135,7 @@ class InstModuleTable
      */
     public function allModules(){
     	$all = array();
-    	$sql = "select * from modules order by mod_ui_order asc";
+    	$sql = "SELECT * FROM modules ORDER BY MOD_UI_ORDER ASC";
     	$res = sqlStatement($sql);
     	if($res){
     		while($m = sqlFetchArray($res)){
@@ -156,7 +156,7 @@ class InstModuleTable
      */
     function getRegistryEntry ( $id, $cols = "*" )
     {
-    	$sql = "select $cols from modules where mod_id=?";    	
+    	$sql = "SELECT $cols FROM MODULES WHERE MOD_ID=?";    	
     	$rslt =  sqlQuery($sql,array($id));
     	$mod = new InstModule();
     	$mod -> exchangeArray($rslt);   
@@ -172,7 +172,7 @@ class InstModuleTable
      */
     function updateRegistered ( $id, $mod )
     {        	
-    	return sqlInsert("update modules set $mod,date=NOW() where mod_id=?",array($id));    
+    	return sqlInsert("UPDATE MODULES SET $mod,date=NOW() WHERE mod_id=?",array($id));    
     }
     
     /**

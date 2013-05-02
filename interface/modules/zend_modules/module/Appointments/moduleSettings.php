@@ -27,7 +27,7 @@
 *$MODULESETTINGS = array(
 'ACL' => array(),
 'preferences' => array(),
-'hooks' => array()
+'HOOKS' => array()
 )
 */
 $MODULESETTINGS = array(
