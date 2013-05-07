@@ -38,7 +38,7 @@
         if(Code=='')
         $("#hiddensubmit").click();
         else
-        alert("Inalid Procedures \r\n"+Code);
+        alert("Invalid Procedures \r\n"+Code);
     }
     
     // Remove the dynamically added rows

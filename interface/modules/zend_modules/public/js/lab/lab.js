@@ -29,12 +29,14 @@ function HideTheAjaxDivs(){
 	$(".autocomplete-suggestions").css('display','none');
 }
 function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
-	//alert(ProcedureCode+"-"+procedure+"-"+count);
+//	alert(ProcedureCode+"-"+procedure+"-"+count);
 	$('#procedures_' + count).focus();
 	$('#procedures_' + count).val(procedure);
 	$('#procedure_code_'+count).val(ProcedureCode);
 	$('#procedure_suffix_'+count).val(suffix);
-	//alert($('#procedure_' + count).val());
+//	alert($('#procedures_' + count).val());
+//  alert($('#procedure_code_' + count).val());
+//  alert($('#procedure_suffix_' + count).val());
 	$.post("./search",{
             type: "loadAOE",
 	    inputValue : ProcedureCode,

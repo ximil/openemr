@@ -247,8 +247,6 @@ class LabTable extends AbstractTableGateway
     
      
     public function insertAoe($procedure_type_id,$seq,$aoe,$procedure_code_i,$ordnum){
-	$fh = fopen(dirname(__FILE__)."/yyyy.txt","a");
-	fwrite($fh,print_r($procedure_type_id,1)."\r\n".print_r($seq,1)."\r\n".print_r($aoe,1)."\r\n".print_r($procedure_code_i,1)."\r\n".print_r($ordnum,1));
 	foreach($aoe[$ordnum] as $ProcedureOrder=>$QuestionArr){
 	    if($ProcedureOrder==$procedure_code_i){
 		foreach($QuestionArr as $Question=>$Answer){
