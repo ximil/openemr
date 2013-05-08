@@ -156,7 +156,7 @@ class InstModuleTable
      */
     function getRegistryEntry ( $id, $cols = "*" )
     {
-    	$sql = "SELECT $cols FROM MODULES WHERE MOD_ID=?";    	
+    	$sql = "SELECT $cols FROM modules WHERE MOD_ID=?";    	
     	$rslt =  sqlQuery($sql,array($id));
     	$mod = new InstModule();
     	$mod -> exchangeArray($rslt);   
@@ -172,7 +172,7 @@ class InstModuleTable
      */
     function updateRegistered ( $id, $mod )
     {        	
-    	return sqlInsert("UPDATE MODULES SET $mod,date=NOW() WHERE mod_id=?",array($id));    
+    	return sqlInsert("UPDATE modules SET $mod,date=NOW() WHERE mod_id=?",array($id));    
     }
     
     /**
