@@ -293,6 +293,25 @@ class InstModuleTable
       return $all;
     }
     /**
+     *Function to get module data
+     */
+    public function getModulesRow($mod_id){
+      $all = array();
+      $ModulesRowRes = sqlStatement("SELECT * FROM modules WHERE mod_id=?",array($mod_id));
+      while($ModulesRowRow = sqlFetchArray($ModulesRowRes)){
+        $mod = new InstModule();
+		    $mod -> exchangeArray($ModulesRowRow);
+		    array_push($all,$mod);        
+      }
+      return $all;
+    }
+    /**
+     *Function for saving module settings
+     */
+    public function SaveSettings($post){
+      sqlStatement("UPDATE modules SET mod_nick_name=? WHERE mod_id=?",array($post['nickname'],$post['mod_id']));
+    }
+    /**
      * Function to Save Configurations
      */
     public function SaveConfigurations($post){
@@ -321,7 +340,7 @@ class InstModuleTable
      * Function to Save Hooks
      */
     public function SaveHooks($post){
-      SqlStatement("INSERT INTO modules_hooks_settings (mod_id,enabled_hooks,attached_to) VALUES(?,?,?)",
+      sqlStatement("INSERT INTO modules_hooks_settings (mod_id,enabled_hooks,attached_to) VALUES(?,?,?)",
                    array($post['mod_id'],$post['Hooks'],$post['AttachedTo']));
     }
     /**

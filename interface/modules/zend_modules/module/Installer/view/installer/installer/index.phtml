@@ -121,13 +121,13 @@ $zendModDir 	= $GLOBALS['zendModDir'];
 								<?php					
 		 
 			  							if ($moduleResult -> sqlRun==0){?>
-			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo xlt('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo xlt('Install');?>"/></a>
+			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install','<?php echo ($moduleResult -> type == 1) ? 'zend': ''; ?>');" title="<?php echo xlt('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo xlt('Install');?>"/></a>
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo xlt('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo xlt('Disable');?>"/></a>
+			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable','<?php echo ($moduleResult -> type == 1) ? 'zend': ''; ?>');" title="<?php echo xlt('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo xlt('Disable');?>"/></a>
 										<?php }
 										else{?>
-											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo xlt('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo xlt('Enable');?>"/></a>
+											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable','<?php echo ($moduleResult -> type == 1) ? 'zend': ''; ?>');" title="<?php echo xlt('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo xlt('Enable');?>"/></a>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}?>
 								</td>

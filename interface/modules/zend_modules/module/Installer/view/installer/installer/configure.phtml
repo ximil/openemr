@@ -34,6 +34,24 @@ $confirmationMSG = xlt("Do you really want to delete?");
 if(count($TabSettings)>0){
 ?>
 <div class="easyui-tabs" id="tab" style="width:800px;height:auto;">
+    <div title="<?php echo xlt('Settings');?>" id="tab_settings" iconCls="icon-preference">
+        <form name="settingsform" id="settingsform">
+          <?php foreach($Modules as $obj_modules){ ?>
+          <table>
+            <tr>
+              <td>
+                <?php echo xlt("Nick Name");?>
+              </td>
+              <td>
+                <input type="hidden" name="mod_id" value="<?php echo $mod_id;?>">
+                <input type="text" name="nickname" value="<?php echo $obj_modules->modnickname;?>">
+              </td>
+            </tr>
+          </table>
+          <?php } ?>
+        <div style="text-align:center"><a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:SaveMe('settingsform',<?php echo $mod_id;?>)"><?php echo xlt('Save'); ?></a></div>
+        </form>
+    </div>
     <?php
     if($TabSettings[1]['cnt'] > 0){
     ?>

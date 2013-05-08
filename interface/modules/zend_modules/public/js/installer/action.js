@@ -9,7 +9,7 @@ function register(status,title,name,method,type){
 	);
 }
 
-function manage(id,action){
+function manage(id,action,type){
 	if(document.getElementById('mod_enc_menu'))
 	modencmenu = document.getElementById('mod_enc_menu').value;
 	else
@@ -18,7 +18,7 @@ function manage(id,action){
 	modnickname = document.getElementById('mod_nick_name').value;
 	else
 	modnickname = '';
-	$.post("./Installer/manage", { modId: id, modAction: action,mod_enc_menu:modencmenu,mod_nick_name:modnickname},
+	$.post("./Installer/manage", { modId: id, modAction: action,mod_enc_menu:modencmenu,mod_nick_name:modnickname,mtype:type},
 	   function(data) {
 			if(data=="Success")
 				window.location.reload();
@@ -104,6 +104,26 @@ function SaveMe(frmId,mod_id){
 				}
 			});	
 	}
+  else if(frmId=='settingsform'){
+    $.ajax({
+				type: 'POST',
+				url: "./Installer/SaveSettings",
+				data: $('#'+frmId).serialize(),   
+				success: function(data){
+						$.each(data, function(jsonIndex, jsonValue){
+							if (jsonValue['return'] == 1) {
+								$("#ConfigRow_"+mod_id).hide();
+								configure(mod_id,'');
+								alert(jsonValue['msg']);
+								$(document).ready(function(){
+								if(Tabtitle)
+								$('#tab').tabs('select',Tabtitle);
+								});
+							}
+						});
+				}
+			});	
+  }
 }
 
 function DeleteACL(aclID,user,mod_id,msg){

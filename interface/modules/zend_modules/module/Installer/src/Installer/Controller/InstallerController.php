@@ -111,13 +111,13 @@ class InstallerController extends AbstractActionController
     			$dirModule = $this -> getInstallerTable() -> getRegistryEntry ( $request->getPost('modId'), "mod_directory" );
           $mod_enc_menu = $request->getPost('mod_enc_menu');
           $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
-    			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
+          $moddirpath = ($request->getPost('mtype') == 'zend') ? $GLOBALS['zendModDir'] : $GLOBALS['customDir'];
+          if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$moddirpath."/".$dirModule -> modDirectory)){
             $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
-    				$status = "Success";
-    			}else{
-    				$status = "ERROR: could not open table.sql, broken form?";
-    			}
-    				
+            $status = "Success";
+          }else{
+            $status = "ERROR: could not open table.sql, broken form?";
+          }
     		}
     	}
     	echo $status;
@@ -143,10 +143,8 @@ class InstallerController extends AbstractActionController
     				sqlStatement(rtrim("$sqlq"));
     			}
     		}
-    			
-    		return true;
-    	}else
-    		return true;
+      }
+    	return true;
     }
     
     /**
@@ -179,8 +177,15 @@ class InstallerController extends AbstractActionController
     
     public function SaveHooksAction(){
       $request = $this->getRequest();
-      $fh = fopen("D:/ddd.txt","a");fwrite($fh,print_r($request->getPost(),1));
       $this->getInstallerTable()->SaveHooks($request->getPost());
+      $return[0]  = array('return' => 1,'msg' => xlt("Saved Successfully"));
+      $arr        = new JsonModel($return);
+      return $arr;
+    }
+    
+    public function SaveSettingsAction(){
+      $request = $this->getRequest();
+      $this->getInstallerTable()->SaveSettings($request->getPost());
       $return[0]  = array('return' => 1,'msg' => xlt("Saved Successfully"));
       $arr        = new JsonModel($return);
       return $arr;
@@ -198,6 +203,7 @@ class InstallerController extends AbstractActionController
           'ListActiveACL' => $this->getInstallerTable()->getActiveACL($request->getPost('mod_id')),
           'Hooks' => $this->getInstallerTable()->getSettings('Hooks',$request->getPost('mod_id')),
           'ListActiveHooks' => $this->getInstallerTable()->getActiveHooks($request->getPost('mod_id')),
+          'Modules' => $this->getInstallerTable()->getModulesRow($request->getPost('mod_id')),
       ));
     }
     
