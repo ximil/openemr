@@ -1,4 +1,5 @@
 <?php return array( 'modules' =>  array(
+                                        '0' => 'Installer',
                                         '1' => 'Application',
                                         ),
                    'module_listener_options' =>  array(

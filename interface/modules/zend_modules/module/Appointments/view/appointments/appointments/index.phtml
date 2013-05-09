@@ -1,0 +1,82 @@
+<?php 
+	// module/Appointments/view/appointments/appointments/index.phtml:
+?>
+<style>
+.datagrid-group{
+	height:30px !important;
+        overflow:hidden;
+	background-color:#b7d2ff;
+	color:#0E2D5F;
+}
+</style>
+<script>
+
+</script>
+<table width='100%'><tr><td>
+ <table id="dg" title="Appointments"  style="width:auto;height:600px"
+                toolbar="#toolbar"
+		pagination="true" 
+		rownumbers="true"
+		pageSize="20"
+		fitColumns="true"
+		>
+    <thead>  
+	<tr>  
+		<th data-options="field:'Date',width:25"><?php echo xlt('Date'); ?></th>  
+		<th data-options="field:'Time',width:20"><?php echo xlt('Time'); ?></th>  
+		<th data-options="field:'ID',width:20,align:'left'"><?php echo xlt('ID'); ?></th>  
+		<th data-options="field:'Patient',width:20"><?php echo xlt('PATIENT'); ?></th>  
+		<th data-options="field:'PatientID',width:20,align:'left'"><?php echo xlt('Patient ID'); ?></th>
+		<th data-options="field:'DOB',width:20,align:'left'"><?php echo xlt('DOB'); ?></th>
+		<th data-options="field:'Phone',width:20,align:'left'"><?php echo xlt('PHONE'); ?></th>
+		<th data-options="field:'Comments',align:'left',width:30"><?php echo xlt('COMMENTS'); ?></th>
+		<th data-options="field:'Type',width:20,align:'left'"><?php echo xlt('TYPE'); ?></th>
+		<th data-options="field:'Status',width:20,align:'center'"><?php echo xlt('STATUS'); ?></th>
+		<!--<th data-options="field:'PRIMARY_INSURANCE',align:'center'"><?php echo xlt('PRIMARY INSURANCE'); ?></th>
+		<th data-options="field:'INSURANCE_BALANCE',align:'center'"><?php echo xlt('INSURANCE BALANCE'); ?></th>
+		<th data-options="field:'PATIENT_BALANCE',align:'center'"><?php echo xlt('PATIENT BALANCE'); ?></th>-->
+	</tr>  
+    </thead>  
+</table>
+ <div id="toolbar">
+	<div style="text-align: left; padding-left:20px; 
+			background: #E6EEF8;width:auto;height:auto;padding:10px;border:1px solid #95B8E7;">
+	    <div style="text-align: left;">
+		<span style="text-align: left; font-weight: bold; margin-left: 1px;">
+			<?php echo xlt('Criteria'); ?>
+		</span>
+			<select id="criteria" class="easyui-combobox" name="criteria" onchange="getOption(this.value);" style="width:200px;">  
+				<option value="DOS">DOS</option>  
+				<option value='patient'>PID</option>  
+			</select> 
+		</span>
+		<span id='criteriaDOS' style="text-align: left; font-weight: bold; margin-left: 1px;">
+			<?php echo xlt('DOS(between)'); ?>
+			<select id="dos" class="easyui-combobox" name="dos" onchange="" style="width:200px;">  
+				<option value="all">All</option>  
+			</select>
+			<span style="text-align: left; padding-right: 10px;">
+				<?php echo xlt('From'); ?>:
+				<input class="easyui-datebox" style="width:100px" name='dtFrom' >
+			</span>
+			<span style="text-align: left; padding-right: 50px;">
+				<?php echo xlt('To'); ?>:
+				<input class="easyui-datebox" style="width:100px" name='dtTo' >
+			</span>
+		</span>
+		
+		<span id='criteriaPID' style="text-align: left; font-weight: bold; margin-left: 1px; display:none">
+			<?php echo xlt('PID'); ?>
+			<input type='text' id='patient' name='patient' value='' />
+		</span>
+
+		<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
+		    <?php echo xlt('Search'); ?>
+		</a>
+		
+	    </div>
+		
+
+	</div>
+</div>
+ </td></tr></table>
