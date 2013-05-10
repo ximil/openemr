@@ -671,6 +671,7 @@ CREATE TABLE `documents` (
   `couch_docid` VARCHAR(100) DEFAULT NULL,
   `couch_revid` VARCHAR(100) DEFAULT NULL,
   `storagemethod` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0->Harddisk,1->CouchDB',
+  `path_depth` TINYINT DEFAULT '1' COMMENT 'Depth of path to use in url to find document. Not applicable for CouchDB.',
   PRIMARY KEY  (`id`),
   KEY `revision` (`revision`),
   KEY `foreign_id` (`foreign_id`),
@@ -2222,7 +2223,7 @@ DROP TABLE IF EXISTS `immunizations`;
 CREATE TABLE `immunizations` (
   `id` bigint(20) NOT NULL auto_increment,
   `patient_id` int(11) default NULL,
-  `administered_date` date default NULL,
+  `administered_date` datetime default NULL,
   `immunization_id` int(11) default NULL,
   `cvx_code` int(11) default NULL,
   `manufacturer` varchar(100) default NULL,
@@ -2236,6 +2237,12 @@ CREATE TABLE `immunizations` (
   `update_date` timestamp NOT NULL,
   `created_by` bigint(20) default NULL,
   `updated_by` bigint(20) default NULL,
+  `amount_administered` int(11) DEFAULT NULL,			
+  `amount_administered_unit` varchar(50) DEFAULT NULL,			
+  `expiration_date` date DEFAULT NULL,			
+  `route` varchar(100) DEFAULT NULL,			
+  `administration_site` varchar(100) DEFAULT NULL,			
+  `added_erroneously` tinyint(1) NOT NULL DEFAULT '0',  
   PRIMARY KEY  (`id`),
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
