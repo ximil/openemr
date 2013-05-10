@@ -555,7 +555,7 @@ class ResultTable extends AbstractTableGateway
     public function getProcedureOrderSequence($proc_order_id,$code_suffix)
     {
 	$sql_orderseq   = "SELECT procedure_order_seq FROM procedure_order_code WHERE
-				    procedure_order_id = ? AND CONCAT(procedure_code,procedure_suffix) = ? ";
+				    procedure_order_id = ? AND procedure_code = ? ";
 					
 	$value_arr      = array();
         

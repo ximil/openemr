@@ -515,7 +515,7 @@ class ResultController extends AbstractActionController
 										$testdetails_arr    = explode("#!#",$testdetails);
 										list($test_code, $profile_title, $code_suffix, $order_title, $spec_collected_time, $spec_received_time, $res_reported_time) = $testdetails_arr;
 											
-										$order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$code_suffix);
+										$order_seq = $this->getResultTable()->getProcedureOrderSequence($data['procedure_order_id'],$test_code);
 										
 										if(empty($order_seq)){
 												$order_seq = $prev_seq;
