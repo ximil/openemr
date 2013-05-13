@@ -702,7 +702,13 @@ class ResultTable extends AbstractTableGateway
     
     public function listResults($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,pr.procedure_report_id AS prid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
+				$sql = "SELECT po.patient_id, po.date_ordered, poc.procedure_name, pr.specimen_num, pr.date_collected, pr.procedure_report_id AS prid,
+        CONCAT(pd.lname, ' ', pd.fname) AS pname, pt2.units AS def_units, pt2.range AS def_range, prs.abnormal, prs.result, prs.result_status,
+        prs.facility, prs.comments,prs.units, prs.range FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id
+        AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id
+        LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq
+        LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id LEFT JOIN procedure_type pt1 ON
+        pt1.procedure_code = poc.procedure_code LEFT JOIN procedure_type pt2  ON pt2.parent = pt1.procedure_type_id AND pt2.procedure_type = 'res'";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE ";
 						$cond = 0;
@@ -738,7 +744,7 @@ class ResultTable extends AbstractTableGateway
 								array_push($param,$to_dt);
 						}
 						if($cond){
-                $sql .= " AND  pr.procedure_report_id IS NOT NULL";
+                $sql .= " AND pr.procedure_report_id IS NOT NULL";
             }else{
                 $sql .= " pr.procedure_report_id IS NOT NULL";
                 $cond = 1;

@@ -58,6 +58,7 @@ function doSave(){
 						<span style="padding-left:25px;"><?php echo xlt('Patient').":&nbsp;"; echo $this->formRow($form->get('search_patient')); ?></span>
 						<div id="patdiv" ></div>
 						<?php echo $this->formRow($form->get('patient_id')); ?>
+						<span style="padding-left:25px;"><?php echo xlt('Specimen Status').":&nbsp;"; echo $this->formRow($form->get('specimen_search_status')); ?></span>
 				</div>
 				<a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()"><?php echo xlt('Search'); ?></a>
 		</div>

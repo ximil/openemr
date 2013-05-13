@@ -100,4 +100,44 @@ class Emr extends AbstractHelper
         $res = sqlQuery("SELECT title FROM list_options WHERE list_id = ? AND option_id = ?",array($list_id,$option_id)); 
         return $res['title'];
     }
+		
+		/**
+		 * Procedure Providers for Lab
+		 * function getProcedureProviders
+		 * List all Procedure Providers
+		 */
+		public function getProcedureProviders()
+		{
+				$arr = array();
+				$sql = "SELECT pp.*
+										FROM procedure_providers AS pp 
+										ORDER BY pp.name";
+				$result = sqlStatement($sql);
+				$i = 0;
+				while ($row = sqlFetchArray($result)) {
+						$arr[$i]['ppid']					= $row['ppid'];
+						$arr[$i]['name'] 					= htmlspecialchars($row['name'],ENT_QUOTES);
+						$arr[$i]['npi'] 					= htmlspecialchars($row['npi'],ENT_QUOTES);
+						$arr[$i]['protocol'] 			= htmlspecialchars($row['protocol'],ENT_QUOTES);
+						$arr[$i]['DorP'] 					= htmlspecialchars($row['DorP'],ENT_QUOTES);
+						$arr[$i]['send_app_id'] 	= htmlspecialchars($row['send_app_id'],ENT_QUOTES);
+						$arr[$i]['send_fac_id'] 	= htmlspecialchars($row['send_fac_id'],ENT_QUOTES);
+						$arr[$i]['recv_app_id'] 	= htmlspecialchars($row['recv_app_id'],ENT_QUOTES);
+						$arr[$i]['recv_fac_id'] 	= htmlspecialchars($row['recv_fac_id'],ENT_QUOTES);
+						$arr[$i]['remote_host'] 	= htmlspecialchars($row['remote_host'],ENT_QUOTES);
+						$arr[$i]['login'] 				= htmlspecialchars($row['login'],ENT_QUOTES);
+						$arr[$i]['password'] 			= htmlspecialchars($row['password'],ENT_QUOTES);
+						$arr[$i]['orders_path'] 	= htmlspecialchars($row['orders_path'],ENT_QUOTES);
+						$arr[$i]['results_path'] 	= htmlspecialchars($row['results_path'],ENT_QUOTES);
+						$arr[$i]['notes'] 				= htmlspecialchars($row['notes'],ENT_QUOTES);
+
+						if ($row['remote_host'] != '' && $row['login'] != '' && $row['password'] != '') {
+								$arr[$i]['labtype']	= 'External';
+						} else {
+								$arr[$i]['labtype']	= 'Local';
+						}
+						$i++;
+				}
+				return $arr;
+		}
 }
