@@ -3205,3 +3205,7 @@ CREATE TABLE `modules_hooks_settings` (
   PRIMARY KEY (`id`)
 );
 #EndIf
+
+#IfMissingColumn form_encounter n_notes
+  ALTER TABLE `form_encounter` ADD COLUMN `n_notes` TEXT NOT NULL;
+#EndIf

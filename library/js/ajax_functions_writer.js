@@ -85,6 +85,33 @@ function SelectToSave(textara){
     }
     parent.$.fn.fancybox.close();
 }
+
+function SaveInEmbed(textara){
+    var ObjField = textara;
+    Fields = ObjField.split('form_');
+    Field = Fields[1];
+    var isiPad = navigator.userAgent.match(/iPad/i) != null;
+    if(!isiPad){
+    var textAreaContent = window.frames[0].document.body.innerHTML;
+    }
+    else{
+    var textAreaContent = document.getElementById('textarea1').value;
+    }
+    mainform=window.parent.document;
+    if(mainform.getElementById(textara+'_div'))
+    mainform.getElementById(textara+'_div').innerHTML = textAreaContent;
+    if(mainform.getElementById(textara+'_optionTD'))
+    mainform.getElementById(textara+'_optionTD').innerHTML =document.getElementById('options').innerHTML;
+    if(mainform.getElementById(textara)){
+    mainform.getElementById(textara).value = textAreaContent;
+    mainform.getElementById(textara).value +="|*|*|*|"+document.getElementById('options').innerHTML;
+    }
+    $('#nationdiv_'+Field, window.parent.document).slideUp();
+    $('#nationtextarea_'+Field, window.parent.document).slideDown();
+    $('.hide_other_divs', window.parent.document).show();
+    
+}
+
 function removeHTMLTags(strInputCode){
             /* 
                     This line is optional, it replaces escaped brackets with real ones, 
