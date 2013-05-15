@@ -207,14 +207,14 @@ class ResultTable extends AbstractTableGateway
                                     "pt2.range AS pt2_range, pt2.procedure_type_id AS procedure_type_id, " .
                                     "pt2.name AS name, pt2.description, pt2.seq AS seq, " .
                                     "ps.procedure_result_id, ps.result_code AS result_code, ps.result_text, ps.abnormal, ps.result, " .
-                                    "ps.range, ps.result_status as Mresult_status, ps.facility, ps.comments, ps.units, ps.comments as Mcomments,ps.order_title as Morder_title,ps.profile_title as Mprofile_title"; 
+                                    "ps.range, ps.result_status as Mresult_status, ps.facility, ps.comments, ps.units, ps.comments as Mcomments,ps.order_title as Morder_title,ps.profile_title as Mprofile_title,ps.code_suffix as Mcode_suffix"; 
            $selects .= ", psr.procedure_subtest_result_id,
                                 psr.subtest_code,
                                 psr.subtest_desc AS sub_result_text,
                                 psr.result_value AS sub_result,
                                 psr.abnormal_flag AS sub_abnormal,
                                 psr.units AS sub_units,
-                                psr.range AS sub_range,psr.comments as comments,psr.order_title as order_title,psr.profile_title as profile_title,psr.result_status as result_status";
+                                psr.range AS sub_range,psr.comments as comments,psr.order_title as order_title,psr.profile_title as profile_title,psr.code_suffix as code_suffix,psr.result_status as result_status";
             
             // Skip LIKE Cluse for Ext Lab if not set the procedure code or parent
             $pt2cond = '';
@@ -257,6 +257,7 @@ class ResultTable extends AbstractTableGateway
                 $result_code      = empty($rrow['result_code'     ]) ? $restyp_code : $rrow['result_code'];
                 $order_title = empty($rrow['order_title']) ? $rrow['Morder_title'] : $rrow['order_title'];
                 $profile_title = empty($rrow['profile_title']) ? $rrow['Mprofile_title'] : $rrow['profile_title'];
+                $code_suffix = empty($rrow['code_suffix']) ? $rrow['code_suffix'] : $rrow['code_suffix'];
                 if ($rrow['sub_result_text'] != '') {
                     $result_text = $rrow['sub_result_text'];
                 } else {
@@ -389,6 +390,7 @@ class ResultTable extends AbstractTableGateway
                 $arr1[$i]['editor'] = $editor;
 		$arr1[$i]['order_title'] = $order_title;
                 $arr1[$i]['profile_title'] = $profile_title;
+                $arr1[$i]['code_suffix'] = $code_suffix;
 		$arr1[$i]['patient_instructions'] = $patient_instructions;
 				 
                 $i++;
@@ -702,7 +704,13 @@ class ResultTable extends AbstractTableGateway
     
     public function listResults($pat_id,$from_dt,$to_dt)
     {
-				$sql = "SELECT *,pr.procedure_report_id AS prid, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id";
+				$sql = "SELECT po.patient_id, po.date_ordered, poc.procedure_name, pr.specimen_num, pr.date_collected, pr.procedure_report_id AS prid,
+        CONCAT(pd.lname, ' ', pd.fname) AS pname, pt2.units AS def_units, pt2.range AS def_range, prs.abnormal, prs.result, prs.result_status,
+        prs.facility, prs.comments,prs.units, prs.range FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id
+        AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id
+        LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq
+        LEFT JOIN procedure_result prs ON prs.procedure_report_id = pr.procedure_report_id LEFT JOIN procedure_type pt1 ON
+        pt1.procedure_code = poc.procedure_code LEFT JOIN procedure_type pt2  ON pt2.parent = pt1.procedure_type_id AND pt2.procedure_type = 'res'";
 				if($pat_id || $from_dt || $to_dt){
 						$sql .= " WHERE ";
 						$cond = 0;
@@ -738,7 +746,7 @@ class ResultTable extends AbstractTableGateway
 								array_push($param,$to_dt);
 						}
 						if($cond){
-                $sql .= " AND  pr.procedure_report_id IS NOT NULL";
+                $sql .= " AND pr.procedure_report_id IS NOT NULL";
             }else{
                 $sql .= " pr.procedure_report_id IS NOT NULL";
                 $cond = 1;

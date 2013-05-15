@@ -15,7 +15,6 @@ $fake_register_globals=false;
 require_once("../../globals.php");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/billing.inc");
-require_once("$srcdir/pnotes.inc");
 require_once("$srcdir/patient.inc");
 require_once("$srcdir/lists.inc");
 require_once("$srcdir/acl.inc");
@@ -139,9 +138,26 @@ function toencounter(rawdata) {
 
     top.restoreSession();
 <?php if ($GLOBALS['concurrent_layout']) { ?>
-    parent.left_nav.setEncounter(datestr, enc, window.name);
-    parent.left_nav.setRadio(window.name, 'enc');
-    parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + enc);
+    <?php
+		$sql 	= "SELECT mod_name, type FROM modules WHERE mod_active=1";
+		$result = sqlStatement($sql);
+		$zendEnc = '';
+		while ($tmp = sqlFetchArray($result)) {
+			if ($tmp['mod_name'] == 'Encounter' && $tmp['type'] == 1) {
+				$zendEnc 	= htmlspecialchars($tmp['mod_name'],ENT_QUOTES);
+			}
+		}
+	?>
+	<?php if ($zendEnc == 'Encounter') { ?>
+		parent.left_nav.setEncounter(datestr, enc, window.name);
+		parent.left_nav.setRadio(window.name, 'enc');
+		parent.left_nav.loadFrame('enc2', window.name, '/../modules/zend_modules/public/encounter/show?enc=' + enc);
+	<?php } else { ?>
+		parent.left_nav.setEncounter(datestr, enc, window.name);
+		parent.left_nav.setRadio(window.name, 'enc');
+		parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + enc);
+	<?php } ?>
+	
 <?php } else { ?>
     top.Title.location.href = '../encounter/encounter_title.php?set_encounter='   + enc;
     top.Main.location.href  = '../encounter/patient_encounter.php?set_encounter=' + enc;

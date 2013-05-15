@@ -501,7 +501,7 @@ class ResultController extends AbstractActionController
 						
 					 // $index = 0;
 						//$order_seq = $this->getResultTable()->getProcedureOrderSequences($data['procedure_order_id']);
-						$prev_seq = "";
+						$prev_seq = "1";
 						
 						
 						for($index=0; $index < $test_count; $index++ ) { //ITERATING THROUGH NO OF TESTS IN AN ORDER.
