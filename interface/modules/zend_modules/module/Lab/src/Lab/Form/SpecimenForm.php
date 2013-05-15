@@ -53,6 +53,14 @@ class SpecimenForm extends Form
             ),
         ));
 				$this->add(array(
+            'name' => 'specimen_search_status',
+						'type'  => 'Zend\Form\Element\Select',
+            'attributes' => array(
+								'class' => 'combo',
+								'editable' => 'true',
+            ),
+        ));
+				$this->add(array(
             'name' => 'specimen_status[]',
 						'type'  => 'Zend\Form\Element\Select',
             'attributes' => array(

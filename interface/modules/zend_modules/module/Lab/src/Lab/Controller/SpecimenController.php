@@ -33,6 +33,8 @@ class SpecimenController extends AbstractActionController
 				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
 				$statuses = $helper->getList("proc_rep_status");
 				$form->get('specimen_status[]')->setValueOptions($statuses);
+				array_unshift($statuses,array('value' => 'all','label' => 'All'));
+				$form->get('specimen_search_status')->setValueOptions($statuses);
 				$this->layout()->saved = $this->params('saved');
 				if($pid){
 						$form->get('patient_id')->setValue($pid);
@@ -42,6 +44,7 @@ class SpecimenController extends AbstractActionController
 				$request = $this->getRequest();
 				$from_dt = null;
 				$to_dt = null;
+				$search_status = 'all';
         if ($request->isPost()) {
 						$search_pid = $request->getPost()->patient_id;
 						$form->get('search_patient')->setValue($this->getSpecimenTable()->getPatientName($search_pid));
@@ -50,8 +53,10 @@ class SpecimenController extends AbstractActionController
 						$form->get('patient_id')->setValue($search_pid);
 						$form->get('search_from_date')->setValue($from_dt);
 						$form->get('search_to_date')->setValue($to_dt);
+						$search_status = $request->getPost()->specimen_search_status;
+						$form->get('specimen_search_status')->setValue($search_status);
 				}
-				$this->layout()->res = $this->getSpecimenTable()->listOrders($search_pid,$from_dt,$to_dt);
+				$this->layout()->res = $this->getSpecimenTable()->listOrders($search_pid,$from_dt,$to_dt,$search_status);
         return array('form' => $form);
     }
 		

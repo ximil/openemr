@@ -309,4 +309,40 @@ class LabController extends AbstractActionController
         }
         return $this->labTable;
     }   
+		
+		// List all providers
+		public function getProcedureProvidersAction()
+		{
+				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+				$procProviders = $helper->getProcedureProviders();
+				$data = new JsonModel($procProviders);
+				return $data;
+		}
+		
+		// Save Procedure Provider (New Or Update)
+		public function saveProcedureProviderAction()
+		{
+				$request = $this->getRequest();
+				$response = $this->getResponse();
+				if($request->isPost()){
+						$return = $this->getLabTable()->saveProcedureProvider($request->getPost());
+						if ($return) {
+								$return = array('errorMsg' => 'Error while processing .... !');
+						}
+						$response->setContent(\Zend\Json\Json::encode($return));
+				}
+				return $response;
+		}
+		
+		// Dlete Procedur Provider
+		public function deleteProcedureProviderAction()
+		{
+				$request = $this->getRequest();
+				$response = $this->getResponse();
+				if($request->isPost()){
+						$return = $this->getLabTable()->deleteProcedureProvider($request->getPost());
+						$response->setContent(\Zend\Json\Json::encode(array('success' => 'Recored Successfully Deleteed .... !')));
+				}
+				return $response;
+		}
 }

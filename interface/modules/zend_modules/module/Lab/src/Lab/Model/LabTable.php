@@ -1347,6 +1347,85 @@ class LabTable extends AbstractTableGateway
 	$res_status   = sqlQuery($sql_status,$status_value_arr);	
 	return $res_status;        
     }
+		
+		public function saveProcedureProvider($post)
+		{
+				$return = array();
+				if ($post['ppid'] && $post['ppid'] > 0) {
+						$sql = "UPDATE procedure_providers SET name = ?, 
+																										npi = ?,           
+																										send_app_id = ?, 
+																										send_fac_id = ?, 
+																										recv_app_id = ?, 
+																										recv_fac_id = ?, 
+																										DorP = ?, 
+																										protocol = ?, 
+																										remote_host = ?, 
+																										login = ?, 
+																										password = ?, 
+																										orders_path = ?, 
+																										results_path = ?, 
+																										notes = ?   
+																						WHERE ppid = ?";
+						$return = sqlQuery($sql, array($post['name'],
+																								$post['npi'],
+																								$post['send_app_id'],
+																								$post['send_fac_id'],
+																								$post['recv_app_id'],
+																								$post['recv_fac_id'],
+																								$post['DorP'],
+																								$post['protocol'],
+																								$post['remote_host'],
+																								$post['login'],
+																								$post['password'],
+																								$post['orders_path'],
+																								$post['results_path'],
+																								$post['notes'],
+																								$post['ppid'])
+																		);
+				} else {
+						$sql = "INSERT INTO procedure_providers SET name = ?, 
+																										npi = ?,           
+																										send_app_id = ?, 
+																										send_fac_id = ?, 
+																										recv_app_id = ?, 
+																										recv_fac_id = ?, 
+																										DorP = ?, 
+																										protocol = ?, 
+																										remote_host = ?, 
+																										login = ?, 
+																										password = ?, 
+																										orders_path = ?, 
+																										results_path = ?, 
+																										notes = ?";
+						$return = sqlQuery($sql, array($post['name'],
+																								$post['npi'],
+																								$post['send_app_id'],
+																								$post['send_fac_id'],
+																								$post['recv_app_id'],
+																								$post['recv_fac_id'],
+																								$post['DorP'],
+																								$post['protocol'],
+																								$post['remote_host'],
+																								$post['login'],
+																								$post['password'],
+																								$post['orders_path'],
+																								$post['results_path'],
+																								$post['notes'])
+																		);
+				}
+				return $return;
+		}
+		
+		// Delete Procedure Provider
+		public function deleteProcedureProvider($post)
+		{
+				if ($post['ppid'] && $post['ppid'] > 0) {
+						$sql = "DELETE FROM procedure_providers
+														WHERE ppid=?";
+						$return = sqlQuery($sql, array($post['ppid']));
+				}
+		}
 }
 ?>
 

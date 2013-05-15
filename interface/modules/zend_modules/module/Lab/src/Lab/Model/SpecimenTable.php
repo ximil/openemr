@@ -24,10 +24,10 @@ class SpecimenTable extends AbstractTableGateway
         $this->tableGateway = $tableGateway;
     }
     
-    public function listOrders($pat_id,$from_dt,$to_dt)
+    public function listOrders($pat_id,$from_dt,$to_dt,$search_status)
     {
 				$sql = "SELECT *,poc.procedure_order_id AS poid, poc.procedure_order_seq AS poseq, CONCAT(pd.lname,' ',pd.fname) AS pname FROM procedure_order po JOIN procedure_order_code poc ON poc.procedure_order_id = po.procedure_order_id AND po.order_status = 'pending' AND po.psc_hold = 'onsite' AND po.activity = 1 LEFT JOIN patient_data pd ON pd.pid = po.patient_id LEFT JOIN procedure_report pr ON pr.procedure_order_id = poc.procedure_order_id AND pr.procedure_order_seq = poc.procedure_order_seq";
-				if($pat_id || $from_dt || $to_dt){
+				if($pat_id || $from_dt || $to_dt || ($search_status != 'all')){
 						$sql .= " WHERE";
 						$cond = 0;
 						$param = array();
@@ -60,6 +60,15 @@ class SpecimenTable extends AbstractTableGateway
 										$cond = 1;
 								}
 								array_push($param,$to_dt);
+						}
+						if($search_status != 'all'){
+								if($cond){
+										$sql .= " AND pr.report_status = ?";
+								}else{
+										$sql .= " pr.report_status = ?";
+										$cond = 1;
+								}
+								array_push($param,$search_status);
 						}
 						$sql .= " ORDER BY po.procedure_order_id DESC";
 						$result = sqlStatement($sql,$param);
