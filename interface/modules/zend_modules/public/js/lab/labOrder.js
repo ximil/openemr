@@ -180,7 +180,7 @@
         }
         
         $('#accord').accordion('add',{
-            title:'<img  class="easyui-linkbutton" iconCls="icon-save" src="../css/icons/multiple.png"  border="0" />  New Procedure Order ' + idx,
+            title:'<img  class="easyui-linkbutton" iconCls="icon-save" src="../css/icons/multiple.png"  border="0" />  New Procedure Order ',
             content:newAccord
         });
 
