@@ -22,6 +22,7 @@
 // 
 // Author:   Jacob T.Paul <jacob@zhservices.com>
 //           Shalini Balakrishnan  <shalini@zhservices.com>
+//           Eldho Chacko <eldho@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
 namespace Installer\Model;
@@ -73,7 +74,7 @@ class InstModuleTable
      * @return boolean
      */
     public function register($directory,$rel_path,$state=0, $base = "custom_modules" ){
-    	$check = sqlQuery("select mod_active from modules where mod_directory='$directory'");
+    	$check = sqlQuery("select mod_active from modules where mod_directory=?",array($directory));
 		if ($check == false)
     	{
     		$added = "";
@@ -88,14 +89,13 @@ class InstModuleTable
     		}else
     			$name = $directory;
     		$uiname = ucwords(strtolower($directory));
-    		$moduleInsertId = sqlInsert("insert into modules set
-    				mod_name='$name',
-    				mod_active='$state',
-    				mod_ui_name= '$uiname',
-    				mod_relative_link= '" . strtolower($rel_path) . "',".$typeSet."
-				mod_directory='".mysql_escape_string($directory)."',
-				date=NOW()
-				");
+    		$moduleInsertId = sqlInsert("INSERT INTO modules SET
+    				mod_name=?,
+    				mod_active=?,
+    				mod_ui_name=?,
+    				mod_relative_link=?,".$typeSet."
+            mod_directory=?,
+            date=NOW()",array($name,$state,$uiname,strtolower($rel_path),mysql_escape_string($directory)));
 		 
       if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
           $ModuleObject = 'modules_'.strtolower($directory);
@@ -112,12 +112,14 @@ class InstModuleTable
             $i = 0;
             foreach($SettingsArray as $k=>$v){
                 if($SettingsVal==1){
+                  ob_start();
                   if($i==0)
                   addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
                   addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v['menu_name']);
+                  ob_clean();
                   $i++;
                 }
-                sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']));
+                sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['path']));
             }
           }
       }
@@ -133,7 +135,7 @@ class InstModuleTable
      */
     public function allModules(){
     	$all = array();
-    	$sql = "select * from modules order by mod_ui_order asc";
+    	$sql = "SELECT * FROM modules ORDER BY MOD_UI_ORDER ASC";
     	$res = sqlStatement($sql);
     	if($res){
     		while($m = sqlFetchArray($res)){
@@ -154,7 +156,7 @@ class InstModuleTable
      */
     function getRegistryEntry ( $id, $cols = "*" )
     {
-    	$sql = "select $cols from modules where mod_id=?";    	
+    	$sql = "SELECT $cols FROM modules WHERE MOD_ID=?";    	
     	$rslt =  sqlQuery($sql,array($id));
     	$mod = new InstModule();
     	$mod -> exchangeArray($rslt);   
@@ -170,7 +172,7 @@ class InstModuleTable
      */
     function updateRegistered ( $id, $mod )
     {        	
-    	return sqlInsert("update modules set $mod,date=NOW() where mod_id=?",array($id));    
+    	return sqlInsert("UPDATE modules SET $mod,date=NOW() WHERE mod_id=?",array($id));    
     }
     
     /**
@@ -291,6 +293,25 @@ class InstModuleTable
       return $all;
     }
     /**
+     *Function to get module data
+     */
+    public function getModulesRow($mod_id){
+      $all = array();
+      $ModulesRowRes = sqlStatement("SELECT * FROM modules WHERE mod_id=?",array($mod_id));
+      while($ModulesRowRow = sqlFetchArray($ModulesRowRes)){
+        $mod = new InstModule();
+		    $mod -> exchangeArray($ModulesRowRow);
+		    array_push($all,$mod);        
+      }
+      return $all;
+    }
+    /**
+     *Function for saving module settings
+     */
+    public function SaveSettings($post){
+      sqlStatement("UPDATE modules SET mod_nick_name=? WHERE mod_id=?",array($post['nickname'],$post['mod_id']));
+    }
+    /**
      * Function to Save Configurations
      */
     public function SaveConfigurations($post){
@@ -319,7 +340,7 @@ class InstModuleTable
      * Function to Save Hooks
      */
     public function SaveHooks($post){
-      SqlStatement("INSERT INTO modules_hooks_settings (mod_id,enabled_hooks,attached_to) VALUES(?,?,?)",
+      sqlStatement("INSERT INTO modules_hooks_settings (mod_id,enabled_hooks,attached_to) VALUES(?,?,?)",
                    array($post['mod_id'],$post['Hooks'],$post['AttachedTo']));
     }
     /**
@@ -338,6 +359,175 @@ class InstModuleTable
         sqlStatement("DELETE FROM modules_hooks_settings WHERE id=?",array($post['hooksID']));
       }
     }
+    
+  public function tableExists($tblname) {
+    $row = sqlQuery("SHOW TABLES LIKE '$tblname'");
+    if (empty($row)) return false;
+    return true;
+  }
+  
+  public function columnExists($tblname, $colname) {
+    $row = sqlQuery("SHOW COLUMNS FROM $tblname LIKE '$colname'");
+    if (empty($row)) return false;
+    return true;
+  }
+  
+  public function columnHasType($tblname, $colname, $coltype) {
+    $row = sqlQuery("SHOW COLUMNS FROM $tblname LIKE '$colname'");
+    if (empty($row)) return true;
+    return (strcasecmp($row['Type'], $coltype) == 0);
+  }
+  
+  public function tableHasRow($tblname, $colname, $value) {
+    $row = sqlQuery("SELECT COUNT(*) AS count FROM $tblname WHERE " .
+      "$colname LIKE '$value'");
+    return $row['count'] ? true : false;
+  }
+  
+  public function tableHasRow2D($tblname, $colname, $value, $colname2, $value2) {
+    $row = sqlQuery("SELECT COUNT(*) AS count FROM $tblname WHERE " .
+      "$colname LIKE '$value' AND $colname2 LIKE '$value2'");
+    return $row['count'] ? true : false;
+  }
+  
+  public function tableHasRow3D($tblname, $colname, $value, $colname2, $value2, $colname3, $value3) {
+    $row = sqlQuery("SELECT COUNT(*) AS count FROM $tblname WHERE " .
+      "$colname LIKE '$value' AND $colname2 LIKE '$value2' AND $colname3 LIKE '$value3'");
+    return $row['count'] ? true : false;
+  }
+  
+  public function tableHasRow4D($tblname, $colname, $value, $colname2, $value2, $colname3, $value3, $colname4, $value4) {
+    $row = sqlQuery("SELECT COUNT(*) AS count FROM $tblname WHERE " .
+      "$colname LIKE '$value' AND $colname2 LIKE '$value2' AND $colname3 LIKE '$value3' AND $colname4 LIKE '$value4'");
+    return $row['count'] ? true : false;
+  }
+  
+  public function tableHasIndex($tblname, $colname) {
+    $row = sqlQuery("SHOW INDEX FROM `$tblname` WHERE `Key_name` = '$colname'");
+    return (empty($row)) ? false : true;
+  }
+
+  public function upgradeFromSqlFile($filename) {
+    $fd = fopen($filename, 'r');
+    $query = "";
+    $line = "";
+    $skipping = false;
+    $i=0;
+    if($fd)
+    while (!feof ($fd)){
+      $line = fgets($fd, 2048);
+      $line = rtrim($line);
+  
+      if (preg_match('/^\s*--/', $line)) continue;
+      if ($line == "") continue;
+  
+      if (preg_match('/^#IfNotTable\s+(\S+)/', $line, $matches)) {
+        $skipping = $this->tableExists($matches[1]);
+      }
+      else if (preg_match('/^#IfTable\s+(\S+)/', $line, $matches)) {
+        $skipping = ! $this->tableExists($matches[1]);
+      }
+      else if (preg_match('/^#IfMissingColumn\s+(\S+)\s+(\S+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->columnExists($matches[1], $matches[2]);
+        }
+        else {
+          // If no such table then the column is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotColumnType\s+(\S+)\s+(\S+)\s+(\S+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->columnHasType($matches[1], $matches[2], $matches[3]);
+        }
+        else {
+          // If no such table then the column type is deemed not "missing".
+          $skipping = true;
+        }
+      }
+    else if (preg_match('/^#IfNotIndex\s+(\S+)\s+(\S+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->tableHasIndex($matches[1], $matches[2]);
+        }
+        else {
+          // If no such table then the index is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotRow\s+(\S+)\s+(\S+)\s+(.+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->tableHasRow($matches[1], $matches[2], $matches[3]);
+        }
+        else {
+          // If no such table then the row is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotRow2D\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->tableHasRow2D($matches[1], $matches[2], $matches[3], $matches[4], $matches[5]);
+        }
+        else {
+          // If no such table then the row is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotRow3D\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->tableHasRow3D($matches[1], $matches[2], $matches[3], $matches[4], $matches[5], $matches[6], $matches[7]);
+        }
+        else {
+          // If no such table then the row is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotRow4D\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          $skipping = $this->tableHasRow4D($matches[1], $matches[2], $matches[3], $matches[4], $matches[5], $matches[6], $matches[7], $matches[8], $matches[9]);
+        }
+        else {
+          // If no such table then the row is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#IfNotRow2Dx2\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)/', $line, $matches)) {
+        if ($this->tableExists($matches[1])) {
+          // If either check exist, then will skip
+          $firstCheck = $this->tableHasRow2D($matches[1], $matches[2], $matches[3], $matches[4], $matches[5]);
+          $secondCheck = $this->tableHasRow2D($matches[1], $matches[2], $matches[3], $matches[6], $matches[7]);
+          if ($firstCheck || $secondCheck) {
+            $skipping = true;   
+          }
+          else {
+                  $skipping = false;
+          }
+        }
+        else {
+          // If no such table then the row is deemed not "missing".
+          $skipping = true;
+        }
+      }
+      else if (preg_match('/^#EndIf/', $line)) {
+        $skipping = false;
+      }
+  
+      if (preg_match('/^\s*#/', $line)) continue;
+      if ($skipping) continue;
+  
+      $query = $query . $line;
+      if (substr($query, -1) == ';') {
+        $query = rtrim($query, ';');
+        if (!sqlStatement($query)) {
+          $i++;
+        }
+        $query = '';
+      }
+    }
+    if($i==0)
+    return true;
+    else
+    return false;
+  } 
     
 }
 ?>
