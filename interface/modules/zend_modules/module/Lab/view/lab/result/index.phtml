@@ -1,32 +1,69 @@
 <script type="text/javascript">
 $(document).ready(function() {
-$(function()  
-{  
-	// One instance that's reused to show info for the current person  
-	var container = $('<div id="personPopupContainer">'  
-	    + '  <div id="personPopupContent"></div>'  
-	    + '</div>');    
-	$('body').append(container);    
-	$('.personPopupTrigger').live('focus', function()  
-	{  
-	    // format of 'rel' tag: pageid,personguid  
-	    var reason = $(this).attr('rel');  
-	    var pos = $(this).offset();  
-	    var width = $(this).width();
-            //alert(pos.left+"-"+pos);
-	    container.css({  
-		left: (pos.left - width + 40) + 'px',  
-		top: pos.top - 5 + 'px'  
-	    });  
-	    $('#personPopupContent').html(reason);    
-	    container.css('display', 'block');    
-	    $('.personPopupTrigger').live('blur', function()  
-	    {  
-	     container.css('display', 'none');  
-	    });  
-	});  
+  $(".show-more a").on("click", function() {
+    var $link = $(this);
+    var $content = $link.parent().prev("div.text-content");
+    var linkText = $link.text();
+    switchClasses($content);
+    $link.text(getShowLinkText(linkText));
+    return false;
+  });
+  $(function()  
+  {  
+    // One instance that's reused to show info for the current person  
+    var container = $('<div id="personPopupContainer">'  
+        + '  <div id="personPopupContent"></div>'  
+        + '</div>');    
+    $('body').append(container);    
+    $('.personPopupTrigger').live('focus', function()  
+    {  
+        // format of 'rel' tag: pageid,personguid  
+        var reason = $(this).attr('rel');  
+        var pos = $(this).offset();  
+        var width = $(this).width();
+              //alert(pos.left+"-"+pos);
+        container.css({  
+      left: (pos.left - width + 40) + 'px',  
+      top: pos.top - 5 + 'px'  
+        });  
+        $('#personPopupContent').html(reason);    
+        container.css('display', 'block');    
+        $('.personPopupTrigger').live('blur', function()  
+        {  
+         container.css('display', 'none');  
+        });  
+    });  
+  });
 });
-});
+
+function switchClasses($content){
+    if($content.hasClass("short-text")){
+        $content.removeClass("short-text");
+        $content.addClass("full-text");
+    } else {
+        $content.removeClass("full-text");
+        $content.addClass("short-text");
+    }
+}
+
+function getShowLinkText(currentText){
+    var newText = '';
+    if (currentText.toUpperCase() === "SHOW MORE") {
+        newText = "Show less";
+    } else {
+        newText = "Show more";
+    }
+    return newText;
+}
+
+function hide_comments(){
+  $('tr[id^=full_comments_]').hide();
+}
+
+function show_comments(){
+  $('tr[id^=full_comments_]').show();
+}
+
 </script>
          <?php
 	 if ($this->message == 'N') { ?>
@@ -111,7 +148,8 @@ $(function()
 	     </div>
 	     
 	<!-- Lab Result listing starts here------------------------------------->
-		
+	&nbsp;&nbsp;<a href="#" class="easyui-linkbutton" onclick="hide_comments()"><?php echo xlt('Hide Comments'); ?></a>
+  &nbsp;<a href="#" class="easyui-linkbutton" onclick="show_comments()"><?php echo xlt('Show Comments'); ?></a>
 	<table id="labresult"  class="dv-table gridview2 thcolor" cellspacing="0" cellpadding="0" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
 	       <thead">
                  <tr>
@@ -353,13 +391,13 @@ $(function()
                             ?>
                          </td>
                          <!--<td  class="tdfont childtd" style="padding-left:13px;" ><a href="#" onclick="editComments(<?php echo $this->escapeHtml($labresult[procedure_report_id]);?>)"><img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> ></td>-->
-                                            <td  class="tdfont childtd" align="center">
+                                            <td  class="tdfont childtd <?php echo trim($labresult[comments]) ? 'comments_col': ''; ?>" align="center" >
                          <?php
                          $comments='';
                                                      if(trim($labresult[comments])){
                          $comments = $labresult[comments];
                          ?>
-                                                     <a id="<?php echo $i;?>" name="<?php echo $i;?>"  onclick="showcomments(this.id,'<?php echo $labresult[order_id1];?>','<?php echo $labresult[result_text];?>','<?php echo $comments;?>')">
+                                                     <a id="<?php echo $i;?>" name="<?php echo $i;?>"  onclick="showcomments('<?php echo $i;?>')">
                                                                      <img src=<?php echo $this->basePath() ?>/css/icons/comments.png title=<?php echo xlt('Comments'); ?> >
                                                      </a>
                                                      <?php
@@ -387,6 +425,30 @@ $(function()
                                             <?php } ?>
                                             <td style="display:none;border-style:dotted;border-width:0 1px 1px 0;border-color:#c0c0c0"   width='10%'>  <?php echo $this->escapeHtml($labresult[order_id]);?> </td>
                             </tr>
+                            <?php
+                            if(trim($labresult[comments])){
+                            ?>
+                              <tr id="full_comments_<?php echo $i;?>" >
+                                <td colspan="6" class="comments_blank_bg" >
+                                </td>
+                                <td colspan="7" class="comments_bg comments_td" >
+                                  <div class="text-container">
+                                    <div class="text-content short-text">
+                                        <?php echo "<pre>".str_replace("\\r\\n","<br>",$labresult[comments])."</pre>"; ?>
+                                    </div>
+                                    <?php if(substr_count($labresult[comments],"\\r\\n") > 7){ ?>
+                                    <div class="show-more">
+                                        <a href="#">Show more</a>
+                                    </div>
+                                    <?php } ?>
+                                  </div>
+                                </td>
+                                <td colspan="3" class="comments_blank_bg" >
+                                </td>
+                              </tr>
+                            <?php
+                            }
+                            ?>
                 <?php
                         $i++;
                         $profile_grp = $labresult[profile_title];

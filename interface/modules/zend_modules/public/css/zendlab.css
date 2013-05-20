@@ -121,3 +121,46 @@ table.thcolor th {
 	width: 91 % ;
 
 }
+
+div.text-container {
+    margin: 0 auto;
+    padding-top: 5px;
+    width: 85%;    
+}
+
+.text-content{
+    line-height: 1em;
+}
+
+.short-text {
+    overflow: hidden;
+    height: 10em;
+}
+
+.full-text{
+    height: auto;
+}
+
+h1 {
+    font-size: 24px;        
+}
+
+.show-more {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.comments_blank_bg{
+  background-color:#ffffff;
+}
+
+.comments_col{
+  background-color:#f7f7f7;
+}
+
+.comments_td{
+  background-color:#f7f7f7;
+  border-right: 1px dotted #C0C0C0;
+  border-bottom: 1px dotted #C0C0C0;
+  border-left: 1px dotted #C0C0C0;
+}

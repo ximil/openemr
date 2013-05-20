@@ -83,14 +83,8 @@ function getLabelDownload(target) {
 	window.location.assign("./result/getLabelDownload?order_id=" + order_id);
 	
 }
-function showcomments(obj,orderid,resulttext,msg){
-	
-	  set = ($(document).scrollTop()+200)+"px";
-        //this is the jQuery animate function to fixed the div position after scrolling.
-
-        $('.window').css("top",set);
-	$('#dlg').dialog('open').dialog('setTitle',"Comments("+orderid+'-'+resulttext+")");
-	$('#commentsF').html("<pre>"+msg+"</pre>");
+function showcomments(id){
+	$('#full_comments_'+id).toggle('slow');
 }
 
 /*
