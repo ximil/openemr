@@ -7,6 +7,7 @@ return array(
             'Pull'          => 'Lab\Controller\PullController',
             'Configuration' => 'Lab\Controller\ConfigurationController',
             'Specimen'      => 'Lab\Controller\SpecimenController',
+            'Provider'      => 'Lab\Controller\ProviderController',
         ),
     ),
 
@@ -88,6 +89,21 @@ return array(
                 ),
             ),
             
+            'provider' => array(
+                'type'    => 'segment',
+                'options' => array(
+                    'route'    => '/provider[/:action][/:id]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id'     => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'Provider',
+                        'action'     => 'index',
+                    ),
+                ),
+            ),
+            
         ),
     ),
 
@@ -96,6 +112,7 @@ return array(
             'lab' => __DIR__ . '/../view/',
             'pull' => __DIR__ . '/../view/',
             'specimen' => __DIR__ . '/../view/',
+            'provider'  => __DIR__ . '/../view/',
         ),
         'template_map' => array(
             'layout/layout' => __DIR__ . '/../view/layout/layout.phtml',

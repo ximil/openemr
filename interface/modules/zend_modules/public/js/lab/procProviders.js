@@ -36,7 +36,19 @@ var url;
 function newProvider(){  
     $('#dlg').dialog('open').dialog('setTitle','New Procedure Provider');  
     $('#fmProcedureProvider').form('clear');  
-    url = './saveProcedureProvider';  
+    url = './lab/saveProcedureProvider';
+    // Set Default Value
+    $('#DorP').combobox({
+      onLoadSuccess: function(){
+        $('#DorP').combobox('setValue', 'D');
+      }
+    });
+     // Set Default Value
+    $('#protocol').combobox({
+      onLoadSuccess: function(){
+        $('#protocol').combobox('setValue', 'DL');
+      }
+    });
 }
 
 // Edit Procedure Provider
@@ -48,7 +60,7 @@ function editProvider(){
         $('#ppid').val(row.ppid);
         $('#dlg').dialog('open').dialog('setTitle','Edit Procedure Provider');  
         $('#fmProcedureProvider').form('load',row);  
-        url = './saveProcedureProvider?id='+row.ppid;  
+        url = './lab/saveProcedureProvider?id='+row.ppid;  
     }  
 }
 
@@ -59,7 +71,7 @@ function saveProviders(){
     onSubmit: function(){  
       return $(this).form('validate');  
     },  
-    success: function(response){//alert(response.toSource());
+    success: function(response){
       var result = eval('('+response+')');
       if (result.errorMsg){  
         $.messager.show({  
@@ -80,7 +92,7 @@ function destroyProvider(){
     if (row){  
         $.messager.confirm('Confirm','Are you sure you want to destroy this provider?',function(r){  
             if (r){  
-                $.post('./deleteProcedureProvider',{ppid:row.ppid},function(result){  
+                $.post('./lab/deleteProcedureProvider',{ppid:row.ppid},function(result){  
                     if (result.success){  
                         $('#dgProvider').datagrid('reload');
                     } else {  

@@ -366,14 +366,17 @@ class LabTable extends AbstractTableGateway
 
     public function listProcedures($inputString,$labId)
     { 
-	$sql = "SELECT * FROM procedure_type AS pt WHERE pt.lab_id=? AND pt.name LIKE ? OR pt.procedure_code LIKE ? AND pt.activity=1 AND pt.procedure_type='ord'";
+				$sql = "SELECT * FROM procedure_type AS pt
+												WHERE pt.lab_id=?
+														AND (pt.name LIKE ? OR pt.procedure_code LIKE ?)  
+														AND pt.activity=1
+														AND pt.procedure_type='ord'";
 	$result = sqlStatement($sql,array($labId,$inputString."%",$inputString."%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {
 	    $arr[] =  htmlspecialchars($tmp['procedure_type_id'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['procedure_code'],ENT_QUOTES). '|-|' . htmlspecialchars($tmp['suffix'],ENT_QUOTES).'|-|'.htmlspecialchars($tmp['name'],ENT_QUOTES);
 	}
-	
 	return $arr;
     }
     
@@ -397,9 +400,8 @@ class LabTable extends AbstractTableGateway
     
     public function listDiagnoses($inputString)
     {
-	
+				/*
 	$codeTypeValue 	=  sqlQuery("SELECT ct_id FROM code_types WHERE ct_key='ICD9'");
-
 	// Search code type ICD9
 	
 	    $sql = "SELECT ref.formatted_dx_code as code, 
@@ -413,12 +415,12 @@ class LabTable extends AbstractTableGateway
 				AND (c.active = 1 || c.active IS NULL) 
 				ORDER BY ref.formatted_dx_code+0, ref.formatted_dx_code";
 	    $result = sqlStatement($sql,array($codeTypeValue['ct_id'], "%" . $inputString . "%", "%" . $inputString . "%"));
-	
-	//$sql = "SELECT * FROM codes
-	//		    WHERE code_type='2' 
-	//			AND (code LIKE ? 
-	//			    OR   code_text LIKE ?) ORDER BY code ";
-	//$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
+				*/
+				$sql = "SELECT * FROM codes
+								WHERE code_type='2' 
+							AND (code LIKE ? 
+									OR   code_text LIKE ?) ORDER BY code ";
+				$result = sqlStatement($sql,array($inputString . "%", $inputString . "%"));
 	$arr = array();
 	$i = 0;
 	while($tmp = sqlFetchArray($result)) {

@@ -12,6 +12,8 @@ use Lab\Model\Configuration;//ADDED VIPIN
 use Lab\Model\ConfigurationTable;//ADDED VIPIN
 use Lab\Model\Specimen;
 use Lab\Model\SpecimenTable;
+use Lab\Model\Provider;
+use Lab\Model\ProviderTable;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\ModuleManager\ModuleManager;
@@ -98,6 +100,17 @@ class Module
 								'Lab\Model\SpecimenTable' =>  function($sm) {
                     $tableGateway = $sm->get('SpecimenTableGateway');
                     $table = new SpecimenTable($tableGateway);
+                    return $table;
+                },
+								'ProviderTableGateway' => function ($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new Provider());
+                    return new TableGateway('procedure_providers', $dbAdapter, null, $resultSetPrototype);
+                },
+								'Lab\Model\ProviderTable' =>  function($sm) {
+                    $tableGateway = $sm->get('ProviderTableGateway');
+                    $table = new ProviderTable($tableGateway);
                     return $table;
                 },
             ),

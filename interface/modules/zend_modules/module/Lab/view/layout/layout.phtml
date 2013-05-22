@@ -69,6 +69,8 @@ echo $this->doctype(); ?>
 				$specimen_collection_active = "menu-active";
 		}elseif($current_controller == 'lab' && $current_action == 'orderedit'){
 				$procedure_order_edit_active = "menu-active";
+		}elseif($current_controller == 'provider' && $current_action == 'index'){
+				$procedure_provider_active = "menu-active";
 		}
 ?>
     </head>
@@ -90,6 +92,7 @@ echo $this->doctype(); ?>
 		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
 		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
 		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
+		<a href="<?php echo $this->url('provider', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procedure_provider_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Providers');?></a>
 	    </div>
             <?php echo $this->content; ?>
             <hr>

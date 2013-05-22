@@ -334,7 +334,7 @@ class LabController extends AbstractActionController
 				return $response;
 		}
 		
-		// Dlete Procedur Provider
+		// Delete Procedur Provider
 		public function deleteProcedureProviderAction()
 		{
 				$request = $this->getRequest();
