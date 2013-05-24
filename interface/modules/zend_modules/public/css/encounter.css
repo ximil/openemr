@@ -1,0 +1,107 @@
+	/**
+   * encounter.css
+   */
+
+@media all{
+  ul,li {
+		list-style-type: none;
+	}
+	.selection {
+    -webkit-transition: text-shadow 0.2s linear;
+    -moz-transition: text-shadow 0.2s linear;
+    -ms-transition: text-shadow 0.2s linear;
+    -o-transition: text-shadow 0.2s linear;
+    transition: text-shadow 0.2s linear;
+	}
+	.selection:hover {
+    color: #0E2D5F; 
+    padding: 1px;
+    text-shadow: 0 0 10px #079FB3;
+	}
+	
+	#diloagMin {
+		position: fixed;
+		bottom: 0px;
+		left: 0px;
+		width: auto;
+		/*background: #0068A4;*/
+	}
+	
+	/**
+	 * Report
+	 */
+
+	.facility_head{
+		font-family: Tahoma, sans-serif;
+		font-size:18px;
+		font-weight:bold;
+		color:#0068A4;
+	}
+	
+	.facility_address {
+		font-family: Tahoma, sans-serif;
+		font-size:12px;
+		font-weight:normal;
+		color:#0068A4;
+	}
+	
+	.sub_head {
+		font-family: Tahoma, sans-serif;
+		font-size:14px;
+		font-weight:bold;
+		color:#95B8E7;
+	}
+	
+	.group_head {
+		font-family: Tahoma, sans-serif;
+		font-size:14px;
+		font-weight:bold;
+		color:#95B8E7;
+	}
+	
+	.row1 {
+		background:#E6EEF8;
+	}
+	
+	.row2 {
+		background:#E0ECFF;
+	}
+	
+	.col_head {
+		font-family: Tahoma, sans-serif;
+		font-size:11px;
+		font-weight:bold;
+		color:#31B8E7;
+	}
+	
+	.col_value {
+		font-family: Tahoma, sans-serif;
+		font-size:11px;
+		font-weight:normal;
+		color:#31B8E7;
+	}
+	
+	.text{
+		color:#31B8E7;
+		font-family: Tahoma, sans-serif;
+		font-size:11px;
+		font-weight:normal;
+		color:#31B8E7;
+	}
+	.bold{
+		color:#31B8E7;
+		font-family: Tahoma, sans-serif;
+		font-size:11px;
+		font-weight:bold;
+		color:#31B8E7;
+	}
+	.label{
+		color:#31B8E7;
+		font-family: Tahoma, sans-serif;
+		font-size:11px;
+		font-weight:normal;
+		color:#31B8E7;
+	}
+}
+	
+	

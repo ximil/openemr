@@ -603,4 +603,192 @@ class Emr extends AbstractHelper
 				}
 				return $arr;
     }
+		
+		// Preview Report (Preview Tab)
+		public function getPreviewForms($data)
+		{
+				$pid = $data['pid'];
+				$arr = array();
+				$billData = array();
+				require_once($GLOBALS['srcdir'] . '/formatting.inc.php');
+				require_once($GLOBALS['srcdir'] . '/forms.inc');
+				require_once($GLOBALS['srcdir'] . '/patient.inc');
+				$sql = "SELECT DISTINCT formdir
+												FROM forms
+												WHERE pid = ?
+														AND deleted=0";
+				$result = sqlStatement($sql, array($pid));
+				while($tmp = sqlFetchArray($result)) {
+						$formDir = $tmp['formdir'];
+						if (substr($formDir,0,3) == 'LBF') {
+								include_once($GLOBALS['incdir'] . "/forms/LBF/report.php");
+						} else {
+								include_once($GLOBALS['incdir'] . "/forms/$formDir/report.php");
+						}
+				}
+				$sql = "SELECT
+												forms.encounter,
+												forms.form_id,
+												forms.form_name,
+												forms.formdir,
+												forms.date AS fdate,
+												form_encounter.date,
+												form_encounter.reason
+										FROM forms, form_encounter
+										WHERE forms.pid = ?
+												AND form_encounter.pid = ?
+												AND form_encounter.encounter = forms.encounter
+												AND forms.deleted=0
+										ORDER BY form_encounter.date DESC, fdate ASC";
+				$result = sqlStatement($sql, array($pid, $pid));
+				$i = 0;
+				while($row = sqlFetchArray($result)) {
+						// Get Form Name
+						$formDir	= $row['formdir'];
+						$formID		= $row['form_id'];
+						$sqlForm = "SELECT form_name
+														FROM forms
+														WHERE formdir='$formDir' 
+																AND form_id='$formID'";
+						$resultForm = sqlQuery($sqlForm);
+						// Get Encounter Date
+						$encounter 	= $row['encounter'];
+						$sqlDate 		= "SELECT date
+														FROM form_encounter
+														WHERE encounter='$encounter'
+														ORDER BY date";
+						$resultDate = sqlQuery($sqlDate);
+						
+						$arr[$i]['formDir'] 	= $formDir;
+						$arr[$i]['form_name'] = htmlspecialchars($resultForm['form_name'],ENT_QUOTES);
+						$arr[$i]['date'] 			= oeFormatSDFT(strtotime($resultDate['date']));
+						$arr[$i]['provider'] 	= getProviderName(getProviderIdOfEncounter($encounter));
+						$N = 6;
+						if (substr($formDir, 0, 3) == 'LBF') {
+								$arr[$i]['REPORTS'] = 'lbf_report' . ',' . $pid . ',' . $encounter . ',' . $N . ',' . $formID . ',' . $formDir;
+						} else {
+								$arr[$i]['REPORTS'] = $formDir . '_report' . ',' . $pid . ',' . $encounter . ',' . $N . ',' . $formID;
+						}
+						$arr[$i]['BILLINFO'] 	= $this->getPreviewBillInfo($pid, $encounter);
+						$arr[$i]['NOTES'] 		= $this->getPreviewComplaintNotes($pid, $encounter);
+						$i++;
+				}
+				return $arr;
+		}
+		
+		// Preview Tab (Billing Information)
+		public function getPreviewBillInfo($pid, $encounter)
+		{
+				$arr 		= array();
+				$sql		= "SELECT b.date, 
+														b.code, 
+														b.code_text 
+												FROM billing AS b, 
+														code_types AS ct 
+												WHERE b.pid = ? 
+														AND b.encounter = ? 
+														AND b.activity = 1 
+														AND b.code_type = ct.ct_key 
+														AND ct.ct_diag = 0 
+														ORDER BY b.date"; 
+				$result	= sqlStatement($sql, array($pid, $encounter));
+				$i = 0;
+				while ($row = sqlFetchArray($result)) {
+						$arr[$i] = $row['code'] . '|' . $row['code_text'];
+						$i++;
+				}
+				return $arr;
+		}
+		
+		// Preview Tab (Chief Complaint and Nation Notes)
+		public function getPreviewComplaintNotes($pid, $encounter)
+		{
+				$sql = "SELECT reason, n_notes
+												FROM form_encounter
+												WHERE pid = ?
+												AND encounter = ?";
+				$result	= sqlStatement($sql, array($pid, $encounter));
+				$i = 0;
+				while ($row = sqlFetchArray($result)) {
+						$arr[$i] = $row['reason'] . '|' . $row['n_notes'];
+						$i++;
+				}
+				return $arr;								
+		}
+		
+		// Facility Details
+		public function getFacilityDetails($data)
+		{
+				$facilityID = $data['facilityID'];
+				if ($facilityID) {
+						$sql 		= "SELECT * FROM facility WHERE id= ?";
+						$result	= sqlStatement($sql, array($facilityID));
+				} else {
+						$sql 		= "SELECT * FROM facility ORDER BY billing_location DESC LIMIT 1";
+						$result	= sqlStatement($sql);
+				}
+				$row = sqlFetchArray($result);
+				return $row;
+		}
+		
+		// Lay Out Options (display)
+		// param. form_id
+		public function getLayOut($data)
+		{
+				$arr = array();
+				foreach ($data as $key => $value) {
+						$formType = $value;
+						$sql 		= "SELECT * FROM layout_options 
+												WHERE form_id = ? AND uor > 0 
+												ORDER BY group_name, seq";
+						$result = sqlStatement($sql, array($formType));
+						$i 			= 0;
+						while ($row = sqlFetchArray($result)) {
+								array_push($arr, $row);
+						}
+				}
+				return $arr;
+		}
+		
+		
+		
+		/**
+		 * Procedure Providers for Lab
+		 * function getProcedureProviders
+		 * List all Procedure Providers
+		 */
+		public function getProcedureProviders()
+		{
+				$arr = array();
+				$sql = "SELECT pp.*
+										FROM procedure_providers AS pp 
+										ORDER BY pp.name";
+				$result = sqlStatement($sql);
+				$i = 0;
+				while ($row = sqlFetchArray($result)) {
+						$arr[$i]['ppid']					= $row['ppid'];
+						$arr[$i]['name'] 					= htmlspecialchars($row['name'],ENT_QUOTES);
+						$arr[$i]['npi'] 					= htmlspecialchars($row['npi'],ENT_QUOTES);
+						$arr[$i]['protocol'] 			= htmlspecialchars($row['protocol'],ENT_QUOTES);
+						$arr[$i]['DorP'] 					= htmlspecialchars($row['DorP'],ENT_QUOTES);
+						$arr[$i]['send_app_id'] 	= htmlspecialchars($row['send_app_id'],ENT_QUOTES);
+						$arr[$i]['send_fac_id'] 	= htmlspecialchars($row['send_fac_id'],ENT_QUOTES);
+						$arr[$i]['recv_app_id'] 	= htmlspecialchars($row['recv_app_id'],ENT_QUOTES);
+						$arr[$i]['recv_fac_id'] 	= htmlspecialchars($row['recv_fac_id'],ENT_QUOTES);
+						$arr[$i]['remote_host'] 	= htmlspecialchars($row['remote_host'],ENT_QUOTES);
+						$arr[$i]['login'] 				= htmlspecialchars($row['login'],ENT_QUOTES);
+						$arr[$i]['password'] 			= htmlspecialchars($row['password'],ENT_QUOTES);
+						$arr[$i]['orders_path'] 	= htmlspecialchars($row['orders_path'],ENT_QUOTES);
+						$arr[$i]['results_path'] 	= htmlspecialchars($row['results_path'],ENT_QUOTES);
+						$arr[$i]['notes'] 				= htmlspecialchars($row['notes'],ENT_QUOTES);
+
+						if ($row['remote_host'] != '' && $row['login'] != '' && $row['password'] != '') {
+								$arr[$i]['labtype']	= 'External';
+						} else {
+								$arr[$i]['labtype']	= 'Local';
+						}
+						$i++;
+				}
+				return $arr;
+		}
 }

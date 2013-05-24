@@ -101,3 +101,12 @@
 .icon-providers{
 	background:url('icons/providers.png') no-repeat center center;
 }
+.icon-printer{
+	background:url('icons/printer_icon.png') no-repeat center center;
+}
+.icon-report{
+	background:url('icons/report_icon.png') no-repeat center center;
+}
+.icon-pdf{
+	background:url('icons/pdf_icon.png') no-repeat center center;
+}

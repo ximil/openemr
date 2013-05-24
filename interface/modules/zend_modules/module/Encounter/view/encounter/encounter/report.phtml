@@ -1,0 +1,470 @@
+<?php 
+	// module/Encounter/view/encounter/encounter/report.phtml:
+  echo $this->headLink()->prependStylesheet($this->basePath() . '/css/encounter.css','all');
+?>
+<!-- Start Print and preview page -->
+<div id='printPreview' style="display:block;">
+	<div style="background:#fafafa;padding:0px;margin-top:0px;margin-bottom:15px;border:1px solid #95B8E7;
+                  box-shadow: 10px 10px 5px #E0E0EB;width:auto;height:auto;padding:10px;">
+			<div style="margin-top:10px"></div>
+			<!-- Start Facility Data -->
+			<table width='100%' border='0' style="border-bottom:2px solid #95B8E7" >
+				<tr>
+					<td rowspan='3' valign='top' class="facility_head">
+								<?php echo $this->facility['name']; ?>
+					</td>
+				</tr>
+				<tr align='right' class="facility_address">
+					<td><?php echo $this->facility['street']; ?></td>
+					<td><?php echo $this->facility['city']; ?></td>
+				</tr>
+				<tr align='right' class="facility_address">
+					<td><?php echo $this->facility['state']; ?></td>
+					<td><?php echo $this->facility['postal_code']; ?></td>
+				</tr>
+				<tr align='right' class="facility_address">
+					<td colspan='3'><?php echo $this->facility['phone']; ?></td>
+				</tr>
+			</table>
+			<!-- End Facility Data -->
+			<div style="margin-top:10px"></div>		
+			<!-- Start Patient Data -->
+      <?php if (in_array('Demographics', $this->options, true)) { ?>
+			<div style="border-bottom:1px solid #95B8E7">
+				<table width='100%' style="border-bottom:1px solid #95B8E7">
+					<tr>
+						<td width='75%' style="font-family: Tahoma, sans-serif; font-size:16px; font-weight:bold;	color:#31B8E7;">
+								<?php echo $this->patient[0]['fname'] . ' ' . $this->patient[0]['lname']; ?>
+						</td>
+						<td align='right' style="font-family: Tahoma, sans-serif; font-size:12px; font-weight:bold;	color:#31B8E7;">
+							<span style="font-family: Tahoma, sans-serif; font-size:10px; font-weight:bold;	color:#000;">
+                <?php echo xlt('Generated on') . ' : '; ?>
+              </span>
+              <?php echo oeFormatShortDate(); ?>
+						</td>
+					</tr>
+				</table>
+				<table width='100%' border='0'>
+					<tr>
+						<td colspan='2'>
+							<table width='100%' style="background:#E6EEF8">
+								<tr>
+									<td class="sub_head">
+											<?php echo xlt('Patient Data'); ?>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr><!-- Start Who -->
+						<!-- Start Patient Photo -->
+            <td width='10%' valign='top'>
+            <?php if (count($this->images) > 0 ) {
+                    echo $this->images[count($this->images) - 1]['image'];
+                  } else {
+                    if ($this->patient[0]['sex'] == 'Male') {
+                    ?>
+                      <img src=<?php echo $this->basePath() ?>/css/images/male.png title=<?php echo xlt('Image Not Available'); ?> style="width:100px;height:80px;" align="middle" />
+                    <?php } else { ?>
+                      <img src=<?php echo $this->basePath() ?>/css/images/female.png title=<?php echo xlt('Image Not Available'); ?> style="width:100px;height:80px;" align="middle" />
+                    <?php } ?>
+            <?php } ?>
+            </td>
+            <!-- End Patient Photo -->
+						<td>
+							<table width='100%'>
+								<tr>
+									<td>
+										<table width='100%' border='0'>
+											<tr>
+												<td width='100%' class="group_head">
+														<?php echo xlt('Who'); ?>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<table width='100%' >
+											<tr class="row1">
+												<td width='25%' class="col_head">
+														<?php echo xlt('Name'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['fname'],ENT_QUOTES) . ' ' . htmlspecialchars($this->patient[0]['lname'],ENT_QUOTES); ?>
+												</td>
+												<td width='25' class="col_head">
+														<?php echo xlt('External ID'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['pubpid'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row2">
+												<td width='25%' class="col_head">
+														<?php echo xlt('DoB'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['DOB'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Sex'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['sex'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row1">
+												<td width='25%' class="col_head">
+														<?php echo xlt('S.S'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['ss'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('License/ID'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['drivers_license'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row2">
+												<td width='25%' valign='top' class="col_head">
+														<?php echo xlt('Marital Status'); ?>
+												</td>
+												<td valign='top' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['DOB'],ENT_QUOTES); ?>
+												</td>
+												<td valign='top' width='25%' class="col_head">
+														<?php echo xlt('User Defined'); ?>
+												</td>
+												<td valign='top' class="col_value">
+													<?php
+														echo htmlspecialchars($this->patient[0]['genericname1'],ENT_QUOTES) . ' ' .
+                                  htmlspecialchars($this->patient[0]['genericval1'],ENT_QUOTES) . ' ' .
+																	htmlspecialchars($this->patient[0]['genericname2'],ENT_QUOTES) . ' ' .
+																	htmlspecialchars($this->patient[0]['genericval2'],ENT_QUOTES);
+													?>
+												</td>
+											</tr>
+										</table>
+								</tr>
+							</table>
+						</td>
+					</tr><!-- End Who -->
+					<tr><!-- Start Contact -->
+						<td width='15%'></td>
+						<td>
+							<table width='100%'>
+								<tr>
+									<td>
+										<table width='100%'>
+											<tr>
+												<td width='75%' class="group_head">
+														<?php echo xlt('Contact'); ?>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<table width='100%' border='0'>
+											<tr class="row1">
+												<td width='25%' class="col_head">
+														<?php echo xlt('Address'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['street'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Concourse City'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['city'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr width='25%' class="row2">
+												<td width='25%' class="col_head">
+														<?php echo xlt('State'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['state'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Postal Code'); ?>
+												</td>
+												<td width='25%' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['postal_code'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr width='25%' class="row1">
+												<td width='25%' class="col_head">
+														<?php echo xlt('Country'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['country'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Mother`s Name'); ?>
+												</td>
+												<td>
+													<?php echo htmlspecialchars($this->patient[0]['mothersname'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row2">
+												<td width='25%' class="col_head">
+														<?php echo xlt('Guardian`s Name'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['guardiansname'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Emergency Contact'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['contact_relationship'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row1">
+												<td width='25%' valign='top' class="col_head">
+														<?php echo xlt('Emergency Phone'); ?>
+												</td>
+												<td valign='top' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['phone_contact'],ENT_QUOTES); ?>
+												</td>
+												<td valign='top' width='25%' class="col_head">
+														<?php echo xlt('Home Phone'); ?>
+												</td>
+												<td valign='top' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['phone_home'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row2">
+												<td width='25%' class="col_head">
+														<?php echo xlt('Work Phone'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['phone_biz'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' class="col_head">
+														<?php echo xlt('Mobile Phone'); ?>
+												</td>
+												<td class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['phone_cell'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr class="row1">
+												<td width='25%' valign='top' class="col_head">
+														<?php echo xlt('Contact Email'); ?>
+												</td>
+												<td colspan='3' valign='top' class="col_value">
+													<?php echo htmlspecialchars($this->patient[0]['email'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+										</table>
+								</tr>
+							</table>
+						</td>
+					</tr><!-- End Contact -->
+					<!-- Start Choices -->
+          <!--<tr>
+						<td width='15%'></td>
+						<td>
+							<table width='100%'>
+								<tr>
+									<td>
+										<table width='100%'>
+											<tr>
+												<td width='75%' style="font-family: Tahoma, sans-serif; font-size:14px; font-weight:bold;	color:#95B8E7;">
+														<?php echo xlt('Choices'); ?>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<table width='100%'>
+											<tr style="background:#E6EEF8">
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Provider'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['street'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Referring Provider'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['city'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E0ECFF">
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Pharmacy'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['state'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('HIPAA Notice Received'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['postal_code'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E6EEF8">
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Voice Message'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['country'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Leave Message With'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['mothersname'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E0ECFF">
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Mail Message'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['guardiansname'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow SMS'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['contact_relationship'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E6EEF8">
+												<td width='25%' valign='top' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Email'); ?>
+												</td>
+												<td valign='top' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['phone_contact'],ENT_QUOTES); ?>
+												</td>
+												<td valign='top' width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Immunization Registry Use'); ?>
+												</td>
+												<td valign='top' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['phone_home'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E0ECFF">
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Immunization Info Sharing'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['phone_biz'],ENT_QUOTES); ?>
+												</td>
+												<td width='25%' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Health Information Exchange'); ?>
+												</td>
+												<td style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['phone_cell'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+											<tr style="background:#E6EEF8">
+												<td width='25%' valign='top' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:bold;	color:#31B8E7;">
+														<?php echo xlt('Allow Patient Portal'); ?>
+												</td>
+												<td colspan='3' valign='top' style="font-family: Tahoma, sans-serif; font-size:11px; font-weight:normal;	color:#31B8E7;">
+													<?php echo htmlspecialchars($this->patient[0]['email'],ENT_QUOTES); ?>
+												</td>
+											</tr>
+										</table>
+								</tr>
+							</table>
+						</td>
+					</tr>-->
+          <!-- End Choices -->
+				</table>
+			</div>
+      <?php } ?>
+			<!-- End Patient Data -->
+	
+			<?php foreach ($this->preview as $preview) {?>
+      <div style="padding-top:10px"></div>	
+			<div class="sub_head" style="background:#E6EEF8;padding-left:10px">
+				<?php
+					if ($preview['formDir'] == 'newpatient') {
+						echo xlt($preview['form_name']);
+					} else {
+						echo xlt($preview['form_name']);
+					}
+				?>
+			</div>
+      <table width="100%" border='0'>
+        <tr>
+          <td width="15%">&nbsp;</td>
+          <td>
+			<div style="padding-top:10px"></div>
+			<div>
+				<div style="font-weight: bold; color:#0C7091; padding-right: 10px;padding-bottom: 10px;" class="col_head">[
+					<?php echo $preview['date']; ?>
+				 ]</div>
+				 <?php if ($preview['formDir'] == 'newpatient') {?>
+					 <div style="font-weight: bold; color:#31B8E7;" class="col_head">
+						 <?php
+							 echo xlt('Provider');
+							 echo   '<span style="font-weight: normal" class="col_value"> : ' . $preview['provider'] . '</span>';
+						 ?>
+					 </div>
+				 <?php } ?>
+
+			 </div>
+			 <div style="margin-left: 25px;" class="col_value">
+				 <?php
+            $arr = explode(',', $preview['REPORTS']);
+            $arrFormID = explode('_', $arr[0]);
+					?>
+              <!-- Form Id for PDF Generation -->
+              <input type='hidden' id="formID" name='formID[]' value="<?php echo $arrFormID[0] . '_' . $arr[4]; ?>" />
+					 <?php
+            if (substr($preview['formDir'], 0, 3) == 'LBF') { 
+              call_user_func("lbf_report", $arr[1], $arr[2], $arr[3], $arr[4], $arr[5]);
+            } else {
+              call_user_func("$arr[0]",$arr[1],$arr[2],$arr[3],$arr[4]);
+            }
+					if ($preview['formDir'] == 'newpatient') {
+						for ($i = 0; $i < count($preview['BILLINFO']); $i++) {
+							$arrBill = explode('|', $preview['BILLINFO'][$i]);
+							echo '<div style="font-weight: bold; color:#31B8E7" class="col_head">' . xlt('Procedure') . ' : ';
+							echo '<span style="font-weight: normal" class="col_value"> : ' . $arrBill[0] . ' ' . $arrBill[1] . '</span></div>';
+						}
+					}
+					for ($i = 0; $i < count($preview['NOTES']); $i++) {
+            $arrNotes = explode('|', $preview['NOTES'][$i]);
+            if ($arrNotes[0] != '') {
+              echo '<div style="font-weight: bold; color:#31B8E7" class="col_head">' . xlt('Chief Complaint')  . ' : ';
+              echo '<span style="font-weight: normal" class="col_value">' . $arrNotes[0] . '</span></div>';
+            }
+            if ($arrNotes[1] != '') {
+              echo '<div style="font-weight: bold; color:#31B8E7" class="col_head">' . xlt('Chief Complaint') . ' : ';
+              echo '<span style="font-weight: normal" class="col_value">' . $arrNotes[1] . '</span></div>';
+            }
+					}
+				?>
+			 </div>
+       </td>
+      </tr>
+    </table>
+      <div style="border-bottom:1px solid #95B8E7"></div>
+	 <?php } ?>
+	 </div>
+ </div>
+<!-- End Print and Preview Page -->
+
+<script>
+	// Preview Tab Reports (Eliminate Border from reports)
+	$(function(){
+		$('#form_ros_values').css("border", "none");
+	});
+</script>
