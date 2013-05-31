@@ -32,17 +32,18 @@ echo $this->doctype(); ?>
 
         <!-- Le styles -->
         <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/images/favicon.ico'))
-        		->prependStylesheet($this->basePath() . '/css/easyui.css')
-                        ->prependStylesheet($this->basePath() . '/css/icon.css')
-                        ->prependStylesheet($this->basePath() . '/css/demo.css')
-			->prependStylesheet($this->basePath() . '/css/bootstrap-responsive.min.css')
-			->prependStylesheet($this->basePath() . '/css/style.css')
-			->prependStylesheet($this->basePath() . '/css/suggestion.css')
-			->prependStylesheet($this->basePath() . '/css/bubbletip-IE.css')
-			->prependStylesheet($this->basePath() . '/css/bubbletip.css')
-			->prependStylesheet($this->basePath() . '/css/bubbles.css')
-			->prependStylesheet($this->basePath() . '/css/zendlab.css')
-			->prependStylesheet($GLOBALS['css_header']) ?>
+          ->prependStylesheet($this->basePath() . '/css/jquery.contextMenu.css')
+          ->prependStylesheet($this->basePath() . '/css/easyui.css')
+          ->prependStylesheet($this->basePath() . '/css/icon.css')
+          ->prependStylesheet($this->basePath() . '/css/demo.css')
+          ->prependStylesheet($this->basePath() . '/css/bootstrap-responsive.min.css')
+          ->prependStylesheet($this->basePath() . '/css/style.css')
+          ->prependStylesheet($this->basePath() . '/css/suggestion.css')
+          ->prependStylesheet($this->basePath() . '/css/bubbletip-IE.css')
+          ->prependStylesheet($this->basePath() . '/css/bubbletip.css')
+          ->prependStylesheet($this->basePath() . '/css/bubbles.css')
+          ->prependStylesheet($this->basePath() . '/css/zendlab.css')
+          ->prependStylesheet($GLOBALS['css_header']) ?>
 
         <!-- Scripts -->
         <?php echo $this->headScript()
@@ -69,6 +70,8 @@ echo $this->doctype(); ?>
 				$specimen_collection_active = "menu-active";
 		}elseif($current_controller == 'lab' && $current_action == 'orderedit'){
 				$procedure_order_edit_active = "menu-active";
+		}elseif($current_controller == 'Unassociated' && $current_action == 'index'){
+				$unassociated_active = "menu-active";
 		}
 ?>
     </head>
@@ -90,6 +93,7 @@ echo $this->doctype(); ?>
 		<a href="<?php echo $this->url('result', array('action'=>'resultEntry'));?>" class="easyui-linkbutton <?php echo $result_entry_active; ?>" data-options="plain:true"><?php echo xlt('Result Entry');?></a>
 		<a href="<?php echo $this->url('configuration', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $procudure_config_active; ?>" data-options="plain:true"><?php echo xlt('Procedure Configuration');?></a>
 		<a href="<?php echo $this->url('pull', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $pull_compendium_active; ?>" data-options="plain:true"><?php echo xlt('Pull Compendium');?></a>
+		<a href="<?php echo $this->url('unassociated', array('action'=>'index'));?>" class="easyui-linkbutton <?php echo $unassociated_active; ?>" data-options="plain:true"><?php echo xlt('Unassociated Results');?></a>
 	    </div>
             <?php echo $this->content; ?>
             <hr>

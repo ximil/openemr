@@ -292,7 +292,7 @@ class ResultTable extends AbstractTableGateway
                 
                 $result_status    = $rrow['Mresult_status'   ] ? $rrow['Mresult_status'] : $rrow['result_status'];
                 
-                if(!$result_status && ($row['order_status'] == 'partial' || $row['order_status'] == 'completed')) continue;
+                //if(!$result_status && ($row['order_status'] == 'partial' || $row['order_status'] == 'completed')) continue;
 
                 // if sub tests are in the table 'procedure_subtest_result'
                 if (!empty($rrow['subtest_code'])) {
@@ -808,5 +808,11 @@ class ResultTable extends AbstractTableGateway
             LEFT JOIN procedure_subtest_result psr ON psr.procedure_report_id = pr.procedure_report_id WHERE pr.procedure_order_id = ?";
 				$param = array($order_id);
 				$pres = sqlQuery($sql,$param);
+    }
+    
+    public function insertQuery($sql, $in_array)
+    {        
+      $procedure_result_id = sqlInsert($sql, $in_array);
+      return $procedure_result_id;
     }
 }

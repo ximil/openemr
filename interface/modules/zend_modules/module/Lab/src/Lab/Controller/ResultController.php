@@ -348,9 +348,10 @@ class ResultController extends AbstractActionController
     
     public function getLabResultPDFAction()
     {
-        $site_dir           = $GLOBALS['OE_SITE_DIR'];        
-        $result_dir         = $site_dir."/lab/result/";
-        $result             = array();
+        $site_dir           			= $GLOBALS['OE_SITE_DIR'];        
+        $result_dir         			= $site_dir."/lab/result/";
+				$unassociated_result_dir  = $site_dir."/lab/unassociated_result/";
+        $result             			= array();
         $request = $this->getRequest();
 				if($request->isPost()) {
 						$data   = array('procedure_order_id'    => $request->getPost('order_id'));
@@ -388,7 +389,8 @@ class ResultController extends AbstractActionController
 								}
 								//if ($stresult['status'] != $curr_status) {
 										try {
-												$result     = $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+												$result     					= $client->getLabResult($username,$password,$site_dir,$data['procedure_order_id']);  //USERNAME, PASSWORD, SITE DIRECTORY, CLIENT PROCEDURE ORDER ID
+												$unassociated_result  = $client->getLabUnassociatedResult($username,$password,$site_dir);
 										} catch(\Exception $e){
 												$return[0]  = array('return' => 1, 'msg' => xlt("Could not connect to the web service"));
 												$arr        = new JsonModel($return);
@@ -401,6 +403,71 @@ class ResultController extends AbstractActionController
 												return $arr;
 										}else { //IF THE RESULT RETURNS VALID OUTPUT
 												//if($curr_status <> "final" || $labresultfile == "") { //IF DOESN'T HAVE RESULT FILE
+												
+												
+														/*$couchDB = false;
+														$harddisk = false;
+														if($GLOBALS['document_storage_method']==0){
+															$harddisk = true;
+														}
+														if($GLOBALS['document_storage_method']==1){
+															$couchDB = true;
+														}
+														if($couchDB == true){
+															$couch = new CouchDB();
+															error_log("aaa:inside");
+															$docname = $_SESSION['authId'].$patient_id.$encounter.$fname.date("%Y-%m-%d H:i:s");
+															$docid = $couch->stringToId($docname);
+															$tmpfile = fopen( $_FILES['file']['tmp_name'][$key], "rb" );
+															$filetext = fread( $tmpfile, $_FILES['file']['size'][$key] );				
+															fclose( $tmpfile );
+															//--------Temporarily writing the file for calculating the hash--------//
+															//-----------Will be removed after calculating the hash value----------//
+															$temp_file = fopen($this->file_path.$fname,"w");
+															fwrite($temp_file,$filetext);
+															fclose($temp_file);
+															//---------------------------------------------------------------------//
+															
+															$json = json_encode(base64_encode($filetext));
+															$db = $GLOBALS['couchdb_dbase'];
+															$data = array($db,$docid,$patient_id,$encounter,$_FILES['file']['type'][$key],$json);
+															$resp = $couch->check_saveDOC($data);
+															if(!$resp->id || !$resp->_rev){
+																$data = array($db,$docid,$patient_id,$encounter);
+																$resp = $couch->retrieve_doc($data);
+																$docid = $resp->_id;
+																$revid = $resp->_rev;
+															}
+															else{
+																$docid = $resp->id;
+																$revid = $resp->rev;
+															}
+															if(!$docid && !$revid){ //if couchdb save failed
+																$error .=  "<font color='red'><b>".xl("The file could not be saved to CouchDB.") . "</b></font>\n";
+																if($GLOBALS['couchdb_log']==1){
+																	ob_start();
+																	var_dump($resp);
+																	$couchError=ob_get_clean();
+																	$log_content = date('Y-m-d H:i:s')." ==> Uploading document: ".$fname."\r\n";
+																	$log_content .= date('Y-m-d H:i:s')." ==> Failed to Store document content to CouchDB.\r\n";
+																	$log_content .= date('Y-m-d H:i:s')." ==> Document ID: ".$docid."\r\n";
+																	$log_content .= date('Y-m-d H:i:s')." ==> ".print_r($data,1)."\r\n";
+																	$log_content .= $couchError;
+																	$this->document_upload_download_log($patient_id,$log_content);//log error if any, for testing phase only
+																}
+															}			
+														}														
+														if($harddisk == true){
+															$uploadSuccess = false;
+															if(move_uploaded_file($_FILES['file']['tmp_name'][$key],$this->file_path.$fname)){
+																$uploadSuccess = true;
+															}
+															else{
+																$error .= xl("The file could not be succesfully stored, this error is usually related to permissions problems on the storage system")."\n";
+															}
+														}*/
+														
+														
 														$labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
 														if (!is_dir($result_dir)) {
 																mkdir($result_dir,0777,true);
@@ -410,6 +477,20 @@ class ResultController extends AbstractActionController
 														//PULING RESULT DETAILS INTO THE OPENEMR TABLES
 														$this->getLabResultDetails($data['procedure_order_id']);
 														$status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],$stresult['status'],$labresultfile);
+                            $unassociated_arr = array();
+														if (!is_dir($unassociated_result_dir)) {
+																mkdir($unassociated_result_dir,0777,true);
+														}
+														foreach($unassociated_result as $ur){
+																$labresultunassocfile  = "labresult_unassociated_".gmdate('YmdHis').".pdf";
+																$fp = fopen($unassociated_result_dir.$labresultunassocfile,"wb");
+																fwrite($fp,base64_decode($ur['content']));
+																$sql_unassoc = "INSERT INTO procedure_result_unassociated(patient_name,file_location) VALUES (?,?)";
+																$sql_unassoc_arr = array($ur['patient_name'],$labresultunassocfile);
+																$this->getResultTable()->insertQuery($sql_unassoc,$sql_unassoc_arr);
+                                array_push($unassociated_arr,$ur['id']);
+														}
+                            
 												//}
 												$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 												$arr        = new JsonModel($return);

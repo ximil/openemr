@@ -1,0 +1,112 @@
+<style>
+table.gridview2 td{
+		border-style: dotted;
+		border-width: 1px 1px 1px 1px;
+		margin: 0;padding: 0;
+		border-color:#cccccc;
+}
+table.thcolor th{
+		background:linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;
+		border: 1px solid #cccccc;
+		height:10px;
+		height:20px; 
+}
+</style>
+<script type="text/javascript">
+$(function(){  
+  $.contextMenu({
+    selector: '.context-menu-one',
+    build: function($trigger) {
+      var options = {
+        callback: function(key, options) {
+          if(key == 'attach_to_current_patient'){
+            var details = this.attr('id').split("-");
+            $.post("unassociated/attach",{
+              type: "attachToCurrentPatient",
+              file_id: details[1],
+              file_name: details[2],
+            },
+            function(data){
+              if(data.response == true){
+                alert("Successfully attached to current patient's documents");
+              }else if(data.error){
+                alert(data.error);
+              }else{
+                alert("Failed");
+              }
+              document.location.reload();
+            }, 'json');
+          }else if(key == 'attach_to_order'){
+            alert('2');
+          }
+        },
+        items: {}
+      };
+      options.items.attach_to_current_patient = {name: "Attach To Current Patient"};
+      if ($trigger.hasClass('withorder')) {
+        options.items.attach_to_order = {name: "Attach To Order"};
+      }
+      return options;
+    }
+  });
+  
+  $('.context-menu-one').on('click', function(e){
+    console.log('clicked', this);
+  })
+});
+</script>
+<div style="margin:10px 0;"></div>
+<div class="easyui-panel" title="<?php echo xlt('Unassociated Results');?>" >
+	<div style="padding:10px;">
+		<?php
+		$form = $this->form;
+		$form->setAttribute('action', $this->url('unassociated', array('action' => 'update')));
+		$form->prepare();
+		echo $this->form()->openTag($form);
+    if($this->layout()->type != 'resolved'){
+      $pending = "menu-active";
+    }else{
+      $resolved = "menu-active";
+    }
+		?>
+    <a href="unassociated" class="easyui-linkbutton <?php echo $pending; ?>" data-options="plain:true"><?php echo xlt('Pending Review');?></a>
+		<a href="unassociated?type=resolved" class="easyui-linkbutton <?php echo $resolved; ?>" data-options="plain:true"><?php echo xlt('Resolved');?></a>
+		<br/>
+		<table id="specimentable" class="dv-table gridview2 thcolor" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;" >
+			<tr>
+					<th colspan="4" class="mainhead" ><?php echo ($this->layout()->type != 'resolved') ? 'Pending Review': 'Resolved'; ?></th>
+			</tr>
+			<tr>
+					<td class="bold smallfont" style="width:25%;" >Patient Name</td>
+					<td class="bold smallfont" style="width:25%;" >Report</td>
+          <td class="bold smallfont" style="width:40%;" >Comments</td>
+          <td class="bold smallfont" style="width:3%;" >Resolved</td>
+			</tr>
+			<?php foreach($this->layout()->res as $val): ?>
+			<tr>
+        <?php echo $this->formRow($form->get('id[]')->setValue($val['id'])); ?>
+				<td>&nbsp;<?php echo $val['patient_name']; ?></td>
+				<td>&nbsp;<a class="context-menu-one <?php echo $val['file_order_id'] ? 'withorder': ''; ?>" id="file-<?php echo $val['id']."-".$val['file_location']; ?>" href="unassociated/view?filename=<?php echo $val['file_location']; ?>" >View File</a></td>
+<?php if($this->layout()->type != 'resolved'){ ?>
+        <td><?php echo $this->formRow($form->get('comments[]')->setValue($val['comment'])); ?></td>
+<?php }else{ ?>
+        <td><?php echo $this->formRow($form->get('comments_readonly')->setValue($val['comment'])); ?></td>
+<?php
+      }
+?>
+        <td>&nbsp;<?php echo $val['attached'] ? 'Yes': 'No'; ?></td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+  </div>
+</div>
+    <?php
+      echo $this->form()->closeTag();
+      echo $this->headScript()->prependFile($this->basePath() . '/js/lib/jquery.ui.position.js')
+        ->prependFile($this->basePath() . '/js/lib/jquery.contextMenu.js')
+        ->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+        ->prependFile($this->basePath() . '/js/lab/patient.js')
+        ->prependFile($this->basePath() . '/js/lib/jquery.autocomplete.js')
+        ->prependFile($this->basePath() . '/js/lib/jQuery.bubbletip-1.0.6.js')
+        ->prependFile($this->basePath() . '/js/lib/bubbles.js')
+    ?>

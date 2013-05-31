@@ -218,7 +218,7 @@ function show_comments(){
                     $totrows = $labresult['totalRows'];
                     if($labresult[order_title]=="" && $labresult[procedure_name] == "") continue;
                     $patient_instructions = $labresult[patient_instructions];
-                    if($main_grp != $labresult[order_title] || $code_suffix != $labresult[code_suffix] || $labresult[order_id]){
+                    if($labresult[order_title] != '' && ($main_grp != $labresult[order_title] || $code_suffix != $labresult[code_suffix] || $labresult[order_id])){
 			?>
                 <tr style="background-color:<?php echo $color; ?>">
                                 <td  class="tdfont childtdF" ><?php echo $this->escapeHtml($labresult[patient_id]);?>
@@ -387,6 +387,9 @@ function show_comments(){
                             $resStat = xlt('Cancelled');
                             else
                             $resStat = ucwords($labresult[result_status]);
+                            if(!$resStat){
+                              $resStat = "Pending";
+                            }
                             echo $resStat;
                             ?>
                          </td>
