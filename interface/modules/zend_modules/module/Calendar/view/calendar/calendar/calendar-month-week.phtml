@@ -1,0 +1,17 @@
+
+<table width='100%'>
+  <?php 
+    for ($i = 0; $i < count($this->result); $i++) {
+      ?>
+      <tr>
+        <td width='100%'>
+          <iframe id="iFrame<?php echo ($i + 1); ?>"
+                                  name="iFrame<?php echo ($i + 1); ?>" align="left"
+                                  frameborder="0" 
+                                  src="./calendar?providerID=<?php echo $result[$i]['id']; ?>&providerName=<?php echo $result[$i]['lname'] . ' ' . $result[$i]['fname']; ?>&view=<?php echo $this->view; ?>"
+                                  width="98%" height="400">
+          </iframe>
+        </td>
+      </tr>
+  <?php } ?>
+</table>

@@ -9,8 +9,8 @@ $disable_utf8_flag = false;
 $host	= 'localhost';
 $port	= '3306';
 $login	= 'root';
-$pass	= '';
-$dbase	= 'vern';
+$pass	= 'root';
+$dbase	= 'openemrquest';
 
 $sqlconf = array();
 global $sqlconf;
@@ -24,7 +24,7 @@ $sqlconf["dbase"] = $dbase;
 //////////////////////////
 //////////////////////////
 //////DO NOT TOUCH THIS///
-$config = 0; /////////////
+$config = 1; /////////////
 //////////////////////////
 //////////////////////////
 //////////////////////////
