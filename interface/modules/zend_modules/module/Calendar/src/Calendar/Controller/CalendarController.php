@@ -96,8 +96,6 @@ class CalendarController extends AbstractActionController
 							'providerName'		=> $providerName,
 							'view'						=> $view,
 						));
-				// Disable layout in the form
-				//$calendar->setTerminal(true);
 				return $calendar;
 		}
 		
@@ -125,6 +123,36 @@ class CalendarController extends AbstractActionController
 								$ret = addCalendar($startTime, $endTime, $title, $IsAllDayEvent);
 								break;
 				}
+				$data = new JsonModel($result);
+				return $data;
+		}
+		
+		// Get Providers
+		public function getProvidersAction()
+		{
+				$request = $this->getRequest();
+				$option = $request->getQuery()->opt;
+				$result = $this->getCalendarTable()->getProviderData($option);
+				$data = new JsonModel($result);
+				return $data;
+		}
+		
+		// Get Categories
+		public function getCategoriesAction()
+		{
+				$request = $this->getRequest();
+				$option = $request->getQuery()->opt;
+				$result = $this->getCalendarTable()->getCategoriesData($option);
+				$data = new JsonModel($result);
+				return $data;	
+		}
+		
+		// Get Facilities
+		public function getFacilitiesAction()
+		{
+				$request = $this->getRequest();
+				$option = $request->getQuery()->opt;
+				$result = $this->getCalendarTable()->getFacilitiesData($option);
 				$data = new JsonModel($result);
 				return $data;
 		}

@@ -80,6 +80,8 @@ class CalendarTable extends AbstractTableGateway
 				$ret["end"] = $this->php2JsTime($ed);
 				$ret['error'] = null;
 				try{
+						$dtFrom = $this->php2MySqlTime($sd);
+						$dtTo		= $this->php2MySqlTime($ed);
 						$sql = "SELECT pd.title, 
 										CONCAT(pd.lname, ', ', pd.fname) AS patientName, 
 										pd.DOB,   
@@ -89,13 +91,13 @@ class CalendarTable extends AbstractTableGateway
 									FROM openemr_postcalendar_events pe 
 									LEFT JOIN patient_data pd 
 									ON pd.id=pe.pc_pid 
-									WHERE  pe.pc_aid='$providerID' 
+									WHERE  pe.pc_aid = ?
 										AND pe.pc_time  
-												BETWEEN '" . $this->php2MySqlTime($sd)."' 
-												AND '". $this->php2MySqlTime($ed)."' 
+												BETWEEN ? 
+												AND ? 
 									ORDER BY pe.pc_time";
 						
-						$handle = sqlStatement($sql);
+						$handle = sqlStatement($sql, array($providerID, $dtFrom, $dtTo));
 						while ($row = sqlFetchArray($handle)) {
 								$birthDate = $row['DOB'];
 								$birthDate = explode("-", $birthDate);
@@ -150,19 +152,99 @@ class CalendarTable extends AbstractTableGateway
 		
 		}
 		
-		public function getProviderData()
+		// Get Providers Data
+		public function getProviderData($option='')
 		{
 				$arr = array();
-				$sql = "SELECT id, fname, lname, specialty FROM users 
-										WHERE active = 1 
-										AND ( info IS NULL OR info NOT LIKE '%Inactive%' ) 
-										AND authorized = 1
-										ORDER BY lname, fname";
-				$result = sqlStatement($sql);
-				while ($row = sqlFetchArray($result)) {
-						array_push($arr, $row);
+				if ($option == 'search') {
+						$sql = "SELECT id, fname, lname, specialty FROM users 
+												WHERE active = 1 
+												AND ( info IS NULL OR info NOT LIKE '%Inactive%' ) 
+												AND authorized = 1
+												ORDER BY lname, fname";
+						$result = sqlStatement($sql);
+						$rows[0] = array (
+								'value' => '',
+								'label' => xlt('All Providers'),
+								'selected' => TRUE,
+								'disabled' => FALSE
+							);
+						$i = 1;
+	
+						while($row = sqlFetchArray($result)) {
+							$rows[$i] = array (
+								'value' => $row['id'],
+								'label' => $row['fname']." ".$row['lname'],
+							);
+							$i++;
+						}
+						return $rows;
+				} else {
+						$sql = "SELECT id, fname, lname, specialty FROM users 
+												WHERE active = 1 
+												AND ( info IS NULL OR info NOT LIKE '%Inactive%' ) 
+												AND authorized = 1
+												ORDER BY lname, fname";
+						$result = sqlStatement($sql);
+						while ($row = sqlFetchArray($result)) {
+								array_push($arr, $row);
+						}
+						return $arr;
 				}
-				return $arr;
+		}
+		
+		// Get Categories Data
+		public function getCategoriesData($option='')
+		{
+				$arr = array();
+				if ($option == 'search') {
+						$sql = "SELECT pc_catid, pc_catname FROM openemr_postcalendar_categories
+												ORDER BY pc_catname";
+						$result = sqlStatement($sql);
+						$rows[0] = array (
+								'value' => '',
+								'label' => xlt('All Categories'),
+								'selected' => TRUE,
+								'disabled' => FALSE
+							);
+						$i = 1;
+	
+						while($row = sqlFetchArray($result)) {
+							$rows[$i] = array (
+								'value' => $row['pc_catid'],
+								'label' => $row['pc_catname'],
+							);
+							$i++;
+						}
+						return $rows;
+				}
+		}
+		
+		// Get Facilities Data 
+		public function getFacilitiesData($option='')
+		{
+				$arr = array();
+				if ($option == 'search') {
+						$sql = "SELECT id, name FROM facility
+												ORDER BY name";
+						$result = sqlStatement($sql);
+						$rows[0] = array (
+								'value' => '',
+								'label' => xlt('All Facilities'),
+								'selected' => TRUE,
+								'disabled' => FALSE
+							);
+						$i = 1;
+	
+						while($row = sqlFetchArray($result)) {
+							$rows[$i] = array (
+								'value' => $row['id'],
+								'label' => $row['name'],
+							);
+							$i++;
+						}
+						return $rows;
+				}
 		}
     
 }

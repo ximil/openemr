@@ -5,33 +5,37 @@
 		$arrProvider = explode(',' , $this->provider);
 		
 		//echo 'test'.$this->$provider;
-		echo '<pre>'; print_r($this->provider);echo '</pre>';
+		//echo '<pre>'; print_r($arrProvider);echo '</pre>';
 		//if (in_array($value['id'], $arrProviderID)) {
 				
 		//}
-		$arr = array();
+		/*for ($i = 0; $i < count($this->result); $i++) {
+				if (in_array($result[$i]['id'], $arrProvider)) {
+					echo 'hre1 ' . $result[$i]['id']; 	
+				} else {
+						echo 'hre2 ' . $result[$i]['id']; 
+				}
+		}*/
+		/*$arr = array();
 		for ($i = 0; $i < count($this->result); $i++) {
         $arr[$i]['id'] 		= $result[$i]['id'];
 				$arr[$i]['lname'] = $result[$i]['lname'];
 				$arr[$i]['fname'] = $result[$i]['fname'];
-		}
+		}*/
 
-		
-		//echo $this->headScript()->prependFile($this->basePath() . '/js/calendar/calendar.js.php');
-
-		//require_once($GLOBALS['include_root'] . "/modules/zend_modules/public/js/calendar/calendar.js.php");
-		
+	
 ?>
 
 <script>
 		$(document).ready(function() {     
 				<?php
 					$i = 1;
-					foreach ($arr as $key => $value) {
+					for ($j = 0; $j < count($this->result); $j++) {
+						if (($arrProvider[0] == '' && $j == 0) || in_array($result[$j]['id'], $arrProvider)) {
 				?>
 				var view="day";
 				var  opt = '';
-				opt = "&providerID=" + <?php echo $value['id']; ?>;
+				opt = "&providerID=" + <?php echo $result[$j]['id']; ?>;
 				var DATA_FEED_URL = "./dataFeed";
 				var op = {
 						view: view,
@@ -73,8 +77,7 @@
 						} 
 				});
 				
-				function cal_beforerequest(type)
-				{
+				function cal_beforerequest(type) {
 						var t="Loading data...";
 						switch(type)
 						{
@@ -91,8 +94,7 @@
 						$("#loadingpannel").html(t).show();    
 				}
 				
-				function cal_afterrequest(type)
-				{
+				function cal_afterrequest(type) {
 						switch(type)
 						{
 								case 1:
@@ -108,16 +110,13 @@
 					 
 				}
 				
-				function cal_onerror(type,data)
-				{
+				function cal_onerror(type,data) {
 						$("#errorpannel").show();
 				}
 				
-				function Edit(data)
-				{
+				function Edit(data) {
 					 var eurl="edit.php?id={0}&start={2}&end={3}&isallday={4}&title={1}";   
-						if(data)
-						{
+						if(data) {
 								var url = StrFormat(eurl,data);
 								OpenModelWindow(url,{ width: 600, height: 400, caption:"Manage  The Calendar",onclose:function(){
 									 $("#gridcontainer<?php echo $i; ?>").reload();
@@ -125,8 +124,7 @@
 						}
 				}
 				
-				function View(data)
-				{
+				function View(data) {
 						var str = "";
 						$.each(data, function(i, item){
 								str += "[" + i + "]: " + item + "\n";
@@ -134,15 +132,13 @@
 						alert(str);               
 				}
 				
-				function Delete(data,callback)
-				{           
+				function Delete(data,callback) {           
 						$.alerts.okButton="Ok";  
 						$.alerts.cancelButton="Cancel";  
 						hiConfirm("Are You Sure to Delete this Event", 'Confirm',function(r){ r && callback(0);});           
 				}
 				
-				function wtd(p)
-				{
+				function wtd(p) {
 					 if (p && p.datestrshow) {
 								$("#txtdatetimeshow").text(p.datestrshow);
 						}
@@ -226,12 +222,12 @@
 								$("#txtdatetimeshow").text(p.datestrshow);
 						}
 				});
-			<?php $i++; } ?>
+			<?php $i++; }} ?>
 		});
 		
 		$(document).ready(function() {  
 				var target = $("#target");
-				$("select")
+				$("#provider")
 						.multiselect()
 						.bind("multiselectclick multiselectcheckall multiselectuncheckall", function( event, ui ){
 								var checkedValues = $.map($(this).multiselect("getChecked"), function( input ){
@@ -247,102 +243,226 @@
 								}
 				})
 				.triggerHandler("multiselectclick");
+				
+				// Date Box Date Formatting
+				/*$('#dtFrom').datebox({  
+						formatter:function(date){
+								var y = date.getFullYear();
+								var m = date.getMonth() + 1;
+								var d = date.getDate();
+								return y + '-' + m + '-' + d;
+						}
+				});*/
 		});
 		
+		function getProvider() {
+				if ($("#target").text() == 'Please Select Provider') {
+						alert($("#target").text());
+				} else {
+						window.location.assign("./index?providerID=" + $("#target").text());
+				}
+		}
+		
+		function getSearch() {
+				//$('#dlgSearch').dialog('open');
+		}
 	
 </script>
 <div id="target" style="padding: 5px; border: 1px solid #000; width:200px; float:right; display:none">target</div>
-<div>
-    <div>
-				<form style="margin:20px 0">
-						<p>
-								<select  multiple="multiple" style="width:370px;">
-										<?php for ($i = 0; $i < count($this->result); $i++) { ?>
-												<option value="<?php echo $result[$i]['id']; ?>"><?php echo $result[$i]['lname'] . ' ' . $result[$i]['fname']; ?></option>
-										<?php } ?>
-								</select>
-						</p>
-				</form>
-		</div>
-			<div id="calhead" style="padding-left:1px;padding-right:1px;">          
-            <div class="cHead"><div class="ftitle">Calendar</div>
-            <div id="loadingpannel" class="ptogtitle loadicon" style="display: none;">Loading data...</div>
-             <div id="errorpannel" class="ptogtitle loaderror" style="display: none;">Sorry, could not load your data, please try again later</div>
-            </div>          
-            
-            <div id="caltoolbar" class="ctoolbar">
-              <div id="faddbtn" class="fbutton">
-                <div><span title='Click to Create New Event' class="addcal">
+<!-- Start Provider and Key word Search -->
+<table style="width:98%;background:#fafafa;padding:1px;margin-top:5px;margin-bottom:15px;border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+    <tr>
+				<td style="width:32%;height:50px;background:#fafafa;border:1px solid #95B8E7;">
+						<form>
+								<p style="padding-left:10px">
+										<select id='provider' multiple="multiple" style="width:auto;">
+												<?php for ($i = 0; $i < count($this->result); $i++) { ?>
+														<option value="<?php echo $result[$i]['id']; ?>"><?php echo $result[$i]['lname'] . ' ' . $result[$i]['fname']; ?></option>
+												<?php } ?>
+										</select>
+										<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="getProvider();"><?php echo xlt('Providers'); ?></a>
+								</p>
+						</form>
+				</td>
+				<td style="width:67%; height:50px;background:#fafafa;border:1px solid #95B8E7;">
+						<table border='0'>
+								<tr>
+										<td><?php echo xlt('Keywords') ?> </td>
+										<td>
+												<input type='text' id='keyword' name='keyword' value='' />
+										</td>
+										<td>
+												<input class="easyui-combobox" style="width:60px" data-options="
+																		valueField: 'value',
+																		textField: 'label',
+																		editable:false,
+																		data: [{
+																			label: 'AND',
+																			value: 'AND',
+																			selected:true,
+																		},{
+																			label: 'OR',
+																			value: 'OR'
+																		},]" />
+										</td>
+										<td><?php echo xlt('In'); ?></td>
+										<td><input class="easyui-combobox" data-options="
+																editable:false, 
+																valueField: 'value',
+																textField: 'label',
+																url:'./getCategories?opt=search'" />
+										</td>
+										<td rowspan='3' colspan=='3' align='right' width='100%'>
+												<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="getSearch();" >
+														<?php echo xlt('Search'); ?>
+												</a>
+										</td>
+								</tr>
+								<tr>
+										<td><?php echo xlt('Between'); ?></td>
+										<td><input id="dtFrom" type="text" class="easyui-datebox" data-options="editable:false"></input></td>
+										<td>&nbsp;</td>
+										<td><?php echo xlt('And'); ?> </td>
+										<td>
+												<input id="dtTo" type="text" class="easyui-datebox" data-options="editable:false"></input>  
+										</td>
+								</tr>
+								<tr>
+										<td><?php echo xlt('For'); ?></td>
+										<td>
+											<input class="easyui-combobox" data-options="
+																editable:false,
+																valueField: 'value',
+																textField: 'label',
+																url:'./getProviders?opt=search'" />	
+										</td>
+										<td>&nbsp;</td>
+										<td><?php echo xlt('At'); ?></td>
+										<td>
+											<input class="easyui-combobox" data-options="
+																editable:false, 
+																valueField: 'value',
+																textField: 'label',
+																url:'./getFacilities?opt=search'" />	
+										</td>
+								</tr>
+						</table>
+				</td>
+		</tr>
+</table>
+<!-- End Provider and Key word Search -->
 
-                New Event                
-                </span></div>
-            </div>
-            <div class="btnseparator"></div>
-             <div id="showtodaybtn" class="fbutton">
-                <div><span title='Click to back to today ' class="showtoday">
-                Today</span></div>
-            </div>
-              <div class="btnseparator"></div>
+<div style="margin-top:5px"></div>
+		<div id="calhead" style="padding-left:1px;padding-right:1px;">          
+				<div class="cHead" style="width:98%">
+						<div class="ftitle">Calendar</div>
+						<div id="loadingpannel" class="ptogtitle loadicon" style="display: none;">
+								<?php echo xlt('Loading data...'); ?>
+						</div>
+						<div id="errorpannel" class="ptogtitle loaderror" style="display: none;"><?php echo xlt('Sorry, could not load your data, please try again later'); ?></div>
+				</div>          
+				
+				<div id="caltoolbar" class="ctoolbar" style="width:98%">
+						<div id="faddbtn" class="fbutton">
+								<div>
+										<span title='Click to Create New Event' class="addcal">
+												<?php echo xlt('New Event'); ?>                
+										</span>
+								</div>
+						</div>
+						<div class="btnseparator"></div>
+						<div id="showtodaybtn" class="fbutton">
+								<div>
+										<span title='Click to back to today ' class="showtoday">
+												<?php echo xlt('Today'); ?>
+										</span>
+								</div>
+						</div>
+						<div class="btnseparator"></div>
 
-            <div id="showdaybtn" class="fbutton  fcurrent">
-                <div><span title='Day' class="showdayview">Day</span></div>
-            </div>
-              <div  id="showweekbtn" class="fbutton">
-                <div><span title='Week' class="showweekview">Week</span></div>
-            </div>
-              <div  id="showmonthbtn" class="fbutton">
-                <div><span title='Month' class="showmonthview">Month</span></div>
+						<div id="showdaybtn" class="fbutton  fcurrent">
+								<div>
+										<span title='Day' class="showdayview">
+												<?php echo xlt('Day'); ?>
+										</span>
+								</div>
+						</div>
+						<div  id="showweekbtn" class="fbutton">
+								<div>
+										<span title='Week' class="showweekview">
+												<?php echo xlt('Week'); ?>
+										</span>
+								</div>
+						</div>
+						<div  id="showmonthbtn" class="fbutton">
+								<div>
+										<span title='Month' class="showmonthview">
+												<?php echo xlt('Month'); ?>
+										</span>
+								</div>
+						</div>
+						<div class="btnseparator"></div>
+						<div  id="showreflashbtn" class="fbutton">
+								<div>
+										<span title='Refresh view' class="showdayflash">
+												<?php echo xlt('Refresh'); ?>
+										</span>
+								</div>
+						</div>
+						<div class="btnseparator"></div>
+						<div id="sfprevbtn" title="Prev"  class="fbutton">
+						<span class="fprev"></span>
 
-            </div>
-            <div class="btnseparator"></div>
-              <div  id="showreflashbtn" class="fbutton">
-                <div><span title='Refresh view' class="showdayflash">Refresh</span></div>
-                </div>
-             <div class="btnseparator"></div>
-            <div id="sfprevbtn" title="Prev"  class="fbutton">
-              <span class="fprev"></span>
-
-            </div>
-            <div id="sfnextbtn" title="Next" class="fbutton">
-                <span class="fnext"></span>
-            </div>
-            <div class="fshowdatep fbutton">
+						</div>
+						<div id="sfnextbtn" title="Next" class="fbutton">
+								<span class="fnext"></span>
+						</div>
+						<div class="fshowdatep fbutton">
 								<div>
 										<input type="hidden" name="txtshow" id="hdtxtshow" />
 										<span id="txtdatetimeshow">Loading</span>
 								</div>
-            </div>
-            <div class="clear"></div>
-            </div>
-      </div>
-      <div style="padding:1px;">
+						</div>
+						<div class="clear"></div>
+				</div>
+		</div>
+		
+		<div style="padding:1px;width:99%">
 
-        <div class="t1 chromeColor">&nbsp;</div>
-        <div class="t2 chromeColor">&nbsp;</div>
-        <table width='98%' border='0'>
+				<div class="t1 chromeColor" style="width:99%">&nbsp;</div>
+				<div class="t2 chromeColor" style="width:99%">&nbsp;</div>
+				<table width='98%' border='0'>
 						<tr>
 								<?php 
-								for ($i = 0; $i < count($this->result); $i++) {
+								$i = 0;
+								for ($j = 0; $j < count($this->result); $j++) {
+										if (($arrProvider[0] == '' && $j == 0) || in_array($result[$j]['id'], $arrProvider)) {
 									?>
 									<td width='50%'>
-										<div style="font-weight:bold; color:#2157CC">
-											<?php echo $result[$i]['lname'] . ' ' . $result[$i]['fname']; ?>
+										<div style="font-weight:bold; color:#2157CC;background:#c3d9ff;width:100%" class="calmain printborder">
+											<?php echo xlt($result[$j]['lname']) . ' ' . xlt($result[$j]['fname']); ?>
 										</div>
 										<div id="dvCalMain<?php echo ($i + 1); ?>" class="calmain printborder" style="float:left;width:100%">
-											<div id="gridcontainer<?php echo ($i + 1); ?>" class="gridcontainer" style="overflow-y: visible;" style="float:left;width:100%">
+											<div id="gridcontainer<?php echo ($i + 1); ?>"
+																class="gridcontainer"
+																style="overflow-y: visible;" style="float:left;width:100%">
 											</div>
 										</div>
 									</td>
-									<?php } ?>
+									<?php $i++; }} ?>
 						</tr>
 				</table>
-        <div class="t2 chromeColor">&nbsp;</div>
-        <div class="t1 chromeColor">&nbsp;
-        </div>   
-				</div>
-     
-  </div>
+				<div class="t2 chromeColor" style="width:99%">&nbsp;</div>
+				<div class="t1 chromeColor" style="width:99%">&nbsp;</div>   
+		</div>
+</div>
 
 <script type="text/javascript">
-$("select").multiselect().multiselectfilter();
+		$("select").multiselect().multiselectfilter();
 </script>
+
+<!-- Start Search Result and Edit Popup-->
+<!--<div id="dlgSearch" class="easyui-dialog" style="width:750px;height:415px;padding:10px 20px" closed="true" buttons="#dlg-buttons">
+		Dialog Content.  
+</div>-->
+<!-- End Search Result and Edit Popup -->
