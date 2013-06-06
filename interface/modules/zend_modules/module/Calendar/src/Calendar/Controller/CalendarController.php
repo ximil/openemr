@@ -132,7 +132,10 @@ class CalendarController extends AbstractActionController
 		{
 				$request = $this->getRequest();
 				$option = $request->getQuery()->opt;
-				$result = $this->getCalendarTable()->getProviderData($option);
+				$data = array(
+						'option'	=> $option,
+				); 
+				$result = $this->getCalendarTable()->getProviderData($data);
 				$data = new JsonModel($result);
 				return $data;
 		}
@@ -142,7 +145,12 @@ class CalendarController extends AbstractActionController
 		{
 				$request = $this->getRequest();
 				$option = $request->getQuery()->opt;
-				$result = $this->getCalendarTable()->getCategoriesData($option);
+				$id = $request->getQuery()->id;
+				$data = array(
+						'option'	=> $option,
+						'id'			=> $id,		
+				); 
+				$result = $this->getCalendarTable()->getCategoriesData($data);
 				$data = new JsonModel($result);
 				return $data;	
 		}
@@ -156,7 +164,30 @@ class CalendarController extends AbstractActionController
 				$data = new JsonModel($result);
 				return $data;
 		}
+		
+		// Get Billing Facility
+		public function getBillingFacilityAction()
+		{
+				$result = $this->getCalendarTable()->getBillingFacilityData();
+				$data = new JsonModel($result);
+				return $data;
+		}
+		
+		// Get Status
+		public function getStatusAction()
+		{
+				$result = $this->getCalendarTable()->getStatusData();
+				$data = new JsonModel($result);
+				return $data;
+		}
+		
+		// New and Edit Calendar
+		public function editAction()
+		{
 
+		}
+	
+		
     public function getCalendarTable()
     {
         if (!$this->calendarTable) {

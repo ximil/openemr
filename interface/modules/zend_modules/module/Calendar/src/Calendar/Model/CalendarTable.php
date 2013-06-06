@@ -153,9 +153,11 @@ class CalendarTable extends AbstractTableGateway
 		}
 		
 		// Get Providers Data
-		public function getProviderData($option='')
+		public function getProviderData($data)
 		{
-				$arr = array();
+				$option = $data['option'];
+				$arr 		= array();
+				
 				if ($option == 'search') {
 						$sql = "SELECT id, fname, lname, specialty FROM users 
 												WHERE active = 1 
@@ -179,6 +181,25 @@ class CalendarTable extends AbstractTableGateway
 							$i++;
 						}
 						return $rows;
+				} else if ($option == 'addedit') {
+						$sql = "SELECT id, fname, lname, specialty FROM users 
+												WHERE active = 1 
+												AND ( info IS NULL OR info NOT LIKE '%Inactive%' ) 
+												AND authorized = 1
+												ORDER BY lname, fname";
+						$result = sqlStatement($sql);
+
+						$i = 0;
+	
+						while($row = sqlFetchArray($result)) {
+							$rows[$i] = array (
+								'value' => $row['id'],
+								'label' => $row['fname']." ".$row['lname'],
+								'selected' => true,
+							);
+							$i++;
+						}
+						return $rows;
 				} else {
 						$sql = "SELECT id, fname, lname, specialty FROM users 
 												WHERE active = 1 
@@ -194,9 +215,13 @@ class CalendarTable extends AbstractTableGateway
 		}
 		
 		// Get Categories Data
-		public function getCategoriesData($option='')
+		public function getCategoriesData($data)
 		{
-				$arr = array();
+				$option = $data['option'];
+				$id 		= $data['id'];
+				$arr 		= array();
+				
+				// Search options
 				if ($option == 'search') {
 						$sql = "SELECT pc_catid, pc_catname FROM openemr_postcalendar_categories
 												ORDER BY pc_catname";
@@ -218,9 +243,36 @@ class CalendarTable extends AbstractTableGateway
 						}
 						return $rows;
 				}
+				
+				// Add or Edit Calendar
+				if ($option == 'addedit') {
+						$catType = 0;
+						if ($id == 0) $selected = 5; //Default value 
+						$sql = "SELECT pc_catid,
+														pc_cattype,
+														pc_catname,
+														pc_recurrtype,
+														pc_duration,
+														pc_end_all_day
+												FROM openemr_postcalendar_categories
+												ORDER BY pc_catname";
+						$result = sqlStatement($sql);
+						$i = 0;
+						while($row = sqlFetchArray($result)) {
+								if ($row['pc_cattype'] != $catType) continue;
+								$select = ($row['pc_catid'] == $selected) ? TRUE : FALSE;
+								$rows[$i] = array (
+									'value' => $row['pc_catid'],
+									'label' => $row['pc_catname'],
+									'selected' => $select,
+								);
+								$i++;
+						}
+						return $rows;
+				}
 		}
 		
-		// Get Facilities Data 
+		// Get Facilities Data
 		public function getFacilitiesData($option='')
 		{
 				$arr = array();
@@ -245,6 +297,66 @@ class CalendarTable extends AbstractTableGateway
 						}
 						return $rows;
 				}
+				
+				// Add or Edit Calendar
+				if ($option == 'addedit') {
+						$sql = "SELECT id, name FROM facility
+												WHERE service_location != 0
+												ORDER BY name";
+						$result = sqlStatement($sql);
+
+						$i = 0;
+						while($row = sqlFetchArray($result)) {
+							$rows[$i] = array (
+								'value' => $row['id'],
+								'label' => $row['name'],
+																'selected' => true,
+							);
+							$i++;
+						}
+						return $rows;
+				}
+		}
+		
+		// Get Billing Facility
+		public function getBillingFacilityData()
+		{
+				$sql = "SELECT id, name
+										FROM facility
+										WHERE billing_location = 1";
+				$result = sqlStatement($sql);
+
+				$i = 0;
+				while($row = sqlFetchArray($result)) {
+					$rows[$i] = array (
+						'value' => $row['id'],
+						'label' => $row['name'],
+														'selected' => true,
+					);
+					$i++;
+				}
+				return $rows;
+		}
+		
+		// Get Status
+		public function getStatusData()
+		{
+				$sql = "SELECT * FROM list_options
+										WHERE list_id='apptstat'
+										ORDER BY seq, title";
+				$result = sqlStatement($sql);
+
+				$i = 0;
+				while($row = sqlFetchArray($result)) {
+						$select = ($i == 0) ? TRUE : FALSE;
+						$rows[$i] = array (
+								'value' => $row['option_id'],
+								'label' => $row['title'],
+								'selected' => $select,
+						);
+						$i++;
+				}
+				return $rows;
 		}
     
 }
