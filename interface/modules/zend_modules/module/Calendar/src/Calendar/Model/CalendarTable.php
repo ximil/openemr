@@ -244,8 +244,8 @@ class CalendarTable extends AbstractTableGateway
 						return $rows;
 				}
 				
-				// Add or Edit Calendar
-				if ($option == 'addedit') {
+				// Add or Edit Patient Calendar
+				if ($option == 'addeditpatient') {
 						$catType = 0;
 						if ($id == 0) $selected = 5; //Default value 
 						$sql = "SELECT pc_catid,
@@ -267,6 +267,71 @@ class CalendarTable extends AbstractTableGateway
 									'selected' => $select,
 								);
 								$i++;
+						}
+						return $rows;
+				}
+				
+				// Add or Edit Provider Calendar
+				if ($option == 'addeditprovider') {
+						$catType = 1;
+						if ($id == 0) $selected = 2; //Default value 
+						$sql = "SELECT pc_catid,
+														pc_cattype,
+														pc_catname,
+														pc_recurrtype,
+														pc_duration,
+														pc_end_all_day
+												FROM openemr_postcalendar_categories
+												ORDER BY pc_catname";
+						$result = sqlStatement($sql);
+						$i = 0;
+						while($row = sqlFetchArray($result)) {
+								if ($row['pc_cattype'] != $catType) continue;
+								$select = ($row['pc_catid'] == $selected) ? TRUE : FALSE;
+								$rows[$i] = array (
+									'value' => $row['pc_catid'],
+									'label' => $row['pc_catname'],
+									'selected' => $select,
+								);
+								$i++;
+						}
+						return $rows;
+				}
+				
+				// Add or Edit Provider Preferred Categories Calendar
+				if ($option == 'addeditproviderprefcat') {
+						$catType = 1;
+						if ($id == 0) $selected = 2; //Default value 
+						$sql = "SELECT pc_catid,
+														pc_cattype,
+														pc_catname,
+														pc_recurrtype,
+														pc_duration,
+														pc_end_all_day
+												FROM openemr_postcalendar_categories
+												ORDER BY pc_catname";
+						$result = sqlStatement($sql);
+						$rows[0] = array (
+								'value' => '0',
+								'label' => xlt('None'),
+								'selected' => TRUE,
+								'disabled' => FALSE
+							);
+						$i = 1;
+						while($row = sqlFetchArray($result)) {
+								$duration = round($row['pc_duration'] / 60);
+								if ($row['pc_end_all_day']) $duration = 1440;
+								
+								$select = ($row['pc_catid'] == $selected) ? TRUE : FALSE;
+								if ($duration) {
+										$rows[$i] = array (
+											'value' => $row['pc_catid'],
+											'label' => $row['pc_catname'],
+											'selected' => $select,
+										);
+										$i++;
+								}
+								if ($row['pc_cattype'] != $catType) continue;
 						}
 						return $rows;
 				}
@@ -357,6 +422,50 @@ class CalendarTable extends AbstractTableGateway
 						$i++;
 				}
 				return $rows;
+		}
+		
+		// Get Patient Deatils
+		public function getPatientDetails($data)
+		{
+				$arr = array();
+				if (isset($data['keyword']) && $data['keyword'] != '') { 
+						$option = $data['option'];
+						$keyword = $data['keyword'];
+						if ($option == 'Name') {
+							$where 	= " WHERE lname LIKE ? OR fname LIKE ?";
+							$values = array('%'.$keyword.'%', '%'.$keyword.'%');
+						}
+						if ($option == 'Phone') {
+							$where = " WHERE phone_home LIKE ?";
+							$values = array('%'.$keyword.'%');
+						}
+						if ($option == 'DOB') {
+							$where = " WHERE DOB LIKE ?";
+							$values = array('%'.$keyword.'%');
+						}
+						if ($option == 'ID') {
+							$where = " WHERE id LIKE ?";
+							$values = array('%'.$keyword.'%');
+						}
+						if ($option == 'SSN') {
+							$where = " WHERE ss LIKE ?";
+							$values = array('%'.$keyword.'%');
+						}
+				
+						$sql = "SELECT *, CONCAT(lname, ',' , fname)as name FROM patient_data $where";
+						$result = sqlStatement($sql, $values);
+						$i = 0;
+						while ($row = sqlFetchArray($result)) {
+								//array_push($arr, $row);
+								$arr[$i]['name'] = htmlspecialchars($row['name'],ENT_QUOTES);
+								$arr[$i]['phone_home'] = htmlspecialchars($row['phone_home'],ENT_QUOTES);
+								$arr[$i]['ss'] = htmlspecialchars($row['ss'],ENT_QUOTES);
+								$arr[$i]['DOB'] = htmlspecialchars($row['DOB'],ENT_QUOTES);
+								$arr[$i]['id'] = htmlspecialchars($row['id'],ENT_QUOTES);
+								$i++;
+						}
+				}
+				return $arr;
 		}
     
 }

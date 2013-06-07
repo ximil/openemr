@@ -103,7 +103,7 @@ class CalendarController extends AbstractActionController
 		{
 				$request 	= $this->getRequest();
 				//$fh = fopen("D:/test.txt","a");
-				//fwrite($fh,"testing ..  " . print_r($request->getQuery(),1));
+				//fwrite($fh,"testing ..  " . print_r($request->getPost(),1));
 				$method 	= $request->getQuery()->method;
 			
 				//$request->getPost()->timezone;
@@ -186,7 +186,23 @@ class CalendarController extends AbstractActionController
 		{
 
 		}
-	
+		
+		// Get Patients (Search)
+		public function getPatientsAction()
+		{
+				$data =array();
+				$request = $this->getRequest();
+				if($request->getPost('option')){
+					$data = array(
+						'option'	=> $request->getPost('option'),
+						'keyword'	=> $request->getPost('keyword'),
+					); 
+				}
+
+				$result = $this->getCalendarTable()->getPatientDetails($data);
+				$data = new JsonModel($result);
+				return $data;
+		}
 		
     public function getCalendarTable()
     {
