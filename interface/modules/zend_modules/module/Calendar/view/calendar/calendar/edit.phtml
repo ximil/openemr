@@ -1,3 +1,7 @@
+  <?php
+    // module/Calendar/view/calendar/calendar/edit.phtml: 
+    //echo '<pre>'; print_r($this->result); echo '</pre>';
+  ?>
   <?php echo $this->headLink()
     ->prependStylesheet($this->basePath() . '/css/calendar/colorselect.css')
     ->prependStylesheet($this->basePath() . '/css/calendar/dropdown.css')
@@ -172,19 +176,93 @@
     $('#category').combobox({
       onSelect: function(param){
         //var val = $('#category').combobox('getValue');
-        $('#title').val(param.label);
+        $('#patient_title').val(param.label);
+        getDuration(param.value);
+      },
+      onLoadSuccess: function(param){
+        for (var i=0; i<param.length; i++) {
+          if (param[i].selected == true) {
+            $('#patient_title').val(param[i].label);
+            getDuration(param[i].value);
+            //break;
+          }
+        }
       },
     });
     
     // Search and Load Patient Data to Grid
-		$('#dgPatients').edatagrid({ 
+		$('#dgPatients').edatagrid({
       onSelect:function(rowIndex, rowData){
         $('#patient').val(rowData['name']);
         $('#patient_id').val(rowData['id']);
         $('#dlgPatientSearch').dialog('close');
       },
-    }); 
+    });
+    $('#rpt_type_patient').combobox('disable');
+    $('#rpt_duration_patient').combobox('disable');
+    $('#dtUntilPatient').combobox('disable');
+    $('#repeats_patient').click(function(){
+        if ($('input:checkbox[name=repeats_patient]:checked').val() == 1) {
+          $('#rpt_type_patient').combobox('enable');
+          $('#rpt_duration_patient').combobox('enable');
+          $('#dtUntilPatient').combobox('enable');
+        } else {
+          $('#rpt_type_patient').combobox('disable');
+          $('#rpt_duration_patient').combobox('disable');
+          $('#dtUntilPatient').combobox('disable');
+        }
+    });
+    
+    // Set field Values for editing
+    $('#category').combobox('setValue', "<?php echo $result->fields['pc_catid']; ?>");
+    $('#patient').val("<?php echo $result->fields['patientName']; ?>");
+    $('#provider').combobox('setValue', "<?php echo $result->fields['pc_aid']; ?>");
+    
+    /*
+    [title] => Mrs.
+            [patientName] => TEST, TC2
+            [DOB] => 1947-02-08
+            [pc_eid] => 40
+            [pc_catid] => 5
+            [pc_multiple] => 0
+            [pc_aid] => 1
+            [pc_pid] => 2
+            [pc_title] => Office Visit
+            [pc_time] => 2013-06-10 15:57:36
+            [pc_hometext] => 
+            [pc_comments] => 0
+            [pc_counter] => 0
+            [pc_topic] => 1
+            [pc_informant] => 1
+            [pc_eventDate] => 2013-06-10
+            [pc_endDate] => 0000-00-00
+            [pc_duration] => 0
+            [pc_recurrtype] => 0
+            [pc_recurrspec] =>  
+    */
   });
+  
+  // Get Duration
+  function getDuration(catid) {
+    $.ajax({
+      type: "GET",
+      cache: false,
+      dataType: "json",
+      url: "./getCategories",
+      data: {
+        opt: 'duration',
+        id: catid,
+      },
+      success: function(data) {
+        $.each(data, function(index, result){
+          $("input[name=patient_duration]").val(result['duration']);
+        });
+      },
+      error: function(data){
+        alert('Ajax Fail');
+      }
+    });
+  }
 </script>      
 <style>     
   .calpick     {        
@@ -244,7 +322,7 @@
                   </tr>
                   <tr>
                     <td><?php echo xlt('Title'); ?></td>
-                    <td><input type='text' id='title' name='title' value='' /></td>
+                    <td><input type='text' id='patient_title' name='patient_title' value='' /></td>
                   </tr>
                   <tr>
                     <td><?php echo xlt('Facility'); ?></td>
@@ -277,7 +355,7 @@
                   <tr>
                     <td><?php echo xlt('Provider'); ?></td>
                     <td>
-                      <input name='provider' class="easyui-combobox" data-options="
+                      <input id='provider' name='provider' class="easyui-combobox" data-options="
                                       editable:false,
                                       valueField: 'value',
                                       textField: 'label',
@@ -333,7 +411,7 @@
                         </tr>
                         <tr>
                           <td style="padding-left:5px"><?php echo xlt('Duration'); ?></td>
-                          <td><input type='text' id='title' name='title' size='3' value='' /> &nbsp; <?php echo xlt('Minutes'); ?></td>
+                          <td><input type='text' id='patient_duration' name='patient_duration' size='3' value='' /> &nbsp; <?php echo xlt('Minutes'); ?></td>
                           <td>&nbsp;</td><td>&nbsp;</td>
                         </tr>
                       </table>
@@ -345,19 +423,19 @@
                   </tr>
                   <tr>
                     <td>
-                      <table width='100%' border='0' style="height:134px;padding:10px;border:1px solid #95B8E7;">
+                      <table id='repeats_patient' width='100%' border='0' style="height:134px;padding:10px;border:1px solid #95B8E7;">
                         <tr>
                           <td colspan='2' width='30%'>
-                            <input id="repeats" name="repeats"
+                            <input id="repeats_patient" name="repeats_patient"
                                 type="checkbox" value="1" <?php if(isset($event)&&$event->repeats!=0) {echo "checked";} ?>/>
                                   <?php echo xlt('Repeats'); ?>
                           </td>
                         </tr>
-                        <tr>
+                        <tr id='rpt_area_patient'>
                           <td>&nbsp;</td>
                           <td colspan='2'>
                             <span style="padding-right:10px;">
-                              <input class="easyui-combobox" style="width:60px" data-options="
+                              <input id='rpt_type_patient' name='rpt_type_patient'  class="easyui-combobox" style="width:60px" data-options="
                                                   valueField: 'value',
                                                   textField: 'label',
                                                   editable:false,
@@ -384,7 +462,7 @@
                             
                             </span>
                             <span>
-                              <input class="easyui-combobox" style="width:60px" data-options="
+                              <input id='rpt_duration_patient' name='rpt_duration_patient' class="easyui-combobox" style="width:60px" data-options="
                                                   valueField: 'value',
                                                   textField: 'label',
                                                   editable:false,
@@ -414,9 +492,9 @@
                             
                           </td>
                         </tr>
-                        <tr>
+                        <tr id='rpt_area_date'>
                           <td style="padding-left:5px"><?php echo xlt('Until'); ?></td>
-                          <td><input id="dtUntil" type="text" class="easyui-datebox" data-options="editable:false"></td>
+                          <td><input id="dtUntilPatient" name='dtUntilPatient' type="text" class="easyui-datebox" data-options="editable:false"></td>
                         </tr>
                       </table>
                     </td>
@@ -758,7 +836,7 @@
                             <td>&nbsp;</td>
                             <td colspan='2'>
                               <span style="padding-right:10px;">
-                                <input class="easyui-combobox" style="width:60px" data-options="
+                                <input id='rpt_type2' name='rpt_type2' class="easyui-combobox" style="width:60px" data-options="
                                                     valueField: 'value',
                                                     textField: 'label',
                                                     editable:false,
@@ -785,7 +863,7 @@
                               
                               </span>
                               <span>
-                                <input class="easyui-combobox" style="width:60px" data-options="
+                                <input id='rpt_duration2' name='rpt_duration2' class="easyui-combobox" style="width:60px" data-options="
                                                     valueField: 'value',
                                                     textField: 'label',
                                                     editable:false,
@@ -817,7 +895,7 @@
                           </tr>
                           <tr>
                             <td style="padding-left:5px;"><?php echo xlt('Until'); ?></td>
-                            <td><input id="dtUntil" type="text" class="easyui-datebox" data-options="editable:false"></td>
+                            <td><input id="dtUntil2" name='dtUntil2' type="text" class="easyui-datebox" data-options="editable:false"></td>
                           </tr>
                         </table>
                       </td>

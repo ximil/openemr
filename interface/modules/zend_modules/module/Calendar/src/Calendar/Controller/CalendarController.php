@@ -105,6 +105,7 @@ class CalendarController extends AbstractActionController
 				//$fh = fopen("D:/test.txt","a");
 				//fwrite($fh,"testing ..  " . print_r($request->getPost(),1));
 				$method 	= $request->getQuery()->method;
+				//fwrite($fh,"Request Query ..  " . print_r($request,1));
 			
 				//$request->getPost()->timezone;
 
@@ -122,6 +123,27 @@ class CalendarController extends AbstractActionController
 								$IsAllDayEvent 	= $request->getPost()->IsAllDayEvent;
 								$ret = addCalendar($startTime, $endTime, $title, $IsAllDayEvent);
 								break;
+						case "adddetails":
+								$st = $request->getPost()->stpartdate . " " . $request->getPost()->stparttime;
+								if (isset($request->getPost()->repeats_patient)) {
+										$et = $request->getPost()->dtUntilPatient . " " . $request->getPost()->stparttime;
+								} else {
+										$et = '00/00/0000 00:00';
+								}
+								$sTime 	= $request->getPost()->stparttime;
+								$arr 		= explode(':', $request->getPost()->stparttime);
+								$eTime 	= $arr[0] . ':' . ($arr[1] + $request->getPost()->patient_duration); 
+
+								if(isset($request->getQuery()->id)){
+										$ret = $this->getCalendarTable()->updateDetailedCalendar($request->getQuery()->id, $st, $et, 
+												$request->getPost()->category, $request->getPost()->patient_title, $request->getPost()->facility, 
+												$request->getPost()->billing_facility, $request->getPost()->patient_id, $request->getPost()->provider, $sTime, $eTime);
+								}else{
+										$ret = $this->getCalendarTable()->addDetailedCalendar($st, $et,                    
+												$request->getPost()->category, $request->getPost()->patient_title, $request->getPost()->facility, 
+												$request->getPost()->billing_facility, $request->getPost()->patient_id, $request->getPost()->provider, $sTime, $eTime);
+								}        
+								break; 
 				}
 				$data = new JsonModel($result);
 				return $data;
@@ -184,7 +206,15 @@ class CalendarController extends AbstractActionController
 		// New and Edit Calendar
 		public function editAction()
 		{
-
+				$request = $this->getRequest();
+				$id = $request->getQuery()->id;
+				$result = $this->getCalendarTable()->getCalendarByRange($id);
+				//$fh = fopen("D:/test.txt","a");
+				//fwrite($fh,"testing ..  " . print_r($result,1));
+				$edit = new ViewModel(array(
+							'result'			=> $result,
+						));
+				return $edit;
 		}
 		
 		// Get Patients (Search)

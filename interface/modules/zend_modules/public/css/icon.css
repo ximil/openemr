@@ -98,3 +98,12 @@
 .icon-A{
 	background:url('icons/A.png') no-repeat center center;
 }
+.icon-close{
+	background:url('icons/close.png') no-repeat center center;
+}
+.icon-delete{
+	background:url('icons/delete.png') no-repeat center center;
+}
+.icon-duplicate{
+	background:url('icons/duplicate.png') no-repeat center center;
+}

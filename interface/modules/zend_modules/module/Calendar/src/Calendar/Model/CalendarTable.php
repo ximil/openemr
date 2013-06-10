@@ -96,7 +96,7 @@ class CalendarTable extends AbstractTableGateway
 												BETWEEN ? 
 												AND ? 
 									ORDER BY pe.pc_time";
-						
+
 						$handle = sqlStatement($sql, array($providerID, $dtFrom, $dtTo));
 						while ($row = sqlFetchArray($handle)) {
 								$birthDate = $row['DOB'];
@@ -125,6 +125,122 @@ class CalendarTable extends AbstractTableGateway
 					 $ret['error'] = $e->getMessage();
 				}
 				return $ret;
+		}
+	
+		// Save Calendar Details
+						/*pc_catid = $args['form_category'],
+				pc_multiple = (isset($args['new_multiple_value']) ? $args['new_multiple_value'] : ''),
+				pc_aid = $args['form_provider'],
+				pc_pid = $form_pid,
+				pc_title = $args['form_title'],
+				pc_time = NOW()
+				pc_hometext = $args['form_comments'],
+				pc_informant = $_SESSION['authUserID'],
+				pc_eventDate = $args['event_date'],
+				pc_endDate = fixDate($args['form_enddate']),
+				pc_duration = $args['duration'],
+				pc_recurrtype = $pc_recurrtype,
+				pc_recurrspec = serialize($args['recurrspec']),
+				pc_startTime = $args['starttime'],
+				pc_endTime = $args['endtime'],
+				pc_alldayevent =  $args['form_allday'],
+				pc_apptstatus = $args['form_apptstatus'],
+				pc_prefcatid = $args['form_prefcat'],
+				pc_location =  $args['locationspec'],
+				pc_eventstatus = 1
+				pc_sharing = 1
+				pc_facility =  (int)$args['facility'],
+				pc_billing_location = (int)$args['billing_facility']*/
+
+		public function addDetailedCalendar($st, $et, $category, $title, $facility, $billing_facility, $patient_id, $provider, $sTime, $eTime){
+				$ret = array();
+				try{
+						
+						$x = array($category, $provider, $patient_id, $title, $st, $et, $facility, $billing_facility, $_SESSION['authUserID']);
+						//$fh = fopen("D:/test.txt","a");
+						//fwrite($fh,"VALUES ..  " . print_r($x,1));
+						$sql = "INSERT INTO openemr_postcalendar_events SET pc_catid = ?, 
+														pc_aid = ?,
+														pc_pid = ?,
+														pc_title = ?,
+														pc_eventDate = ?,
+														pc_endDate = ?, 
+														pc_time = NOW(),
+														pc_facility =  ?, 
+														pc_billing_location = ?,
+														pc_informant = ?,
+														pc_startTime = ?,
+														pc_endTime = ?, 
+														pc_eventstatus = 1, 
+														pc_sharing = 1";
+						//fwrite($fh,"SQL ..  " . $sql);
+						$st = $this->php2MySqlTime($this->js2PhpTime($st));
+						if ($et != '00/00/0000 00:00') {
+							$et = $this->php2MySqlTime($this->js2PhpTime($et));	
+						} else {
+								$et = '0000-00-00 00:00';
+						}
+
+						//$x = array($category, $provider, $patient_id, $title, $st, $et, $facility, $billing_facility);
+						//fwrite($fh,"VALUES 2 ..  " . print_r($x,1));
+						
+						$result = sqlQuery($sql, array(
+																						$category,
+																						$provider,
+																						$patient_id,
+																						$title,
+																						$st,
+																						$et,
+																						$facility,
+																						$billing_facility,
+																						$_SESSION['authUserID'],
+																						$sTime,
+																						$eTime
+															 ));
+							
+							
+							/*							(`subject`, `starttime`, `endtime`, `isalldayevent`, `description`, `location`, `color`) values ('"
+						
+						.mysql_real_escape_string($sub)."', '"
+						.php2MySqlTime(js2PhpTime($st))."', '"
+						.php2MySqlTime(js2PhpTime($et))."', '"
+						.mysql_real_escape_string($ade)."', '"
+						.mysql_real_escape_string($dscr)."', '"
+						.mysql_real_escape_string($loc)."', '"
+						.mysql_real_escape_string($color)."' )";*/
+						//echo($sql);
+						if($result == false){
+								$ret['IsSuccess'] = false;
+								$ret['Msg'] = mysql_error();
+						}else{
+								$ret['IsSuccess'] = true;
+								$ret['Msg'] = 'add success';
+								$ret['Data'] = mysql_insert_id();
+						}
+				}catch(Exception $e){
+					 $ret['IsSuccess'] = false;
+					 $ret['Msg'] = $e->getMessage();
+				}
+				return $ret;
+		}
+		
+		// Edit Calendare And get Data
+		public function getCalendarByRange($id)
+		{
+				$sql = "SELECT pd.title, 
+										CONCAT(pd.lname, ', ', pd.fname) AS patientName, 
+										pd.DOB,   
+										pe.*, 
+										CONCAT(pe.pc_eventDate,' ',pe.pc_startTime) AS  StartTime, 
+										CONCAT(IF(pe.pc_endDate = '0000-00-00', pe.pc_eventDate, pe.pc_endDate),' ', pe.pc_endTime) AS  EndTime 
+									FROM openemr_postcalendar_events pe 
+									LEFT JOIN patient_data pd 
+									ON pd.id=pe.pc_pid 
+									WHERE  pe.pc_eid = ?";
+
+				$result = sqlStatement($sql, array($id));
+				return $result;
+				
 		}
 		
 		// Date Time js to php
@@ -335,6 +451,24 @@ class CalendarTable extends AbstractTableGateway
 						}
 						return $rows;
 				}
+				
+				// duration
+				if ($option == 'duration') {
+						$id = isset($data['id']) ? $data['id'] : 0;
+						$catType = 1;
+						$sql = "SELECT *
+												FROM openemr_postcalendar_categories
+												WHERE pc_catid=? 
+												ORDER BY pc_catname";
+						$result = sqlStatement($sql, array($id));
+						$i = 0;
+						while($row = sqlFetchArray($result)) {
+								$duration = round($row['pc_duration'] / 60);
+								if ($row['pc_end_all_day']) $duration = 1440;
+								$arr[$i]['duration'] = $duration;
+						}
+						return $arr;
+				}
 		}
 		
 		// Get Facilities Data
@@ -375,7 +509,7 @@ class CalendarTable extends AbstractTableGateway
 							$rows[$i] = array (
 								'value' => $row['id'],
 								'label' => $row['name'],
-																'selected' => true,
+								'selected' => true,
 							);
 							$i++;
 						}
@@ -396,7 +530,7 @@ class CalendarTable extends AbstractTableGateway
 					$rows[$i] = array (
 						'value' => $row['id'],
 						'label' => $row['name'],
-														'selected' => true,
+						'selected' => true,
 					);
 					$i++;
 				}
