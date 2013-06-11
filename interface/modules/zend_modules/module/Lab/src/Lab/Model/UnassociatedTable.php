@@ -48,11 +48,13 @@ class UnassociatedTable extends AbstractTableGateway
 		
     public function attachUnassociatedDetails($request)
     {
-      $sqlupd = "UPDATE procedure_result_unassociated SET attached = 1, comment = ? WHERE id = ?";
-      $param = array();
-      array_push($param,'');
-      array_push($param,$request->file_id);
-      $result = sqlQuery($sqlupd,$param);
+      if($request->type == 'attachToCurrentPatient'){
+        $sqlupd = "UPDATE procedure_result_unassociated SET attached = 1, comment = ? WHERE id = ?";
+        $param = array();
+        array_push($param,'');
+        array_push($param,$request->file_id);
+        $result = sqlQuery($sqlupd,$param);
+      }
     }
 }
 ?>

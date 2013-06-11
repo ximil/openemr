@@ -37,7 +37,23 @@ $(function(){
               document.location.reload();
             }, 'json');
           }else if(key == 'attach_to_order'){
-            alert('2');
+            var details = this.attr('id').split("-");
+            $.post("unassociated/attach",{
+              type: "attachToOrder",
+              file_id: details[1],
+              file_name: details[2],
+              file_order_id: details[3],
+            },
+            function(data){
+              if(data.response == true){
+                alert("Successfully attached to current patient's documents");
+              }else if(data.error){
+                alert(data.error);
+              }else{
+                alert("Failed");
+              }
+              document.location.reload();
+            }, 'json');
           }
         },
         items: {}
@@ -49,10 +65,6 @@ $(function(){
       return options;
     }
   });
-  
-  $('.context-menu-one').on('click', function(e){
-    console.log('clicked', this);
-  })
 });
 </script>
 <div style="margin:10px 0;"></div>
@@ -86,7 +98,7 @@ $(function(){
 			<tr>
         <?php echo $this->formRow($form->get('id[]')->setValue($val['id'])); ?>
 				<td>&nbsp;<?php echo $val['patient_name']; ?></td>
-				<td>&nbsp;<a class="context-menu-one <?php echo $val['file_order_id'] ? 'withorder': ''; ?>" id="file-<?php echo $val['id']."-".$val['file_location']; ?>" href="unassociated/view?filename=<?php echo $val['file_location']; ?>" >View File</a></td>
+				<td>&nbsp;<a class="context-menu-one <?php echo $val['file_order_id'] ? 'withorder': ''; ?>" id="file-<?php echo $val['id']."-".$val['file_location']."-".$val['file_order_id']; ?>" href="unassociated/view?filename=<?php echo $val['file_location']; ?>" >View File</a></td>
 <?php if($this->layout()->type != 'resolved'){ ?>
         <td><?php echo $this->formRow($form->get('comments[]')->setValue($val['comment'])); ?></td>
 <?php }else{ ?>

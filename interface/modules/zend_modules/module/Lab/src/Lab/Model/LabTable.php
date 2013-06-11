@@ -853,7 +853,7 @@ class LabTable extends AbstractTableGateway
 									'state'         => 'patient_state',
 									'postal_code'   => 'patient_postal_code',
 									'country_code'  => 'patient_country',
-									'phone_contact' => 'patient_phone_no',
+									'phone_home'    => 'patient_phone_no',
 									'ss'            => 'patient_ss_no' 
 									),
 						'primary_key'   => array('pid'),
@@ -864,15 +864,15 @@ class LabTable extends AbstractTableGateway
 						'column_map'    => array(
 									'type'                      => '#type',
 									'provider'                  => '#provider',
-									'subscriber_street'         => 'guarantor_address',
-									'subscriber_city'           => 'guarantor_city',
-									'subscriber_state'          => 'guarantor_state',
-									'subscriber_postal_code'    => 'guarantor_postal_code',
+									'subscriber_street'         => '$type_insurance_person_address,guarantor_address',
+									'subscriber_city'           => '$type_insurance_person_city,guarantor_city',
+									'subscriber_state'          => '$type_insurance_person_state,guarantor_state',
+									'subscriber_postal_code'    => '$type_insurance_person_postal_code,guarantor_postal_code',
 									'subscriber_lname'          => '$type_insurance_person_lname,guarantor_lname',
 									'subscriber_fname'          => '$type_insurance_person_fname,guarantor_fname',
 									'subscriber_relationship'   => '$type_insurance_person_relationship',
+                  'subscriber_phone'          => 'guarantor_phone_no',
 									'policy_number'             => '$type_insurance_policy_no',
-														       
 									'group_number'              => '$type_insurance_group_no',
 									'subscriber_mname'          => '$type_insurance_person_mname,guarantor_mname',
 									
@@ -900,6 +900,9 @@ class LabTable extends AbstractTableGateway
                                                                                                            'variable'   => "type",
                                                                                                            'value'      => "primary"),
                                                                                 'guarantor_postal_code' => array(
+                                                                                                           'variable'   => "type",
+                                                                                                           'value'      => "primary"),
+                                                                                'guarantor_phone_no' => array(
                                                                                                            'variable'   => "type",
                                                                                                            'value'      => "primary")
                                                                                 ));
@@ -945,6 +948,7 @@ class LabTable extends AbstractTableGateway
 						'column_map'    => array(
                                                                         'provider_id'           => '#provider_id',
                                                                         'psc_hold'         	=> 'recv_app_id',
+                                                                        'date_ordered'         	=> 'collection_date',
 									'billto'	    	=> 'bill_to',
 									'internal_comments'	=> 'patient_internal_comments'
 									),
@@ -1079,7 +1083,7 @@ class LabTable extends AbstractTableGateway
 			    "primary_insurance_person_state","primary_insurance_person_postal_code","guarantor_lname","guarantor_fname",
 			    "guarantor_address","guarantor_city","guarantor_state","guarantor_postal_code","guarantor_phone_no",
 			    "secondary_insurance_person_mname","guarantor_mname","ordering_provider_id","ordering_provider_lname",
-			    "ordering_provider_fname","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP","bill_to");
+			    "ordering_provider_fname","send_app_id","recv_app_id","send_fac_id","recv_fac_id","DorP","bill_to","collection_date");
      
 	
 	$cofig_arr  = $this->mapcolumntoxml();

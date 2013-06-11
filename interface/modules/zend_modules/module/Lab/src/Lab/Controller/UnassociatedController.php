@@ -10,6 +10,7 @@ use Zend\Soap\Client;
 use Zend\Config;
 use Zend\Config\Reader;
 use C_Document;
+use Lab\Controller\ResultController;
 
 class UnassociatedController extends AbstractActionController
 {
@@ -62,57 +63,62 @@ class UnassociatedController extends AbstractActionController
       return $response->setContent(\Zend\Json\Json::encode(array('error' => 'You must select a patient')));
     }
     if ($request->isPost()) {
-      require(dirname(__FILE__)."/../../../../../../../../controllers/C_Document.class.php");
-      $_POST['process'] = true;
-      $file_path = $GLOBALS['OE_SITE_DIR']."/lab/unassociated_result/".$request->getPost()->file_name;
-      $mime_types = array(
-        "pdf"=>"application/pdf"
-        ,"exe"=>"application/octet-stream"
-        ,"zip"=>"application/zip"
-        ,"docx"=>"application/msword"
-        ,"doc"=>"application/msword"
-        ,"xls"=>"application/vnd.ms-excel"
-        ,"ppt"=>"application/vnd.ms-powerpoint"
-        ,"gif"=>"image/gif"
-        ,"png"=>"image/png"
-        ,"jpeg"=>"image/jpg"
-        ,"jpg"=>"image/jpg"
-        ,"mp3"=>"audio/mpeg"
-        ,"wav"=>"audio/x-wav"
-        ,"mpeg"=>"video/mpeg"
-        ,"mpg"=>"video/mpeg"
-        ,"mpe"=>"video/mpeg"
-        ,"mov"=>"video/quicktime"
-        ,"avi"=>"video/x-msvideo"
-        ,"3gp"=>"video/3gpp"
-        ,"css"=>"text/css"
-        ,"jsc"=>"application/javascript"
-        ,"js"=>"application/javascript"
-        ,"php"=>"text/html"
-        ,"htm"=>"text/html"
-        ,"html"=>"text/html"
-      );
+      if($request->getPost()->type == 'attachToCurrentPatient'){
+        require(dirname(__FILE__)."/../../../../../../../../controllers/C_Document.class.php");
+        $_POST['process'] = true;
+        $file_path = $GLOBALS['OE_SITE_DIR']."/lab/unassociated_result/".$request->getPost()->file_name;
+        $mime_types = array(
+          "pdf"=>"application/pdf"
+          ,"exe"=>"application/octet-stream"
+          ,"zip"=>"application/zip"
+          ,"docx"=>"application/msword"
+          ,"doc"=>"application/msword"
+          ,"xls"=>"application/vnd.ms-excel"
+          ,"ppt"=>"application/vnd.ms-powerpoint"
+          ,"gif"=>"image/gif"
+          ,"png"=>"image/png"
+          ,"jpeg"=>"image/jpg"
+          ,"jpg"=>"image/jpg"
+          ,"mp3"=>"audio/mpeg"
+          ,"wav"=>"audio/x-wav"
+          ,"mpeg"=>"video/mpeg"
+          ,"mpg"=>"video/mpeg"
+          ,"mpe"=>"video/mpeg"
+          ,"mov"=>"video/quicktime"
+          ,"avi"=>"video/x-msvideo"
+          ,"3gp"=>"video/3gpp"
+          ,"css"=>"text/css"
+          ,"jsc"=>"application/javascript"
+          ,"js"=>"application/javascript"
+          ,"php"=>"text/html"
+          ,"htm"=>"text/html"
+          ,"html"=>"text/html"
+        );
+          
+        $extension = strtolower(end(explode('.',$file_path)));
+        $mime_type = $mime_types[$extension];
+        $_FILES['file']['name'][0]     = $request->getPost()->file_name;
+        $_FILES['file']['type'][0]     = $mime_type;
+        $_FILES['file']['tmp_name'][0] = $file_path;
+        $_FILES['file']['error'][0]    = 0;
+        $_FILES['file']['size'][0]     = filesize($file_path);
+        $_POST['category_id']          = '2';
+        $_POST['patient_id']           = $pid;
+        $_GET['patient_id']            = $pid;
         
-      $extension = strtolower(end(explode('.',$file_path)));
-      $mime_type = $mime_types[$extension];
-      $_FILES['file']['name'][0]     = $request->getPost()->file_name;
-      $_FILES['file']['type'][0]     = $mime_type;
-      $_FILES['file']['tmp_name'][0] = $file_path;
-      $_FILES['file']['error'][0]    = 0;
-      $_FILES['file']['size'][0]     = filesize($file_path);
-      $_POST['category_id']          = '2';
-      $_POST['patient_id']           = $pid;
-      $_GET['patient_id']            = $pid;
-      
-      $cdoc = new C_Document();
-      if(!file_exists($cdoc->file_path.$request->getPost()->file_name)){
-        $cdoc->upload_action_process();
-        copy($file_path,$cdoc->file_path.$request->getPost()->file_name);
-        $this->getUnassociatedTable()->attachUnassociatedDetails($request->getPost());
+        $cdoc = new C_Document();
+        if(!file_exists($cdoc->file_path.$request->getPost()->file_name)){
+          $cdoc->upload_action_process();
+          copy($file_path,$cdoc->file_path.$request->getPost()->file_name);
+          $this->getUnassociatedTable()->attachUnassociatedDetails($request->getPost());
+          return $response->setContent(\Zend\Json\Json::encode(array('response' => true)));
+        }else{
+          return $response->setContent(\Zend\Json\Json::encode(array('error' => 'This file is already attached to current patient')));
+        }
+      }elseif($request->getPost()->type == 'attachToOrder'){
+        $this->getLabResultDetails($request->getPost()->file_order_id);
         return $response->setContent(\Zend\Json\Json::encode(array('response' => true)));
-      }else{
-        return $response->setContent(\Zend\Json\Json::encode(array('error' => 'This file is already attached to current patient')));
-      }      
+      }
     }
   }
   

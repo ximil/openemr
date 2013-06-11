@@ -36,6 +36,39 @@ $(document).ready(function() {
   });
 });
 
+$(function(){  
+  $.contextMenu({
+    selector: '.context-menu-res',
+    build: function($trigger) {
+      var options = {
+        callback: function(key, options) {
+          if(key == 'cancel'){
+            var answer = prompt ("Please Enter Comment","");
+            var details = this.attr('id').split("-");
+            $.post("result/cancel",{
+              order: details[1],
+              seq: details[2],
+              proc_name: details[3],
+							comment: answer,
+            },
+            function(data){
+              if(data.response == true){
+                alert("Test cancelled");
+              }else{
+                alert("Failed");
+              }
+              document.location.reload();
+            }, 'json');
+          }
+        },
+        items: {}
+      };
+      options.items.cancel = {name: "Cancel Order"};
+      return options;
+    }
+  });
+});
+
 function switchClasses($content){
     if($content.hasClass("short-text")){
         $content.removeClass("short-text");
@@ -56,12 +89,16 @@ function getShowLinkText(currentText){
     return newText;
 }
 
-function hide_comments(){
-  $('tr[id^=full_comments_]').hide();
-}
-
-function show_comments(){
-  $('tr[id^=full_comments_]').show();
+function show_hide_comments(){
+  if($("#showhide").hasClass('hide_comm')){
+    $("#showhide").removeClass('hide_comm');
+    $("#showhide").addClass('show_comm');
+    $('tr[id^=full_comments_]').hide();
+  }else if($("#showhide").hasClass('show_comm')){
+    $("#showhide").removeClass('show_comm');
+    $("#showhide").addClass('hide_comm');
+    $('tr[id^=full_comments_]').show();
+  }
 }
 
 </script>
@@ -94,24 +131,33 @@ function show_comments(){
                    </span>-->
 		    <form id="frmsearch" method="post" novalidate>		   
 		     <div style="text-align: left; padding-left:20px;">
-                      <div style="text-align: left;">
-                       <span style="text-align: left; font-weight: bold; margin-left: 1px;"><?php echo xlt('Date'); ?></span>
-                       <span style="text-align: left; font-weight: bold; margin-left: 250px;"><?php echo xlt('Status'); ?></span>
-                        </div>
+                      
+			 <fieldset style="width:25%;float:left;" >
+				<legend><?php echo xlt('Date'); ?></legend>
 			 <span style="text-align: left; padding-right: 10px;">
 			 <?php echo xlt('From'); ?>: <input class="easyui-datebox" style="width:80px" name='dtFrom' >
 			 </span>
-			 <span style="text-align: left; padding-right: 50px;">
+			 <span style="text-align: left; padding-right: 10px;">
 			 <?php echo xlt('To'); ?>: <input class="easyui-datebox" style="width:80px" name='dtTo' >
 			 </span>
-                         
+			 <br/>
+			 <br/>
+			 <span style="text-align: left; padding-right: 10px;">
+			 <?php echo xlt('Encounter'); ?>:
+			 <input id="searchenc" class="easyui-combobox" name="searchenc" 
+                                data-options="valueField:'value',textField:'label',
+                                url:'./result/listEncounters'" />
+			 </span>
+			 </fieldset>
+			 <fieldset style="width:66%;float:right;height:30px;" >
+				<legend><?php echo xlt('Status'); ?></legend>
 			 <span style="text-align: left; padding-right: 10px;">
 			 <?php echo xlt('Order'); ?>:
 			 <input id="searchStatusOrder" class="easyui-combobox" name="searchStatusOrder" 
                                 data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=search&optId=order'" />
 			 </span>
-			 <span style="text-align: left; padding-right: 10px;">
+			 <span style="text-align: left; margin-right: 10px;margin-right:50px;">
 			 <?php echo xlt('Report'); ?>:
 			 <input id="cc" class="easyui-combobox" name="searchStatusReport" 
                                 data-options="valueField:'value',textField:'label',
@@ -123,13 +169,22 @@ function show_comments(){
                                 data-options="valueField:'value',textField:'label',
                                 url:'./result/getLabOptions?opt=search&optId=result'" />
 			 </span>
-
+			 </fieldset>
+			 <fieldset style="width:66%;float:right;height:23px;" >
+				<legend><?php echo xlt('Other'); ?></legend>
+			 <span style="text-align: left; padding-right: 10px;">
+			 <?php echo xlt('Test Name'); ?>:
+			 <input id="searchtest" class="combo" name="searchtest" autocomplete="off" />
+			 </span>
+			 </fieldset>
 			 <a href="#" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="doSearch()">
 			 <!-- <input type="submit" value="Search" ></a>-->
                            <?php echo xlt('Search'); ?> </a>
-			 <br/>
-			 <br/>
-                         <span style="text-align: left; padding-right: 10px;float:right;">
+			 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <a href="#" class="easyui-linkbutton hide_comm" id="showhide" onclick="show_hide_comments()"><?php echo xlt('Show/Hide Comments'); ?></a>
+                         <span style="text-align: left; padding-right: 10px;float:right;margin-top:15px;">
                         <table cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td class="icon-ok tdfont">&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;-&nbsp;</td><td class="tdfont "><?php echo xlt('Normal');?></td><td>&nbsp;&nbsp;</td>
@@ -148,8 +203,6 @@ function show_comments(){
 	     </div>
 	     
 	<!-- Lab Result listing starts here------------------------------------->
-	&nbsp;&nbsp;<a href="#" class="easyui-linkbutton" onclick="hide_comments()"><?php echo xlt('Hide Comments'); ?></a>
-  &nbsp;<a href="#" class="easyui-linkbutton" onclick="show_comments()"><?php echo xlt('Show Comments'); ?></a>
 	<table id="labresult"  class="dv-table gridview2 thcolor" cellspacing="0" cellpadding="0" style="width:99%;height:auto;background:#ffffff;padding:5px;margin-top:5px;margin-bottom:15px;">
 	       <thead">
                  <tr>
@@ -307,7 +360,7 @@ function show_comments(){
                             continue;
                         }
                         ?>
-                            <tr style="background-color:<?php echo $color; ?>">
+                            <tr <?php echo $labresult[result_status] ? '': 'class="context-menu-res"'; ?> id="order-<?php echo $labresult[procedure_order_id]."-".$labresult[procedure_order_seq]."-".$labresult[procedure_name]; ?>" style="background-color:<?php echo $color; ?>">
                                             <td  class="tdfont childtdF">&nbsp;
                                             <?php
                                             if($labresult[order_title]==NULL){
@@ -508,5 +561,10 @@ function show_comments(){
             closed="true" buttons="#dlg-buttons">  
             <div class="ftitle" id='titleShow'></div>  
                 <div id="commentsF"></div>
-                   </div>  
-	<?php } ?>
+                   </div>
+	<?php
+  }
+  echo $this->headScript()->prependFile($this->basePath() . '/js/lib/jquery.ui.position.js')
+        ->prependFile($this->basePath() . '/js/lib/jquery.contextMenu.js')
+        ->prependFile($this->basePath() . '/js/lib/jquery-1.8.2.min.js')
+  ?>

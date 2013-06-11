@@ -213,6 +213,8 @@ class ResultController extends AbstractActionController
                     'dtTo'          => $request->getPost('dtTo'),
                     'page'          => $request->getPost('page'),
                     'rows'          => $request->getPost('rows'),
+										'encounter'	    => $request->getPost('searchenc'),
+										'testname'      => $request->getPost('searchtest'),
             ); 
         }
 						
@@ -490,7 +492,7 @@ class ResultController extends AbstractActionController
 																$this->getResultTable()->insertQuery($sql_unassoc,$sql_unassoc_arr);
                                 array_push($unassociated_arr,$ur['id']);
 														}
-                            
+                            $client->updateUnassociatedResult($username,$password,$site_dir,$unassociated_arr);
 												//}
 												$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 												$arr        = new JsonModel($return);
@@ -792,4 +794,22 @@ class ResultController extends AbstractActionController
 						return $this->redirect()->toRoute('result',array('action' => 'resultEntry','saved' => 'yes'));
 				}
     }
+    
+    public function cancelAction()
+    {
+			$request = $this->getRequest();
+      $response = $this->getResponse();
+      if ($request->isPost()) {
+        $this->getResultTable()->cancelOrder($request->getPost());
+        return $response->setContent(\Zend\Json\Json::encode(array('response' => true)));
+      }
+    }
+		
+		public function listEncountersAction()
+    {
+        $encounters = $this->getResultTable()->listEncounters();
+        $data = new JsonModel($encounters);
+        return $data;
+    }
+		
 }

@@ -106,6 +106,12 @@ class ResultTable extends AbstractTableGateway
         if (isset($data['dtFrom']) && $data['dtTo'] == '') {
             $dtTo = $data['dtFrom'];
         }
+				if (isset($data['encounter'])) {
+            $enc = $data['encounter'];
+        }
+				if (isset($data['testname'])) {
+            $test = $data['testname'];
+        }
         
         $form_review    = 1; // review mode
         $lastpoid       = -1;
@@ -148,6 +154,12 @@ class ResultTable extends AbstractTableGateway
         if ($dtFrom) {
             $where .= " AND po.date_ordered BETWEEN '$dtFrom' AND '$dtTo'";
         }
+				if($enc){
+						$where .= " AND po.encounter_id = '$enc'";
+				}
+				if($test){
+						$where .= " AND pc.procedure_name LIKE '%$test%'";
+				}
 	if($pid){
 	    $where .= " AND po.patient_id = '$pid'";
 	}
@@ -815,4 +827,31 @@ class ResultTable extends AbstractTableGateway
       $procedure_result_id = sqlInsert($sql, $in_array);
       return $procedure_result_id;
     }
+    
+    public function cancelOrder($request)
+    {
+      $sql1 = "INSERT INTO procedure_report(procedure_order_id,procedure_order_seq) VALUES(?,?)";
+      $res1 = $this->insertQuery($sql1,array($request->order,$request->seq));
+      $sql2 = "INSERT INTO procedure_result(procedure_report_id,result_status,order_title,comments) VALUES(?,?,?,?)";
+      $res2 = $this->insertQuery($sql2,array($res1,'Cancelled',$request->proc_name,$request->comment));
+    }
+		
+		public function listEncounters($data)
+    {
+				global $pid;
+        $sql = "SELECT encounter,DATE(DATE) as dos FROM form_encounter WHERE pid='".$pid."'";
+        $result = sqlStatement($sql);
+        $string = '';
+        $arr = array();
+				$i = 0;
+        while($row = sqlFetchArray($result)) {
+            $arr[$i] = array (
+                    'value' => $row['encounter'],ENT_QUOTES,
+                    'label' => $row['dos'],
+            );
+            $i++;
+        }
+        return $arr;
+    }
+		
 }
