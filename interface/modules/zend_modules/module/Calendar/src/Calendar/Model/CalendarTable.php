@@ -108,11 +108,11 @@ class CalendarTable extends AbstractTableGateway
 										$row['patientName'],
 										$this->php2JsTime($this->mySql2PhpTime($row['StartTime'])),
 										$this->php2JsTime($this->mySql2PhpTime($row['EndTime'])),
-										$row['IsAllDayEvent'],
+										$row['pc_alldayevent'],
 										0, //more than one day event
 										//$row->InstanceType,
 										0,//Recurring event,
-										$row['Color'],
+										$row['color'],
 										1,//editable
 										$row['Location'],
 										'',//$attends
@@ -152,14 +152,83 @@ class CalendarTable extends AbstractTableGateway
 				pc_facility =  (int)$args['facility'],
 				pc_billing_location = (int)$args['billing_facility']*/
 
-		public function addDetailedCalendar($st, $et, $category, $title, $facility, $billing_facility, $patient_id, $provider, $sTime, $eTime){
+		public function saveDetailedCalendar($data){
+				
+				$st 									= $data['st'];
+				$et 									= $data['et'];
+				$category 						= $data['patient_category'];
+				$title 								= $data['patient_title'];
+				$facility 						= $data['patient_facility'];
+				$billing_facility 		= $data['patient_billing_facility'];
+				$patient_id 					= $data['patient_id'];
+				$provider 						= $data['patient_provider'];
+				$status								= $data['status'];
+				$patient_comments			= $data['patient_comments'];
+				$patient_duration			= $data['patient_duration'] * 60;
+				$repeats_patient			= $data['repeats_patient'];
+				$rpt_type_patient			= $data['rpt_type_patient'];
+				$rpt_duration_patient	= $data['rpt_duration_patient'];
+				$dtUntilPatient				= $data['dtUntilPatient'];
+				$allDayEvent					= $data['allDayEvent'];
+				$sTime 								= $data['sTime'];
+				$eTime  							= $data['eTime'];
+				$color								= $data['color'];
+				
+				//$st = $this->php2MySqlTime($this->js2PhpTime($st));
+				if ($et != '00/00/0000 00:00') {
+					$et = $this->php2MySqlTime($this->js2PhpTime($et));	
+				} else {
+						$et = '0000-00-00 00:00';
+				}
+				
 				$ret = array();
 				try{
-						
-						$x = array($category, $provider, $patient_id, $title, $st, $et, $facility, $billing_facility, $_SESSION['authUserID']);
-						//$fh = fopen("D:/test.txt","a");
+						//$x = array($category, $provider, $patient_id, $title, $st, $et, $facility, $billing_facility, $_SESSION['authUserID']);
+						$fh = fopen("D:/test.txt","a");
 						//fwrite($fh,"VALUES ..  " . print_r($x,1));
-						$sql = "INSERT INTO openemr_postcalendar_events SET pc_catid = ?, 
+						if (isset($data['id']) && $data['id'] > 0) {
+								$id = $data['id'];
+								$sql = "UPDATE openemr_postcalendar_events SET pc_catid = ?, 
+																pc_aid = ?,
+																pc_pid = ?,
+																pc_title = ?,
+																pc_eventDate = ?,
+																pc_endDate = ?, 
+																pc_time = NOW(),
+																pc_facility =  ?, 
+																pc_billing_location = ?,
+																pc_informant = ?,
+																pc_startTime = ?,
+																pc_endTime = ?,
+																pc_hometext = ?,
+																pc_duration = ?,
+																pc_apptstatus = ?,
+																pc_alldayevent = ?,
+																color = ?, 
+																pc_eventstatus = 1, 
+																pc_sharing = 1
+														WHERE pc_eid = ?";
+								$values = array(
+																$category,
+																$provider,
+																$patient_id,
+																$title,
+																$st,
+																$et,
+																$facility,
+																$billing_facility,
+																$_SESSION['authUserID'],
+																$sTime,
+																$eTime,
+																$patient_comments, 
+																$patient_duration,
+																$status,
+																$allDayEvent,
+																$color, 
+																$id
+														);
+						} else {
+								$sql = "INSERT INTO openemr_postcalendar_events SET pc_catid = ?, 
 														pc_aid = ?,
 														pc_pid = ?,
 														pc_title = ?,
@@ -170,56 +239,52 @@ class CalendarTable extends AbstractTableGateway
 														pc_billing_location = ?,
 														pc_informant = ?,
 														pc_startTime = ?,
-														pc_endTime = ?, 
+														pc_endTime = ?,
+														pc_hometext = ?,
+														pc_duration = ?,
+														pc_apptstatus = ?,
+														pc_alldayevent = ?,
+														color = ?, 
 														pc_eventstatus = 1, 
 														pc_sharing = 1";
-						//fwrite($fh,"SQL ..  " . $sql);
-						$st = $this->php2MySqlTime($this->js2PhpTime($st));
-						if ($et != '00/00/0000 00:00') {
-							$et = $this->php2MySqlTime($this->js2PhpTime($et));	
-						} else {
-								$et = '0000-00-00 00:00';
+								$values = array(
+																$category,
+																$provider,
+																$patient_id,
+																$title,
+																$st,
+																$et,
+																$facility,
+																$billing_facility,
+																$_SESSION['authUserID'],
+																$sTime,
+																$eTime,
+																$patient_comments, 
+																$patient_duration,
+																$status,
+																$allDayEvent,
+																$color
+														);
 						}
+						
+						//fwrite($fh,"SQL ..  " . $sql);
+						
 
 						//$x = array($category, $provider, $patient_id, $title, $st, $et, $facility, $billing_facility);
 						//fwrite($fh,"VALUES 2 ..  " . print_r($x,1));
 						
-						$result = sqlQuery($sql, array(
-																						$category,
-																						$provider,
-																						$patient_id,
-																						$title,
-																						$st,
-																						$et,
-																						$facility,
-																						$billing_facility,
-																						$_SESSION['authUserID'],
-																						$sTime,
-																						$eTime
-															 ));
-							
-							
-							/*							(`subject`, `starttime`, `endtime`, `isalldayevent`, `description`, `location`, `color`) values ('"
-						
-						.mysql_real_escape_string($sub)."', '"
-						.php2MySqlTime(js2PhpTime($st))."', '"
-						.php2MySqlTime(js2PhpTime($et))."', '"
-						.mysql_real_escape_string($ade)."', '"
-						.mysql_real_escape_string($dscr)."', '"
-						.mysql_real_escape_string($loc)."', '"
-						.mysql_real_escape_string($color)."' )";*/
-						//echo($sql);
+						$result = sqlStatement($sql, $values); //fwrite($fh,"result ..  " . print_r($values,1));
 						if($result == false){
 								$ret['IsSuccess'] = false;
-								$ret['Msg'] = mysql_error();
+								$ret['Msg'] 			= mysql_error();
 						}else{
 								$ret['IsSuccess'] = true;
-								$ret['Msg'] = 'add success';
-								$ret['Data'] = mysql_insert_id();
+								$ret['Msg'] 	= 'add success';
+								$ret['Data']	= mysql_insert_id();
 						}
 				}catch(Exception $e){
-					 $ret['IsSuccess'] = false;
-					 $ret['Msg'] = $e->getMessage();
+					 $ret['IsSuccess'] 	= false;
+					 $ret['Msg'] 				= $e->getMessage();
 				}
 				return $ret;
 		}

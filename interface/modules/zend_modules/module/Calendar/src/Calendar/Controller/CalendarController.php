@@ -105,8 +105,8 @@ class CalendarController extends AbstractActionController
 				//$fh = fopen("D:/test.txt","a");
 				//fwrite($fh,"testing ..  " . print_r($request->getPost(),1));
 				$method 	= $request->getQuery()->method;
-				//fwrite($fh,"Request Query ..  " . print_r($request,1));
-			
+				//fwrite($fh,"Request Query ..  " . print_r($request->getQuery(),1));
+
 				//$request->getPost()->timezone;
 
 				switch ($method) {
@@ -121,29 +121,82 @@ class CalendarController extends AbstractActionController
 								$endTime				= $request->getPost()->CalendarEndTime;
 								$title					= $request->getPost()->CalendarTitle;
 								$IsAllDayEvent 	= $request->getPost()->IsAllDayEvent;
-								$ret = addCalendar($startTime, $endTime, $title, $IsAllDayEvent);
+								$result = addCalendar($startTime, $endTime, $title, $IsAllDayEvent);
 								break;
 						case "adddetails":
-								$st = $request->getPost()->stpartdate . " " . $request->getPost()->stparttime;
-								if (isset($request->getPost()->repeats_patient)) {
-										$et = $request->getPost()->dtUntilPatient . " " . $request->getPost()->stparttime;
+								if ($request->getQuery()->formtype == 'provider') {
+										
 								} else {
-										$et = '00/00/0000 00:00';
+										$st = $request->getPost()->stpartdate . " " . $request->getPost()->stparttime;
+										if (isset($request->getPost()->repeats_patient)) {
+												$et = $request->getPost()->dtUntilPatient . " " . $request->getPost()->stparttime;
+										} else {
+												$et = '00/00/0000 00:00';
+										}
+										$sTime 	= $request->getPost()->stparttime;
+										$arr 		= explode(':', $request->getPost()->stparttime);
+										$eTime 	= $arr[0] . ':' . ($arr[1] + $request->getPost()->patient_duration); 
+										
+										$allDayEvent = isset($request->getPost()->IsAllDayEvent) ? $request->getPost()->IsAllDayEvent : 0;
+										if ($allDayEvent == 1) {
+												$sTime = '00:00:00';
+												$eTime = '24:00:00';
+										}
+										$color = $request->getPost()->colorvalue;
+										$repeats_patient 			= isset($request->getPost()->repeats_patient) ? $request->getPost()->repeats_patient : 0;
+										$rpt_type_patient 		= isset($request->getPost()->rpt_type_patient) ? $request->getPost()->rpt_type_patient : 0;
+										$rpt_duration_patient = isset($request->getPost()->rpt_duration_patient) ? $request->getPost()->rpt_duration_patient : '';
+										$dtUntilPatient 			= isset($request->getPost()->dtUntilPatient) ? $request->getPost()->dtUntilPatient : '0000-00-00';
+										if(isset($request->getQuery()->id)){
+												$data = array(
+																		'id' 												=> $request->getQuery()->id,
+																		'st' 												=> $st,
+																		'et' 												=> $et, 
+																		'patient_category' 					=> $request->getPost()->patient_category,
+																		'patient_title' 						=> $request->getPost()->patient_title,
+																		'patient_facility' 					=> $request->getPost()->patient_facility, 
+																		'patient_billing_facility' 	=> $request->getPost()->patient_billing_facility,
+																		'patient_id' 								=> $request->getPost()->patient_id,
+																		'patient_provider' 					=> $request->getPost()->patient_provider,
+																		'status'										=> $request->getPost()->status,
+																		'patient_comments'					=> $request->getPost()->patient_comments,
+																		'patient_duration'					=> $request->getPost()->patient_duration,
+																		'repeats_patient'						=> $repeats_patient,
+																		'rpt_type_patient'					=> $rpt_type_patient,
+																		'rpt_duration_patient'			=> $rpt_duration_patient,
+																		'dtUntilPatient'						=> $dtUntilPatient,
+																		'allDayEvent'								=> $allDayEvent,
+																		'sTime' 										=> $sTime,
+																		'eTime' 										=> $eTime,
+																		'color'											=> $color,
+																);  
+												$result = $this->getCalendarTable()->saveDetailedCalendar($data);
+										}else{
+												$data = array(
+																		'st' 												=> $st,
+																		'et' 												=> $et,                    
+																		'patient_category' 					=> $request->getPost()->patient_category,
+																		'patient_title' 						=> $request->getPost()->patient_title,
+																		'patient_facility' 					=> $request->getPost()->patient_facility, 
+																		'patient_billing_facility' 	=> $request->getPost()->patient_billing_facility,
+																		'patient_id' 								=> $request->getPost()->patient_id,
+																		'patient_provider' 					=> $request->getPost()->patient_provider,
+																		'status'										=> $request->getPost()->status,
+																		'patient_comments'					=> $request->getPost()->patient_comments,
+																		'patient_duration'					=> $request->getPost()->patient_duration,
+																		'repeats_patient'						=> $repeats_patient,
+																		'rpt_type_patient'					=> $rpt_type_patient,
+																		'rpt_duration_patient'			=> $rpt_duration_patient,
+																		'dtUntilPatient'						=> $dtUntilPatient,
+																		'allDayEvent'								=> $allDayEvent,
+																		'sTime' 										=> $sTime,
+																		'eTime' 										=> $eTime,
+																		'color'											=> $color,
+																); 
+												$result = $this->getCalendarTable()->saveDetailedCalendar($data);
+										}        
+										break;
 								}
-								$sTime 	= $request->getPost()->stparttime;
-								$arr 		= explode(':', $request->getPost()->stparttime);
-								$eTime 	= $arr[0] . ':' . ($arr[1] + $request->getPost()->patient_duration); 
-
-								if(isset($request->getQuery()->id)){
-										$ret = $this->getCalendarTable()->updateDetailedCalendar($request->getQuery()->id, $st, $et, 
-												$request->getPost()->category, $request->getPost()->patient_title, $request->getPost()->facility, 
-												$request->getPost()->billing_facility, $request->getPost()->patient_id, $request->getPost()->provider, $sTime, $eTime);
-								}else{
-										$ret = $this->getCalendarTable()->addDetailedCalendar($st, $et,                    
-												$request->getPost()->category, $request->getPost()->patient_title, $request->getPost()->facility, 
-												$request->getPost()->billing_facility, $request->getPost()->patient_id, $request->getPost()->provider, $sTime, $eTime);
-								}        
-								break; 
 				}
 				$data = new JsonModel($result);
 				return $data;
@@ -206,13 +259,20 @@ class CalendarController extends AbstractActionController
 		// New and Edit Calendar
 		public function editAction()
 		{
+				global $pid;
+
 				$request = $this->getRequest();
 				$id = $request->getQuery()->id;
 				$result = $this->getCalendarTable()->getCalendarByRange($id);
+				
+				$helper = $this->getServiceLocator()->get('viewhelpermanager')->get('emr_helper');
+				$data['patient'] = $pid;
+				$patient = $helper->getPatientDetails($data);
 				//$fh = fopen("D:/test.txt","a");
 				//fwrite($fh,"testing ..  " . print_r($result,1));
 				$edit = new ViewModel(array(
-							'result'			=> $result,
+							'result'		=> $result,
+							'patient'		=> $patient,
 						));
 				return $edit;
 		}

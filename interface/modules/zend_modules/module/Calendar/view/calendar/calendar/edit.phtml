@@ -1,6 +1,7 @@
   <?php
-    // module/Calendar/view/calendar/calendar/edit.phtml: 
-    //echo '<pre>'; print_r($this->result); echo '</pre>';
+    // module/Calendar/view/calendar/calendar/edit.phtml:
+    //echo 'count '.count($result->fields);
+    //echo '<pre>'; print_r($this->patient); echo '</pre>';
   ?>
   <?php echo $this->headLink()
     ->prependStylesheet($this->basePath() . '/css/calendar/colorselect.css')
@@ -54,7 +55,10 @@
     var tt = "{0}:{1}";
     for (var i = 0; i < 24; i++) {
       arrT.push(
-        {text: StrFormat(tt, [i >= 10 ? i : "0" + i, "00"]) }, { text: StrFormat(tt, [i >= 10 ? i : "0" + i, "30"])}
+        {text: StrFormat(tt, [i >= 10 ? i : "0" + i, "00"]) },
+        { text: StrFormat(tt, [i >= 10 ? i : "0" + i, "15"])} ,
+        { text: StrFormat(tt, [i >= 10 ? i : "0" + i, "30"])},
+        { text: StrFormat(tt, [i >= 10 ? i : "0" + i, "45"])}
       );
     }
     
@@ -75,12 +79,13 @@
       if (this.checked) {
           $("#stparttime").val("00:00").hide();
           $("#etparttime").val("00:00").hide();
+          $("#p_time").hide();
       }
       else {
           var d = new Date();
           var p = 60 - d.getMinutes();
-          if (p > 30) p = p - 30;
-          d = DateAdd("n", p, d);
+          if (p > 15) p = p - 15;
+          d = DateAdd("n", p, d);alert('Data ' + d + 'Mini '+ d.getMinutes() + 'p ' + p);
           $("#stparttime").val(getHM(d)).show();
           $("#etparttime").val(getHM(DateAdd("h", 1, d))).show();
       }
@@ -89,8 +94,8 @@
       $("#stparttime").val("00:00").hide();
       $("#etparttime").val("00:00").hide();
     }
-    $("#Savebtn").click(function() {alert('tt'); $("#fmEdit").submit(); });
-    $("#Closebtn").click(function() { alert('etett');CloseModelWindow(); });
+    $("#Savebtn").click(function() { $("#fmEdit").submit(); });
+    $("#Closebtn").click(function() { CloseModelWindow(); });
     $("#Deletebtn").click(function() {
       if (confirm("Are you sure to remove this event")) {  
         var param = [{ "name": "calendarId", value: 8}];                
@@ -109,9 +114,13 @@
     });
       
     $("#stpartdate,#etpartdate").datepicker({ picker: "<button class='calpick'></button>"});    
-    var cv =$("#colorvalue").val() ;
-    if(cv=="") {
-      cv="-1";
+    
+    // Color settings for Event Edit
+    $('#colorvalue').val("<?php echo $result->fields['color']; ?>");
+    
+    var cv = $("#colorvalue").val();
+    if(cv == "") {
+      cv = "-1";
     }
     $("#calendarcolor").colorselect({ title: "Color", index: cv, hiddenid: "colorvalue" });
     //to define parameters of ajaxform
@@ -173,7 +182,7 @@
   
   $(function(){
     // Category Change and Load Title
-    $('#category').combobox({
+    $('#patient_category').combobox({
       onSelect: function(param){
         //var val = $('#category').combobox('getValue');
         $('#patient_title').val(param.label);
@@ -188,6 +197,23 @@
           }
         }
       },
+    });
+
+     // Tab Change and form id change
+    $('#edittab').tabs({  
+      onSelect:function(title){  
+        if (title == 'Patient') {
+          if ($('#fmEdit1').length) {alert('1 ' + title);
+            $('#fmEdit').attr('id', 'fmEdit2');
+            $('#fmEdit1').attr('id', 'fmEdit');
+          }
+        }
+        
+        if (title == 'Provider') {alert('2 ' + title);
+          $('#fmEdit').attr('id', 'fmEdit1');
+          $('#fmEdit2').attr('id', 'fmEdit');
+        }
+      }  
     });
     
     // Search and Load Patient Data to Grid
@@ -214,10 +240,32 @@
     });
     
     // Set field Values for editing
-    $('#category').combobox('setValue', "<?php echo $result->fields['pc_catid']; ?>");
-    $('#patient').val("<?php echo $result->fields['patientName']; ?>");
-    $('#provider').combobox('setValue', "<?php echo $result->fields['pc_aid']; ?>");
+    <?php if (count($result->fields) > 1) { ?>
+       setTimeout('valueSet()', 1000); 
+    <?php } ?>
+    // Set current Date 
+    $('#stpartdate').datebox({
+     
+      
+    });
+    var date = new Date();
+    var d = date.getDate();
+    var m = date.getMonth() + 1;
+    var y = date.getFullYear();
+    var dt = y + '-' + (m <= 9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+    $('#stpartdate').datebox('setValue', dt);
     
+    // Time set
+    var d = new Date();
+    var p = 60 - d.getMinutes();
+    if (p > 15) p = p - 15;
+    d = DateAdd("n", p, d);alert('Data ' + d + '|    Mini '+ d.getMinutes() + '|   p ' + p);
+    $("#stparttime").val(getHM(d)).show();
+    //$("#etparttime").val(getHM(DateAdd("h", 1, d))).show();
+    
+    // Set Patient
+    $('#patient').val("<?php echo $patient[0]['lname'] . ',' , $patient[0]['fname']; ?>");
+    $('#patient_id').val("<?php echo $patient[0]['id']; ?>");
     /*
     [title] => Mrs.
             [patientName] => TEST, TC2
@@ -242,6 +290,28 @@
     */
   });
   
+  // Set field values
+  function valueSet() {
+    $('#patient_category').combobox('setValue', "<?php echo $result->fields['pc_catid']; ?>");
+    $('#patient_title').val("<?php echo $result->fields['pc_title']; ?>");
+    $('#patient_facility').combobox('setValue',"<?php echo $result->fields['pc_facility']; ?>");
+    $('#patient_billing_facility').combobox('setValue',"<?php echo $result->fields['pc_billing_location']; ?>");
+    $('#patient').val("<?php echo $result->fields['patientName']; ?>");
+    $('#patient_id').val("<?php echo $result->fields['pc_pid']; ?>");
+    $('#patient_provider').combobox('setValue', "<?php echo $result->fields['pc_aid']; ?>");
+    $('#status').combobox('setValue', "<?php echo $result->fields['pc_apptstatus']; ?>");
+    $('#patient_comments').val("<?php echo $result->fields['pc_hometext']; ?>");
+    $('#stpartdate').datebox('setValue', "<?php echo $result->fields['pc_eventDate']; ?>");
+    $('#stparttime').val("<?php echo substr($result->fields['pc_startTime'], 0, 5); ?>");
+
+    var checkbox = $('#IsAllDayEvent');
+    <?php if ($result->fields['pc_alldayevent'] == 1) { ?>
+        checkbox.attr('checked', true);
+        $("#stparttime").val("00:00").hide();
+        $("#p_time").hide();
+    <?php } ?>
+  }
+  
   // Get Duration
   function getDuration(catid) {
     $.ajax({
@@ -263,6 +333,8 @@
       }
     });
   }
+  
+ 
 </script>      
 <style>     
   .calpick     {        
@@ -275,33 +347,20 @@
   }      
 </style>
 
-<div class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:785px;height:365px;">
+<div id='edittab' class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:785px;height:365px;">
   <!-- Start Patient Tab -->
   <div title="Patient" style="padding:10px">
     <div>
-      <!--
-      <div class="toolBotton" style="width:20px">           
-        <a id="Savebtn" class="imgbtn" href="javascript:void(0);">                
-          <span class="Save"  title="Save the calendar">Save(<u>S</u>)
-          </span>          
-        </a>                           
-        <?php if(isset($event)){ ?>
-          <a id="Deletebtn" class="imgbtn" href="javascript:void(0);">                    
-            <span class="Delete" title="Cancel the calendar">Delete(<u>D</u>)
-            </span>                
-          </a>             
-        <?php } ?>            
-        <a id="Closebtn1" class="imgbtn" href="javascript:void(0);">                
-          <span class="Close" title="Close the window" >Close
-          </span></a>            
-        </a>        
-      </div>
-      -->
-      <div style="clear: both"> </div>        
+      <div style="clear: both"> </div>
       <div class="infocontainer"
            style="width:98%;height:auto;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;
-           border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">            
-        <form action="./dataFeed?method=adddetails<?php //echo isset($event)?"&id=".$event->Id:""; ?>" class="fform" id="fmEdit" method="post">                 
+           border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
+        <?php
+          $id = isset($result->fields['pc_eid']) ? $result->fields['pc_eid'] : '';
+        ?>
+        <form action="./dataFeed?method=adddetails&id=<?php echo $id; ?>" class="fform" id="fmEdit" method="post">                
+          <input id="timezone" name="timezone" type="hidden" value="" />
+          <input id="colorvalue" name="colorvalue" type="hidden" value="" />
           <table  width='100%' border='0'>
             <tr>
               <td width='50%'>
@@ -313,7 +372,7 @@
                   <tr>
                     <td><?php echo xlt('Category'); ?></td>
                     <td>
-                      <input id='category' name='category' class="easyui-combobox" data-options="
+                      <input id='patient_category' name='patient_category' class="easyui-combobox" data-options="
 																editable:false, 
 																valueField: 'value',
 																textField: 'label',
@@ -327,7 +386,7 @@
                   <tr>
                     <td><?php echo xlt('Facility'); ?></td>
                     <td colspan='3'>
-                      <input name='facility' class="easyui-combobox" data-options="
+                      <input id='patient_facility' name='patient_facility' class="easyui-combobox" data-options="
                                       editable:false, 
                                       valueField: 'value',
                                       textField: 'label',
@@ -337,7 +396,7 @@
                   <tr>
                     <td><?php echo xlt('Billing Facility'); ?></td>
                     <td colspan='3'>
-                      <input name='billing_facility' class="easyui-combobox" data-options="
+                      <input name='patient_billing_facility' class="easyui-combobox" data-options="
                                       editable:false, 
                                       valueField: 'value',
                                       textField: 'label',
@@ -355,7 +414,7 @@
                   <tr>
                     <td><?php echo xlt('Provider'); ?></td>
                     <td>
-                      <input id='provider' name='provider' class="easyui-combobox" data-options="
+                      <input id='patient_provider' name='patient_provider' class="easyui-combobox" data-options="
                                       editable:false,
                                       valueField: 'value',
                                       textField: 'label',
@@ -365,18 +424,17 @@
                   <tr>
                     <td><?php echo xlt('Status'); ?></td>
                     <td>
-                      <input name='status' class="easyui-combobox"  data-options="
+                      <input id='status' name='status' class="easyui-combobox"  data-options="
                                       editable:false,
                                       valueField: 'value',
                                       textField: 'label',
                                       url:'./getStatus'" />
                     </td>
-                    
                   </tr>
                   <tr>
                     <td><?php echo xlt('Comments'); ?></td>
                     <td>
-                      <textarea name="comments" rows='5' cols='10'
+                      <textarea id='patient_comments' name="patient_comments" rows='5' cols='10'
                                                       class="easyui-validatebox combo validatebox-text"
                                                       style="height:40px; width:68%" ></textarea>
                     </td>
@@ -392,17 +450,20 @@
                         <tr>
                           <td colspan='4'>
                             <input id="IsAllDayEvent" name="IsAllDayEvent"
-                                   type="checkbox" value="1" <?php if(isset($event)&&$event->IsAllDayEvent!=0) {echo "checked";} ?>/> <?php echo xlt('All day event'); ?>
+                                   type="checkbox" value="1"
+                                   <?php if(isset($event)&&$event->IsAllDayEvent!=0) {echo "checked";} ?>/>
+                                    <?php echo xlt('All day event'); ?>
                           </td>
                         </tr>
                         <tr>
                           <td width='20%' style="padding-left:5px"><?php echo xlt('Date'); ?></td>
                           <td width='20%'>
-                           <input MaxLength="10" class="required date"
+                           <!--<input MaxLength="10" class="required date"
                                  id="stpartdate" name="stpartdate" style="padding-left:2px;width:90px;"
-                                 type="text" value="<?php echo isset($event)?$sarr[0]:""; ?>" />
+                                 type="text" value="<?php echo isset($event)?$sarr[0]:""; ?>" />-->
+                            <input id="stpartdate" name='stpartdate' type="text" class="easyui-datebox" data-options="editable:false">
                           </td>
-                          <td width='10%'><?php echo xlt('Time'); ?></td>
+                          <td id='p_time' width='10%'><?php echo xlt('Time'); ?></td>
                           <td>
                             <input MaxLength="5" class="required time"
                                    id="stparttime" name="stparttime" style="width:40px;"
@@ -502,204 +563,8 @@
                 </table>
               </td>
             </tr>
-            <!--
-            <tr>
-              <td><?php echo xlt('Color Picker'); ?></td>
-              <td colspan='3'><div id="calendarcolor" style="width:50px"></div></td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Category'); ?></td>
-              <td>
-                <input class="easyui-combobox" data-options="
-																editable:false, 
-																valueField: 'value',
-																textField: 'label',
-																url:'./getCategories?opt=addedit'" />
-              </td>
-              <td colspan='2'>
-                <input id="IsAllDayEvent" name="IsAllDayEvent"
-                       type="checkbox" value="1" <?php if(isset($event)&&$event->IsAllDayEvent!=0) {echo "checked";} ?>/> <?php echo xlt('All day event'); ?>
-              </td>
-
-            </tr>
-            <tr>
-              <td><?php echo xlt('Date'); ?></td>
-              <td>--><!--<input id="dtFrom" type="text" class="easyui-datebox" data-options="editable:false"></input>-->
-               <!-- <input MaxLength="10" class="required date"
-                     id="stpartdate" name="stpartdate" style="padding-left:2px;width:90px;"
-                     type="text" value="<?php echo isset($event)?$sarr[0]:""; ?>" />
-              </td>
-              <td><?php echo xlt('Time'); ?></td>
-              <td>
-                <input MaxLength="5" class="required time"
-                       id="stparttime" name="stparttime" style="width:40px;"
-                       type="text" value="<?php echo isset($event)?$sarr[1]:""; ?>" />
-              </td>                      
-                                     
-            </tr>
-            <tr>
-              <td><?php echo xlt('Title'); ?></td>
-              <td><input type='text' id='title' name='title' value='' /></td>
-              <td><?php echo xlt('Duration'); ?></td>
-              <td><input type='text' id='title' name='title' size='6' value='' /> &nbsp; <?php echo xlt('Minutes'); ?></td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Facility'); ?></td>
-              <td colspan='3'>
-                <input class="easyui-combobox" data-options="
-																editable:false, 
-																valueField: 'value',
-																textField: 'label',
-																url:'./getFacilities?opt=addedit'" />
-              </td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Billing Facility'); ?></td>
-              <td colspan='3'>
-                <input class="easyui-combobox" data-options="
-																editable:false, 
-																valueField: 'value',
-																textField: 'label',
-																url:'./getBillingFacility'" />
-              </td>
-            </tr>
-            
-            <tr>
-              <td><?php echo xlt('Patient'); ?></td>
-              <td><input type='text' id='patient' name='patient' value='' readonly onclick="alert('search patient');" /></td>
-              <td colspan='2'>&nbsp;</td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Provider'); ?></td>
-              <td>
-                <input class="easyui-combobox" data-options="
-																editable:false,
-																valueField: 'value',
-																textField: 'label',
-																url:'./getProviders?opt=addedit'" />
-              </td>
-              <td><input id="repeats" name="repeats"
-                       type="checkbox" value="1" <?php if(isset($event)&&$event->repeats!=0) {echo "checked";} ?>/><?php echo xlt('Repeats'); ?></td>
-              
-              <td>
-                <span style="padding-right:5px">
-                  <input class="easyui-combobox" style="width:60px" data-options="
-                                      valueField: 'value',
-                                      textField: 'label',
-                                      editable:false,
-                                      data: [{
-                                        label: 'Every',
-                                        value: '1',
-                                        selected:true,
-                                      },{
-                                        label: '2nd',
-                                        value: '2'
-                                      },{
-                                        label: '3rd',
-                                        value: '3'
-                                      },{
-                                        label: '4th',
-                                        value: '4'
-                                      },{
-                                        label: '5th',
-                                        value: '5'
-                                      },{
-                                        label: '6th',
-                                        value: '6'
-                                      },]" />
-                
-                
-                  <input class="easyui-combobox" style="width:60px" data-options="
-                                      valueField: 'value',
-                                      textField: 'label',
-                                      editable:false,
-                                      data: [{
-                                        label: 'Day',
-                                        value: '0',
-                                        selected:true,
-                                      },{
-                                        label: 'Workday',
-                                        value: '1'
-                                      },{
-                                        label: 'Week',
-                                        value: '2'
-                                      },{
-                                        label: 'Month',
-                                        value: '3'
-                                      },{
-                                        label: 'Year',
-                                        value: '4'
-                                      },{
-                                        label: '?',
-                                        value: '5'
-                                      },{
-                                        label: '?',
-                                        value: '6'
-                                      },]" />
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Status'); ?></td>
-              <td>
-                <input class="easyui-combobox" data-options="
-																editable:false,
-																valueField: 'value',
-																textField: 'label',
-																url:'./getStatus'" />
-              </td>
-              <td><?php echo xlt('Until'); ?></td>
-              <td><input id="dtUntil" type="text" class="easyui-datebox" data-options="editable:false"></td>
-            </tr>
-            <tr>
-              <td><?php echo xlt('Comments'); ?></td>
-              <td>
-                <textarea name="comments" rows='5' cols='10'
-                                                class="easyui-validatebox combo validatebox-text"
-                                                style="height:40px; width:60%" ></textarea>
-              </td>
-              <td colspan='2'></td>
-            </tr>
-            -->
           </table>
-          
-        
-          <!--
-          <label>                    
-            <span>*Subject:</span>                    
-              <div id="calendarcolor"></div>
-              <input MaxLength="200" class="required safe" id="Subject" name="Subject" style="width:85%;" type="text" value="<?php echo isset($event)?$event->Subject:"" ?>" />                     
-              <input id="colorvalue" name="colorvalue" type="hidden" value="<?php echo isset($event)?$event->Color:"" ?>" />                
-          </label>                 
-          <label>                    
-            <span>*Time:</span>                    
-            <div>  
-              <?php if(isset($event)){
-                $sarr = explode(" ", php2JsTime(mySql2PhpTime($event->StartTime)));
-                $earr = explode(" ", php2JsTime(mySql2PhpTime($event->EndTime)));
-              }?>                    
-              <input MaxLength="10" class="required date" id="stpartdate" name="stpartdate" style="padding-left:2px;width:90px;" type="text" value="<?php echo isset($event)?$sarr[0]:""; ?>" />                       
-              <input MaxLength="5" class="required time" id="stparttime" name="stparttime" style="width:40px;" type="text" value="<?php echo isset($event)?$sarr[1]:""; ?>" />To                       
-              <input MaxLength="10" class="required date" id="etpartdate" name="etpartdate" style="padding-left:2px;width:90px;" type="text" value="<?php echo isset($event)?$earr[0]:""; ?>" />                       
-              <input MaxLength="50" class="required time" id="etparttime" name="etparttime" style="width:40px;" type="text" value="<?php echo isset($event)?$earr[1]:""; ?>" />                                            
-              <label class="checkp"> 
-                <input id="IsAllDayEvent" name="IsAllDayEvent" type="checkbox" value="1" <?php if(isset($event)&&$event->IsAllDayEvent!=0) {echo "checked";} ?>/>          All Day Event                      
-              </label>                    
-            </div>                
-          </label>                 
-          <label>                    
-            <span>Location:</span>                    
-            <input MaxLength="200" id="Location" name="Location" style="width:95%;" type="text" value="<?php echo isset($event)?$event->Location:""; ?>" />                 
-          </label>                 
-          <label>                    
-            <span>Remark:</span>                    
-            <textarea cols="20" id="Description" name="Description" rows="2" style="width:95%; height:70px">
-              <?php echo isset($event)?$event->Description:""; ?>
-            </textarea>                
-          </label>                
-            <input id="timezone" name="timezone" type="hidden" value="" />
-           -->
-          </form>         
+         </form>         
         </div>         
       </div>
     </div>
@@ -709,15 +574,15 @@
       <div class="infocontainer"
            style="width:98%;height:auto;background:#fafafa;padding:5px;margin-top:5px;margin-bottom:15px;
            border:1px solid #95B8E7; box-shadow: 10px 10px 5px #E0E0EB;">
-        <form>
+        <form action="./dataFeed?method=adddetails&formtype=provider<?php //echo isset($event)?"&id=".$event->Id:""; ?>" class="fform" id="fmEdit2" method="post">
           <table  width='100%' border='0'>
               <tr>
                 <td width='50%'>
                   <table width='100%' style="height:275px;padding:10px;border:1px solid #95B8E7;">
-                    <tr>
+                    <!--<tr>
                       <td><?php echo xlt('Color Picker'); ?></td>
                       <td colspan='3'><div id="calendarcolor" style="width:50px"></div></td>
-                    </tr>
+                    </tr>-->
                     <tr>
                       <td><?php echo xlt('Category'); ?></td>
                       <td>
@@ -792,7 +657,7 @@
                         <table width='100%' border='0' style="height:134px;padding:10px;border:1px solid #95B8E7;">
                           <tr>
                             <td colspan='4'>
-                              <input id="IsAllDayEvent" name="IsAllDayEvent"
+                              <input id="IsAllDayEvent2" name="IsAllDayEvent2"
                                      type="checkbox" value="1" <?php if(isset($event)&&$event->IsAllDayEvent!=0) {echo "checked";} ?>/> <?php echo xlt('All day event'); ?>
                             </td>
                           </tr>
@@ -964,11 +829,11 @@
             rownumbers="true" fitColumns="true" singleSelect="true">  
         <thead>  
             <tr> 
-                <th field="name" width="50"><?php echo xlt('Name'); ?></th>	
-                <th field="phone_home" width="50"><?php echo xlt('Phone'); ?></th>  
-                <th field="ss" width="50"><?php echo xlt('SS'); ?></th>  
-                <th field="DOB" width="50"><?php echo xlt('DOB'); ?></th>
-                <th field="id" width="50"><?php echo xlt('ID'); ?></th> 
+              <th field="name" width="50"><?php echo xlt('Name'); ?></th>	
+              <th field="phone_home" width="50"><?php echo xlt('Phone'); ?></th>  
+              <th field="ss" width="50"><?php echo xlt('SS'); ?></th>  
+              <th field="DOB" width="50"><?php echo xlt('DOB'); ?></th>
+              <th field="id" width="50"><?php echo xlt('ID'); ?></th> 
             </tr>  
         </thead>  
     </table>
