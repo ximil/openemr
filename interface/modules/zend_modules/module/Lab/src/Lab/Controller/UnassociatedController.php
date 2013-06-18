@@ -59,11 +59,11 @@ class UnassociatedController extends AbstractActionController
     global $pid;
     $request = $this->getRequest();
     $response = $this->getResponse();
-    if(!$pid){
-      return $response->setContent(\Zend\Json\Json::encode(array('error' => 'You must select a patient')));
-    }
     if ($request->isPost()) {
       if($request->getPost()->type == 'attachToCurrentPatient'){
+        if(!$pid){
+          return $response->setContent(\Zend\Json\Json::encode(array('error' => 'You must select a patient')));
+        }
         require(dirname(__FILE__)."/../../../../../../../../controllers/C_Document.class.php");
         $_POST['process'] = true;
         $file_path = $GLOBALS['OE_SITE_DIR']."/lab/unassociated_result/".$request->getPost()->file_name;

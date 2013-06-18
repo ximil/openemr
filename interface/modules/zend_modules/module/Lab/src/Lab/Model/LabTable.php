@@ -29,12 +29,15 @@ class LabTable extends AbstractTableGateway
      */
     
     public function listPatientLabOrders()
-    {	global $pid;
+    {
+      global $pid;
+      global $encounter;
+      
 	$sql = "SELECT po.date_ordered, po.procedure_order_id, po.ord_group  
 			FROM procedure_order po 
-			WHERE po.patient_id='$pid' ORDER BY po.ord_group DESC, po.procedure_order_id DESC" ;
+			WHERE po.patient_id=? AND encounter_id=? ORDER BY po.ord_group DESC, po.procedure_order_id DESC" ;
 
-	$result = sqlStatement($sql);
+	$result = sqlStatement($sql, array($pid, $encounter));
 	$arr 	= array();
 	$i 	= 0;
 	while ($row = sqlFetchArray($result)) {

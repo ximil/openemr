@@ -30,9 +30,24 @@ function HideTheAjaxDivs(){
 }
 function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
 //	alert(ProcedureCode+"-"+procedure+"-"+count);
-	$('#procedures_' + count).focus();
+	
+  var listprocode = $('#procedure_list').val();
+  arrprocode = listprocode.split("|");
+  cnt = 0;
+  for(var i=0;i<arrprocode.length;i++){
+  if(arrprocode[i]==ProcedureCode)
+  cnt++;
+  }
+  if(cnt>0)
+  {
+    alert("Already used this procedure");
+    $('#procedure_code_'+count).val("");
+  }
+  else{
+    $('#procedures_' + count).focus();
 	$('#procedures_' + count).val(procedure);
 	$('#procedure_code_'+count).val(ProcedureCode);
+  $('#procedure_list').val($('#procedure_list').val()+"|"+ProcedureCode);
 	$('#procedure_suffix_'+count).val(suffix);
 //	alert($('#procedures_' + count).val());
 //  alert($('#procedure_code_' + count).val());
@@ -76,6 +91,7 @@ function loadAoeQuest(labval,ProcedureCode,procedure,count,suffix,ordercnt){
 		console.log('could not add');
 	    }
 	}, 'json');
+  }
 }
 function checkLab(labval, id){
 	var arrId = id.split('lab_id_');

@@ -9,6 +9,7 @@ use Zend\Json\Json;
 use Zend\Soap\Client;
 use Zend\Config;
 use Zend\Config\Reader;
+use CouchDB;
 
 class ResultController extends AbstractActionController
 {
@@ -350,10 +351,12 @@ class ResultController extends AbstractActionController
     
     public function getLabResultPDFAction()
     {
+        global $pid;
         $site_dir           			= $GLOBALS['OE_SITE_DIR'];        
         $result_dir         			= $site_dir."/lab/result/";
 				$unassociated_result_dir  = $site_dir."/lab/unassociated_result/";
         $result             			= array();
+        require(dirname(__FILE__)."/../../../../../../../../library/classes/CouchDB.class.php");
         $request = $this->getRequest();
 				if($request->isPost()) {
 						$data   = array('procedure_order_id'    => $request->getPost('order_id'));
@@ -406,45 +409,24 @@ class ResultController extends AbstractActionController
 										}else { //IF THE RESULT RETURNS VALID OUTPUT
 												//if($curr_status <> "final" || $labresultfile == "") { //IF DOESN'T HAVE RESULT FILE
 												
-												
-														/*$couchDB = false;
-														$harddisk = false;
-														if($GLOBALS['document_storage_method']==0){
-															$harddisk = true;
-														}
-														if($GLOBALS['document_storage_method']==1){
-															$couchDB = true;
-														}
-														if($couchDB == true){
+														if($GLOBALS['document_storage_method'] == 1){
 															$couch = new CouchDB();
-															error_log("aaa:inside");
-															$docname = $_SESSION['authId'].$patient_id.$encounter.$fname.date("%Y-%m-%d H:i:s");
-															$docid = $couch->stringToId($docname);
-															$tmpfile = fopen( $_FILES['file']['tmp_name'][$key], "rb" );
-															$filetext = fread( $tmpfile, $_FILES['file']['size'][$key] );				
-															fclose( $tmpfile );
-															//--------Temporarily writing the file for calculating the hash--------//
-															//-----------Will be removed after calculating the hash value----------//
-															$temp_file = fopen($this->file_path.$fname,"w");
-															fwrite($temp_file,$filetext);
-															fclose($temp_file);
-															//---------------------------------------------------------------------//
-															
-															$json = json_encode(base64_encode($filetext));
+															$docname = $_SESSION['authId'].$pid.date("%Y-%m-%d H:i:s");
+															$labresultfile = $couch->stringToId($docname);
+															$json = json_encode($result['content']);
 															$db = $GLOBALS['couchdb_dbase'];
-															$data = array($db,$docid,$patient_id,$encounter,$_FILES['file']['type'][$key],$json);
-															$resp = $couch->check_saveDOC($data);
+															$docdata = array($db,$labresultfile,$pid,'','application/pdf',$json);
+															$resp = $couch->check_saveDOC($docdata);
 															if(!$resp->id || !$resp->_rev){
-																$data = array($db,$docid,$patient_id,$encounter);
-																$resp = $couch->retrieve_doc($data);
-																$docid = $resp->_id;
+																$docdata = array($db,$labresultfile,$pid,'');
+																$resp = $couch->retrieve_doc($docdata);
+																$labresultfile = $resp->_id;
 																$revid = $resp->_rev;
-															}
-															else{
-																$docid = $resp->id;
+															}else{
+																$labresultfile = $resp->id;
 																$revid = $resp->rev;
 															}
-															if(!$docid && !$revid){ //if couchdb save failed
+															if(!$labresultfile && !$revid){ //if couchdb save failed
 																$error .=  "<font color='red'><b>".xl("The file could not be saved to CouchDB.") . "</b></font>\n";
 																if($GLOBALS['couchdb_log']==1){
 																	ob_start();
@@ -452,33 +434,25 @@ class ResultController extends AbstractActionController
 																	$couchError=ob_get_clean();
 																	$log_content = date('Y-m-d H:i:s')." ==> Uploading document: ".$fname."\r\n";
 																	$log_content .= date('Y-m-d H:i:s')." ==> Failed to Store document content to CouchDB.\r\n";
-																	$log_content .= date('Y-m-d H:i:s')." ==> Document ID: ".$docid."\r\n";
-																	$log_content .= date('Y-m-d H:i:s')." ==> ".print_r($data,1)."\r\n";
+																	$log_content .= date('Y-m-d H:i:s')." ==> Document ID: ".$labresultfile."\r\n";
+																	$log_content .= date('Y-m-d H:i:s')." ==> ".print_r($docdata,1)."\r\n";
 																	$log_content .= $couchError;
 																	$this->document_upload_download_log($patient_id,$log_content);//log error if any, for testing phase only
 																}
 															}			
 														}														
-														if($harddisk == true){
-															$uploadSuccess = false;
-															if(move_uploaded_file($_FILES['file']['tmp_name'][$key],$this->file_path.$fname)){
-																$uploadSuccess = true;
-															}
-															else{
-																$error .= xl("The file could not be succesfully stored, this error is usually related to permissions problems on the storage system")."\n";
-															}
-														}*/
-														
-														
-														$labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
-														if (!is_dir($result_dir)) {
-																mkdir($result_dir,0777,true);
+														if($GLOBALS['document_storage_method'] == 0){
+															$labresultfile  = "labresult_".gmdate('YmdHis').".pdf";
+                              if (!is_dir($result_dir)) {
+                                  mkdir($result_dir,0777,true);
+                              }
+                              $fp = fopen($result_dir.$labresultfile,"wb");
+                              fwrite($fp,base64_decode($result['content']));
 														}
-														$fp = fopen($result_dir.$labresultfile,"wb");
-														fwrite($fp,base64_decode($result['content']));
+
 														//PULING RESULT DETAILS INTO THE OPENEMR TABLES
 														$this->getLabResultDetails($data['procedure_order_id']);
-														$status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],$stresult['status'],$labresultfile);
+														$status_res = $this->getResultTable()->changeOrderResultStatus($data['procedure_order_id'],$stresult['status'],$labresultfile,$revid,$GLOBALS['document_storage_method']);
                             $unassociated_arr = array();
 														if (!is_dir($unassociated_result_dir)) {
 																mkdir($unassociated_result_dir,0777,true);
@@ -487,13 +461,15 @@ class ResultController extends AbstractActionController
 																$labresultunassocfile  = "labresult_unassociated_".gmdate('YmdHis').".pdf";
 																$fp = fopen($unassociated_result_dir.$labresultunassocfile,"wb");
 																fwrite($fp,base64_decode($ur['content']));
-																$sql_unassoc = "INSERT INTO procedure_result_unassociated(patient_name,file_location) VALUES (?,?)";
-																$sql_unassoc_arr = array($ur['patient_name'],$labresultunassocfile);
+																$sql_unassoc = "INSERT INTO procedure_result_unassociated(patient_name,file_order_id,file_location) VALUES (?,?,?)";
+																$sql_unassoc_arr = array($ur['patient_name'],$ur['order_id'],$labresultunassocfile);
 																$this->getResultTable()->insertQuery($sql_unassoc,$sql_unassoc_arr);
                                 array_push($unassociated_arr,$ur['id']);
 														}
                             $client->updateUnassociatedResult($username,$password,$site_dir,$unassociated_arr);
-												//}
+												//}else{
+                          //code for retrieving existing document
+                        //}
 												$return[0]  = array('return' => 0, 'order_id' => $data['procedure_order_id']);
 												$arr        = new JsonModel($return);
 												return $arr;
@@ -513,10 +489,42 @@ class ResultController extends AbstractActionController
             while(ob_get_level()) {
                 ob_end_clean();
             }
-            header('Content-Disposition: attachment; filename='.$labresultfile );
-            header("Content-Type: application/octet-stream" );
-            header("Content-Length: " . filesize( $result_dir.$labresultfile ) );
-            readfile( $result_dir.$labresultfile );
+            
+            if($GLOBALS['document_storage_method'] == 1){
+              $labresultfilename  = "labresult_".gmdate('YmdHis').".pdf";
+              $couch = new CouchDB();
+              $resdocdata = array($GLOBALS['couchdb_dbase'],$labresultfile);
+              $resp = $couch->retrieve_doc($resdocdata);
+              $content = $resp->data;
+              if($content=='' && $GLOBALS['couchdb_log']==1){				
+                $log_content = date('Y-m-d H:i:s')." ==> Retrieving document\r\n";
+                $log_content = date('Y-m-d H:i:s')." ==> URL: ".$url."\r\n";
+                $log_content .= date('Y-m-d H:i:s')." ==> CouchDB Document Id: ".$couch_docid."\r\n";
+                $log_content .= date('Y-m-d H:i:s')." ==> CouchDB Revision Id: ".$couch_revid."\r\n";
+                $log_content .= date('Y-m-d H:i:s')." ==> Failed to fetch document content from CouchDB.\r\n";
+                $log_content .= date('Y-m-d H:i:s')." ==> Will try to download file from HardDisk if exists.\r\n\r\n";
+                $this->document_upload_download_log($d->get_foreign_id(),$log_content);
+                die(xl("File retrieval from CouchDB failed"));
+              }
+              if (!is_dir($GLOBALS['OE_SITE_DIR'].'/documents/temp/')) {
+                  mkdir($GLOBALS['OE_SITE_DIR'].'/documents/temp/',0777,true);
+              }
+              $tmpcouchpath = $GLOBALS['OE_SITE_DIR'].'/documents/temp/couch_'.date("YmdHis").$labresultfilename;
+              $fh = fopen($tmpcouchpath,"w");
+              fwrite($fh,base64_decode($content));
+              fclose($fh);
+              header('Content-Disposition: attachment; filename='.$labresultfilename );
+              header("Content-Type: application/octet-stream" );
+              header("Content-Length: " . filesize($tmpcouchpath));
+              readfile($tmpcouchpath);
+              unlink($tmpcouchpath);
+            }
+            if($GLOBALS['document_storage_method'] == 0){
+              header('Content-Disposition: attachment; filename='.$labresultfile );
+              header("Content-Type: application/octet-stream" );
+              header("Content-Length: " . filesize( $result_dir.$labresultfile ) );
+              readfile( $result_dir.$labresultfile );
+            }
             return false;
         }
     }

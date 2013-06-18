@@ -643,17 +643,17 @@ class ResultTable extends AbstractTableGateway
 	return $res_cred;        
     }
     
-    public function changeOrderResultStatus($proc_order_id,$status,$file_name)
+    public function changeOrderResultStatus($proc_order_id,$status,$file_name,$rev_id,$storage_method)
     {
-	$sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ? WHERE procedure_order_id = ? ";        
-	$status_value_arr   = array();
-        
+        $sql_status         = "UPDATE procedure_order SET order_status = ?, result_file_url = ?, couch_rev_id = ? , storage_type = ? WHERE procedure_order_id = ? ";        
+        $status_value_arr   = array();
         $status_value_arr['status']             = $status;
         $status_value_arr['result_file_url']    = $file_name;
-	$status_value_arr['procedure_order_id'] = $proc_order_id;
-        
-	$res_status   = sqlQuery($sql_status,$status_value_arr);	
-	return $res_status;        
+        $status_value_arr['couch_rev_id'] = $rev_id;
+        $status_value_arr['storage_type'] = $storage_method;
+      	$status_value_arr['procedure_order_id'] = $proc_order_id;
+      	$res_status   = sqlQuery($sql_status,$status_value_arr);	
+        return $res_status;        
     }
     
     public function getOrderRequisitionFile($proc_order_id)
