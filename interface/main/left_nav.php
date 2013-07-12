@@ -1144,6 +1144,12 @@ if ($GLOBALS['athletic_team']) {
       <?php genMiscLink('RTop','fin','0',xl('Patients'),'main/finder/dynamic_finder.php'); ?>
       <?php genTreeLink('RTop','new',($GLOBALS['full_new_patient_form'] ? xl('New/Search') : xl('New'))); ?>
       <?php genTreeLink('RTop','dem',xl('Summary')); ?>
+      <li class="collapsed" ><a class="collapsed_lv2"><span><?php echo xlt('CCR Import') ?></span></a>
+        <ul>
+          <?php genMiscLink('RTop','ccr','0',xlt('Upload'),'patient_file/ccr_import.php'); ?>
+          <?php genMiscLink('RTop','apr','0',xlt('Pending Approval'),'patient_file/ccr_pending_approval.php'); ?>
+        </ul>
+      </li>
       <li class="open"><a class="expanded_lv2"><span><?php xl('Visits','e') ?></span></a>
         <ul>
           <?php if ($GLOBALS['ippf_specific'] && !$GLOBALS['disable_calendar']) genTreeLink('RTop','cal',xl('Calendar')); ?>
