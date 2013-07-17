@@ -403,10 +403,15 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
 
 <p>
  <input type='submit' name='form_save' value='<?php xl('Save','e'); ?>' />
+ </form>
+ <form>
+<input type='submit' name='form_save' value='<?php xl('Download Offsite Portal Connection Files','e'); ?>' />
+</form>
+ 
 </p>
 </center>
 
-</form>
+
 
 </body>
 
