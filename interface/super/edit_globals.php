@@ -105,7 +105,7 @@ if ($_POST['form_download']) {
   $grpID = sqlInsert("INSERT INTO audit_master SET type=5");
   sqlStatement("INSERT INTO audit_details SET field_value=? , audit_master_id=? ",array($randkey,$grpID));
  
-  $credentials 	= array($_SESSION['site_id'],$GLOBALS['portal_offsite_username'],$password,$randkey);
+  $credentials 	= array($GLOBALS['portal_offsite_username'],$password,$randkey);
     
   //CALLING WEBSERVICE ON THE PATIENT-PORTAL 
   $client 	= new SoapClient(null, array(
