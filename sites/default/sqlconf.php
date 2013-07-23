@@ -6,7 +6,7 @@ $host	= 'localhost';
 $port	= '3306';
 $login	= 'openemr';
 $pass	= 'openemr';
-$dbase	= 'openemrQuest';
+$dbase	= 'openemr';
 
 //Added ability to disable
 //utf8 encoding - bm 05-2009
