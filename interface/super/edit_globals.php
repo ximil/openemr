@@ -82,7 +82,7 @@ if ($_POST['form_save'] && $_GET['mode'] == "user") {
   echo "</script>";
 }
 
-if ($_POST['form_download']) {
+if ($_POST['form_download']) {  
     
   $password 	= $GLOBALS['portal_offsite_password'];
   $randkey	= '';
@@ -140,12 +140,14 @@ if ($_POST['form_download']) {
     fwrite($fp,base64_decode($response['value']));
     fclose($fp);
     
+    $practice_filename	= $response['file_name'];//practicename.zip
+    
     ob_clean();
     
     // Set headers
     header("Cache-Control: public");
     header("Content-Description: File Transfer");
-    header("Content-Disposition: attachment; filename=testzip.zip");
+    header("Content-Disposition: attachment; filename=".$practice_filename);
     header("Content-Type: application/zip");
     header("Content-Transfer-Encoding: binary");
    
