@@ -26,4 +26,9 @@ $v_database = 96;
 // upgrade and track this value)
 //
 $v_acl = 2;
+
+// Offsite Patientportal Version identifier . The offsite portal is using this
+// to determine how the calls to be made. Portal server is making the calls according to the version.
+
+$v_offsite_portal=1.46;
 ?>
