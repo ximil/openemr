@@ -97,23 +97,25 @@ html_header_show();
 // If we are saving user_specific globals.
 //
 if ($_POST['form_save'] && $_GET['mode'] == "user") {
+     
   $i = 0;
   foreach ($GLOBALS_METADATA as $grpname => $grparr) {
     if (in_array($grpname, $USER_SPECIFIC_TABS)) {
       foreach ($grparr as $fldid => $fldarr) {
-        if (in_array($fldid, $USER_SPECIFIC_GLOBALS)) {
-          list($fldname, $fldtype, $flddef, $flddesc) = $fldarr;
-          $label = "global:".$fldid;
-          $fldvalue = trim(strip_escape_custom($_POST["form_$i"]));
-          setUserSetting($label,$fldvalue,$_SESSION['authId'],FALSE);
-          if ( $_POST["toggle_$i"] == "YES" ) {
-            removeUserSetting($label);
-          }
-          ++$i;
-        }
+	if (in_array($fldid, $USER_SPECIFIC_GLOBALS)) {
+	  list($fldname, $fldtype, $flddef, $flddesc) = $fldarr;
+	  $label = "global:".$fldid;
+	  $fldvalue = trim(strip_escape_custom($_POST["form_$i"]));
+	  setUserSetting($label,$fldvalue,$_SESSION['authId'],FALSE);
+	  if ( $_POST["toggle_$i"] == "YES" ) {
+	    removeUserSetting($label);
+	  }
+	  ++$i;
+	}
       }
     }
-  }
+  }  
+  
   echo "<script type='text/javascript'>";
   echo "parent.left_nav.location.reload();";
   echo "parent.Title.location.reload();";
@@ -126,10 +128,99 @@ if ($_POST['form_save'] && $_GET['mode'] == "user") {
   echo "</script>";
 }
 
+if ($_POST['form_download']) {  
+    
+  $password 	= $GLOBALS['portal_offsite_password'];
+  $randkey	= '';
+  
+  $timminus = date("Y-m-d H:m",(strtotime(date("Y-m-d H:m"))-7200)).":00";
+  
+  sqlStatement("DELETE FROM audit_details WHERE audit_master_id IN(SELECT id FROM audit_master WHERE type=5 AND created_time<=?)",array($timminus));
+  sqlStatement("DELETE FROM audit_master WHERE type=5 AND created_time<=?",array($timminus));
+  
+  do{
+      $randkey 	= substr(md5(rand().rand()), 0, 8);
+      
+      $res 	= sqlStatement("SELECT * FROM audit_details WHERE field_value = '".$randkey."' ");
+      $cnt 	= sqlNumRows($res);
+  }
+  while($cnt>0);
+ 
+  $password 	= sha1($password.gmdate("Y-m-d H").$randkey);
+  
+  $grpID = sqlInsert("INSERT INTO audit_master SET type=5");
+  sqlStatement("INSERT INTO audit_details SET field_value=? , audit_master_id=? ",array($randkey,$grpID));
+ 
+  $credentials 	= array($GLOBALS['portal_offsite_username'],$password,$randkey);
+    
+  //CALLING WEBSERVICE ON THE PATIENT-PORTAL 
+  $client 	= new SoapClient(null, array(
+					  'location' => $GLOBALS['portal_offsite_address_patient_link']."/webservice/webserver.php",
+					  'uri'      => "urn://portal/req"
+					)
+			    );
+  
+  try {
+    $response = $client->getPortalConnectionFiles($credentials);
+  }
+  catch(SoapFault $e){
+    echo "<br> SoapFault Error :<br>";
+    var_dump(get_object_vars($e));
+  }
+  catch(Exception $e){
+    echo "<br> Exception Error :<br>";
+    var_dump(get_object_vars($e));
+  }
+
+  /*echo "<br> Response :<br>";
+  echo "<pre>";
+  print_r($response);
+  echo "<pre>";
+  exit;*/
+    
+  if($response['status'] == "1") {//WEBSERVICE RETURNED VALUE SUCCESSFULLY
+    
+    $tmpfilename	= realpath(sys_get_temp_dir())."/".date('YmdHis').".zip";  
+
+    $fp	= fopen($tmpfilename,"wb");
+    fwrite($fp,base64_decode($response['value']));
+    fclose($fp);
+    
+    $practice_filename	= $response['file_name'];//practicename.zip
+    
+    ob_clean();
+    
+    // Set headers
+    header("Cache-Control: public");
+    header("Content-Description: File Transfer");
+    header("Content-Disposition: attachment; filename=".$practice_filename);
+    header("Content-Type: application/zip");
+    header("Content-Transfer-Encoding: binary");
+   
+    // Read the file from disk
+    readfile($tmpfilename);
+   
+    unlink($tmpfilename);
+    
+    exit;
+  }
+  else{//WEBSERVICE CALL FAILED AND RETURNED AN ERROR MESSAGE
+    echo "<br>Web Service Failed :<br>".$response['value'];
+  } 
+  
+  exit;
+}
+?>
+<html>
+<head>
+<?php
+
+html_header_show();
 // If we are saving main globals.
 //
 if ($_POST['form_save'] && $_GET['mode'] != "user") {
-
+   
+  
   $i = 0;
   foreach ($GLOBALS_METADATA as $grpname => $grparr) {
     foreach ($grparr as $fldid => $fldarr) {
@@ -141,28 +232,28 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
       sqlStatement("DELETE FROM globals WHERE gl_name = '$fldid'");
 
       if (substr($fldtype, 0, 2) == 'm_') {
-        if (isset($_POST["form_$i"])) {
-          $fldindex = 0;
-          foreach ($_POST["form_$i"] as $fldvalue) {
-            $fldvalue = formDataCore($fldvalue, true);
-            sqlStatement("INSERT INTO globals ( gl_name, gl_index, gl_value ) " .
-              "VALUES ( '$fldid', '$fldindex', '$fldvalue' )");
-            ++$fldindex;
-          }
-        }
+	if (isset($_POST["form_$i"])) {
+	  $fldindex = 0;
+	  foreach ($_POST["form_$i"] as $fldvalue) {
+	    $fldvalue = formDataCore($fldvalue, true);
+	    sqlStatement("INSERT INTO globals ( gl_name, gl_index, gl_value ) " .
+	      "VALUES ( '$fldid', '$fldindex', '$fldvalue' )");
+	    ++$fldindex;
+	  }
+	}
       }
       else {
-        if (isset($_POST["form_$i"])) {
-          $fldvalue = formData("form_$i", "P", true);
-        }
-        else {
-          $fldvalue = "";
-        }
-        if($fldtype=='pwd')
-          $fldvalue = $fldvalue ? SHA1($fldvalue) : $fldvalueold;
+	if (isset($_POST["form_$i"])) {
+	  $fldvalue = formData("form_$i", "P", true);
+	}
+	else {
+	  $fldvalue = "";
+	}
+	if($fldtype=='pwd')
+	  $fldvalue = $fldvalue ? SHA1($fldvalue) : $fldvalueold;
 		  if(fldvalue){
 		  sqlStatement("INSERT INTO globals ( gl_name, gl_index, gl_value ) " .
-          "VALUES ( '$fldid', '0', '$fldvalue' )");
+	  "VALUES ( '$fldid', '0', '$fldvalue' )");
 		  }
       }
 
@@ -183,7 +274,6 @@ if ($_POST['form_save'] && $_GET['mode'] != "user") {
   echo "</script>";
 }
 ?>
-
 <!-- supporting javascript code -->
 <script type="text/javascript" src="../../library/dialog.js"></script>
 <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
@@ -442,10 +532,23 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
 
 <p>
  <input type='submit' name='form_save' value='<?php xl('Save','e'); ?>' />
+ </form>
+  
+  
+
+
+  <?php if ($_GET['mode'] == "user") { ?>
+  <form id='download_form' name='download_form' method="post" action="edit_globals.php?mode=user&task='download'">
+  <?php } else { ?>
+  <form id='download_form' name='download_form' method="post" action="edit_globals.php?task='download'">
+  <?php } ?>
+    <input type='submit' name='form_download' value='<?php xl('Download Offsite Portal Connection Files','e'); ?>' />
+  </form>
+ 
 </p>
 </center>
 
-</form>
+
 
 </body>
 
@@ -475,4 +578,3 @@ $(document).ready(function(){
 </script>
 
 </html>
-
