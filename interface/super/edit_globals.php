@@ -109,7 +109,7 @@ if ($_POST['form_download']) {
     
   //CALLING WEBSERVICE ON THE PATIENT-PORTAL 
   $client 	= new SoapClient(null, array(
-					  'location' => "https://ssh.mydocsportal.com/webservice/webserver.php",
+					  'location' => $GLOBALS['portal_offsite_address_patient_link']."/webservice/webserver.php",
 					  'uri'      => "urn://portal/req"
 					)
 			    );
