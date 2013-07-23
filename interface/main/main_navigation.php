@@ -137,12 +137,12 @@ include_once("../../library/acl.inc");
 <?php } ?>
 
 <td align="center" nowrap>
-&nbsp;<a href="../logout.php?auth=logout" target="_top" class="menu" onclick="top.restoreSession()">
+&nbsp;<a href="../logout.php" target="_top" class="menu" onclick="top.restoreSession()">
 <?php xl('Logout','e'); ?></a>&nbsp;&nbsp;
 </td>
 
 <td align="center" nowrap>
-&nbsp;<a href="http://open-emr.org/wiki/index.php/OpenEMR_4.1.1_Users_Guide" target="_blank" class="menu"> 
+&nbsp;<a href="http://open-emr.org/wiki/index.php/OpenEMR_4.1.2_Users_Guide" target="_blank" class="menu"> 
 <?php xl('Manual','e'); ?></a>&nbsp;&nbsp;
 </td>
 

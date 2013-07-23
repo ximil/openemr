@@ -39,6 +39,7 @@
 //   Hindi                          // xl('Hindi')
 //   Hungarian                      // xl('Hungarian')
 //   Italian                        // xl('Italian')
+//   Lithuanian                     // xl('Lithuanian')
 //   Norwegian                      // xl('Norwegian')
 //   Persian                        // xl('Persian')
 //   Polish                         // xl('Polish')
@@ -265,6 +266,16 @@ $GLOBALS_METADATA = array(
       xl('Default state of New Window checkbox in the patient list.')
     ),
 
+    'gbl_vitals_options' => array(
+      xl('Vitals Form Options'),
+      array(
+        '0' => xl('Standard'),
+        '1' => xl('Omit circumferences'),
+      ),
+      '0',                              // default
+      xl('Special treatment for the Vitals form')
+    ),
+
   ),
 
   // Locale Tab
@@ -437,7 +448,20 @@ $GLOBALS_METADATA = array(
       '$',                              // default
       xl('Code or symbol to indicate currency')
     ),
-
+    'age_display_format'=>array(xl('Age Display Format'),
+        array(
+            '0'=>xl('Years or months'),
+            '1'=>xl('Years, months and days')
+            ),
+            '0',
+            xl('Format for age display')
+    ),
+    'age_display_limit' => array(
+      xl('Age in Years for Display Format Change'),
+      'num',
+      '3',
+      xl('If YMD is selected for age display, switch to just Years when patients older than this value in years')
+    ),      
   ),
 
   // Features Tab
@@ -788,7 +812,13 @@ $GLOBALS_METADATA = array(
       '0',                              // default
       xl('Means none of last three passwords are allowed when changing a password.')
     ),
-
+    'password_compatibility' => array(
+      xl('Permit unsalted passwords'),
+      'bool',                           // data type
+      '1',                              // default
+      xl('After migration from the old password mechanisms where passwords are stored in the users table without salt is complete, this flag should be set to false so that only authentication by the new method is possible')
+    ),
+      
     'password_expiration_days' => array(
       xl('Default Password Expiration Days'),
       'num',                            // data type
@@ -1412,70 +1442,70 @@ $GLOBALS_METADATA = array(
       xl('Enable Lab Exchange'),
       'bool',                           // data type
       '0',
-      xl('Enable the OpenEMR Support LLC Lab Exchange Service.')
+      xl('Enable the Medical Information Integration, LLC Lab Exchange Service.')
     ),
 
     'lab_exchange_siteid' => array(
       xl('Lab Exchange Site ID'),
       'text',                           // data type
       '3',
-      xl('Site ID for the OpenEMR Support LLC Lab Exchange Service.')
+      xl('Site ID for the Medical Information Integration, LLC Lab Exchange Service.')
     ),
 
     'lab_exchange_token' => array(
       xl('Lab Exchange Token ID'),
       'text',                           // data type
       '12345',
-      xl('Token ID for the OpenEMR Support LLC Lab Exchange Service.')
+      xl('Token ID for the Medical Information Integration, LLC Lab Exchange Service.')
     ),
 
     'lab_exchange_endpoint' => array(
       xl('Lab Exchange Site Address'),
       'text',                           // data type
-      'https://openemrsupport.com:29443/len/api',
-      xl('Https link for the OpenEMR Support LLC Lab Exchange Service.')
+      'https://len.mi-squared.com:29443/len/api',
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com for Lab Exchange Service.')
     ),
     
     'erx_enable' => array(
       xl('Enable NewCrop eRx Service'),
       'bool',                           // data type
       '0',
-      xl('Enable ZMG, LLC eRx service')
+      xl('Enable NewCrop eRx Service')
     ),    
     
     'erx_path_production' => array(
       xl('NewCrop eRx Site Address'),
       'text',                           // data type
       'https://secure.newcropaccounts.com/InterfaceV7/RxEntry.aspx',
-      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com or ZH Healthcare at http://zhservices.com for subscribing the eRx service')
     ),
     
     'erx_path_soap_production' => array(
       xl('NewCrop eRx Web Service Address'),
       'text',                           // data type
       'https://secure.newcropaccounts.com/v7/WebServices/Update1.asmx?WSDL;https://secure.newcropaccounts.com/v7/WebServices/Patient.asmx?WSDL',
-      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com or ZH Healthcare at http://zhservices.com for subscribing the eRx service')
     ),
     
     'partner_name_production' => array(
       xl('NewCrop eRx Partner Name'),
       'text',                           // data type
       '',
-      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com or ZH Healthcare at http://zhservices.com for subscribing the eRx service')
     ),
     
     'erx_name_production' => array(
       xl('NewCrop eRx Name'),
       'text',                           // data type
       '',
-      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com or ZH Healthcare at http://zhservices.com for subscribing the eRx service')
     ),
     
     'erx_password_production' => array(
       xl('NewCrop eRx Password'),
       'pass',                           // data type
       '',
-      xl('Contact ZMG, LLC (zmghealth@gmail.com) for subscribing the eRx service')
+      xl('Contact Medical Information Integration, LLC at http://mi-squared.com or ZH Healthcare at http://zhservices.com for subscribing the eRx service')
     ),
     
     'erx_upload_active' => array(
@@ -1517,6 +1547,49 @@ $GLOBALS_METADATA = array(
         '',
         xl('Default Patient Country'),
     ),
+
+    'phimail_enable' => array(
+      xl('Enable phiMail Direct Messaging Service'),
+      'bool',                           // data type
+      '0',
+      xl('Enable phiMail Direct Messaging Service')
+    ),
+
+    'phimail_server_address' => array(
+      xl('phiMail Server Address'),
+      'text',                           // data type
+      'https://phimail.example.com:32541',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_username' => array(
+      xl('phiMail Username'),
+      'text',                           // data type
+      '',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_password' => array(
+      xl('phiMail Password'),
+      'pass',                           // data type
+      '',
+      xl('Contact EMR Direct to subscribe to the phiMail Direct messaging service')
+    ),
+
+    'phimail_notify' => array(
+      xl('phiMail notification user'),
+      'text',                           // data type
+      'admin',
+      xl('This user will receive notification of new incoming Direct messages')
+    ),
+
+    'phimail_interval' => array(
+      xl('phiMail Message Check Interval (minutes)'),
+      'num',                           // data type
+      '5',
+      xl('Interval between message checks (set to zero for manual checks only)')
+    )
+
   ),
   
   'Rx' => array(

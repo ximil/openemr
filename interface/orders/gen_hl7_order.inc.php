@@ -2,7 +2,7 @@
 /**
 * Functions to support HL7 order generation.
 *
-* Copyright (C) 2012 Rod Roark <rod@sunsetsystems.com>
+* Copyright (C) 2012-2013 Rod Roark <rod@sunsetsystems.com>
 *
 * LICENSE: This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -150,7 +150,7 @@ function gen_hl7_order($orderid, &$out) {
   $out = '';
 
   $porow = sqlQuery("SELECT " .
-    "po.date_collected, po.date_ordered, po.order_priority, po.diagnoses, " .
+    "po.date_collected, po.date_ordered, po.order_priority, " .
     "pp.*, " .
     "pd.pid, pd.pubpid, pd.fname, pd.lname, pd.mname, pd.DOB, pd.ss, " .
     "pd.phone_home, pd.phone_biz, pd.sex, pd.street, pd.city, pd.state, pd.postal_code, " .
@@ -165,13 +165,14 @@ function gen_hl7_order($orderid, &$out) {
     "pd.pid = f.pid AND " .
     "u.id = po.provider_id",
     array($orderid));
-  if (empty($porow)) return "Procedure order or lab is missing for order ID '$orderid'";
+  if (empty($porow)) return "Procedure order, ordering provider or lab is missing for order ID '$orderid'";
 
   $pcres = sqlStatement("SELECT " .
-    "pc.procedure_code, pc.procedure_name, pc.procedure_order_seq " .
+    "pc.procedure_code, pc.procedure_name, pc.procedure_order_seq, pc.diagnoses " .
     "FROM procedure_order_code AS pc " .
     "WHERE " .
-    "pc.procedure_order_id = ? " .
+    "pc.procedure_order_id = ? AND " .
+    "pc.do_not_send = 0 " .
     "ORDER BY pc.procedure_order_seq",
     array($orderid));
 
@@ -337,8 +338,8 @@ function gen_hl7_order($orderid, &$out) {
     // Diagnoses.  Currently hard-coded for ICD9 and we'll surely want to make
     // this more flexible (probably when some lab needs another diagnosis type).
     $setid2 = 0;
-    if (!empty($porow['diagnoses'])) {
-      $relcodes = explode(';', $porow['diagnoses']);
+    if (!empty($pcrow['diagnoses'])) {
+      $relcodes = explode(';', $pcrow['diagnoses']);
       foreach ($relcodes as $codestring) {
         if ($codestring === '') continue;
         list($codetype, $code) = explode(':', $codestring);

@@ -860,7 +860,7 @@ echo "  <td colspan='" . attr($FEE_SHEET_COLUMNS) . "' align='center' nowrap>\n"
 //
 $numrows = 0;
 if ($_POST['bn_search'] && $_POST['search_term']) {
-  $res = code_set_search($search_type,$_POST['search_term']);
+  $res = main_code_set_search($search_type,$_POST['search_term']);
   if (!empty($res)) {
     $numrows = sqlNumRows($res);
   }
@@ -897,16 +897,27 @@ echo " </tr>\n";
   </td>
   <td>
    <?php echo xlt('Search'); ?>&nbsp;
-  <select name='search_type'>
+  </td>
+  <td>
 <?php
+  $nofs_code_types = array();
   foreach ($code_types as $key => $value) {
     if (!empty($value['nofs'])) continue;
+    $nofs_code_types[$key] = $value;
+  }
+  $size_select = (count($nofs_code_types) < 5) ? count($nofs_code_types) : 5;
+?>
+  <select name='search_type' size='<?php echo attr($size_select) ?>'>
+<?php
+  foreach ($nofs_code_types as $key => $value) {
     echo "   <option value='" . attr($key) . "'";
     if ($key == $default_search_type) echo " selected";
     echo " />" . xlt($value['label']) . "</option>";
   }
 ?>
   </select>
+  </td>
+  <td>
    <?php echo xlt('for'); ?>&nbsp;
   </td>
   <td>
@@ -1223,7 +1234,7 @@ if (true) {
 <input type='submit' name='bn_save' value='<?php echo xla('Save');?>' />
 &nbsp;
 <?php if (!$hasCharges) { ?>
-<input type='submit' name='bn_save_close' value='<?php echo xla('Save and Close');?>' />
+<input type='submit' name='bn_save_close' value='<?php echo xla('Mark as Billed');?>' />
 &nbsp;
 <?php } ?>
 <input type='submit' name='bn_refresh' value='<?php echo xla('Refresh');?>'>
@@ -1251,6 +1262,6 @@ if (true) {
 <script language='JavaScript'>
 <?php echo $justinit; ?>
 </script>
-
 </body>
 </html>
+<?php require_once("review/initialize_review.php"); ?>

@@ -110,6 +110,7 @@ $(document).ready(function() {
    openNewTopWindow(newpid);
   }
   else {
+   top.restoreSession();
 <?php if ($GLOBALS['concurrent_layout']) { ?>
    document.location.href = "../../patient_file/summary/demographics.php?set_pid=" + newpid;
 <?php } else { ?>
@@ -121,14 +122,8 @@ $(document).ready(function() {
 });
 
 function openNewTopWindow(pid) {
-<?php if (!empty($GLOBALS['restore_sessions'])) { ?>
- // Delete the session cookie by setting its expiration date in the past.
- // This forces the server to create a new session ID.
- var olddate = new Date();
- olddate.setFullYear(olddate.getFullYear() - 1);
- document.cookie = '<?php echo session_name() . '=' . session_id() ?>; path=/; expires=' + olddate.toGMTString();
-<?php } ?>
  document.fnew.patientID.value = pid;
+ top.restoreSession();
  document.fnew.submit();
 }
 
@@ -161,10 +156,6 @@ function openNewTopWindow(pid) {
 
 <!-- form used to open a new top level window when a patient row is clicked -->
 <form name='fnew' method='post' target='_blank' action='../main_screen.php?auth=login&site=<?php echo attr($_SESSION['site_id']); ?>'>
-<input type='hidden' name='authUser'       value='<?php echo attr($_SESSION['authUser']);        ?>' />
-<input type='hidden' name='authPass'       value='<?php echo attr($_SESSION['authPass']);        ?>' />
-<input type='hidden' name='authProvider'   value='<?php echo attr($_SESSION['authProvider']);    ?>' />
-<input type='hidden' name='languageChoice' value='<?php echo attr($_SESSION['language_choice']); ?>' />
 <input type='hidden' name='patientID'      value='0' />
 </form>
 

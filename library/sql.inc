@@ -139,7 +139,7 @@ $database = NewADOConnection("mysql_log"); // Use the subclassed driver which lo
 // work and is suspicious for a bug in PHP of that OS; Setting this clientFlags fixes this bug
 // and appears to not cause problems in other operating systems.
 $database->clientFlags = 128;
-$database->PConnect($host, $login, $pass, $dbase);
+$database->PConnect($host.":".$port, $login, $pass, $dbase);
 $GLOBALS['adodb']['db'] = $database;
 $GLOBALS['dbh'] = $database->_connectionID;
 
@@ -161,7 +161,7 @@ if (!$GLOBALS['dbh']) {
   if ($host == "localhost") {
     echo "Check that mysqld is running.<p>";
   } else {
-    echo "Check that you can ping the server '$host'.<p>";
+    echo "Check that you can ping the server '".text($host)."'.<p>";
   }//if local
   HelpfulDie("Could not connect to server!", getSqlLastError("native_mysql"));
   exit;
@@ -546,9 +546,9 @@ function sqlNumRows($r)
 */
 function HelpfulDie ($statement, $sqlerr='')
 {
-  echo "<p><p><font color='red'>ERROR:</font> $statement<p>";
+  echo "<p><p><font color='red'>ERROR:</font> ".text($statement)."<p>";
   if ($sqlerr) {
-    echo "Error: <font color='red'>$sqlerr</font><p>";
+    echo "Error: <font color='red'>".text($sqlerr)."</font><p>";
   }//if error
   exit;
 }

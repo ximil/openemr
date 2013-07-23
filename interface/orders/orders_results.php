@@ -1,10 +1,12 @@
 <?php
-// Copyright (C) 2010-2013 Rod Roark <rod@sunsetsystems.com>
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
+/**
+ * Copyright (C) 2010-2013 Rod Roark <rod@sunsetsystems.com>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ */
 
 require_once("../globals.php");
 require_once("$srcdir/acl.inc");
@@ -401,7 +403,7 @@ if ($form_batch) {
   "pd.fname, pd.mname, pd.lname, pd.pubpid, $selects " .
   "FROM procedure_order AS po " .
   "LEFT JOIN patient_data AS pd ON pd.pid = po.patient_id $joins " .
-  "WHERE pt.procedure_type_id = '$form_proc_type' AND " .
+  "WHERE pt1.procedure_type_id = '$form_proc_type' AND " .
   "po.date_ordered >= '$form_from_date' AND po.date_ordered <= '$form_to_date' " .
   "AND $where " .
   "ORDER BY pd.lname, pd.fname, pd.mname, po.patient_id, $orderby";

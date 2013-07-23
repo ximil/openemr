@@ -1,8 +1,23 @@
 <?php
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
+/**
+ *
+ * Patient summary screen.
+ *
+ * LICENSE: This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://opensource.org/licenses/gpl-license.php>;.
+ *
+ * @package OpenEMR
+ * @author  Brady Miller <brady@sparmy.com>
+ * @link    http://www.open-emr.org
+ */
 
 //SANITIZE ALL ESCAPES
 $sanitize_all_escapes=true;
@@ -22,6 +37,7 @@ $fake_register_globals=false;
  require_once("../history/history.inc.php");
  require_once("$srcdir/formatting.inc.php");
  require_once("$srcdir/edi.inc");
+ require_once("$srcdir/invoice_summary.inc.php");
  require_once("$srcdir/clinical_rules.php");
 
   if ($GLOBALS['concurrent_layout'] && isset($_GET['set_pid'])) {
@@ -404,7 +420,7 @@ function setMyPatient() {
 <?php if (isset($_GET['set_pid'])) { ?>
  parent.left_nav.setPatient(<?php echo "'" . htmlspecialchars(($result['fname']) . " " . ($result['lname']),ENT_QUOTES) .
    "'," . htmlspecialchars($pid,ENT_QUOTES) . ",'" . htmlspecialchars(($result['pubpid']),ENT_QUOTES) .
-   "','', ' " . htmlspecialchars(xl('DOB') . ": " . oeFormatShortDate($result['DOB_YMD']) . " " . xl('Age') . ": " . getPatientAge($result['DOB_YMD']), ENT_QUOTES) . "'"; ?>);
+   "','', ' " . htmlspecialchars(xl('DOB') . ": " . oeFormatShortDate($result['DOB_YMD']) . " " . xl('Age') . ": " . getPatientAgeDisplay($result['DOB_YMD']), ENT_QUOTES) . "'"; ?>);
  var EncounterDateArray = new Array;
  var CalendarCategoryArray = new Array;
  var EncounterIdArray = new Array;
@@ -468,7 +484,7 @@ $(window).load(function() {
 
   if (acl_check('admin', 'super')) {
    echo "<td style='padding-left:1em;'><a class='css_button iframe' href='../deleter.php?patient=" . 
-    htmlspecialchars($pid,ENT_QUOTES) . "'>" .
+    htmlspecialchars($pid,ENT_QUOTES) . "' onclick='top.restoreSession()'>" .
     "<span>".htmlspecialchars(xl('Delete'),ENT_NOQUOTES).
     "</span></a></td>";
   }
@@ -589,33 +605,46 @@ expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel,
 ?>
         <br>
 <?php
+		//PATIENT BALANCE,INS BALANCE naina@capminds.com
+		$patientbalance = get_patient_balance($pid, false);
+		//Debit the patient balance from insurance balance
+		$insurancebalance = get_patient_balance($pid, true) - $patientbalance;
+	   $totalbalance=$patientbalance + $insurancebalance;
  if ($GLOBALS['oer_config']['ws_accounting']['enabled']) {
  // Show current balance and billing note, if any.
-  echo "        <div style='margin-left: 10px; margin-right: 10px'>" .
-   "<span class='bold'><font color='#ee6600'>" .
-   htmlspecialchars(xl('Balance Due'),ENT_NOQUOTES) .
-   ": " . htmlspecialchars(oeFormatMoney(get_patient_balance($pid)),ENT_NOQUOTES) .
-   "</font></span><br>";
+  echo "<table border='0'><tr><td>" .
+  "<table ><tr><td><span class='bold'><font color='red'>" .
+   xlt('Patient Balance Due') .
+   " : " . text(oeFormatMoney($patientbalance)) .
+   "</font></span></td></tr>".
+     "<tr><td><span class='bold'><font color='red'>" .
+   xlt('Insurance Balance Due') .
+   " : " . text(oeFormatMoney($insurancebalance)) .
+   "</font></span></td></tr>".
+   "<tr><td><span class='bold'><font color='red'>" .
+   xlt('Total Balance Due').
+   " : " . text(oeFormatMoney($totalbalance)) .
+   "</font></span></td></td></tr>";
   if ($result['genericname2'] == 'Billing') {
-   echo "<span class='bold'><font color='red'>" .
-    htmlspecialchars(xl('Billing Note'),ENT_NOQUOTES) . ":" .
-    htmlspecialchars($result['genericval2'],ENT_NOQUOTES) .
-    "</font></span><br>";
+   echo "<tr><td><span class='bold'><font color='red'>" .
+    xlt('Billing Note') . ":" .
+    text($result['genericval2']) .
+    "</font></span></td></tr>";
   } 
   if ($result3['provider']) {   // Use provider in case there is an ins record w/ unassigned insco
-   echo "<span class='bold'>" .
-    htmlspecialchars(xl('Primary Insurance'),ENT_NOQUOTES) . ': ' . htmlspecialchars($insco_name,ENT_NOQUOTES) .
+   echo "<tr><td><span class='bold'>" .
+    xlt('Primary Insurance') . ': ' . text($insco_name) .
     "</span>&nbsp;&nbsp;&nbsp;";
    if ($result3['copay'] > 0) {
     echo "<span class='bold'>" .
-     htmlspecialchars(xl('Copay'),ENT_NOQUOTES) . ': ' .  htmlspecialchars($result3['copay'],ENT_NOQUOTES) .
+    xlt('Copay') . ': ' .  text($result3['copay']) .
      "</span>&nbsp;&nbsp;&nbsp;";
    }
    echo "<span class='bold'>" .
-    htmlspecialchars(xl('Effective Date'),ENT_NOQUOTES) . ': ' .  htmlspecialchars(oeFormatShortDate($result3['effdate'],ENT_NOQUOTES)) .
-    "</span>";
+    xlt('Effective Date') . ': ' .  text(oeFormatShortDate($result3['effdate'])) .
+    "</span></td></tr>";
   }
-  echo "</div><br>";
+  echo "</table></td></tr></td></tr></table><br>";
  }
 ?>
         </div> <!-- required for expand_collapse_widget -->
@@ -1077,7 +1106,7 @@ expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel,
               $idDoc = $myrows4['id'];
               echo "<a href='$web_root/controller.php?document&retrieve&patient_id=" .
                     htmlspecialchars($pid,ENT_QUOTES) . "&document_id=" .
-                    htmlspecialchars($idDoc,ENT_QUOTES) . "&as_file=true'>" .
+                    htmlspecialchars($idDoc,ENT_QUOTES) . "&as_file=true' onclick='top.restoreSession()'>" .
                     htmlspecialchars(xl_document_category($nameDoc),ENT_NOQUOTES) . "</a> " .
                     htmlspecialchars($dateDoc,ENT_NOQUOTES);
               echo "<br>";

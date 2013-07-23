@@ -124,18 +124,21 @@ td,th {
 	{foreach item=result from=$results}
 		<td class='historicalvalues'>{$result.bps}</td>
 	{/foreach}</tr>
+
 	<tr><td class="graph" id="bpd">{xl t="BP Diastolic"}</td><td>{xl t="mmHg"}</td>
 		<td class='currentvalues'><input type="text" size='5'
 			name='bpd' id='bpd_input' value="{$vitals->get_bpd()}"/></td>
 	{foreach item=result from=$results}
 		<td  class='historicalvalues'>{$result.bpd}</td>
 	{/foreach}</tr>
+
 	<tr><td class="graph" id="pulse">{xl t="Pulse"}</td><td>{xl t="per min"}</td>
 			<td class='currentvalues'><input type="text" size='5'
 			name='pulse' id='pulse_input' value="{if $vitals->get_pulse() != 0}{$vitals->get_pulse()|string_format:"%.0f"}{/if}"/></td>
 	{foreach item=result from=$results}
 		<td class='historicalvalues'>{if $result.pulse != 0}{$result.pulse|string_format:"%.0f"}{/if}</td>
 	{/foreach}</tr>
+
 	<tr><td class="graph" id="respiration">{xl t="Respiration"}</td><td>{xl t="per min"}</td>
 		<td class='currentvalues'><input type="text" size='5'
 			name='respiration' id='respiration_input' value="{if $vitals->get_respiration() != 0}{$vitals->get_respiration()|string_format:"%.0f"}{/if}"/></td>
@@ -182,7 +185,7 @@ td,th {
 		<td  class='historicalvalues'>{if $result.oxygen_saturation != 0}{$result.oxygen_saturation|string_format:"%.0f"}{/if}</td>
 	{/foreach}</tr>
 	
-	{if $units_of_measurement == 4}<tr class="hide">{else}<tr>{/if}
+	{if $units_of_measurement == 4 || $gbl_vitals_options > 0}<tr class="hide">{else}<tr>{/if}
 	        {if $units_of_measurement == 2}<td class="unfocus graph" id="head_circ">{else}<td class="graph" id="head_circ">{/if}{xl t="Head Circumference"}</td>
 		{if $units_of_measurement == 2}<td class="unfocus">{else}<td>{/if}{xl t="in"}</td>
 		{if $units_of_measurement == 2}<td class="valuesunfocus">{else}<td class='currentvalues'>{/if}
@@ -192,7 +195,7 @@ td,th {
 		<td class='historicalvalues'>{if $result.head_circ != 0}{$result.head_circ}{/if}</td>
 	{/foreach}</tr>
 	
-	{if $units_of_measurement == 3}<tr class="hide">{else}<tr>{/if}
+	{if $units_of_measurement == 3 || $gbl_vitals_options > 0}<tr class="hide">{else}<tr>{/if}
                 {if $units_of_measurement == 1}<td class="unfocus graph" id="head_circ_metric">{else}<td class="graph" id="head_circ_metric">{/if}{xl t="Head Circumference"}</td>
 		{if $units_of_measurement == 1}<td class="unfocus">{else}<td>{/if}{xl t="cm"}</td>
                 {if $units_of_measurement == 1}<td class="valuesunfocus">{else}<td class='currentvalues'>{/if}
@@ -202,7 +205,7 @@ td,th {
                 <td class='historicalvalues'>{if $result.head_circ != 0}{math equation="number * constant" number=$result.head_circ constant=2.54 format="%.2f"}{/if}</td>
         {/foreach}</tr>
 	
-	{if $units_of_measurement == 4}<tr class="hide">{else}<tr>{/if}
+	{if $units_of_measurement == 4 || $gbl_vitals_options > 0}<tr class="hide">{else}<tr>{/if}
 	        {if $units_of_measurement == 2}<td class="unfocus graph" id="waist_circ">{else}<td class="graph" id="waist_circ">{/if}{xl t="Waist Circumference"}</td>
 		{if $units_of_measurement == 2}<td class="unfocus">{else}<td>{/if}{xl t="in"}</td>
 		{if $units_of_measurement == 2}<td class="valuesunfocus">{else}<td class='currentvalues'>{/if}
@@ -212,7 +215,7 @@ td,th {
 		<td class='historicalvalues'>{if $result.waist_circ != 0}{$result.waist_circ}{/if}</td>
 	{/foreach}</tr>
 	
-	{if $units_of_measurement == 3}<tr class="hide">{else}<tr>{/if}
+	{if $units_of_measurement == 3 || $gbl_vitals_options > 0}<tr class="hide">{else}<tr>{/if}
                 {if $units_of_measurement == 1}<td class="unfocus graph" id="waist_circ_metric">{else}<td class="graph" id="waist_circ_metric">{/if}{xl t="Waist Circumference"}</td>
 		{if $units_of_measurement == 1}<td class="unfocus">{else}<td>{/if}{xl t="cm"}</td>
                 {if $units_of_measurement == 1}<td class="valuesunfocus">{else}<td class='currentvalues'>{/if}
@@ -254,6 +257,7 @@ td,th {
 	{/if}
 	</td>
 	</tr>
+
 	<tr><td colspan='3' style='text-align:center'>&nbsp;</td></tr>
 	<tr>
 	<td colspan='3' style='text-align:center'>
@@ -281,16 +285,60 @@ vitals[0] = formdate+'-{$vitals->get_height()}-{$vitals->get_weight()}-{$vitals-
 {foreach item=result from=$results}
 vitals[vitals.length] = '{$result.date|date_format:"%Y%m%d"}-{$result.height}-{$result.weight}-{$result.head_circ}';
 {/foreach}
+var patientAge='{$patient_age}';
+var patient_dob='{$patient_dob}';
 var webroot = '{$FORM_ACTION}';
 var pid = '{$vitals->get_pid()}';
 var cancellink = '{$DONT_SAVE_LINK}';
+var birth_xl='{xl t="Birth-24 months"}'
+var older_xl='{xl t="2-20 years"}';
 {literal}
+function addGCSelector()
+{
+    var options=new Array();
+    var birth={'display':birth_xl,'param':'birth'};
+    var age2={'display':older_xl,'param':'2-20'}
+    if((patientAge.indexOf('24 month')>=0) || (patientAge.indexOf('month')==-1))
+        {
+            var dob_data=patient_dob.split("-");
+            var dob_date=new Date(dob_data[0],parseInt(dob_data[1])-1,dob_data[2]);
+            options[0]=age2;
+            for(var idx=0;idx<vitals.length;idx++)
+                {
+                    var str_data_date=vitals[idx].split("-")[0];
+                    var data_date=new Date(str_data_date.substr(0,4),parseInt(str_data_date.substr(4,2))-1,str_data_date.substr(6,2));
+                    if(((data_date-dob_date)/86400000)<=2*365)
+                        {
+                            idx=vitals.length;
+                            options[1]=birth
+                        }
+                }
+        }
+        else
+        {
+            options[0]=birth;
+        }
+        var chart_buttons_cell=$("#pdfchart").parent("td");
+        var select=$("<select id='chart_type'></select>");
+        chart_buttons_cell.prepend(select);
+        for(idx=0;idx<options.length;idx++)
+            {
+                var option=$("<option value='"+options[idx].param+"'>"+options[idx].display+"</option>");
+                select.append(option);
+            }
+        select.find("option:first").attr("selected","true");
+        if(options.length<2)
+            {
+                select.css("display","none");
+            }
+}
 
 $(document).ready(function(){
     $("#growthchart").click(function() { ShowGrowthchart(); });
     $("#pdfchart").click(function() { ShowGrowthchart(1); });
     $("#htmlchart").click(function() { ShowGrowthchart(2); });
     $("#cancel").click(function() { location.href=cancellink; });
+    addGCSelector();
 });
 
 function ShowGrowthchart(doPDF) {
@@ -306,6 +354,7 @@ function ShowGrowthchart(doPDF) {
     newURL = webroot+'/interface/forms/vitals/growthchart/chart.php?pid='+pid+'&data='+datastring;
     if (doPDF == 1) newURL += "&pdf=1";
     if (doPDF == 2) newURL += "&html=1";
+    newURL+="&chart_type="+$("#chart_type").val();
     // do the new window stuff
     top.restoreSession();
     window.open(newURL, '_blank', "menubar=1,toolbar=1,scrollbars=1,resizable=1,width=600,height=450");

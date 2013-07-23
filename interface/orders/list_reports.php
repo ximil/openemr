@@ -28,6 +28,7 @@ require_once("$srcdir/formdata.inc.php");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/formatting.inc.php");
 require_once("./receive_hl7_results.inc.php");
+require_once("./gen_hl7_order.inc.php");
 
 /**
  * Get a list item title, translating if required.
@@ -59,6 +60,26 @@ function myCellText($s) {
 // Check authorization.
 $thisauth = acl_check('patients', 'med');
 if (!$thisauth) die(xlt('Not authorized'));
+
+$errmsg = '';
+
+// Send selected unsent orders if requested. This does not support downloading
+// very well as it will only send the first of those.
+if ($_POST['form_xmit']) {
+  foreach ($_POST['form_cb'] as $formid) {
+    $row = sqlQuery("SELECT lab_id FROM procedure_order WHERE " .
+      "procedure_order_id = ?", array($formid));
+    $ppid = intval($row['lab_id']);
+    $hl7 = '';
+    $errmsg = gen_hl7_order($formid, $hl7);
+    if (empty($errmsg)) {
+      $errmsg = send_hl7_order($ppid, $hl7);
+    }
+    if ($errmsg) break;
+    sqlStatement("UPDATE procedure_order SET date_transmitted = NOW() WHERE " .
+      "procedure_order_id = ?", array($formid));
+  }
+}
 ?>
 <html>
 <head>
@@ -89,7 +110,8 @@ var mypcc = '<?php echo $GLOBALS['phone_country_code'] ?>';
 
 function openResults(orderid) {
  top.restoreSession();
- window.open('single_order_results.php?orderid=' + orderid);
+ // window.open('single_order_results.php?orderid=' + orderid);
+ document.location.href = 'single_order_results.php?orderid=' + orderid;
 }
 
 </script>
@@ -101,6 +123,9 @@ function openResults(orderid) {
  onsubmit='return validate(this)'>
 
 <?php
+if ($errmsg) {
+  echo "<font color='red'>" . text($errmsg) . "</font><br />\n";
+}
 $messages = array();
 $errmsg = poll_hl7_results($messages);
 foreach ($messages as $message) {
@@ -133,11 +158,13 @@ $form_to_date = empty($_POST['form_to_date']) ? '' : trim($_POST['form_to_date']
 $form_reviewed = empty($_POST['form_reviewed']) ? 3 : intval($_POST['form_reviewed']);
 
 $form_patient = !empty($_POST['form_patient']);
+
+$form_provider = empty($_POST['form_provider']) ? 0 : intval($_POST['form_provider']);
 ?>
 
-<table>
+<table width='100%'>
  <tr>
-  <td class='text'>
+  <td class='text' align='center'>
    &nbsp;<?php echo xlt('From'); ?>:
    <input type='text' size='8' name='form_from_date' id='form_from_date'
     value='<?php echo attr($form_from_date); ?>'
@@ -159,8 +186,13 @@ $form_patient = !empty($_POST['form_patient']);
    &nbsp;
    <select name='form_reviewed'>
 <?php
-foreach (array('1' => xl('All'), '2' => xl('Reviewed'), '3' => xl('Unreviewed'),
-  '4' => xl('Unreceived')) as $key => $value) {
+foreach (array(
+  '1' => xl('All'),
+  '2' => xl('Reviewed'),
+  '3' => xl('Received, not reviewed'),
+  '4' => xl('Sent, not received'),
+  '5' => xl('Not sent'),
+  ) as $key => $value) {
   echo "<option value='$key'";
   if ($key == $form_reviewed) echo " selected";
   echo ">" . text($value) . "</option>\n";
@@ -169,6 +201,14 @@ foreach (array('1' => xl('All'), '2' => xl('Reviewed'), '3' => xl('Unreviewed'),
    </select>
 
    &nbsp;
+<?php
+ generate_form_field(array('data_type' => 10, 'field_id' => 'provider',
+   'empty_title' => '-- All Providers --'), $form_provider);
+?>
+  </td>
+ </tr>
+ <tr>
+  <td class='text' align='center'>
    <input type='checkbox' name='form_patient' value='1'
     <?php if ($form_patient) echo 'checked '; ?>/>Current Patient Only
 
@@ -208,8 +248,8 @@ foreach (array('1' => xl('All'), '2' => xl('Reviewed'), '3' => xl('Unreviewed'),
 
 <?php 
 $selects =
-  "po.procedure_order_id, po.date_ordered, pc.procedure_order_seq, pc.procedure_code, " .
-  "pc.procedure_name, " .
+  "po.patient_id, po.procedure_order_id, po.date_ordered, po.date_transmitted, " .
+  "pc.procedure_order_seq, pc.procedure_code, pc.procedure_name, pc.do_not_send, " .
   "pr.procedure_report_id, pr.date_report, pr.report_status, pr.review_status";
 
 $joins =
@@ -218,7 +258,7 @@ $joins =
 
 $orderby =
   "po.date_ordered, po.procedure_order_id, " .
-  "pc.procedure_order_seq, pr.procedure_report_id";
+  "pc.do_not_send, pc.procedure_order_seq, pr.procedure_report_id";
 
 $where = "1 = 1";
 $sqlBindArray = array();
@@ -237,6 +277,11 @@ if ($form_patient) {
   $sqlBindArray[] = $pid;
 }
 
+if ($form_provider) {
+  $where .= " AND po.provider_id = ?";
+  $sqlBindArray[] = $form_provider;
+}
+
 if ($form_reviewed == 2) {
   $where .= " AND pr.procedure_report_id IS NOT NULL AND pr.review_status = 'reviewed'";
 }
@@ -244,10 +289,13 @@ else if ($form_reviewed == 3) {
   $where .= " AND pr.procedure_report_id IS NOT NULL AND pr.review_status != 'reviewed'";
 }
 else if ($form_reviewed == 4) {
-  $where .= " AND pr.procedure_report_id IS NULL";
+  $where .= " AND po.date_transmitted IS NOT NULL AND pr.procedure_report_id IS NULL";
+}
+else if ($form_reviewed == 5) {
+  $where .= " AND po.date_transmitted IS NULL AND pr.procedure_report_id IS NULL";
 }
 
-$query = "SELECT po.patient_id, " .
+$query = "SELECT " .
   "pd.fname, pd.mname, pd.lname, pd.pubpid, $selects " .
   "FROM procedure_order AS po " .
   "LEFT JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
@@ -263,18 +311,23 @@ $lastpcid = -1;
 $encount = 0;
 $lino = 0;
 $extra_html = '';
+$num_checkboxes = 0;
 
 while ($row = sqlFetchArray($res)) {
   $patient_id       = empty($row['patient_id'         ]) ? 0 : ($row['patient_id'         ] + 0);
   $order_id         = empty($row['procedure_order_id' ]) ? 0 : ($row['procedure_order_id' ] + 0);
   $order_seq        = empty($row['procedure_order_seq']) ? 0 : ($row['procedure_order_seq'] + 0);
-  $date_ordered     = empty($row['date_ordered']) ? '' : $row['date_ordered'];
-  $procedure_code   = empty($row['procedure_code']) ? '' : $row['procedure_code'];
-  $procedure_name   = empty($row['procedure_name']) ? '' : $row['procedure_name'];
+  $date_ordered     = empty($row['date_ordered'       ]) ? '' : $row['date_ordered'];
+  $date_transmitted = empty($row['date_transmitted'   ]) ? '' : $row['date_transmitted'];
+  $procedure_code   = empty($row['procedure_code'     ]) ? '' : $row['procedure_code'];
+  $procedure_name   = empty($row['procedure_name'     ]) ? '' : $row['procedure_name'];
   $report_id        = empty($row['procedure_report_id']) ? 0 : ($row['procedure_report_id'] + 0);
-  $date_report      = empty($row['date_report']) ? '' : $row['date_report'];
-  $report_status    = empty($row['report_status']) ? '' : $row['report_status']; 
-  $review_status    = empty($row['review_status']) ? '' : $row['review_status'];
+  $date_report      = empty($row['date_report'        ]) ? '' : $row['date_report'];
+  $report_status    = empty($row['report_status'      ]) ? '' : $row['report_status']; 
+  $review_status    = empty($row['review_status'      ]) ? '' : $row['review_status'];
+
+  // Sendable procedures sort first, so this also applies to the order on an order ID change.
+  $sendable = isset($row['procedure_order_seq']) && $row['do_not_send'] == 0;
 
   $ptname = $row['lname'];
   if ($row['fname'] || $row['mname'])
@@ -300,10 +353,30 @@ while ($row = sqlFetchArray($res)) {
   // Generate order columns.
   if ($lastpoid != $order_id) {
     $lastpcid = -1;
-    echo "  <td><a href='javascript:openResults($order_id)'>";    
+    echo "  <td>";
+    // Checkbox to support sending unsent orders, disabled if sent.
+    echo "<input type='checkbox' name='form_cb[$order_id]' value='$order_id' ";
+    if ($date_transmitted || !$sendable) {
+      echo "disabled";
+    } else {
+      echo "checked";
+      ++$num_checkboxes;
+    }
+    echo " />";
+    // Order date comes with a link to open results in the same frame.
+    echo "<a href='javascript:openResults($order_id)' ";
+    echo "title='" . xla('Click for results') . "'>";    
     echo text($date_ordered);
     echo "</a></td>\n";
-    echo "  <td>" . text($order_id) . "</td>\n";
+    echo "  <td>";
+    // Order ID comes with a link to open the manifest in a new window/tab.
+    echo "<a href='" . $GLOBALS['webroot'];
+    echo "/interface/orders/order_manifest.php?orderid=";
+    echo attr($order_id);
+    echo "' target='_blank' onclick='top.restoreSession()' ";
+    echo "title='" . xla('Click for order summary') . "'>";
+    echo text($order_id);
+    echo "</a></td>\n";
   }
   else {
     echo "  <td colspan='2' style='background-color:transparent'>&nbsp;</td>";
@@ -311,8 +384,14 @@ while ($row = sqlFetchArray($res)) {
 
   // Generate procedure columns.
   if ($order_seq && $lastpcid != $order_seq) {
-    echo "  <td>" . text($procedure_code) . "</td>\n";
-    echo "  <td>" . text($procedure_name) . "</td>\n";
+    if ($sendable) {
+      echo "  <td>" . text($procedure_code) . "</td>\n";
+      echo "  <td>" . text($procedure_name) . "</td>\n";
+    }
+    else {
+      echo "  <td><strike>" . text($procedure_code) . "</strike></td>\n";
+      echo "  <td><strike>" . text($procedure_name) . "</strike></td>\n";
+    }
   }
   else {
     echo "  <td colspan='2' style='background-color:transparent'>&nbsp;</td>";
@@ -321,17 +400,12 @@ while ($row = sqlFetchArray($res)) {
   // Generate report columns.
   if ($report_id) {
     echo "  <td>" . text($date_report) . "</td>\n";
-
-    // echo "  <td>" . text($report_status) . "</td>\n";
-    // echo "  <td>" . text($review_status) . "</td>\n";
-
     echo "  <td title='" . xla('Check mark indicates reviewed') . "'>";
     echo myCellText(getListItem('proc_rep_status', $report_status));
     if ($review_status == 'reviewed') {
       echo " &#x2713;"; // unicode check mark character
     }
     echo "</td>\n";
-
   }
   else {
     echo "  <td colspan='2' style='background-color:transparent'>&nbsp;</td>";
@@ -347,6 +421,12 @@ while ($row = sqlFetchArray($res)) {
 ?>
 
 </table>
+
+<?php if ($num_checkboxes) { ?>
+<center><p>
+<input type='submit' name='form_xmit' value='<?php echo xla('Transmit Selected Orders'); ?>' />
+</p></center>
+<?php } ?>
 
 <script language='JavaScript'>
 

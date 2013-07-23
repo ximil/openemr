@@ -10,22 +10,24 @@ class Installer
     // Installation variables
     // For a good explanation of these variables, see documentation in
     //   the contrib/util/installScripts/InstallerAuto.php file.
-    $this->iuser                = $cgi_variables['iuser'];
-    $this->iuserpass            = $cgi_variables['iuserpass'];
-    $this->iuname               = $cgi_variables['iuname'];
-    $this->igroup               = $cgi_variables['igroup'];
-    $this->server               = $cgi_variables['server']; // mysql server (usually localhost)
-    $this->loginhost            = $cgi_variables['loginhost']; // php/apache server (usually localhost)
-    $this->port                 = $cgi_variables['port'];
-    $this->root                 = $cgi_variables['root'];
-    $this->rootpass             = $cgi_variables['rootpass'];
-    $this->login                = $cgi_variables['login'];
-    $this->pass                 = $cgi_variables['pass'];
-    $this->dbname               = $cgi_variables['dbname'];
-    $this->collate              = $cgi_variables['collate'];
-    $this->site                 = $cgi_variables['site'];
-    $this->source_site_id       = $cgi_variables['source_site_id'];
-    $this->clone_database       = $cgi_variables['clone_database'];
+    $this->iuser                    = $cgi_variables['iuser'];
+    $this->iuserpass                = $cgi_variables['iuserpass'];
+    $this->iuname                   = $cgi_variables['iuname'];
+    $this->iufname                  = $cgi_variables['iufname'];
+    $this->igroup                   = $cgi_variables['igroup'];
+    $this->server                   = $cgi_variables['server']; // mysql server (usually localhost)
+    $this->loginhost                = $cgi_variables['loginhost']; // php/apache server (usually localhost)
+    $this->port                     = $cgi_variables['port'];
+    $this->root                     = $cgi_variables['root'];
+    $this->rootpass                 = $cgi_variables['rootpass'];
+    $this->login                    = $cgi_variables['login'];
+    $this->pass                     = $cgi_variables['pass'];
+    $this->dbname                   = $cgi_variables['dbname'];
+    $this->collate                  = $cgi_variables['collate'];
+    $this->site                     = $cgi_variables['site'];
+    $this->source_site_id           = $cgi_variables['source_site_id'];
+    $this->clone_database           = $cgi_variables['clone_database'];
+    $this->no_root_db_access        = $cgi_variables['no_root_db_access']; // no root access to database. user/privileges pre-configured
     $this->development_translations = $cgi_variables['development_translations'];
 
     // Make this true for IPPF.
@@ -43,6 +45,7 @@ class Installer
     $this->ippf_sql = dirname(__FILE__) . "/../../sql/ippf_layout.sql";
     $this->icd9 = dirname(__FILE__) . "/../../sql/icd9.sql";
     $this->cvx = dirname(__FILE__) . "/../../sql/cvx_codes.sql";
+    $this->additional_users = dirname(__FILE__) . "/../../sql/official_additional_users.sql";
 
     // Record name of php-gacl installation files
     $this->gaclSetupScript1 = dirname(__FILE__) . "/../../gacl/setup.php";
@@ -158,34 +161,43 @@ class Installer
   public function load_dumpfiles() {
     $sql_results = ''; // information string which is returned
     foreach ($this->dumpfiles as $filename => $title) {
-        $sql_results .= "Creating $title tables...\n";
-        $fd = fopen($filename, 'r');
-        if ($fd == FALSE) {
-          $this->error_message = "ERROR.  Could not open dumpfile '$filename'.\n";
-          return FALSE;
-        }
-        $query = "";
-        $line = "";
-        while (!feof ($fd)){
-                $line = fgets($fd,1024);
-                $line = rtrim($line);
-                if (substr($line,0,2) == "--") // Kill comments
-                        continue;
-                if (substr($line,0,1) == "#") // Kill comments
-                        continue;
-                if ($line == "")
-                        continue;
-                $query = $query.$line;          // Check for full query
-                $chr = substr($query,strlen($query)-1,1);
-                if ($chr == ";") { // valid query, execute
-                        $query = rtrim($query,";");
-                        $this->execute_sql( $query );
-                        $query = "";
-                }
-        }
-        $sql_results .= "OK<br>\n";
-        fclose($fd);
+        $sql_results_temp = '';
+        $sql_results_temp = $this->load_file($filename,$title);
+        if ($sql_results_temp == FALSE) return FALSE;
+        $sql_results .= $sql_results_temp;
     }
+    return $sql_results;
+  }
+
+  public function load_file($filename,$title) {
+    $sql_results = ''; // information string which is returned
+    $sql_results .= "Creating $title tables...\n";
+    $fd = fopen($filename, 'r');
+    if ($fd == FALSE) {
+      $this->error_message = "ERROR.  Could not open dumpfile '$filename'.\n";
+      return FALSE;
+    }
+    $query = "";
+    $line = "";
+    while (!feof ($fd)){
+            $line = fgets($fd,1024);
+            $line = rtrim($line);
+            if (substr($line,0,2) == "--") // Kill comments
+                    continue;
+            if (substr($line,0,1) == "#") // Kill comments
+                    continue;
+            if ($line == "")
+                    continue;
+            $query = $query.$line;          // Check for full query
+            $chr = substr($query,strlen($query)-1,1);
+            if ($chr == ";") { // valid query, execute
+                    $query = rtrim($query,";");
+                    $this->execute_sql( $query );
+                    $query = "";
+            }
+    }
+    $sql_results .= "OK<br>\n";
+    fclose($fd);
     return $sql_results;
   }
 
@@ -205,12 +217,25 @@ class Installer
         "<p>".mysql_error()." (#".mysql_errno().")\n";
       return FALSE;
     }
-    $password_hash = sha1( $this->iuserpass );
-    if ($this->execute_sql("INSERT INTO users (id, username, password, authorized, lname, fname, facility_id, calendar, cal_ui) VALUES (1,'$this->iuser','$password_hash',1,'$this->iuname','',3,1,3)") == FALSE) {
+    $password_hash = "NoLongerUsed";  // This is the value to insert into the password column in the "users" table. password details are now being stored in users_secure instead.
+    $salt=password_salt();     // Uses the functions defined in library/authentication/password_hashing.php
+    $hash=password_hash($this->iuserpass,$salt);
+    if ($this->execute_sql("INSERT INTO users (id, username, password, authorized, lname, fname, facility_id, calendar, cal_ui) VALUES (1,'$this->iuser','$password_hash',1,'$this->iuname','$this->iufname',3,1,3)") == FALSE) {
       $this->error_message = "ERROR. Unable to add initial user\n" .
         "<p>".mysql_error()." (#".mysql_errno().")\n";
       return FALSE;
+      
     }
+    
+    // Create the new style login credentials with blowfish and salt
+    if ($this->execute_sql("INSERT INTO users_secure (id, username, password, salt) VALUES (1,'$this->iuser','$hash','$salt')") == FALSE) {
+      $this->error_message = "ERROR. Unable to add initial user login credentials\n" .
+        "<p>".mysql_error()." (#".mysql_errno().")\n";
+      return FALSE;
+    }
+    // Add the official openemr users (services)
+    if ($this->load_file($this->additional_users,"Additional Official Users") == FALSE) return FALSE;
+
     return TRUE;
   }
 
@@ -295,7 +320,7 @@ $config = 1; /////////////
     foreach ($GLOBALS_METADATA as $grpname => $grparr) {
       foreach ($grparr as $fldid => $fldarr) {
         list($fldname, $fldtype, $flddef, $flddesc) = $fldarr;
-        if (substr($fldtype, 0, 2) !== 'm_') {
+        if (is_array($fldtype) || substr($fldtype, 0, 2) !== 'm_') {
           $res = $this->execute_sql("SELECT count(*) AS count FROM globals WHERE gl_name = '$fldid'");
           $row = @mysql_fetch_array($res, MYSQL_ASSOC);
           if (empty($row['count'])) {
@@ -343,34 +368,43 @@ $config = 1; /////////////
     if ( ! $this->password_is_valid() ) {
       return False;
     }
-    // Connect to mysql via root user
-    if (! $this->root_database_connection() ) {
-      return False;
-    }
-    // Create the dumpfile
-    //   (applicable if cloning from another database)
-    if (! empty($this->clone_database)) {
-      if ( ! $this->create_dumpfiles() ) {
+    if (! $this->no_root_db_access) {
+      // Connect to mysql via root user
+      if (! $this->root_database_connection() ) {
         return False;
       }
-    }
-    // Create the site directory
-    //   (applicable if mirroring another local site)
-    if ( ! empty($this->source_site_id) ) {
-      if ( ! $this->create_site_directory() ) {
-        return False;
+      // Create the dumpfile
+      //   (applicable if cloning from another database)
+      if (! empty($this->clone_database)) {
+        if ( ! $this->create_dumpfiles() ) {
+          return False;
+        }
       }
-    }
-    // Create the mysql database
-    if ( ! $this->create_database()) {
-      return False;
-    }
-    // Grant user privileges to the mysql database
-    if ( ! $this->grant_privileges() ) {
-      return False;
+      // Create the site directory
+      //   (applicable if mirroring another local site)
+      if ( ! empty($this->source_site_id) ) {
+        if ( ! $this->create_site_directory() ) {
+          return False;
+        }
+      }
+      $this->disconnect();
+      if (! $this->user_database_connection()) {
+        // Re-connect to mysql via root user
+        if (! $this->root_database_connection() ) {
+          return False;
+        }
+        // Create the mysql database
+        if ( ! $this->create_database()) {
+          return False;
+        }
+        // Grant user privileges to the mysql database
+        if ( ! $this->grant_privileges() ) {
+          return False;
+        }
+      }
+      $this->disconnect();
     }
     // Connect to mysql via created user
-    $this->disconnect();
     if ( ! $this->user_database_connection() ) {
       return False;
     }
