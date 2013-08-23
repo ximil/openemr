@@ -126,6 +126,68 @@ if ($_POST['form_save'] && $_GET['mode'] == "user") {
   echo "</script>";
 }
 
+if ($_POST['form_download']) {
+  $password 	= $GLOBALS['portal_offsite_password'];
+  $randkey	= '';  
+  $timminus = date("Y-m-d H:m",(strtotime(date("Y-m-d H:m"))-7200)).":00";  
+  sqlStatement("DELETE FROM audit_details WHERE audit_master_id IN(SELECT id FROM audit_master WHERE type=5 AND created_time<=?)",array($timminus));
+  sqlStatement("DELETE FROM audit_master WHERE type=5 AND created_time<=?",array($timminus));  
+  do{
+      $randkey 	= substr(md5(rand().rand()), 0, 8);      
+      $res 	= sqlStatement("SELECT * FROM audit_details WHERE field_value = ?",array($randkey));
+      $cnt 	= sqlNumRows($res);
+  }
+  while($cnt>0); 
+  $password 	= sha1($password.gmdate("Y-m-d H").$randkey);  
+  $grpID = sqlInsert("INSERT INTO audit_master SET type=5");
+  sqlStatement("INSERT INTO audit_details SET field_value=? , audit_master_id=?",array($randkey,$grpID)); 
+  $credentials 	= array($GLOBALS['portal_offsite_username'],$password,$randkey);    
+  //CALLING WEBSERVICE ON THE PATIENT-PORTAL 
+  $client 	= new SoapClient(null, array(
+					  'location' => $GLOBALS['portal_offsite_address_patient_link']."/webservice/webserver.php",
+					  'uri'      => "urn://portal/req"
+					)
+			    );  
+  try {
+    $response = $client->getPortalConnectionFiles($credentials);
+  }
+  catch(SoapFault $e){
+    echo "<br>".xlt('SoapFault Error').":<br>";
+    var_dump(get_object_vars($e));
+  }
+  catch(Exception $e){
+    echo "<br>".xlt('Exception Error').":<br>";
+    var_dump(get_object_vars($e));
+  }
+  if($response['status'] == "1") {//WEBSERVICE RETURNED VALUE SUCCESSFULLY    
+    $tmpfilename	= realpath(sys_get_temp_dir())."/".date('YmdHis').".zip";  
+    $fp	= fopen($tmpfilename,"wb");
+    fwrite($fp,base64_decode($response['value']));
+    fclose($fp);    
+    $practice_filename	= $response['file_name'];//practicename.zip    
+    ob_clean();    
+    // Set headers
+    header("Cache-Control: public");
+    header("Content-Description: File Transfer");
+    header("Content-Disposition: attachment; filename=".$practice_filename);
+    header("Content-Type: application/zip");
+    header("Content-Transfer-Encoding: binary");   
+    // Read the file from disk
+    readfile($tmpfilename);   
+    unlink($tmpfilename);    
+    exit;
+  }
+  else{//WEBSERVICE CALL FAILED AND RETURNED AN ERROR MESSAGE
+    echo "<br>".xlt('Web Service Failed').":<br>".$response['value'];
+  }   
+  exit;
+}
+?>
+<html>
+<head>
+<?php
+
+html_header_show();
 // If we are saving main globals.
 //
 if ($_POST['form_save'] && $_GET['mode'] != "user") {
@@ -441,11 +503,24 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
 </div>
 
 <p>
- <input type='submit' name='form_save' value='<?php xl('Save','e'); ?>' />
+ <input type='submit' name='form_save' value='<?php echo xlt('Save'); ?>' />
+ </form>
+  
+  
+
+
+  <?php if ($_GET['mode'] == "user") { ?>
+  <form id='download_form' name='download_form' method="post" action="edit_globals.php?mode=user&task='download'">
+  <?php } else { ?>
+  <form id='download_form' name='download_form' method="post" action="edit_globals.php?task='download'">
+  <?php } ?>
+    <input type='submit' name='form_download' value='<?php echo xlt('Download Offsite Portal Connection Files'); ?>' />
+  </form>
+ 
 </p>
 </center>
 
-</form>
+
 
 </body>
 
