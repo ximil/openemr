@@ -126,6 +126,71 @@ if ($_POST['form_save'] && $_GET['mode'] == "user") {
   echo "</script>";
 }
 
+if ($_POST['form_download']) {
+  $password 	= $GLOBALS['portal_offsite_password'];
+  $randkey	= '';  
+  $timminus = date("Y-m-d H:m",(strtotime(date("Y-m-d H:m"))-7200)).":00";  
+  sqlStatement("DELETE FROM audit_details WHERE audit_master_id IN(SELECT id FROM audit_master WHERE type=5 AND created_time<=?)",array($timminus));
+  sqlStatement("DELETE FROM audit_master WHERE type=5 AND created_time<=?",array($timminus));  
+  do{
+      $randkey 	= substr(md5(rand().rand()), 0, 8);      
+      $res 	= sqlStatement("SELECT * FROM audit_details WHERE field_value = ?",array($randkey));
+      $cnt 	= sqlNumRows($res);
+  }
+  while($cnt>0); 
+  $password 	= sha1($password.gmdate("Y-m-d H").$randkey);  
+  $grpID 	= sqlInsert("INSERT INTO audit_master SET type=5");
+  sqlStatement("INSERT INTO audit_details SET field_value=? , audit_master_id=?",array($randkey,$grpID)); 
+  $credentials 	= array($GLOBALS['portal_offsite_username'],$password,$randkey);    
+  //CALLING WEBSERVICE ON THE PATIENT-PORTAL 
+  $client 	= new SoapClient(null, array(
+					  'location' => $GLOBALS['portal_offsite_address_patient_link']."/webservice/webserver.php",
+					  'uri'      => "urn://portal/req"
+					)
+			    );  
+  try {
+    $response = $client->getPortalConnectionFiles($credentials);
+  }
+  catch(SoapFault $e){
+    echo "<br>".xlt('SoapFault Error').":<br>";
+    var_dump(get_object_vars($e));
+  }
+  catch(Exception $e){
+    echo "<br>".xlt('Exception Error').":<br>";
+    var_dump(get_object_vars($e));
+  }
+  if($response['status'] == "1") {//WEBSERVICE RETURNED VALUE SUCCESSFULLY    
+    $tmpfilename	= realpath(sys_get_temp_dir())."/".date('YmdHis').".zip";  
+    $fp			= fopen($tmpfilename,"wb");
+    fwrite($fp,base64_decode($response['value']));
+    fclose($fp);
+    $practice_filename	= $response['file_name'];//practicename.zip    
+    ob_clean();    
+    // Set headers
+    header("Cache-Control: public");
+    header("Content-Description: File Transfer");
+    header("Content-Disposition: attachment; filename=".$practice_filename);
+    header("Content-Type: application/zip");
+    header("Content-Transfer-Encoding: binary");   
+    // Read the file from disk
+    readfile($tmpfilename);   
+    unlink($tmpfilename);    
+    exit;
+  }
+  else{//WEBSERVICE CALL FAILED AND RETURNED AN ERROR MESSAGE
+    ob_end_clean();
+    ?>
+    <script type="text/javascript">
+      alert('<?php echo xlt('Offsite Portal web Service Failed').":\\n".xlt($response['value']);?>');
+    </script>
+    <?php    
+  }
+}
+?>
+<html>
+<head>
+<?php
+
 // If we are saving main globals.
 //
 if ($_POST['form_save'] && $_GET['mode'] != "user") {
@@ -204,7 +269,31 @@ tr.detail { font-size:10pt; }
 td        { font-size:10pt; }
 input     { font-size:10pt; }
 </style>
-
+<script type="text/javascript">
+  function validate_file(){
+    $.ajax({
+      type: "POST",
+      url: "ajax_code.php",
+      data: {
+	action: 'check_file',      
+      },
+      cache: false,
+      success: function( message )
+      {	
+	if(message == 'ERROR'){
+	  document.getElementById('form_download').value = 0;
+	  document.getElementById('file_error_message').innerHTML = '<?php echo xlt('File does not exist.');?>';
+	  return false;
+	}
+	else{
+	  document.getElementById('form_download').value = 1;
+	  document.getElementById('file_error_message').innerHTML = '';
+	  document.forms[0].submit();
+	}
+      }
+    });
+  }
+</script>
 </head>
 
 <body class="body_top">
@@ -432,8 +521,12 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
     }
     ++$i;
    }
-  }
-  echo " </table>\n";
+    if(trim(strtolower($fldid)) == 'portal_offsite_address_patient_link' && $GLOBALS['portal_offsite_enable'] && $GLOBALS['portal_offsite_providerid']){
+      echo "<input type='hidden' name='form_download' id='form_download'>";
+      echo "<tr><td><input onclick=\"return validate_file()\" type='button' value='".xla('Download Offsite Portal Connection Files')."' /></td><td id='file_error_message' style='color:red'></td></tr>";
+    }
+  }  
+  echo " </table>\n";  
   echo " </div>\n";
  }
 }
@@ -441,7 +534,7 @@ foreach ($GLOBALS_METADATA as $grpname => $grparr) {
 </div>
 
 <p>
- <input type='submit' name='form_save' value='<?php xl('Save','e'); ?>' />
+ <input type='submit' name='form_save' value='<?php echo xla('Save'); ?>' />
 </p>
 </center>
 
