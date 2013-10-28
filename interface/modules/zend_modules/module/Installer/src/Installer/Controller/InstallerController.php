@@ -35,31 +35,31 @@ use Application\Listener\Listener;
 
 class InstallerController extends AbstractActionController
 {
-    protected $InstallerTable;
-    protected $listenerObject;
+			protected $InstallerTable;
+			protected $listenerObject;
+			
+			public function __construct()
+			{
+					$this->listenerObject	= new Listener;
+			}
     
-    public function __construct()
-    {
-	$this->listenerObject	= new Listener;
-    }
-    
-    public function nolayout()
-    {
-        // Turn off the layout, i.e. only render the view script.
-        $viewModel = new ViewModel();
-        $viewModel->setTerminal(true);
-        return $viewModel;
-    }
-    
+			public function nolayout()
+			{
+					// Turn off the layout, i.e. only render the view script.
+					$viewModel = new ViewModel();
+					$viewModel->setTerminal(true);
+					return $viewModel;
+			}
+			
     public function indexAction(){ 
     		
     	//get the list of installed and new modules
 	
-	$listener = $this->getServiceLocator()->get('Listener');
+			$listener = $this->getServiceLocator()->get('Listener');
         $this->getEventManager()->attachAggregate($listener);
 	
-	//GET ALL MODULES	
-	$tableName  = "modules";
+				//GET ALL MODULES	
+				$tableName  = "modules";
         $fields     = "*";
         $order	    = "mod_ui_order asc";
 	
@@ -134,54 +134,54 @@ class InstallerController extends AbstractActionController
     
     public function manageAction(){
 	
-	$listener = $this->getServiceLocator()->get('Listener');
-        $this->getEventManager()->attachAggregate($listener);
-	
-	$request = $this->getRequest();
-    	$status  = "Failure";
-    	if ($request->isPost()) {
-	    if ($request->getPost('modAction') == "enable"){
-		$resp	= $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "mod_active=0" );
-		if($resp['status'] == 'failure' && $resp['code'] == '200'){
-		    $status = $resp['value'];
-		}			
-		else{
-		    $status = "Success";
-		}
-	    }
-	    elseif ($request->getPost('modAction') == "disable"){
-		$resp	= $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "mod_active=1" );
-		if($resp['status'] == 'failure' && $resp['code'] == '200'){
-		    $plural = "";
-		    if(count($resp['value']) > 1){
-			$plural = "s";
-		    }
-		    $status = "Dependency Problem : ".implode(", ",$resp['value'])." Module".$plural." Should be Enabled";
-		}
-		else if($resp['status'] == 'failure' && ($resp['code'] == '300' || $resp['code'] == '400')){
-		    $status = $resp['value'];
-		}
-		else{
-		    $status = "Success";
-		}
-	    }
-	    elseif ($request->getPost('modAction') == "install"){    
-		$dirModule = $this -> getInstallerTable() -> getRegistryEntry ( $request->getPost('modId'), "mod_directory" );
-		    $mod_enc_menu = $request->getPost('mod_enc_menu');
-		    $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
-		if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
-		    //$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
-		    $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
-		    $status = "Success";
-		}
-		else{
-		    $status = "ERROR: could not open table.sql, broken form?";
-		}			    
-	    }
-    	}
-    	echo $status;
-    	exit(0);
-    }
+		$listener = $this->getServiceLocator()->get('Listener');
+					$this->getEventManager()->attachAggregate($listener);
+		
+		$request = $this->getRequest();
+				$status  = "Failure";
+				if ($request->isPost()) {
+				if ($request->getPost('modAction') == "enable"){
+			$resp	= $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "mod_active=0" );
+			if($resp['status'] == 'failure' && $resp['code'] == '200'){
+					$status = $resp['value'];
+			}			
+			else{
+					$status = "Success";
+			}
+				}
+				elseif ($request->getPost('modAction') == "disable"){
+			$resp	= $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "mod_active=1" );
+			if($resp['status'] == 'failure' && $resp['code'] == '200'){
+					$plural = "";
+					if(count($resp['value']) > 1){
+				$plural = "s";
+					}
+					$status = "Dependency Problem : ".implode(", ",$resp['value'])." Module".$plural." Should be Enabled";
+			}
+			else if($resp['status'] == 'failure' && ($resp['code'] == '300' || $resp['code'] == '400')){
+					$status = $resp['value'];
+			}
+			else{
+					$status = "Success";
+			}
+				}
+				elseif ($request->getPost('modAction') == "install"){    
+			$dirModule = $this -> getInstallerTable() -> getRegistryEntry ( $request->getPost('modId'), "mod_directory" );
+					$mod_enc_menu = $request->getPost('mod_enc_menu');
+					$mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
+			if ($this -> installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory)){
+					//$this -> installACL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModuleDir'].$GLOBALS['customDir']."/".$dirModule -> modDirectory);
+					$this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
+					$status = "Success";
+			}
+			else{
+					$status = "ERROR: could not open table.sql, broken form?";
+			}			    
+				}
+				}
+				echo $status;
+				exit(0);
+			}
     
 
     /**
@@ -313,7 +313,7 @@ class InstallerController extends AbstractActionController
         /** Configuration Details */
         $tableName 	= "module_configuration";
         $fields 	= "*";
-        $where          = "module_configuration.module_id=" . $request->getPost('mod_id');
+	$where          = "module_configuration.module_id=" . $request->getPost('mod_id');
         $listener 	= $this->getServiceLocator()->get('Listener');	
         $this->getEventManager()->attachAggregate($listener);
         $parameter 	= array(
@@ -322,11 +322,11 @@ class InstallerController extends AbstractActionController
 			    'where'     => $where,
 			 );
         //$result = $this->getEventManager()->trigger('countEvent', $this, $parameter);
-         $result 	= $this->getEventManager()->trigger('selectEvent', $this, $parameter);
+        $result 	= $this->getEventManager()->trigger('selectEvent', $this, $parameter);
         $data 		= array();
         $serviceLocator = $this->getServiceLocator();
         $config         = $serviceLocator->get('config');
-	
+	//echo var_dump($result); exit;
         foreach ($result as $rows => $row) {
             foreach($row as $tmp){
 								array_push($data, $tmp);
@@ -334,45 +334,34 @@ class InstallerController extends AbstractActionController
             }
         }
 	
-		//INSERT MODULE HOOKS IF NOT EXISTS
-		$moduleDirectory	= $this->getInstallerTable()->getModuleDirectory($modId);
-		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
-		
-		$phpObjCode 	=  str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\Model\Configuration();');
-		$className	= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
-		
-		if(class_exists($className)){
-				eval($phpObjCode);
-		}
-		
-		$hooksArr	= array();
-		if($obj){
-				//$obj	= new \Lab\Model\Configuration();
-				$hooksArr	= $obj->getHookConfig();
-		}
+	//INSERT MODULE HOOKS IF NOT EXISTS
+	$moduleDirectory	= $this->getInstallerTable()->getModuleDirectory($modId);
 	
-		if(count($hooksArr) > 0){
-				foreach($hooksArr as $hook){
-						if(count($hook) > 0){
-								
-								if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){			
-										$tableName  = "modules_settings";
-										$fields     = array(
-																		'mod_id' 	=> $modId,
-																		'fld_type' 	=> "3",
-																		'obj_name' 	=> $hook['name'],
-																		'menu_name' => $hook['title'],
-																		'path' 	=> $hook['path']
-																);
-										$parameter 	= array(
-																		'tableName' => $tableName,
-																		'fields'    => $fields,
-																);
-										$this->getEventManager()->trigger('insertEvent', $this, $parameter);
-								}
-						}
-				}                     
-		}
+	//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+	$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
+		
+	if(count($hooksArr) > 0){
+			foreach($hooksArr as $hook){
+					if(count($hook) > 0){
+							
+							if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){			
+									$tableName  = "modules_settings";
+									$fields     = array(
+																	'mod_id' 	=> $modId,
+																	'fld_type' 	=> "3",
+																	'obj_name' 	=> $hook['name'],
+																	'menu_name' => $hook['title'],
+																	'path' 	=> $hook['path']
+															);
+									$parameter 	= array(
+																	'tableName' => $tableName,
+																	'fields'    => $fields,
+															);
+									$this->getEventManager()->trigger('insertEvent', $this, $parameter);
+							}
+					}
+			}                     
+	}
 	else{
 	    //DELETE ADDED HOOKS TO HANGERS OF THIS MODULE, IF NO HOOKS EXIST IN THIS MODULE
 	    $tableName = "modules_hooks_settings";
