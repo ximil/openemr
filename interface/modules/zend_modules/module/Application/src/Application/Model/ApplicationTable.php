@@ -152,6 +152,21 @@ class ApplicationTable extends AbstractTableGateway
         $result = $tmp[0]['total'];
         return $result;
      }
+     
+     public function sqlQuery($sql, $params = '')
+     {
+        $statement = $this->adapter->query($sql);
+        $return = $statement->execute($params);
+        $count = count($params);
+        $arr = array();
+        foreach($params as $val) {
+            array_push($arr, "'" . $val . "'");
+        }
+        $logSQL = preg_replace(array_fill(0, $count, "/\?/"), $arr, $sql, 1);
+        $this->log($logSQL);
+        
+        return $return;
+     }
     
     /**
      * Log all DB Transactions
@@ -161,10 +176,20 @@ class ApplicationTable extends AbstractTableGateway
      * @example $obj->log($params) call log function
      * @param arry $params
      */
-    public function log($params)
+    public function log($logSQL)
     {
-        $fp = fopen(sys_get_temp_dir()."//test.txt", "a");
-	fwrite($fp, "Log all evets \n" . print_r($params, 1) . "\n");
+        $sql        = "INSERT INTO log SET date = ? , 
+                                user = ?, 
+                                groupname = ?, 
+                                comments = ?";
+        
+        $dt         = date('Y-m-d  H:i:s');
+        $user       = $_SESSION['authUser'];
+        $group      = $_SESSION['authGroup'];
+        $params     = array($dt, $user, $group, $logSQL);
+        $statement  = $this->adapter->query($sql);
+        $return     = $statement->execute($params);
+        return true;
     }
     
 }

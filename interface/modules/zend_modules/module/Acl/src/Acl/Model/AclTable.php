@@ -25,16 +25,13 @@ class AclTable extends AbstractTableGateway
         return $resultSet;
     }
     
-    /** Log testing */
-    public function testing()
+    /** Example for Model use Application Model */
+    public function sqlTest()
     {
-        $parameter = array(
-                    'tableName' => 'tableName',
-                    'fields'    => 'fields',
-                    'join'      => 'join',
-                    'where'     => 'where',
-                 );
-        $obj = new ApplicationTable;
-        $obj->log($parameter);   
+        $sql    = "SELECT * FROM log WHERE user=?";
+        $params = array('admin');
+        $obj    = new ApplicationTable;
+        $result = $obj->sqlQuery($sql, $params);
+        return $result;
     }
 }

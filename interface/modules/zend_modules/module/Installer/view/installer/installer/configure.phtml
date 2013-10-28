@@ -137,7 +137,7 @@ if($TabSettings[3]['cnt'] > 0){
      <div title="<?php echo xlt('Settings');?>" id="tab_config<?php echo $mod_id; ?>" iconCls="icon-preference"> 
         <?php
             //var_dump($this->settings);
-            if(is_object($this->settings)){
+            if(is_object($this->settings) && count($this->settings) > 0){
                 
             $form = $this->settings;
                 if(method_exists($form,'prepare')){

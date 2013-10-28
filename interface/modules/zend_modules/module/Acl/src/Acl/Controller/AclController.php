@@ -17,7 +17,17 @@ class AclController extends AbstractActionController
     {
         $this->listenerObject = new Listener;
     }
-
+    
+    /**
+     * Example for Model use Application Model
+     */
+    public function exampleAction()
+    {
+        $result = $this->getAclTable()->sqlTest();
+        foreach ($result as $row) {
+            echo '<pre>'; print_r($row); echo '</pre>';
+        }
+    }
     public function indexAction()
     {
         $listener = $this->getServiceLocator()->get('Listener');
@@ -504,14 +514,6 @@ class AclController extends AbstractActionController
         exit();
     }
     
-    public function getAclTable()
-    {
-        if (!$this->aclTableTable) {
-            $sm = $this->getServiceLocator();
-            $this->aclTable = $sm->get('Acl\Model\AclTable');
-        }
-        return $this->aclTable;
-    }
     
     /**
      *
@@ -609,5 +611,19 @@ class AclController extends AbstractActionController
         }
         $output_string .='</ul>';
         return $output_string;
+    }
+    
+    /**
+     * Table Gateway
+     * 
+     * @return type
+     */
+    public function getAclTable()
+    {	
+        if (!$this->aclTable) {
+            $sm = $this->getServiceLocator();
+            $this->aclTable = $sm->get('Acl\Model\AclTable');
+        }
+        return $this->aclTable;
     }
 }

@@ -19,8 +19,25 @@ use Zend\View\Model\ViewModel;
 
 class IndexController extends AbstractActionController
 {
+    protected $applicationTable;
+    
     public function indexAction()
     {
+        /**
+         * function sqlQuery
+         * Executeing SQL Statments 
+         * 
+         * @param string $sql SQL Statments
+         * @param $array $params parameters
+         */
+        
+        $sql = "SELECT * FROM log WHERE user=?";
+        $params = array('admin');
+        $result = $this->getApplicationTable()->sqlQuery($sql, $params);
+        foreach ($result as $row) {
+            echo '<pre>'; print_r($row); echo '</pre>';
+        }
+        
         /**
          * SQL Query Examples
          */
@@ -154,5 +171,19 @@ class IndexController extends AbstractActionController
         /** End Examples */
         
         return new ViewModel();
+    }
+    
+    /**
+     * Table Gateway
+     * 
+     * @return type
+     */
+    public function getApplicationTable()
+    {	
+        if (!$this->applicationTable) {
+            $sm = $this->getServiceLocator();
+            $this->applicationTable = $sm->get('Application\Model\ApplicationTable');
+        }
+        return $this->applicationTable;
     }
 }
