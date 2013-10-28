@@ -1,0 +1,8 @@
+<div class="easyui-tabs" id="tab" style="width:800px;height:auto;">
+    <div title="General" id="tab_acl" iconCls="icon-acl">
+          <iframe src="<?php echo $GLOBALS['webroot']; ?>/interface/modules/zend_modules/public/acl/acl?module_id=<?php echo $this->mod_id; ?>" style="width:100%;height: 700px;" frameborder="0"></iframe>
+    </div>
+    <div title="Advanced ACL" id="tab_acl2" iconCls="icon-acladvanced">
+          <iframe src="<?php echo $GLOBALS['webroot']; ?>/interface/modules/zend_modules/public/acl/index?module_id=<?php echo $this->mod_id; ?>" style="width:100%;height: 700px;" frameborder="0"></iframe>
+    </div>
+</div>
