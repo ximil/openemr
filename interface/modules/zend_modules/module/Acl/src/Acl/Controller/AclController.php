@@ -89,9 +89,9 @@ class AclController extends AbstractActionController
 				
         $user_groups = array();
 				foreach($data as $row){
-						$user_groups[$row['group_id']] = $row['group_name'];
+						$user_groups[$row['id']] = $row['name'];
 				}
-
+				
         $data = $this->getAclTable()->aclSections($module_id);        
         $module_data = array();
         $module_data['module_components'] = array();

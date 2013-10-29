@@ -1358,6 +1358,42 @@ if (!empty($reg)) {
   <?php } ?>
   <li><a class="collapsed" id="repimg" ><span><?php xl('Reports','e') ?></span></a>
     <ul>
+				<?php 	
+				$module_query = sqlStatement("SELECT msh.*,ms.menu_name,ms.path,m.mod_ui_name,m.type FROM modules_hooks_settings AS msh LEFT OUTER JOIN modules_settings AS ms ON
+                                    obj_name=enabled_hooks AND ms.mod_id=msh.mod_id LEFT OUTER JOIN modules AS m ON m.mod_id=ms.mod_id 
+                                    WHERE fld_type=3 AND mod_active=1 AND sql_run=1 AND attached_to='reports' ORDER BY mod_id");
+				if (sqlNumRows($module_query)) {
+					$jid = 0;
+					$modid = '';
+					while ($modulerow = sqlFetchArray($module_query)) {
+						$modulePath = "";
+						$added 		= "";
+							if($modulerow['type'] == 0) {
+								$modulePath = $GLOBALS['customDir'];
+								$added		= "";
+							}
+							else{ 	
+								$added		= "index";
+								$modulePath = $GLOBALS['zendModDir'];
+							}
+								
+						$relative_link ="modules/".$modulePath."/".$modulerow['mod_relative_link'].$modulerow['path'];
+						$mod_nick_name = $modulerow['menu_name'] ? $modulerow['menu_name'] : 'NoName';
+						
+						if($jid==0 || ($modid!=$modulerow['mod_id'])){
+							if($modid!='')
+							echo "</ul>";
+						?>
+						<li><a class="collapsed_lv2"><span><?php echo xlt($modulerow['mod_ui_name']); ?></span></a>
+							<ul>
+						<?php
+						}
+						$jid++;
+						$modid = $modulerow['mod_id'];
+						genMiscLink('RTop','adm','0',xlt($mod_nick_name),$relative_link);
+					}
+        echo "</ul>";
+      } ?>
       <li><a class="collapsed_lv2"><span><?php xl('Clients','e') ?></span></a>
         <ul>
 	  <?php genMiscLink('RTop','rep','0',xl('List'),'reports/patient_list.php'); ?>

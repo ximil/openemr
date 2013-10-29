@@ -5861,15 +5861,6 @@ CREATE TABLE `module_acl_group_settings` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `module_acl_groups`
---
-CREATE TABLE `module_acl_groups` (
-  `group_id` int(11) DEFAULT NULL,
-  `group_name` varchar(255) DEFAULT NULL
-);
--- --------------------------------------------------------
-
---
 -- Table structure for table `module_acl_sections`
 --
 CREATE TABLE `module_acl_sections` (
@@ -5877,16 +5868,6 @@ CREATE TABLE `module_acl_sections` (
   `section_name` varchar(255) DEFAULT NULL,
   `parent_section` int(11) DEFAULT NULL,
   `section_identifier` varchar(50) DEFAULT NULL
-);
--- --------------------------------------------------------
-
---
--- Table structure for table `module_acl_user_groups`
---
-CREATE TABLE `module_acl_user_groups` (
-  `group_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`group_id`,`user_id`)
 );
 -- --------------------------------------------------------
 

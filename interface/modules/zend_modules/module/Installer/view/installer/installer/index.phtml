@@ -133,10 +133,10 @@ $depObj 	= $this->dependencyObject;
 			  							if ($moduleResult -> sqlRun==0){?>
 			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo $listener->transl('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo $listener->transl('Install');?>"/></a>
 			  							<?php 			  								
-			  							}else if ($moduleResult -> modActive == 1){?>
+			  							}else if ($moduleResult -> modActive == 1 && $moduleResult -> modName != 'Acl'){?>
 			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo $listener->transl('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo $listener->transl('Disable');?>"/></a>
 										<?php }
-										else{?>
+										elseif($moduleResult -> modName != 'Acl'){?>
 											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo $listener->transl('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo $listener->transl('Enable');?>"/></a>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}?>

@@ -376,23 +376,17 @@ class InstallerController extends AbstractActionController
 	    $this->getEventManager()->trigger('deleteEvent', $this, $parameter);
 		}
 		
-		$aclArray	= array();
-		if($obj){
-				//$obj	= new \Lab\Model\Configuration();
-				$aclArray	= $obj->getAclConfig();
+		
+		//GET MODULE ACL SECTION FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+	  $aclArray	= $this->getInstallerTable()->getModuleAclSections($moduleDirectory);
+		if(sizeof($aclArray)>0){
+				$this->getInstallerTable()->insertAclSections($aclArray,$moduleDirectory,$modId);
+		}else{
+				$this->getInstallerTable()->deleteACLSections($modId);
 		}
 		
-		if(count($aclArray) > 0){
-				foreach($aclArray as $acl){
-						if(count($acl) > 0){
-						}
-				}                     
-		}
-	else{
-	}
 	
 	return new ViewModel(array(
-
             'mod_id'                	=> $request->getPost('mod_id'),
             'TabSettings'           	=> $this->getInstallerTable()->getTabSettings($request->getPost('mod_id')),
             'ACL'                   	=> $this->getInstallerTable()->getSettings('ACL',$request->getPost('mod_id')),
@@ -408,9 +402,8 @@ class InstallerController extends AbstractActionController
             'Hooks'                 	=> $hooksArr,
             'hookObject'            	=> $this->getInstallerTable(),
             'settings'              	=> $obj,
-	    'listenerObject' 		=> $this->listenerObject,
-	    'listenerObject' 	    => $this->listenerObject,
-	 
+						'listenerObject' 		=> $this->listenerObject,
+						'listenerObject' 	    => $this->listenerObject,
         ));
 	
     }

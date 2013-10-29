@@ -786,6 +786,74 @@ class InstModuleTable
 						$retArr	= $objHooks->getDependedModulesConfig();
 				}
 				return $retArr;
-		}	
+		}
+		
+		//GET MODULE ACL SECTIONS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+		public function getModuleAclSections($moduleDirectory)
+		{	
+				$phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$objHooks  = new \[module_name]\Model\Configuration();');
+				$className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
+				
+				if(class_exists($className)){
+						eval($phpObjCode);
+				}
+				
+				$aclArray	= array();
+				if($objHooks){
+						$aclArray	= $objHooks->getAclConfig();
+				}
+				return $aclArray;
+		}
+		
+		public function insertAclSections($acl_data,$mod_dir,$module_id){
+				$obj    = new ApplicationTable;
+				foreach($acl_data as $acl){
+						$identifier = $acl['section_id'];
+						$name				= $acl['section_name'];
+						$parent			= $acl['parent_section'];
+						
+						$sql_parent = "SELECT section_id FROM module_acl_sections WHERE section_identifier =?";
+						$result = $obj->sqlQuery($sql_parent,array($parent));
+						$parent_id = 0;
+						foreach($result as $row){
+								$parent_id = $row['section_id'];
+						}
+						$sql_max_id = "SELECT MAX(section_id) as max_id FROM module_acl_sections";
+						$result = $obj->sqlQuery($sql_max_id);
+						$section_id = 0;
+						foreach($result as $row){
+								$section_id = $row['max_id'];
+						}
+						$section_id++;
+						$sql_if_exists = "SELECT COUNT(*) as count FROM module_acl_sections WHERE section_identifier = ? AND parent_section =?";
+						$result = $obj->sqlQuery($sql_if_exists,array($identifier,$parent_id));
+						$exists = 0;
+						foreach($result as $row){
+								if($row['count'] > 0) $exists =1;
+						}
+						if($exists) continue;
+						$sql_insert = "INSERT INTO module_acl_sections (`section_id`,`section_name`,`parent_section`,`section_identifier`) VALUES(?,?,?,?)";
+						$obj->sqlQuery($sql_insert,array($section_id,$name,$parent_id,$identifier));
+				}
+				
+				$sql = "SELECT COUNT(mod_id) AS count FROM modules_settings WHERE mod_id = ?";
+				$result = $obj->sqlQuery($sql,array($module_id));
+				$exists = 0;
+				foreach($result as $row){
+						if($row['count'] > 0) $exists =1;
+				}
+				if(!$exists){
+						$sql = "INSERT INTO modules_settings(`mod_id`,`fld_type`,`obj_name`,`menu_name`) VALUES(?,?,?,?)";
+						$result = $obj->sqlQuery($sql,array($module_id,1,$mod_dir,$mod_dir));
+				}
+		}
+		public function deleteACLSections($module_id){
+				$obj    = new ApplicationTable;
+				$sql 		= "DELETE FROM module_acl_sections WHERE parent_section =?";
+				$obj->sqlQuery($sql,array($module_id));
+				
+				$sqsl		= "DELETE FROM modules_settings WHERE mod_id =?";
+				$obj->sqlQuery($sql,array($module_id));
+		}
 }
 ?>

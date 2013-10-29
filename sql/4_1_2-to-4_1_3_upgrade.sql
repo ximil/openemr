@@ -110,6 +110,10 @@ CREATE TABLE `modules` (
 );
 #EndIf
 
+#IfNotRow modules mod_directory Acl
+insert into `modules` (`mod_id`, `mod_name`, `mod_directory`, `mod_parent`, `mod_type`, `mod_active`, `mod_ui_name`, `mod_relative_link`, `mod_ui_order`, `mod_ui_active`, `mod_description`, `mod_nick_name`, `mod_enc_menu`, `permissions_item_table`, `directory`, `date`, `sql_run`, `type`) values('1','Acl','Acl','','','1','Acl','public/acl/','0','0','','ACL','',NULL,'','2013-10-28 14:32:33','1','1');
+#EndIf
+
 #IfNotTable module_acl_group_settings
 CREATE TABLE `module_acl_group_settings` (
   `module_id` int(11) NOT NULL,
@@ -120,27 +124,12 @@ CREATE TABLE `module_acl_group_settings` (
 );
 #EndIf
 
-#IfNotTable module_acl_groups
-CREATE TABLE `module_acl_groups` (
-  `group_id` int(11) DEFAULT NULL,
-  `group_name` varchar(255) DEFAULT NULL
-);
-#EndIf
-
 #IfNotTable module_acl_sections
 CREATE TABLE `module_acl_sections` (
   `section_id` int(11) DEFAULT NULL,
   `section_name` varchar(255) DEFAULT NULL,
   `parent_section` int(11) DEFAULT NULL,
   `section_identifier` varchar(50) DEFAULT NULL
-);
-#EndIf
-
-#IfNotTable module_acl_user_groups
-CREATE TABLE `module_acl_user_groups` (
-  `group_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`group_id`,`user_id`)
 );
 #EndIf
 
