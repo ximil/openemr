@@ -832,8 +832,8 @@ class InstModuleTable
 								if($row['count'] > 0) $exists =1;
 						}
 						if($exists) continue;
-						$sql_insert = "INSERT INTO module_acl_sections (`section_id`,`section_name`,`parent_section`,`section_identifier`) VALUES(?,?,?,?)";
-						$obj->sqlQuery($sql_insert,array($section_id,$name,$parent_id,$identifier));
+						$sql_insert = "INSERT INTO module_acl_sections (`section_id`,`section_name`,`parent_section`,`section_identifier`,`module_id`) VALUES(?,?,?,?,?)";
+						$obj->sqlQuery($sql_insert,array($section_id,$name,$parent_id,$identifier,$module_id));
 				}
 				
 				$sql = "SELECT COUNT(mod_id) AS count FROM modules_settings WHERE mod_id = ?";
@@ -849,7 +849,7 @@ class InstModuleTable
 		}
 		public function deleteACLSections($module_id){
 				$obj    = new ApplicationTable;
-				$sql 		= "DELETE FROM module_acl_sections WHERE parent_section =?";
+				$sql 		= "DELETE FROM module_acl_sections WHERE module_id =? AND parent_section <> 0";
 				$obj->sqlQuery($sql,array($module_id));
 				
 				$sqsl		= "DELETE FROM modules_settings WHERE mod_id =?";

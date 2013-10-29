@@ -48,8 +48,8 @@ class AclTable extends AbstractTableGateway
     public function aclSections($module_id){
         $obj    = new ApplicationTable;
         if($module_id != ''){
-            $sql    = "SELECT * FROM module_acl_sections WHERE section_id = ? OR parent_section = ?";
-            $params = array($module_id,$module_id);
+            $sql    = "SELECT * FROM module_acl_sections WHERE module_id = ?";
+            $params = array($module_id);
         $result = $obj->sqlQuery($sql, $params);
         }else{
             $sql = "SELECT * FROM module_acl_sections ";
@@ -160,12 +160,12 @@ class AclTable extends AbstractTableGateway
         return $max_id;
     }
     public function saveACLSections($module_id,$parent_id,$section_identifier,$section_name,$section_id){
-        $sql        = "INSERT INTO module_acl_sections(section_id,section_name,parent_section,section_identifier) VALUES(?,?,?,?)";
+        $sql        = "INSERT INTO module_acl_sections(section_id,section_name,parent_section,section_identifier,module_id) VALUES(?,?,?,?,?)";
         $obj        = new ApplicationTable;
-        $result     = $obj->sqlQuery($sql,array($section_id,$section_name,$parent_id,$section_identifier));
+        $result     = $obj->sqlQuery($sql,array($section_id,$section_name,$parent_id,$section_identifier,$module_id));
     }
     public function getModuleSections($module_id){
-        $sql    = "SELECT * FROM module_acl_sections WHERE parent_section = ?";
+        $sql    = "SELECT * FROM module_acl_sections WHERE module_id = ?";
         $obj    = new ApplicationTable;
         $result = $obj->sqlQuery($sql,array($module_id));
         return $result;
