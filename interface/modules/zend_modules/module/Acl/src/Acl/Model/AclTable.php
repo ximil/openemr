@@ -5,7 +5,7 @@ namespace Acl\Model;
 use Zend\Db\TableGateway\AbstractTableGateway;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\ResultSet\ResultSet;
-use \Application\Model\ApplicationTable ;
+use \Application\Model\ApplicationTable;
 
 class AclTable extends AbstractTableGateway
 {

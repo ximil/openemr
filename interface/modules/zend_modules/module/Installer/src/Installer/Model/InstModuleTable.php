@@ -34,15 +34,18 @@ use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Sql;
 use Zend\Db\Sql\Where;
 use \Application\Model\ApplicationTable;
+
 class InstModuleTable
 {
     protected $tableGateway;
+		protected $applicationTable;
 
     public function __construct(TableGateway $tableGateway){
         $this->tableGateway = $tableGateway;
 				$adapter = \Zend\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
         $this->adapter = $adapter;
         $this->resultSetPrototype = new ResultSet();
+				$this->applicationTable	= new ApplicationTable;
     }
 	
     /**
@@ -81,10 +84,10 @@ class InstModuleTable
      * @param unknown_type $base
      * @return boolean
      */
-    public function register($directory,$rel_path,$state=0, $base = "custom_modules" ){
+    public function register($directory,$rel_path,$state=0, $base = "custom_modules" )
+    {
 				$check = sqlQuery("select mod_active from modules where mod_directory='$directory'");
-				if ($check == false)
-				{
+				if ($check == false) {
 						$added = "";
 						$typeSet = "";
 						if($base != "custom_modules"){
@@ -93,20 +96,42 @@ class InstModuleTable
 						}
 						$lines = @file($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/info.txt");
 						if ($lines){
-								$name = $lines[0];
-						}else
+							$name = $lines[0];
+						}
+						else
 								$name = $directory;
 						
 						$uiname = ucwords(strtolower($directory));
-						$moduleInsertId = sqlInsert("insert into modules set
+
+						$sql = "INSERT INTO modules SET mod_name = ?,
+																						mod_active = ?, 
+																						mod_ui_name = ?, 
+																						mod_relative_link = ?,
+																						$typeSet 
+																						mod_directory = ?, 
+																						date=NOW()
+																						";
+						$params = array(
+							 $name,
+							 $state,
+							 $uiname,
+							 strtolower($rel_path),
+							 mysql_escape_string($directory),
+						);
+
+						$obj    = new ApplicationTable;
+						$result = $obj->sqlQuery($sql, $params);
+						$moduleInsertId = $result->getGeneratedValue();
+
+						/*$moduleInsertId = sqlInsert("insert into modules set
 								mod_name='$name',
 								mod_active='$state',
 								mod_ui_name= '$uiname',
 								mod_relative_link= '" . strtolower($rel_path) . "',".$typeSet."
 						mod_directory='".mysql_escape_string($directory)."',
 						date=NOW()
-						");
-				 
+						");*/
+		 
 						if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
 								$ModuleObject = 'modules_'.strtolower($directory);
 								$ModuleObjectTitle = 'Module '.ucwords($directory);
@@ -114,11 +139,11 @@ class InstModuleTable
 								include_once($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php");
 								foreach($MODULESETTINGS as $Settings=>$SettingsArray){
 										if($Settings=='ACL')
-												$SettingsVal =1;
+											$SettingsVal =1;
 										elseif($Settings=='preferences')
-												$SettingsVal =2;
+											$SettingsVal =2;
 										else
-												$SettingsVal =3;
+											$SettingsVal =3;
 										$i = 0;
 										foreach($SettingsArray as $k=>$v){
 												if($SettingsVal==1){
@@ -127,11 +152,17 @@ class InstModuleTable
 														addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v['menu_name']);
 														$i++;
 												}
-												sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']));
+												/*sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']));*/
+												$sql = "INSERT INTO modules_settings VALUES (?,?,?,?,?)";
+												$params = array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']);
+												$result = $obj->sqlQuery($sql, $params);
 										}
 								}
 						}
-						sqlStatement("INSERT INTO module_acl_sections VALUES (?,?,?,?)",array($moduleInsertId,$name,0,strtolower($directory)));
+						/*sqlStatement("INSERT INTO module_acl_sections VALUES (?,?,?,?)",array($moduleInsertId,$name,0,strtolower($directory)));*/
+						$sql = "INSERT INTO module_acl_sections VALUES (?,?,?,?)";
+						$params = array($moduleInsertId,$name,0,strtolower($directory));
+						$result = $obj->sqlQuery($sql, $params);
 						return $moduleInsertId;
 				}
 				return false;
@@ -145,55 +176,25 @@ class InstModuleTable
     public function allModules(){
 				$all = array();
 				$sql = "select * from modules order by mod_ui_order asc";
-				$res = sqlStatement($sql);
-				if($res){
-						while($m = sqlFetchArray($res)){
-								$mod = new InstModule();
-								$mod -> exchangeArray($m);
-								array_push($all,$mod);
-						}
-				}
-				return $all;
-    	
+				$res =  $this->applicationTable->sqlQuery($sql);				
+				return $res;    	
     }
-    
+   
     /**
      * get the list of all modules
      * @return multitype:
      */
     public function getInstalledModules(){
 				$all = array();
-	
-				$adapter 	= $this->adapter;
-				$sql 		= new Sql($adapter);
-			 
-				$select = $sql->select();
-				$where	= array('mod_active' => "1");
-				$select->from("modules")
-								->where($where)
-								->order("mod_ui_order asc");
 				
-				$selectString 	= $sql->getSqlStringForSqlObject($select);
+				$sql = "select * from modules where mod_active = ? order by mod_ui_order asc";
+				$res =  $this->applicationTable->sqlQuery($sql,array("1"));
 				
-				//LOGGING QUERIES
-				$parameter 	= array(
-														'query' 	=> $selectString,
-														'type'    	=> 1, // 1- for log to table ; 0 - for log file
-												 );
-				$obj = new ApplicationTable;
-				$obj->log($parameter);
-
-				$results 	= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-				$resultSet 	= new ResultSet();
-				$resultSet->initialize($results);	
-				$resArr		= $resultSet->toArray();
-				
-				if(count($resArr) > 0){
-						foreach($resArr as $res)
+				if(count($res) > 0){
+						foreach($res as $row)
 						{
 								$mod = new InstModule();
-								$mod -> exchangeArray($res);
+								$mod -> exchangeArray($row);
 								array_push($all,$mod);
 						}
 				}	
@@ -251,53 +252,20 @@ class InstModuleTable
     function updateRegistered ( $id, $mod )
     {
 				if($mod == "mod_active=1"){
-						$resp	= $this->checkDependencyOnEnable($id); 
+						$resp	= $this->checkDependencyOnEnable($id);
+						
 						if($resp['status'] == 'success' && $resp['code'] == '1'){
-								$adapter = $this->adapter;
-								$sql = new Sql($adapter);
-								$update = $sql->update("modules");
-								$fields	= array(
-																'mod_active' => "1",
-																'date' => date('Y-m-d H:i:s'));
-								$where	= array('mod_id' => $id);
-								$update->set($fields);
-								$update->where($where);
-								$selectString = $sql->getSqlStringForSqlObject($update);
-								//LOGGING QUERIES
-								$parameter 	= array(
-																		'query' 	=> $selectString,
-																		'type'    	=> 1, // 1- for log to table ; 0 - for log file
-																 );
-								$obj = new ApplicationTable;
-								$obj->log($parameter);
-								$results = $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
+								$this->applicationTable->sqlQuery("UPDATE modules SET mod_active = ?, date = ? WHERE mod_id = ? ",array("1",date('Y-m-d H:i:s'),$id));
 						}
 				}
 				else if($mod == "mod_active=0"){
 						$resp	= $this->checkDependencyOnDisable($id);	    
 						if($resp['status'] == 'success' && $resp['code'] == '1'){
-								$adapter = $this->adapter;
-								$sql = new Sql($adapter);
-								$update = $sql->update("modules");
-								$fields	= array(
-																'mod_active' => "0",
-																'date' => date('Y-m-d H:i:s'));
-								$where	= array('mod_id' => $id);
-								$update->set($fields);
-								$update->where($where);
-								$selectString = $sql->getSqlStringForSqlObject($update);
-								//LOGGING QUERIES
-								$parameter 	= array(
-																		'query' 	=> $selectString,
-																		'type'    	=> 1, // 1- for log to table ; 0 - for log file
-																 );
-								$obj = new ApplicationTable;
-								$obj->log($parameter);
-								$results = $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
+								$this->applicationTable->sqlQuery("UPDATE modules SET mod_active = ?, date = ? WHERE mod_id = ? ",array("0",date('Y-m-d H:i:s'),$id));
 						}	 
 				}
 				else{
-						$resp = sqlInsert("update modules set $mod,date=NOW() where mod_id=?",array($id));    
+						$this->applicationTable->sqlQuery("UPDATE modules SET $mod, date = ? WHERE mod_id = ? ",array("0",date('Y-m-d H:i:s'),$id));						  
 				}
 				return $resp;
     }
@@ -408,14 +376,16 @@ class InstModuleTable
      *Function To Get Saved Hooks For this Module
      */
     public function getActiveHooks($mod_id){
-				$all = array();
-				$HooksRes = sqlStatement("SELECT msh.*,ms.menu_name FROM modules_hooks_settings AS msh LEFT OUTER JOIN modules_settings AS ms ON
-																 obj_name=enabled_hooks AND ms.mod_id=msh.mod_id LEFT OUTER JOIN modules AS m ON msh.mod_id=m.mod_id 
-																 WHERE fld_type=3 AND mod_active=1 AND msh.mod_id=?",array($mod_id));
-				while($HooksRow = sqlFetchArray($HooksRes)){
+				$all 		= array();
+				$sql		= "SELECT msh.*,ms.menu_name FROM modules_hooks_settings AS msh LEFT OUTER JOIN modules_settings AS ms ON
+										obj_name=enabled_hooks AND ms.mod_id=msh.mod_id LEFT OUTER JOIN modules AS m ON msh.mod_id=m.mod_id 
+										WHERE fld_type = ? AND mod_active = ? AND msh.mod_id = ? ";
+				$res		= $this->applicationTable->sqlQuery($sql,array("3","1",$mod_id));
+				foreach($res as $row)
+				{
 						$mod = new InstModule();
-						$mod -> exchangeArray($HooksRow);
-						array_push($all,$mod);        
+						$mod -> exchangeArray($row);
+						array_push($all,$mod);  
 				}
 				return $all;
     }
@@ -450,35 +420,13 @@ class InstModuleTable
      * Function to get Status of a Hook
      */
     public function getHookStatus($modId,$hookId,$hangerId){
-				if($modId && $hookId && $hangerId){
-						/*$modArr	= sqlQuery("SELECT * FROM modules_hooks_settings WHERE mod_id=? AND enabled_hooks = ? AND attached_to = ? ",
-						array($modId,$hookId,$hangerId));*/
-						$adapter 	= $this->adapter;
-						$sql 		= new Sql($adapter);
-						 
-						$select = $sql->select();
-						$where	= array('mod_id' => $modId, 'enabled_hooks' => $hookId, 'attached_to' => $hangerId );
-						$select->from("modules_hooks_settings")
-												->columns(array('mod_id'))
-												->where($where);
+				if($modId && $hookId && $hangerId){						
+						$res	= $this->applicationTable->sqlQuery("select * FROM modules_hooks_settings WHERE mod_id = ? AND enabled_hooks = ? AND attached_to = ? ",array($modId,$hookId,$hangerId));
+						foreach($res as $row)
+						{
+								$modArr	= $row;
+						}
 				
-						$selectString 	= $sql->getSqlStringForSqlObject($select);
-						//LOGGING QUERIES
-						$parameter 	= array(
-																'query' 	=> $selectString,
-																'type'    	=> 1, // 1- for log to table ; 0 - for log file
-														 );
-						$obj = new ApplicationTable;
-						$obj->log($parameter);
-		
-						$results 	= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-						$resultSet 	= new ResultSet();
-						$resultSet->initialize($results);	
-						$resArr		= $resultSet->toArray();
-						
-						$modArr		= $resArr[0];
-						
 						if($modArr['mod_id'] <> ""){
 								return "1";
 						}
@@ -496,30 +444,32 @@ class InstModuleTable
 						sqlStatement("DELETE FROM gacl_aro_map WHERE acl_id=? AND value=?",array($post['aclID'],$post['user']));
 				}
     }
+		
+		 /**
+     * Function to Delete Hooks
+     */
+    public function saveHooks($modId,$hookId,$hangerId){
+				if($modId){						
+						$this->applicationTable->sqlQuery("INSERT INTO modules_hooks_settings(mod_id, enabled_hooks, attached_to) VALUES (?,?,?) ",array($modId,$hookId,$hangerId));			
+				}
+    }
+		
+		
     /**
      * Function to Delete Hooks
      */
     public function DeleteHooks($post){
-				if($post['hooksID']){
-						//sqlStatement("DELETE FROM modules_hooks_settings WHERE id=?",array($post['hooksID']));
-						$adapter 	= $this->adapter;
-						$sql 	= new Sql($adapter); 
-				
-						$where	= array('id' => $post['hooksID']);
-						$delete 	= $sql->delete();
-						$delete->from("modules_hooks_settings");	    
-						$delete->where($where);
-						
-						$selectString 	= $sql->getSqlStringForSqlObject($delete);
-						//LOGGING QUERIES
-						$parameter 	= array(
-														'query' 	=> $selectString,
-														'type'    	=> 1, // 1- for log to table ; 0 - for log file
-															 );
-						$obj = new ApplicationTable;
-						$obj->log($parameter);
-					
-						$adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);						
+				if($post['hooksID']){						
+						$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE id = ? ",array($post['hooksID']));			
+				}
+    }
+		
+		/**
+     * Function to Delete Module Hooks
+     */
+    public function deleteModuleHooks($modId){
+				if($modId){						
+						$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE mod_id = ? ",array($modId));			
 				}
     }
     
@@ -527,65 +477,18 @@ class InstModuleTable
     {
 				$retArray	= array();
 			
-				$reader 	= new Ini();
+				$modDirectory	= $this->getModuleDirectory($mod_id);
 				
-				$adapter 	= $this->adapter;
-							$sql 		= new Sql($adapter);
-						 
-							$select = $sql->select();
-				$where	= array('mod_id' => $mod_id);
-							$select->from("modules")
-					->columns(array('mod_directory'))
-					->where($where);
-				
-				$selectString 	= $sql->getSqlStringForSqlObject($select);
-				//LOGGING QUERIES
-				$parameter 	= array(
-								'query' 	=> $selectString,
-								'type'    	=> 1, // 1- for log to table ; 0 - for log file
-						 );
-							$obj = new ApplicationTable;
-							$obj->log($parameter);
-			
-							$results 	= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-				$resultSet 	= new ResultSet();
-				$resultSet->initialize($results);	
-				$resArr		= $resultSet->toArray();
-				
-				$modArr		= $resArr[0];
-				
-				if($modArr['mod_directory']){
+				if($modDirectory){
 						//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
-						$depModules	= $this->getDependedModulesByDirectoryName($modArr['mod_directory']);
+						$depModules	= $this->getDependedModulesByDirectoryName($modDirectory);
 						
 						$requiredModules	= array();
 						if(count($depModules) > 0){
 								foreach($depModules as $depModule){
-										if($depModule <> ""){
-												$select 	= $sql->select();
-												$where		= array('mod_directory' => $depModule);
-												$select->from("modules")
-																		->columns(array('mod_active'))
-																		->where($where);
-												
-												$selectString 	= $sql->getSqlStringForSqlObject($select);
-												//LOGGING QUERIES
-												$parameter 	= array(
-																				'query' 	=> $selectString,
-																				'type'    	=> 1, // 1- for log to table ; 0 - for log file
-																					 );
-												$obj = new ApplicationTable;
-												$obj->log($parameter);
-											
-												$results 		= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-												
-												$resultSet 	= new ResultSet();
-												$resultSet->initialize($results);	
-												$resArr			= $resultSet->toArray();
-												$check			= $resArr[0];
-												
-												if($check['mod_active'] <> "1"){
+										if($depModule <> ""){																						
+												$res	= $this->getModuleStatusByDirectoryName($moduleDir);																								
+												if($res <> "Enabled"){
 														$requiredModules[]	= $depModule;
 												}	
 										}						
@@ -619,7 +522,7 @@ class InstModuleTable
 				$depFlag	= "0";
 				
 				$modArray	= $this->getInstalledModules();
-				
+								
 				//GET MODULE DIRECTORY OF DISABLING MODULE
 				$modDirectory	= $this->getModuleDirectory($mod_id);
 				
@@ -630,7 +533,6 @@ class InstModuleTable
 						{
 								if($module->modId <> ""){
 										//GET MODULE DEPENDED MODULES
-										//print_r($module);
 										$InstalledmodDirectory	= $this->getModuleDirectory($module->modId);
 										$depModArr	= $this->getDependencyModulesDir($module->modId);
 										if(count($depModArr) > 0){
@@ -657,7 +559,7 @@ class InstModuleTable
 						$usedModArr		= array_unique($usedModArr);
 						$multiple = "";
 						if(count($usedModArr) > 1){
-					$multiple	= "s";
+								$multiple	= "s";
 						}
 						$usedModules	= implode(",",$usedModArr);
 						$retArray['status']	= "failure";
@@ -698,37 +600,12 @@ class InstModuleTable
     public function getDependencyModulesDir($mod_id)
     {
 				$depModulesArr	= array();
-				$reader 				= new Ini();
 				
-				$adapter 	= $this->adapter;
-				$sql 			= new Sql($adapter);
-						 
-				$select = $sql->select();
-				$where	= array('mod_id' => $mod_id);
-				$select->from("modules")
-								->where($where)
-								->columns(array('mod_directory'));
+				$modDirectory 	= $this->getModuleDirectory($mod_id);
 				
-				$selectString 	= $sql->getSqlStringForSqlObject($select);
-				
-				//LOGGING QUERIES
-				$parameter 	= array(
-														'query' 	=> $selectString,
-														'type'    	=> 1, // 1- for log to table ; 0 - for log file
-												 );
-				$obj = new ApplicationTable;
-				$obj->log($parameter);
-			
-				$results 		= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-				$resultSet 	= new ResultSet();
-				$resultSet->initialize($results);	
-				$resArr		= $resultSet->toArray();
-				$modArr		= $resArr[0];
-				
-				if($modArr['mod_directory']){			
+				if($modDirectory){			
 						//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
-						$depModulesArr	= $this->getDependedModulesByDirectoryName($modArr['mod_directory']);							 
+						$depModulesArr	= $this->getDependedModulesByDirectoryName($modDirectory);							 
 						
 				}		
 				return $depModulesArr;		
@@ -736,33 +613,11 @@ class InstModuleTable
     
     public function getModuleStatusByDirectoryName($moduleDir)
     {
-				//$check = sqlQuery("select mod_active,mod_directory from modules where mod_directory='".trim($moduleDir)."'");
-				
-				$adapter 	= $this->adapter;
-				$sql 			= new Sql($adapter);
-						 
-				$select = $sql->select();
-				$where	= array('mod_directory' => trim($moduleDir));
-				$select->from("modules")
-										->where($where)
-										->columns(array('mod_active', 'mod_directory'));
-				
-				$selectString 	= $sql->getSqlStringForSqlObject($select);
-				
-				//LOGGING QUERIES
-				$parameter 	= array(
-														'query' 		=> $selectString,
-														'type'    	=> 1, // 1- for log to table ; 0 - for log file
-												);
-				$obj = new ApplicationTable;
-				$obj->log($parameter);
-			
-				$results 		= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-				$resultSet 	= new ResultSet();
-				$resultSet->initialize($results);	
-				$resArr		= $resultSet->toArray();
-				$check		= $resArr[0];
+				$res	= $this->applicationTable->sqlQuery("select mod_active,mod_directory from modules where mod_directory = ? ",array(trim($moduleDir)));
+				foreach($res as $row)
+				{
+						$check	= $row;
+				}
 				
 				if((count($check) > 0)&& is_array($check)){
 						if($check['mod_active'] == "1"){
@@ -791,32 +646,12 @@ class InstModuleTable
     {
 				$moduleName	= "";
 				if($mod_id <> ""){	
-						
-						$adapter 	= $this->adapter;
-						$sql 		= new Sql($adapter);
-					 
-						$select = $sql->select();
-						$where	= array('mod_id' => $mod_id);
-						$select->from("modules")
-							->where($where)
-							->columns(array('mod_directory'));
-						
-						$selectString 	= $sql->getSqlStringForSqlObject($select);
-						
-						//LOGGING QUERIES
-						$parameter 	= array(
-							'query' 	=> $selectString,
-							'type'    	=> 1, // 1- for log to table ; 0 - for log file
-								 );
-						$obj = new ApplicationTable;
-						$obj->log($parameter);
-					
-						$results 	= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-						
-						$resultSet 	= new ResultSet();
-						$resultSet->initialize($results);	
-						$resArr		= $resultSet->toArray();
-						$modArr		= $resArr[0];
+											
+						$res	= $this->applicationTable->sqlQuery("SELECT mod_directory FROM modules WHERE mod_id = ? ",array($mod_id));
+						foreach($res as $row)
+						{
+								$modArr	= $row;
+						}
 						
 						if($modArr['mod_directory'] <> ""){			
 								$moduleName = $modArr['mod_directory'];
@@ -827,31 +662,11 @@ class InstModuleTable
     
     public function checkModuleHookExists($mod_id,$hookId)
     {  
-				$adapter 	= $this->adapter;
-				$sql 			= new Sql($adapter);
-						 
-				$select = $sql->select();
-				$where	= array('mod_id' => $mod_id, 'fld_type' => "3", 'obj_name' => $hookId );
-				$select->from("modules_settings")
-								->where($where)
-								->columns(array('obj_name'));
-				
-				$selectString 	= $sql->getSqlStringForSqlObject($select);
-				
-				//LOGGING QUERIES
-				$parameter 	= array(
-								'query' 	=> $selectString,
-								'type'    	=> 1, // 1- for log to table ; 0 - for log file
-						 );
-				$obj = new ApplicationTable;
-				$obj->log($parameter);
-			
-				$results 	= $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);
-				
-				$resultSet 	= new ResultSet();
-				$resultSet->initialize($results);	
-				$resArr		= $resultSet->toArray();
-				$modArr		= $resArr[0];
+				$res	= $this->applicationTable->sqlQuery("SELECT obj_name FROM modules_settings WHERE mod_id = ? AND fld_type = ? AND obj_name = ? ",array($mod_id,"3",$hookId));
+				foreach($res as $row)
+				{
+						$modArr	= $row;
+				}
 				
 				if($modArr['obj_name'] <> ""){
 						return "1";

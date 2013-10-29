@@ -127,7 +127,7 @@ class Configuration extends Form implements InputFilterAwareInterface
 		public function getDependedModulesConfig()
     {
 				//SPECIFY LIST OF DEPENDED MODULES OF A MODULE
-				$dependedModules	=  array('Encounter','Lab',);						
+				//$dependedModules	=  array('Encounter','Lab',);						
 				return $dependedModules;
     }		
 }
