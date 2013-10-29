@@ -55,7 +55,23 @@ class InstallerController extends AbstractActionController
     		
     	//get the list of installed and new modules
 	
-	$listener = $this->getServiceLocator()->get('Listener');
+        $result = $this->getInstallerTable()->allModules();
+
+        $allModules = array();
+	foreach($result as $dataArray){
+            $mod = new InstModule();
+            $mod -> exchangeArray($dataArray);
+            array_push($allModules,$mod);
+	}
+
+        return new ViewModel(array(
+            'InstallersExisting'    => $allModules,
+            'InstallersAll'         => $allModules,
+            'listenerObject'        => $this->listenerObject,
+            'dependencyObject'      => $this->getInstallerTable(),	
+        )); 
+	
+        /*$listener = $this->getServiceLocator()->get('Listener');
         $this->getEventManager()->attachAggregate($listener);
 	
 	//GET ALL MODULES	
@@ -85,8 +101,8 @@ class InstallerController extends AbstractActionController
 				'InstallersExisting' 	=> $allModules,
 				'InstallersAll' 	=> $allModules,
 				'listenerObject' 	=> $this->listenerObject,
-				'dependencyObject'	=> $this->getInstallerTable(),	
-				)); 		
+				//'dependencyObject'	=> $this->getInstallerTable(),	
+				)); */		
     }   
 
     public function getInstallerTable()
