@@ -156,16 +156,12 @@ CREATE TABLE `module_acl_user_settings` (
 
 #IfNotTable module_configuration
 CREATE TABLE `module_configuration` (
-  `module_config_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `module_id` INT(10) UNSIGNED NOT NULL,
-  `display_name` VARCHAR(45) NOT NULL COMMENT 'Display name at Config Screen',
-  `save_details` VARCHAR(255) NOT NULL COMMENT 'Saved Table name and field',
-  `field_name` VARCHAR(45) NOT NULL COMMENT 'Config Screen field name',
-  `status` TINYINT(1) UNSIGNED NOT NULL COMMENT 'Data Saved - 1,  Not Saved - 0',
-  `values` VARCHAR(255) DEFAULT NULL,
-  `options` VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY (`module_config_id`)
-) ;
+  `module_config_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_id` int(10) unsigned NOT NULL,
+  `field_name` varchar(45) NOT NULL,
+  `field_value` varchar(255) NOT NULL,
+  PRIMARY KEY (`module_config_id`);
+)
 #EndIf
 
 #IfNotTable modules_hooks_settings
