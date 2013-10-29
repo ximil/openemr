@@ -46,16 +46,16 @@ class InstallerController extends AbstractActionController
     
     public function nolayout()
     {
-        // Turn off the layout, i.e. only render the view script.
-        $viewModel = new ViewModel();
-        $viewModel->setTerminal(true);
-        return $viewModel;
+			// Turn off the layout, i.e. only render the view script.
+			$viewModel = new ViewModel();
+			$viewModel->setTerminal(true);
+			return $viewModel;
     }
     
     public function indexAction(){ 
     		
-    	//get the list of installed and new modules
-        $result = $this->getInstallerTable()->allModules();
+			//get the list of installed and new modules
+			$result = $this->getInstallerTable()->allModules();
 
         $allModules = array();
 	foreach($result as $dataArray){
@@ -74,11 +74,11 @@ class InstallerController extends AbstractActionController
 
     public function getInstallerTable()
     {
-        if (!$this->InstallerTable) {
-            $sm = $this->getServiceLocator();
-            $this -> InstallerTable = $sm -> get('Installer\Model\InstModuleTable');
-        }
-        return $this->InstallerTable;
+			if (!$this->InstallerTable) {
+				$sm = $this->getServiceLocator();
+				$this -> InstallerTable = $sm -> get('Installer\Model\InstModuleTable');
+			}
+			return $this->InstallerTable;
     }
     
     public function  registerAction(){
@@ -239,25 +239,35 @@ class InstallerController extends AbstractActionController
 								array_push($config['moduleconfig'], $tmp);
             }
 
-		//INSERT MODULE HOOKS IF NOT EXISTS
-		$moduleDirectory	= $this->getInstallerTable()->getModuleDirectory($modId);
+			//INSERT MODULE HOOKS IF NOT EXISTS
+			$moduleDirectory	= $this->getInstallerTable()->getModuleDirectory($modId);
 	
-		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
-	$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
+			//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+			$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
 
-		if(count($hooksArr) > 0){
+			if(count($hooksArr) > 0){
 				foreach($hooksArr as $hook){
-						if(count($hook) > 0){
-						if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){
-							$this->getInstallerTable()->saveModuleHookSettings($modId,$hook);
+					if(count($hook) > 0){
+						if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){								
+								$this->getInstallerTable()->saveModuleHooks($modId,$hook['name'],$hook['title'],$hook['path']);
 								}
 						}
+					}
 				}                     
-			} else {
-	    //DELETE ADDED HOOKS TO HANGERS OF THIS MODULE, IF NO HOOKS EXIST IN THIS MODULE
+			}
+			else{
+				//DELETE ADDED HOOKS TO HANGERS OF THIS MODULE, IF NO HOOKS EXIST IN THIS MODULE
 				$this->getInstallerTable()->deleteModuleHooks($modId);
-		}
+				
+				//DELETE MODULE HOOKS				
+				$this->getInstallerTable()->deleteModuleHookSettings($modId);
+			}
 		
+			$aclArray	= array();
+			if($obj){
+				//$obj	= new \Lab\Model\Configuration();
+				$aclArray	= $obj->getAclConfig();
+			}
 		
 		//GET MODULE ACL SECTION FROM A FUNCTION IN CONFIGURATION MODEL CLASS
 	  $aclArray	= $this->getInstallerTable()->getModuleAclSections($moduleDirectory);
@@ -290,7 +300,6 @@ class InstallerController extends AbstractActionController
             'hookObject'            	=> $this->getInstallerTable(),
             'settings'              	=> $obj,
 						'listenerObject' 		=> $this->listenerObject,
-						'listenerObject' 	    => $this->listenerObject,
         ));
 	
     }

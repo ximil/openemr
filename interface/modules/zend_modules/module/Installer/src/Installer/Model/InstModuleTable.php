@@ -366,25 +366,7 @@ class InstModuleTable
                    date('Y-m-d H:i:s'),
                    $id,
                 );
-                $results   = $this->applicationTable->sqlQuery($sql, $params);
-                /*$adapter = $this->adapter;
-                $sql = new Sql($adapter);
-                $update = $sql->update("modules");
-                $fields	= array(
-                                'mod_active' => "0",
-                                'date' => date('Y-m-d H:i:s'));
-                $where	= array('mod_id' => $id);
-                $update->set($fields);
-                $update->where($where);
-                $selectString = $sql->getSqlStringForSqlObject($update);
-                //LOGGING QUERIES
-                $parameter 	= array(
-                                                'query' 	=> $selectString,
-                                                'type'    	=> 1, // 1- for log to table ; 0 - for log file
-                                 );
-                $obj = new ApplicationTable;
-                $obj->log($parameter);
-                $results = $adapter->query($selectString, $adapter::QUERY_MODE_EXECUTE);*/
+                $results   = $this->applicationTable->sqlQuery($sql, $params);                
             }	 
         }
         else{
@@ -821,23 +803,6 @@ class InstModuleTable
 			return $hooksArr;
 		}
 		
-		//GET DEPENDED MODULES OF A MODULE FROM A FUNCTION IN CONFIGURATION MODEL CLASS
-		public function getDependedModulesByDirectoryName($moduleDirectory)
-		{	
-				$phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$objHooks  = new \[module_name]\Model\Configuration();');
-				$className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
-				
-				if(class_exists($className)){
-						eval($phpObjCode);
-				}
-				
-				$retArr	= array();
-				if($objHooks){
-						//$obj	= new \Lab\Model\Configuration();
-						$retArr	= $objHooks->getDependedModulesConfig();
-				}
-				return $retArr;
-		}
 		
 		//GET MODULE ACL SECTIONS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
 		public function getModuleAclSections($moduleDirectory)
@@ -906,5 +871,41 @@ class InstModuleTable
 				$sqsl		= "DELETE FROM modules_settings WHERE mod_id =? AND fld_type = 1";
 				$obj->sqlQuery($sql,array($module_id));
 		}
+		
+		//GET DEPENDED MODULES OF A MODULE FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+		public function getDependedModulesByDirectoryName($moduleDirectory)
+		{	
+				$phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$objHooks  = new \[module_name]\Model\Configuration();');
+				$className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
+				
+				if(class_exists($className)){
+						eval($phpObjCode);
+				}
+				
+				$retArr	= array();
+				if($objHooks){
+						$retArr	= $objHooks->getDependedModulesConfig();
+				}
+				return $retArr;
+		}
+		
+		/**
+     * Function to Save Module Hooks
+     */
+		public function saveModuleHooks($modId,$hookId,$hookTitle,$hookPath){
+				if($modId){						
+						$this->applicationTable->sqlQuery("INSERT INTO modules_settings(mod_id, fld_type, obj_name, menu_name, path) VALUES (?,?,?,?,?) ",array($modId,"3",$hookId,$hookTitle,$hookPath));			
+				}
+    }
+		
+		/**
+     * Function to Save Module Hooks
+     * 
+     */
+		public function deleteModuleHookSettings($modId){
+				if($modId){						
+						$this->applicationTable->sqlQuery("DELETE FROM modules_settings WHERE mod_id = ? AND fld_type = ?",array($modId,"3"));			
+				}
+    }
 }
 ?>

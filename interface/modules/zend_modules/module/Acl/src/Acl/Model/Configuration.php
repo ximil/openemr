@@ -89,7 +89,6 @@ class Configuration extends Form implements InputFilterAwareInterface
     
     public function getHookConfig()
     {
-				//SPECIFY HOOKS DETAILS OF A MODULE IN AN ARRAY, WITH MODULE NAME AS KEY
 				//SHOULD SPECIFY THE CONTROLLER AND ITS ACTION IN THE PATH, INCLUDING INDEX ACTION
 				$hooks	=  array(
 												'0' => array(
