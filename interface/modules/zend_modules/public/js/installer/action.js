@@ -50,6 +50,7 @@ function configure(id,imgpath){
 		$("#ConfigRow_"+id).fadeOut();
 	}
 	else{
+		
 		$.post("./Installer/configure", {a:"fgfgfg", mod_id:id},
 			function(data) {
 				$(".config").hide();

@@ -54,6 +54,7 @@ class InstallerController extends AbstractActionController
     public function indexAction(){ 
     		
     	//get the list of installed and new modules
+				$res	= $this->getInstallerTable()->allModules();
 	
         $result = $this->getInstallerTable()->allModules();
 
@@ -87,12 +88,10 @@ class InstallerController extends AbstractActionController
         $data       = $this->getEventManager()->trigger('selectEvent', $this, $parameter);	
 	
 	$allModules = array();
-	foreach($data as $dataArr)
-	{
-	    foreach($dataArr as $dataArray)
-	    {		
+				if($res){
+						foreach($res as $row){
 		$mod = new InstModule();
-    		$mod -> exchangeArray($dataArray);
+								$mod ->exchangeArray($row);
     		array_push($allModules,$mod);
 	    }
 	}
@@ -276,14 +275,8 @@ class InstallerController extends AbstractActionController
       
 	$postArr	= $request->getPost();
 	
-	//DELETE HOOKS
-	$tableName = "modules_hooks_settings";
-        $where     = "mod_id = '".$postArr['mod_id']."'";
-        $parameter = array(
-			    'tableName' => $tableName,
-			    'where'    	=> $where,
-			);        
-        $this->getEventManager()->trigger('deleteEvent', $this, $parameter);	
+			//DELETE OLD HOOKS OF A MODULE
+			$this->getInstallerTable()->deleteModuleHooks($postArr['mod_id']);
 	
 	if(count($postArr['hook_hanger']) > 0){
 	    
@@ -291,24 +284,7 @@ class InstallerController extends AbstractActionController
 	    {
 		foreach($hooks as $hangerId => $hookHanger)
 		{
-		    $insArr			= array();
-		    $insArr['mod_id']		= $postArr['mod_id'];
-		    $insArr['Hooks']		= $hookId;
-		    $insArr['AttachedTo']	= $hangerId;
-		    
-		    //SAVE HOOK
-		    $tableName  = "modules_hooks_settings";
-		    $fields     = array(
-					    'mod_id'      	=> $postArr['mod_id'],
-					    'enabled_hooks'    	=> $hookId,
-					    'attached_to'       => $hangerId
-					);
-		    $parameter 	= array(
-					    'tableName' => $tableName,
-					    'fields'    => $fields,
-					);
-		    
-		    $this->getEventManager()->trigger('insertEvent', $this, $parameter);
+									$this->getInstallerTable()->saveHooks($postArr['mod_id'],$hookId,$hangerId);
 		}
 	    }
 	    $return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("Saved Successfully"));
@@ -342,7 +318,7 @@ class InstallerController extends AbstractActionController
         $data 		= array();
         $serviceLocator = $this->getServiceLocator();
         $config         = $serviceLocator->get('config');
-	
+	//echo var_dump($result); exit;
         foreach ($result as $rows => $row) {
             foreach($row as $tmp){
 								array_push($data, $tmp);
@@ -352,21 +328,10 @@ class InstallerController extends AbstractActionController
 	
 		//INSERT MODULE HOOKS IF NOT EXISTS
 		$moduleDirectory	= $this->getInstallerTable()->getModuleDirectory($modId);
-		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
-		
-		$phpObjCode 	=  str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\Model\Configuration();');
-		$className	= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
-		
-		if(class_exists($className)){
-				eval($phpObjCode);
-		}
-		
-		$hooksArr	= array();
-		if($obj){
-				//$obj	= new \Lab\Model\Configuration();
-				$hooksArr	= $obj->getHookConfig();
-		}
 	
+		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
+	$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
+		
 		if(count($hooksArr) > 0){
 				foreach($hooksArr as $hook){
 						if(count($hook) > 0){
