@@ -20,8 +20,9 @@
 // For more information write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // 
-// Author:   Jacob T.Paul <jacob@zhservices.com>
-//           Shalini Balakrishnan  <shalini@zhservices.com>
+// Author:   Jacob T.Paul 					<jacob@zhservices.com>
+//           Shalini Balakrishnan  	<shalini@zhservices.com>
+//					 Remesh Babu S  				<remesh@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
 namespace Installer\Model;
@@ -48,18 +49,79 @@ class InstModuleTable
     }
     
     /**
-     * Get All Modules
+     * Get All Modules Configuration Settings
      * 
      * @return type
      */
-    /*public function getModules()
+    public function getConfigSettings($id)
     {
-        $sql    = "SELECT * FROM modules ORDER BY mod_ui_order ASC";
-        $params = array();
-        $obj    = new ApplicationTable;
-        $result = $obj->sqlQuery($sql, $params);
+        $sql    = "SELECT * FROM module_configuration
+														WHERE module_id =?";
+        $params = array($id);
+        $result = $this->applicationTable->sqlQuery($sql, $params);
         return $result;
-    }*/
+    }
+		public function installSQL($dir)
+		{
+			$sqltext = $dir . "/table.sql";
+    	if ($sqlarray = @file($sqltext)) {
+				$sql = implode("", $sqlarray);
+				$sqla = split(";", $sql);
+				$this->getInstallerTable()->testingDir($dir);
+				foreach ($sqla as $sqlq) {
+					if (strlen($sqlq) > 5) {
+						$query    = rtrim("$sqlq");
+						$result = $this->applicationTable->sqlQuery($query);
+					}
+				}		    
+				return true;
+    	}	else
+    	    return true;
+		}
+		
+		/**
+		 * Save Configuration Settings
+		 *
+		 */
+		public function saveSettings($post)
+		{
+			$i = 0;
+			$moduleId   = $request->getPost()->module_id;
+			foreach ($request->getPost() as $key => $value) {
+				$fieldName  = $key;
+				$fieldValue = $value;
+				if ($fieldName != 'module_id') {
+					/** Check the field exist */
+					$sql = "SELECT * FROM module_configuration
+														WHERE module_id = ?
+														AND field_name = ?";
+					$params = array(
+										$fieldName,
+										$moduleId,
+									);
+					$result = $this->applicationTable->sqlQuery($sql, $params);
+					if ($result->count() > 0) {
+						$sql = "UPDATE module_configuration SET field_value = ?
+																								WHERE module_id = ?
+																								AND field_name = ?";
+						$params = array(
+												$fieldValue,
+												$moduleId,
+												$fieldName,
+											);
+						$result = $this->applicationTable->sqlQuery($sql, $params);
+					} else {
+							$sql = "INSERT INTO module_configuration";
+							$params = array(
+													$fieldName,
+													$fieldValue,
+													$moduleId,
+											);
+							$result = $this->applicationTable->sqlQuery($sql, $params);
+					}
+				}
+      }
+		}
 	
     /**
      * Get the list of modules as per the the params passed
@@ -525,249 +587,246 @@ class InstModuleTable
      * Function to Delete Hooks
      */
     public function saveHooks($modId,$hookId,$hangerId){
-				if($modId){						
-						$this->applicationTable->sqlQuery("INSERT INTO modules_hooks_settings(mod_id, enabled_hooks, attached_to) VALUES (?,?,?) ",array($modId,$hookId,$hangerId));			
-				}
+			if($modId){						
+				$this->applicationTable->sqlQuery("INSERT INTO modules_hooks_settings(mod_id, enabled_hooks, attached_to) VALUES (?,?,?) ",array($modId,$hookId,$hangerId));			
+			}
     }
-	
-	    
+		
+		/**
+		 * Save Module Hook settings
+		 */
+		public function saveModuleHookSettings($hook)
+		{
+			$sql = "INSERT INTO modules_settings SET mod_id = ?,
+																								fld_type = 3,
+																								obj_name = ?,
+																								menu_name = ?,
+																								path = ?";
+			$params = array(
+										$modId,
+										$hook['name'],
+										$hook['title'],
+										$hook['path'],
+									);
+			$this->applicationTable->sqlQuery($sql, $params);
+		}
+  
     /**
      * Function to Delete Hooks
      */
     public function DeleteHooks($post){
-				if($post['hooksID']){						
-						$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE id = ? ",array($post['hooksID']));			
-				}
+			if($post['hooksID']){						
+				$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE id = ? ",array($post['hooksID']));			
+			}
     }
     
 		/**
      * Function to Delete Module Hooks
      */
     public function deleteModuleHooks($modId){
-				if($modId){						
-						$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE mod_id = ? ",array($modId));			
-	}
+			if($modId){						
+				$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE mod_id = ? ",array($modId));
+				//DELETE MODULE HOOKS
+				$sql = "DELETE FROM modules_settings
+												WHERE mod_id = ?
+												AND fld_type = '3'";
+        $params = array(
+										$modId,
+									);
+				$this->applicationTable->sqlQuery($sql, $params);
+			}
     }
     
     public function checkDependencyOnEnable($mod_id)
     {
-	$retArray	= array();
-	
-				$modDirectory	= $this->getModuleDirectory($mod_id);
-       
-				if($modDirectory){
-						//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
-						$depModules	= $this->getDependedModulesByDirectoryName($modDirectory);
-	
-		$requiredModules	= array();
-		if(count($depModules) > 0){
-		    foreach($depModules as $depModule){
-										if($depModule <> ""){																						
-												$res	= $this->getModuleStatusByDirectoryName($moduleDir);																								
-												if($res <> "Enabled"){
-				$requiredModules[]	= $depModule;
-			    }	
-			}						
-		    }			
-		}
+			$retArray	= array();
+			$modDirectory	= $this->getModuleDirectory($mod_id);
+			if($modDirectory){
+				//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
+				$depModules	= $this->getDependedModulesByDirectoryName($modDirectory);
+				$requiredModules	= array();
+				if(count($depModules) > 0){
+					foreach($depModules as $depModule){
+						if($depModule <> ""){																						
+							$res	= $this->getModuleStatusByDirectoryName($moduleDir);																								
+							if($res <> "Enabled"){
+								$requiredModules[]	= $depModule;
+							}	
+						}						
+					}			
+				}
 		
-		if(count($requiredModules) > 0){
-		    $retArray['status']	= "failure";
-		    $retArray['code']	= "200";
-		    $retArray['value']	= $requiredModules;
-		}
-		else{
-		    $retArray['status']	= "success";
-		    $retArray['code']	= "1";
-		    $retArray['value']	= "";
-		}
-						
-	    }
-	    else{
-	    $retArray['status']	= "failure";
-	    $retArray['code']	= "400";
-	    $retArray['value']	= "Module Directory not found";
-	}
-	return $retArray;
+				if(count($requiredModules) > 0) {
+					$retArray['status']	= "failure";
+					$retArray['code']	= "200";
+					$retArray['value']	= $requiredModules;
+				} else {
+						$retArray['status']	= "success";
+						$retArray['code']	= "1";
+						$retArray['value']	= "";
+				}
+	    } else {
+				$retArray['status']	= "failure";
+				$retArray['code']	= "400";
+				$retArray['value']	= "Module Directory not found";
+			}
+			return $retArray;
     }
     
     
     public function checkDependencyOnDisable($mod_id)
     {
-	$retArray	= array();
-	$depFlag	= "0";
+			$retArray	= array();
+			$depFlag	= "0";
+			$modArray	= $this->getInstalledModules();
 	
-	$modArray	= $this->getInstalledModules();
-	
-	//GET MODULE DIRECTORY OF DISABLING MODULE
-	$modDirectory	= $this->getModuleDirectory($mod_id);
-	
-	$usedModArr	= array();
-	if(count($modArray) > 0){
-	    //LOOP THROUGH INSTALLED MODULES
-	    foreach($modArray as $module)
-	    {
-		if($module->modId <> ""){
-		    //GET MODULE DEPENDED MODULES
-		    $InstalledmodDirectory	= $this->getModuleDirectory($module->modId);
-		    $depModArr	= $this->getDependencyModulesDir($module->modId);
-		    if(count($depModArr) > 0){
-			//LOOP THROUGH DEPENDENCY MODULES
-			//CHECK IF THE DISABLING MODULE IS BEING DEPENDED BY OTHER INSTALLED MODULES
-			foreach($depModArr as $depModule)
-			{
-			    if($modDirectory == $depModule){
-				$depFlag	= "1";
-				//break(2);
-				$usedModArr[] = $InstalledmodDirectory;
-			    }
-			}		
-		    }
-		}
-	    }
-	}
-	if($depFlag == "0"){
-	    $retArray['status']	= "success";
-	    $retArray['code']	= "1";
-	    $retArray['value']	= "";
-	}
-	else{
-	    $usedModArr		= array_unique($usedModArr);
-	    $multiple = "";
-	    if(count($usedModArr) > 1){
-		$multiple	= "s";
-	    }
-	    $usedModules	= implode(",",$usedModArr);
-	    $retArray['status']	= "failure";
-	    $retArray['code']	= "200";
-	    $retArray['value']	= "Dependency Problem : This module is being used by ".$usedModules." module".$multiple;
-	}
-	return $retArray;
+			//GET MODULE DIRECTORY OF DISABLING MODULE
+			$modDirectory	= $this->getModuleDirectory($mod_id);
+			$usedModArr	= array();
+			if(count($modArray) > 0){
+				//LOOP THROUGH INSTALLED MODULES
+				foreach($modArray as $module) {
+					if($module->modId <> ""){
+						//GET MODULE DEPENDED MODULES
+						$InstalledmodDirectory	= $this->getModuleDirectory($module->modId);
+						$depModArr	= $this->getDependencyModulesDir($module->modId);
+						if(count($depModArr) > 0){
+							//LOOP THROUGH DEPENDENCY MODULES
+							//CHECK IF THE DISABLING MODULE IS BEING DEPENDED BY OTHER INSTALLED MODULES
+							foreach($depModArr as $depModule) {
+								if($modDirectory == $depModule){
+									$depFlag	= "1";
+									//break(2);
+									$usedModArr[] = $InstalledmodDirectory;
+								}
+							}		
+						}
+					}
+				}
+			}
+			if($depFlag == "0"){
+					$retArray['status']	= "success";
+					$retArray['code']	= "1";
+					$retArray['value']	= "";
+			} else {
+				$usedModArr		= array_unique($usedModArr);
+				$multiple = "";
+				if(count($usedModArr) > 1) {
+					$multiple	= "s";
+				}
+				$usedModules	= implode(",",$usedModArr);
+				$retArray['status']	= "failure";
+				$retArray['code']	= "200";
+				$retArray['value']	= "Dependency Problem : This module is being used by ".$usedModules." module".$multiple;
+			}
+			return $retArray;
     }
     
     public function getDependencyModules($mod_id)
     {
-	$reader = new Ini();
-	
-	$modDirname	= $this->getModuleDirectory($mod_id);
-	
-	if($modDirname <> ""){			
-	    
-		$depModuleStatusArr	= array();
-						
-						//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
-						$depModulesArr	= $this->getDependedModulesByDirectoryName($modDirname);
-						
-		$ret_str="";
-		if(count($depModulesArr)>0){
-		    $count = 0;
-		    foreach($depModulesArr as $modDir){
-			if($count > 0){
-			    $ret_str.= ", ";
-			}
-			$ret_str.= trim($modDir)."(".$this->getModuleStatusByDirectoryName($modDir).")";
-			$count++;
-		    }			
-	}		
+			$reader = new Ini();
+			$modDirname	= $this->getModuleDirectory($mod_id);
+			if($modDirname <> ""){			
+				$depModuleStatusArr	= array();
+				//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
+				$depModulesArr	= $this->getDependedModulesByDirectoryName($modDirname);
+				$ret_str="";
+				if(count($depModulesArr)>0){
+					$count = 0;
+					foreach($depModulesArr as $modDir){
+						if($count > 0){
+							$ret_str.= ", ";
+						}
+						$ret_str.= trim($modDir)."(".$this->getModuleStatusByDirectoryName($modDir).")";
+						$count++;
+					}			
 				}		
-	return $ret_str;		
+			}		
+			return $ret_str;		
     }
     
     public function getDependencyModulesDir($mod_id)
     {
-	$depModulesArr	= array();
-	
-				$modDirectory 	= $this->getModuleDirectory($mod_id);
-       
-				if($modDirectory){			
-						//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
-						$depModulesArr	= $this->getDependedModulesByDirectoryName($modDirectory);							 
-	
-	}		
-	return $depModulesArr;		
+			$depModulesArr	= array();
+			$modDirectory 	= $this->getModuleDirectory($mod_id);
+			if($modDirectory){			
+					//GET DEPENDED MODULES OF A MODULE HOOKS FROM A FUNCTION IN ITS MODEL CONFIGURATION CLASS
+					$depModulesArr	= $this->getDependedModulesByDirectoryName($modDirectory);							 
+			}		
+			return $depModulesArr;		
     }
     
     public function getModuleStatusByDirectoryName($moduleDir)
     {
 				$res	= $this->applicationTable->sqlQuery("select mod_active,mod_directory from modules where mod_directory = ? ",array(trim($moduleDir)));
-				foreach($res as $row)
-				{
+				foreach($res as $row) {
 						$check	= $row;
 				}
 	
-	if((count($check) > 0)&& is_array($check)){
-	    if($check['mod_active'] == "1"){
-		return "Enabled";
-	    }
-	    else{
-		return "Disabled";
-	    }		
-	}
-	else{
-	    return "Missing";
-	}
+			if((count($check) > 0)&& is_array($check)){
+				if($check['mod_active'] == "1"){
+					return "Enabled";
+				} else {
+					return "Disabled";
+				}		
+			} else {
+				return "Missing";
+			}
     }
     
     public function getHangers()
     {
-	return array(
-			'reports' 	=> "Reports",
-			'encounter' => "Encounter",
-			'demographics' => "Demographics",
-			'combination_forms' => "Combination Forms"
-		     );
-    }
+			return array(
+					'reports' 	=> "Reports",
+					'encounter' => "Encounter",
+					'demographics' => "Demographics",
+					'combination_forms' => "Combination Forms"
+				);
+		}
     
     public function getModuleDirectory($mod_id)
     {
-	$moduleName	= "";
-	if($mod_id <> ""){	
-	    
-						$res	= $this->applicationTable->sqlQuery("SELECT mod_directory FROM modules WHERE mod_id = ? ",array($mod_id));
-						foreach($res as $row)
-						{
-								$modArr	= $row;
-						}
-	   
-	    if($modArr['mod_directory'] <> ""){			
-		$moduleName = $modArr['mod_directory'];
-	    }		
-	    return $moduleName;
-	}
+			$moduleName	= "";
+			if($mod_id <> ""){	
+				$res	= $this->applicationTable->sqlQuery("SELECT mod_directory FROM modules WHERE mod_id = ? ",array($mod_id));
+				foreach($res as $row) {
+					$modArr	= $row;
+				}
+				if($modArr['mod_directory'] <> ""){			
+					$moduleName = $modArr['mod_directory'];
+				}		
+				return $moduleName;
+			}
     }
     
     public function checkModuleHookExists($mod_id,$hookId)
     {  
-				$res	= $this->applicationTable->sqlQuery("SELECT obj_name FROM modules_settings WHERE mod_id = ? AND fld_type = ? AND obj_name = ? ",array($mod_id,"3",$hookId));
-				foreach($res as $row)
-				{
-						$modArr	= $row;
-				}
+			$res	= $this->applicationTable->sqlQuery("SELECT obj_name FROM modules_settings WHERE mod_id = ? AND fld_type = ? AND obj_name = ? ",array($mod_id,"3",$hookId));
+			foreach($res as $row){
+					$modArr	= $row;
+			}
        
-	if($modArr['obj_name'] <> ""){
-	    return "1";
-	}
-	else{
-	    return "0";
-	}
+			if($modArr['obj_name'] <> ""){
+				return "1";
+			} else {
+				return "0";
+			}
     }
 		
 		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
 		public function getModuleHooks($moduleDirectory)
 		{	
-				$phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$objHooks  = new \[module_name]\Model\Configuration();');
-				$className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
-				
-				if(class_exists($className)){
-						eval($phpObjCode);
-				}
-				
-				$hooksArr	= array();
-				if($objHooks){
-						//$obj	= new \Lab\Model\Configuration();
-						$hooksArr	= $objHooks->getHookConfig();
-				}
-				return $hooksArr;
+			$phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$objHooks  = new \[module_name]\Model\Configuration();');
+			$className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
+			if(class_exists($className)){
+					eval($phpObjCode);
+			}
+			$hooksArr	= array();
+			if($objHooks){
+				//$obj	= new \Lab\Model\Configuration();
+				$hooksArr	= $objHooks->getHookConfig();
+			}
+			return $hooksArr;
 		}
 		
 		//GET DEPENDED MODULES OF A MODULE FROM A FUNCTION IN CONFIGURATION MODEL CLASS
