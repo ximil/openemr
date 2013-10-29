@@ -31,12 +31,12 @@ $hookObj    =  $this->hookObject;
 //var_dump($hookObj);
 $mod_id = $this->mod_id;
 
-$title = $listener->zht('Module Installer');
+$title = $listener->transl('Module Installer');
 $this->headTitle($title);
 $baseModuleDir 	= $GLOBALS['baseModuleDir'];
 $customDir 	= $GLOBALS['customDir'];
 $zendModDir 	= $GLOBALS['zendModDir'];
-$confirmationMSG = $listener->zht("Do you really want to delete?");
+$confirmationMSG = $listener->transl("Do you really want to delete?");
 //echo "TabSettings<pre>";
 //var_dump($TabSettings);exit;
 if(count($TabSettings)>0){
@@ -46,7 +46,7 @@ if(count($TabSettings)>0){
 <?php
   if($TabSettings[1]['cnt'] > 0){            
 ?>
-    <div title="<?php echo $listener->zht('Access Control');?>" id="tab_acl<?php echo $mod_id; ?>" iconCls="icon-acl">
+    <div title="<?php echo $listener->transl('Access Control');?>" id="tab_acl<?php echo $mod_id; ?>" iconCls="icon-acl">
       <div class="easyui-accordion" id="configaccord<?php echo $mod_id; ?>" style="width:787px;height:auto;align:center;margin:5px">
         <iframe src="<?php echo $GLOBALS['webroot']; ?>/interface/modules/zend_modules/public/acl/acltab?module_id=<?php echo $this->mod_id; ?>" style="width:100%;height: 700px;overflow: hidden;" frameborder="0"></iframe>
       </div>    
@@ -59,7 +59,7 @@ if(count($TabSettings)>0){
   }
   if($TabSettings[2]['cnt'] > 0){
 ?>
-    <div title="<?php echo $listener->zht('Preference');?>" id="tab_preference<?php echo $mod_id; ?>" iconCls="icon-preference">  
+    <div title="<?php echo $listener->transl('Preference');?>" id="tab_preference<?php echo $mod_id; ?>" iconCls="icon-preference">  
     <!-- For Future Development-->
     </div>
 <?php
@@ -67,11 +67,11 @@ if(count($TabSettings)>0){
 if($TabSettings[3]['cnt'] > 0){
   $modID = '';
 ?>
-    <div title="<?php echo $listener->zht('Hooks');?>" id="tab_hooks<?php echo $mod_id; ?>" iconCls="icon-plug" > 
+    <div title="<?php echo $listener->transl('Hooks');?>" id="tab_hooks<?php echo $mod_id; ?>" iconCls="icon-plug" > 
       <table width="100%">
             <tr>
               <td colspan="2" align="center" style="font-size:14px;font-weight:bold">
-                 <?php echo $listener->zht("Manage Hooks");?>
+                 <?php echo $listener->transl("Manage Hooks");?>
               </td>
             </tr>
             <tr>
@@ -84,7 +84,7 @@ if($TabSettings[3]['cnt'] > 0){
                                 $hanger_count = 0;
                                 foreach($hangers as $value => $title){ 
                                 ?>
-                                    <td align="center"><?php echo $listener->zht($title);?></td>
+                                    <td align="center"><?php echo $listener->transl($title);?></td>
                             <?php
                                     $hanger_count++;
                                 }
@@ -95,7 +95,7 @@ if($TabSettings[3]['cnt'] > 0){
                             foreach($Hooks as $obj_hooks){                               
                             ?>
                             <tr>
-                                <td><?php echo $listener->zht($obj_hooks['title']);?></td>
+                                <td><?php echo $listener->transl($obj_hooks['title']);?></td>
                                 <?php
                                     foreach($hangers as $value => $title){
                                         $checked = "";
@@ -120,7 +120,7 @@ if($TabSettings[3]['cnt'] > 0){
                                 else{ ?>
                             <tr>                            
                             <td  colspan="<?php echo $hanger_count+1; ?>" align="center" style="font-size:14px">
-                                <?php echo $listener->zht('No Hooks Available in this Module'); ?>
+                                <?php echo $listener->transl('No Hooks Available in this Module'); ?>
                             </td>
                         </tr>
                         <?php
@@ -151,7 +151,7 @@ if($TabSettings[3]['cnt'] > 0){
                     foreach ($form as $element) : 
                     ?>
                     <tr>
-                            <td width='15%'><?php echo $listener->zht($element->getLabel()) ?></td>
+                            <td width='15%'><?php echo $listener->transl($element->getLabel()) ?></td>
                             <td><?php echo $this->formElement($element->setValue($configuration[$i]['field_value'])); ?></td>
                     </tr>
                     <?php
@@ -163,7 +163,7 @@ if($TabSettings[3]['cnt'] > 0){
                     <td>
                        <a href="#" class="easyui-linkbutton" iconCls="icon-save" 
                           plain="true" onclick="javascript:saveConfig('configform',<?php echo $mod_id;?>)">
-                              <?php echo $listener->zht('Save'); ?>
+                              <?php echo $listener->transl('Save'); ?>
                        </a>
                         <span id='target<?php echo $mod_id; ?>' style="color: #996600" ></span>
                     </td>
@@ -174,11 +174,11 @@ if($TabSettings[3]['cnt'] > 0){
          <?php
          }
                 else {
-                    echo $listener->zht('No Settings avaliable in this module');
+                    echo $listener->transl('No Settings avaliable in this module');
                 }
             }
             else {
-                echo $listener->zht('No Settings avaliable in this module');
+                echo $listener->transl('No Settings avaliable in this module');
             }
          ?>
      </div>
@@ -192,7 +192,7 @@ if($TabSettings[3]['cnt'] > 0){
 else{
 ?>
     <div class="easyui-tabs" id="tab<?php echo $mod_id; ?>" style="width:800px;height:auto;">
-    <?php echo $listener->zht('No Configuration Defined for this Module');?>
+    <?php echo $listener->transl('No Configuration Defined for this Module');?>
     </div>
 <?php
 }

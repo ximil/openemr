@@ -29,7 +29,7 @@ echo $this->headScript()->appendFile(
 		'text/javascript'
 );
 $listener	= $this->listenerObject;
-$title 		= $listener->zht('Module Installer');
+$title 		= $listener->transl('Module Installer');
 $this->headTitle($title);
 $baseModuleDir 	= $GLOBALS['baseModuleDir'];
 $customDir 	= $GLOBALS['customDir'];
@@ -43,12 +43,12 @@ $depObj 	= $this->dependencyObject;
 <ul class="tabNav">
 		<li class="current divMenu" onclick="$('.registered').show();$('.unregistered').hide();$('.divMenu').removeClass('current');$(this).addClass('current');" >
 			<a href="javascript:void(0)" id="header_tab_.htmlspecialchars(Registered,ENT_QUOTES).">
-              <?php echo $listener->zht('Registered');?>
+              <?php echo $listener->transl('Registered');?>
             </a>
 		</li>
 	  	<li class="divMenu"  onclick="$('.registered').hide();$('.unregistered').show();$('.divMenu').removeClass('current');$(this).addClass('current');">
 			<a href="javascript:void(0)" id="header_tab_.htmlspecialchars(UnReg,ENT_QUOTES).">
-              <?php echo $listener->zht('Unregistered');?> <span id='ct'></span>
+              <?php echo $listener->transl('Unregistered');?> <span id='ct'></span>
             </a>
 		</li>
 </ul>
@@ -63,19 +63,19 @@ $depObj 	= $this->dependencyObject;
 						<thead>  
 							<tr>
 								<th colspan='10' class="groupReg">
-									<?php echo $listener->zht('Registered Modules');?>
+									<?php echo $listener->transl('Registered Modules');?>
 								</th>
 							<tr>
 							<tr >
-								<th scope="col" ><?php echo $listener->zht('Sl.No'); ?></th>
-								<th scope="col" ><?php echo $listener->zht('Module'); ?> </th>
-								<th scope="col" ><?php echo $listener->zht('Status'); ?> </th>
-								<th scope="col" ><?php echo $listener->zht('Menu Text'); ?> </th>
-								<th scope="col" ><?php echo $listener->zht('Nick Name'); ?> </th>
-								<th scope="col" ><?php echo $listener->zht('Type'); ?> </th>	
-								<th scope="col" ><?php echo $listener->zht('Dependency Modules'); ?> </th>								
-								<th scope="col" ><?php echo $listener->zht('Action'); ?> </th>
-								<th scope="col" ><?php echo $listener->zht('Config'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Sl.No'); ?></th>
+								<th scope="col" ><?php echo $listener->transl('Module'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Status'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Menu Text'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Nick Name'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Type'); ?> </th>	
+								<th scope="col" ><?php echo $listener->transl('Dependency Modules'); ?> </th>								
+								<th scope="col" ><?php echo $listener->transl('Action'); ?> </th>
+								<th scope="col" ><?php echo $listener->transl('Config'); ?> </th>
 							</tr>
 					  </thead>
 					<?php
@@ -92,13 +92,13 @@ $depObj 	= $this->dependencyObject;
 									<?php					
 		 
 			  							if ($moduleResult -> sqlRun==0){?>
-			  								<?php echo $listener->zht('Not Installed');?>
+			  								<?php echo $listener->transl('Not Installed');?>
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								<?php echo $listener->zht('Active');?>
+			  								<?php echo $listener->transl('Active');?>
 										<?php }
 										else{?>
-											<?php echo $listener->zht('Inactive');?>
+											<?php echo $listener->transl('Inactive');?>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}
 									?>		
@@ -124,20 +124,20 @@ $depObj 	= $this->dependencyObject;
 								<td>
 									<?php
 									$depStr	= $depObj->getDependencyModules($moduleResult -> modId);
-								        echo ($depStr <> "") ? $listener->zht($depStr) : "--";
+								        echo ($depStr <> "") ? $listener->transl($depStr) : "--";
 								?>
 								</td>
 								<td>
 								<?php					
 		 
 			  							if ($moduleResult -> sqlRun==0){?>
-			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo $listener->zht('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo $listener->zht('Install');?>"/></a>
+			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo $listener->transl('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo $listener->transl('Install');?>"/></a>
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo $listener->zht('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo $listener->zht('Disable');?>"/></a>
+			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo $listener->transl('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo $listener->transl('Disable');?>"/></a>
 										<?php }
 										else{?>
-											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo $listener->zht('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo $listener->zht('Enable');?>"/></a>
+											<a href="javascript:void(0)" class="link_submit inactive" onclick="manage('<?php echo $moduleResult -> modId?>','disable');" title="<?php echo $listener->transl('Click Here to Enable This module');?>"><input type='button' class='activate' value="<?php echo $listener->transl('Enable');?>"/></a>
 										<?php //echo "<img src='images/inactive.gif' width='12' height='12' border='0'/> <a  href='./manage.php?id={$moduleResult -> modId}&method=disable'$formtarget>".xl('Inactive')."</a>";
 										}?>
 								</td>
@@ -148,7 +148,7 @@ $depObj 	= $this->dependencyObject;
 			  								--
 			  							<?php 			  								
 			  							}else if ($moduleResult -> modActive == 1){?>
-			  								<a href="javascript:void(0)" class="link_submit active" onclick="configure('<?php echo $moduleResult -> modId ?>','<?php echo $this->basePath() ?>');" title="<?php echo $listener->zht('Click Here to Configure This module');?>"><img src="<?php echo $this->basePath()?>/images/config.png" border=0></a>
+			  								<a href="javascript:void(0)" class="link_submit active" onclick="configure('<?php echo $moduleResult -> modId ?>','<?php echo $this->basePath() ?>');" title="<?php echo $listener->transl('Click Here to Configure This module');?>"><img src="<?php echo $this->basePath()?>/images/config.png" border=0></a>
 										<?php }
 										else{?>
 											--
@@ -174,13 +174,13 @@ $depObj 	= $this->dependencyObject;
 		<table class="imagetable" id="unregistered">
 			<tr>
 				<th colspan='4' class="groupRegUn">
-					<?php echo $listener->zht('Unregistered Modules');?>
+					<?php echo $listener->transl('Unregistered Modules');?>
 				</th>
 			<tr>
-				<th scope="col" ><?php echo $listener->zht('Sl.No');?></th>
-				<th scope="col" ><?php echo $listener->zht('Module Name');?></th>
-				<th scope="col" ><?php echo $listener->zht('Type');?></th>
-				<th scope="col" ><?php echo $listener->zht('Action');?></th>
+				<th scope="col" ><?php echo $listener->transl('Sl.No');?></th>
+				<th scope="col" ><?php echo $listener->transl('Module Name');?></th>
+				<th scope="col" ><?php echo $listener->transl('Type');?></th>
+				<th scope="col" ><?php echo $listener->transl('Action');?></th>
 			</tr>
 			<?php
 				$dpath = $GLOBALS['srcdir']."/../{$baseModuleDir}{$customDir}/";
@@ -216,7 +216,7 @@ $depObj 	= $this->dependencyObject;
                 		?>		
                 		</td>						
 						<td>
-							<?php echo $listener->zht('Normal');?>
+							<?php echo $listener->transl('Normal');?>
 						</td>	
 						<td >
 						 <a href="javascript:void(0)" onclick="register(1,'<?php echo xl_form_title($form_title);?>','<?php echo $fname?>','register','');"><input type='button' class='activate' value='Register'/></a>
@@ -256,7 +256,7 @@ $depObj 	= $this->dependencyObject;
                 		?>		
                 		</td>
                 		<td >
-							<?php echo $listener->zht('Zend Module');?>
+							<?php echo $listener->transl('Zend Module');?>
 						</td>	
 						<td >
 							<a href="javascript:void(0)" onclick="register(1,'<?php echo xl_form_title($form_title);?>','<?php echo $fname?>','register','zend');"><input type='button' class='activate' value='Register'/></a>

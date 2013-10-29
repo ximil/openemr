@@ -55,7 +55,7 @@ class Listener extends AbstractActionController implements ListenerAggregateInte
      * @param string $str
      * @return string
      */
-    public function zht($str)
+    public function transl($str)
     {
       return xlt($str);
     }

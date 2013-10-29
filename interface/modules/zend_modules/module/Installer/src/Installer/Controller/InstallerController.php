@@ -261,7 +261,7 @@ class InstallerController extends AbstractActionController
     public function SaveConfigurationsAction(){
 	$request = $this->getRequest();      
 	$this->getInstallerTable()->SaveConfigurations($request->getPost());
-	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("Saved Successfully"));
+	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->transl("Saved Successfully"));
 	$arr        = new JsonModel($return);
 	return $arr;
     }
@@ -287,10 +287,10 @@ class InstallerController extends AbstractActionController
 									$this->getInstallerTable()->saveHooks($postArr['mod_id'],$hookId,$hangerId);
 		}
 	    }
-	    $return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("Saved Successfully"));
+	    $return[0]  = array('return' => 1,'msg' => $this->listenerObject->transl("Saved Successfully"));
 	}
 	else{
-	    $return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("No Hangers selected for Hooks"));
+	    $return[0]  = array('return' => 1,'msg' => $this->listenerObject->transl("No Hangers selected for Hooks"));
 	}	
 	
 	$arr        = new JsonModel($return);
@@ -487,7 +487,7 @@ class InstallerController extends AbstractActionController
     public function DeleteAclAction(){
 	$request = $this->getRequest();
 	$this->getInstallerTable()->DeleteAcl($request->getPost());
-	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("Deleted Successfully"));
+	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->transl("Deleted Successfully"));
 	$arr        = new JsonModel($return);
 	return $arr;
     }
@@ -495,7 +495,7 @@ class InstallerController extends AbstractActionController
     public function DeleteHooksAction(){
 	$request = $this->getRequest();
 	$this->getInstallerTable()->DeleteHooks($request->getPost());
-	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->zht("Deleted Successfully"));
+	$return[0]  = array('return' => 1,'msg' => $this->listenerObject->transl("Deleted Successfully"));
 	$arr        = new JsonModel($return);
 	return $arr;
     }

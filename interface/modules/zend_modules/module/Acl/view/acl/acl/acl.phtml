@@ -37,13 +37,13 @@ $listener			= $this->listenerObject;
 		<div class="scrollable default-skin" style="width: 800px;height: 600px;">
 				<table id="table_acl" align="center">
 						<tr class="tr_head">
-								<td><?php echo $listener->zht('Components'); ?></td>
+								<td><?php echo $listener->transl('Components'); ?></td>
 								<?php foreach($USER_GROUPS as $KEY => $VAL) : ?>
-								<td class="align_center"><?php echo $listener->zht($VAL);?></td>
+								<td class="align_center"><?php echo $listener->transl($VAL);?></td>
 								<?php endforeach ?>
 						</tr>
 						<tr class="tr_module">
-								<td><?php echo $listener->zht($MODULE_DATA['module_name']['name']); ?></td>
+								<td><?php echo $listener->transl($MODULE_DATA['module_name']['name']); ?></td>
 								<?php foreach($USER_GROUPS as $KEY => $VAL) : ?>
 								<?php
 							$selected = "";
@@ -60,7 +60,7 @@ $listener			= $this->listenerObject;
 							else $class ="tr_section_2";
 								?>
 								<tr class="<?php echo $class; ?>">
-								<td><?php echo $listener->zht($VAL); ?></td>
+								<td><?php echo $listener->transl($VAL); ?></td>
 							<?php foreach($USER_GROUPS as $KEY_GROUP => $VAL_GROUP) : ?>
 									<?php
 								$selected = "";

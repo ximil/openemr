@@ -34,12 +34,12 @@ $listener			= $this->listenerObject;
 </script>
 <div id="add_new_components" class="popup_items" >
     <center>
-				<div class="head"><?php echo$listener->zht('Add New Components'); ?></div>
+				<div class="head"><?php echo$listener->transl('Add New Components'); ?></div>
 		</center>
 		
 		<table align="center">
 				<tr>
-						<td><?php echo$listener->zht('Module'); ?></td>
+						<td><?php echo$listener->transl('Module'); ?></td>
 						<td>
 								<select id="add_component_mod_id" onchange="getSectionById(this.value);">
 										<option value=''></option>
@@ -54,19 +54,19 @@ $listener			= $this->listenerObject;
 						</td>
 				</tr>
 				<tr>
-						<td><?php echo$listener->zht('Parent'); ?></td>
+						<td><?php echo$listener->transl('Parent'); ?></td>
 						<td><select id="add_component_section_id"></select></td>
 				</tr>
 				<tr>
-						<td><?php echo$listener->zht('Section ID'); ?></td>
+						<td><?php echo$listener->transl('Section ID'); ?></td>
 						<td><input id="add_component_section_identifier" type="text"></td>
 				</tr>
 				<tr>
-						<td><?php echo$listener->zht('Section Name'); ?></td>
+						<td><?php echo$listener->transl('Section Name'); ?></td>
 						<td><input id="add_component_section_name" type="text"></td>
 				</tr>
 				<tr>
-						<td colspan="2" style="text-align: right;"><a href="#" onclick="addSectionSave();" class="myButton" title="Add New Component"><?php echo$listener->zht('Add'); ?></a></td>
+						<td colspan="2" style="text-align: right;"><a href="#" onclick="addSectionSave();" class="myButton" title="Add New Component"><?php echo$listener->transl('Add'); ?></a></td>
 				</tr>
 				<tr>
 						<td colspan="2" style="text-align: right;"><span id="add_component_section_message" style="color: #3AA845;"></span></td>
@@ -74,7 +74,7 @@ $listener			= $this->listenerObject;
 		</table>
 </div>
 
-<div style="display: none;"><div id="control_div"><a href="#" ><?php echo$listener->zht('Collapse All'); ?></a>|<a href="#" id="expand_tree"><?php echo$listener->zht('Expand All'); ?></a></div></div>
+<div style="display: none;"><div id="control_div"><a href="#" ><?php echo$listener->transl('Collapse All'); ?></a>|<a href="#" id="expand_tree"><?php echo$listener->transl('Expand All'); ?></a></div></div>
 
 <center>
 		<div class="scrollable default-skin" style="width: 750px;height: 600px;">
@@ -88,10 +88,10 @@ $listener			= $this->listenerObject;
 														</tr>
 														
 														<tr style="height: 30px;"> 
-																<td style="border: solid 1px #305A99" class="container head">Components &nbsp;<?php if(!$this->module_id) {?><a href="#" onclick="addNewItem('components');" class="myButton" title="Add New Component"><?php echo$listener->zht('Add'); ?></a><?php } ?></td>
-																<td style="border: solid 1px #305A99" class="container head"><?php echo$listener->zht('Group/Users'); ?></td>
-																<td style="border: solid 1px #2A6614;background-color:#E4F7CD;" class="container head"><?php echo$listener->zht('Allowed'); ?></td>
-																<td style="border: solid 1px #B32317;background-color:#F9C7C7;" class="container head"><?php echo$listener->zht('Denied'); ?></td>
+																<td style="border: solid 1px #305A99" class="container head">Components &nbsp;<?php if(!$this->module_id) {?><a href="#" onclick="addNewItem('components');" class="myButton" title="Add New Component"><?php echo$listener->transl('Add'); ?></a><?php } ?></td>
+																<td style="border: solid 1px #305A99" class="container head"><?php echo$listener->transl('Group/Users'); ?></td>
+																<td style="border: solid 1px #2A6614;background-color:#E4F7CD;" class="container head"><?php echo$listener->transl('Allowed'); ?></td>
+																<td style="border: solid 1px #B32317;background-color:#F9C7C7;" class="container head"><?php echo$listener->transl('Denied'); ?></td>
 														</tr>
 														
 														<tr style="height: 50px;"> 
