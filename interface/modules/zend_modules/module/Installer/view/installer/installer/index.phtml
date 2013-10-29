@@ -76,7 +76,8 @@ $depObj 	= $this->dependencyObject;
 					/******** Module Creation ********/
 					 $count = 0;
 					 if(sizeof($InstallersAll) > 0)
-					    foreach ($InstallersAll as $moduleResult) {  
+					    foreach ($InstallersAll as $moduleResult) {
+								if($moduleResult -> modName == 'Acl') continue;
 							$count++;							
 						?>
 					     	<tr  id="<?php echo $moduleResult -> modId;?>">
@@ -127,7 +128,7 @@ $depObj 	= $this->dependencyObject;
 			  							if ($moduleResult -> sqlRun==0){?>
 			  								<a href="javascript:void(0)" class="link_submit install" onclick="manage('<?php echo $moduleResult -> modId?>','install');" title="<?php echo $listener->transl('Click Here to Install This module');?>"><input type='button' class='activate' value="<?php echo $listener->transl('Install');?>"/></a>
 			  							<?php 			  								
-			  							}else if ($moduleResult -> modActive == 1 && $moduleResult -> modName != 'Acl'){?>
+			  							}else if ($moduleResult -> modActive == 1){?>
 			  								<a href="javascript:void(0)" class="link_submit active" onclick="manage('<?php echo $moduleResult -> modId?>','enable');" title="<?php echo $listener->transl('Click Here to Disable This module');?>"><input type='button' class='deactivate' value="<?php echo $listener->transl('Disable');?>"/></a>
 										<?php }
 										elseif($moduleResult -> modName != 'Acl'){?>
