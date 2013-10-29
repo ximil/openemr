@@ -106,6 +106,12 @@ class Configuration extends Form implements InputFilterAwareInterface
 	
 				return $hooks;
     }
+    public function getAclConfig()
+    {
+				$acl = array(
+						);
+				return $acl;
+		}
     
     public function configSettings()
     {
