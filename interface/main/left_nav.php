@@ -1097,7 +1097,7 @@ if ($GLOBALS['athletic_team']) {
 	<?php  if (acl_check('menus', 'modle')) {?>
    <li><a class="collapsed" id="modimg" ><span><?php xl('Modules','e') ?></span></a>
     <ul>
-	<?php if (acl_check('admin', 'forms')) genMiscLink('RTop','adm','0',xl('Manage Modules'),'modules/zend_modules/public/Installer'); ?>
+	<?php genMiscLink('RTop','adm','0',xl('Manage Modules'),'modules/zend_modules/public/Installer'); ?>
 	 <?php //genTreeLink('RTop','ort',xl('Settings')); ?>
       
 	<?php 	
@@ -1251,7 +1251,7 @@ if (!empty($reg)) {
 	<?php  if (acl_check('menus', 'modle')) {?>
    <li><a class="collapsed" id="modimg" ><span><?php xl('Modules','e') ?></span></a>
     <ul>
-	<?php if (acl_check('admin', 'forms')) genMiscLink('RTop','adm','0',xl('Manage Modules'),'modules/zend_modules/public/Installer'); ?>
+	<?php genMiscLink('RTop','adm','0',xl('Manage Modules'),'modules/zend_modules/public/Installer'); ?>
 	 <?php //genTreeLink('RTop','ort',xl('Settings')); ?>
       
 	<?php 	

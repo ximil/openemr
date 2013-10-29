@@ -5846,6 +5846,7 @@ CREATE TABLE `modules` (
   `type` TINYINT(4) DEFAULT '0',
   PRIMARY KEY (`mod_id`,`mod_directory`)
 );
+insert into `modules` (`mod_id`, `mod_name`, `mod_directory`, `mod_parent`, `mod_type`, `mod_active`, `mod_ui_name`, `mod_relative_link`, `mod_ui_order`, `mod_ui_active`, `mod_description`, `mod_nick_name`, `mod_enc_menu`, `permissions_item_table`, `directory`, `date`, `sql_run`, `type`) values('1','Acl','Acl','','','1','Acl','public/acl/','0','0','','ACL','',NULL,'',NOW(),'1','1');
 -- --------------------------------------------------------
 
 --
@@ -5888,16 +5889,12 @@ CREATE TABLE `module_acl_user_settings` (
 -- Table structure for table `module_configuration`
 --
 CREATE TABLE `module_configuration` (
-  `module_config_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `module_id` INT(10) UNSIGNED NOT NULL,
-  `display_name` VARCHAR(45) NOT NULL COMMENT 'Display name at Config Screen',
-  `save_details` VARCHAR(255) NOT NULL COMMENT 'Saved Table name and field',
-  `field_name` VARCHAR(45) NOT NULL COMMENT 'Config Screen field name',
-  `status` TINYINT(1) UNSIGNED NOT NULL COMMENT 'Data Saved - 1,  Not Saved - 0',
-  `values` VARCHAR(255) DEFAULT NULL,
-  `options` VARCHAR(255) DEFAULT NULL,
+  `module_config_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_id` int(10) unsigned NOT NULL,
+  `field_name` varchar(45) NOT NULL,
+  `field_value` varchar(255) NOT NULL,
   PRIMARY KEY (`module_config_id`)
-) ;
+);
 -- --------------------------------------------------------
 
 --

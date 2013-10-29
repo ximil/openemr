@@ -111,7 +111,7 @@ CREATE TABLE `modules` (
 #EndIf
 
 #IfNotRow modules mod_directory Acl
-insert into `modules` (`mod_id`, `mod_name`, `mod_directory`, `mod_parent`, `mod_type`, `mod_active`, `mod_ui_name`, `mod_relative_link`, `mod_ui_order`, `mod_ui_active`, `mod_description`, `mod_nick_name`, `mod_enc_menu`, `permissions_item_table`, `directory`, `date`, `sql_run`, `type`) values('1','Acl','Acl','','','1','Acl','public/acl/','0','0','','ACL','',NULL,'','2013-10-28 14:32:33','1','1');
+insert into `modules` (`mod_id`, `mod_name`, `mod_directory`, `mod_parent`, `mod_type`, `mod_active`, `mod_ui_name`, `mod_relative_link`, `mod_ui_order`, `mod_ui_active`, `mod_description`, `mod_nick_name`, `mod_enc_menu`, `permissions_item_table`, `directory`, `date`, `sql_run`, `type`) values('1','Acl','Acl','','','1','Acl','public/acl/','0','0','','ACL','',NULL,'',NOW(),'1','1');
 #EndIf
 
 #IfNotTable module_acl_group_settings
