@@ -538,7 +538,10 @@
 	parent_id = $("#add_component_section_id").val();
 	section_identifier = $("#add_component_section_identifier").val();
 	section_name = $("#add_component_section_name").val();
-	
+	if($.trim(section_identifier) == '' || $.trim(section_name) == ''){
+		alert("Section ID & Name Cannot be Empty");
+		return;
+	}
 	$.ajax({
                type: "POST",
                url: ajax_path,

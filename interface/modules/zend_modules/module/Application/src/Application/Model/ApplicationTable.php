@@ -80,4 +80,84 @@ class ApplicationTable extends AbstractTableGateway
       return true;
     }
     
+    /**
+     * Checks ACL
+     * @param String $user_id Auth user Id
+     * $param String $section_identifier ACL Section id
+     * @return boolean
+     */
+    public function aclcheck($user_id,$section_identifier){
+        $sql_user_acl   = " SELECT 
+                                COUNT(allowed) AS count 
+                            FROM
+                                module_acl_user_settings AS usr_settings 
+                                LEFT JOIN module_acl_sections AS acl_sections 
+                                    ON usr_settings.section_id = acl_sections.`section_id` 
+                            WHERE 
+                                acl_sections.section_identifier = ? AND usr_settings.user_id = ? AND usr_settings.allowed = ?";
+        $sql_group_acl  = " SELECT 
+                                COUNT(allowed) AS count 
+                            FROM
+                                module_acl_group_settings AS group_settings 
+                                LEFT JOIN module_acl_sections AS  acl_sections
+                                  ON group_settings.section_id = acl_sections.section_id
+                            WHERE
+                                acl_sections.`section_identifier` = ? AND group_settings.group_id IN (?) AND group_settings.allowed = ?";
+        $sql_user_group = " SELECT 
+                                gagp.id AS group_id
+                            FROM
+                                gacl_aro AS garo 
+                                LEFT JOIN `gacl_groups_aro_map` AS gamp 
+                                    ON garo.id = gamp.aro_id 
+                                LEFT JOIN `gacl_aro_groups` AS gagp
+                                    ON gagp.id = gamp.group_id
+                                RIGHT JOIN `users_secure` usr 
+                                    ON usr. username =  garo.value
+                            WHERE
+                                garo.section_value = ? AND usr. id = ?";
+                                
+        $res_groups     = $this->sqlQuery($sql_user_group,array('users',$user_id));
+        $groups = array();
+        foreach($res_groups as $row){
+          array_push($groups,$row['group_id']);
+        }
+        $groups_str = implode(",",$groups);
+        
+        $count_user_denied      = 0;
+        $count_user_allowed     = 0;
+        $count_group_denied     = 0;
+        $count_group_allowed    = 0;
+        
+        $res_user_denied    = $this->sqlQuery($sql_user_acl,array($section_identifier,$user_id,0));
+        foreach($res_user_denied as $row){
+            $count_user_denied  = $row['count'];
+        }
+        
+        $res_user_allowed   = $this->sqlQuery($sql_user_acl,array($section_identifier,$user_id,1));
+        foreach($res_user_allowed as $row){
+            $count_user_allowed  = $row['count'];
+        }
+        
+        $res_group_denied   = $this->sqlQuery($sql_group_acl,array($section_identifier,$groups_str,0));
+        foreach($res_group_denied as $row){
+            $count_group_denied  = $row['count'];
+        }
+        
+        $res_group_allowed  = $this->sqlQuery($sql_group_acl,array($section_identifier,$groups_str,1));
+        foreach($res_group_allowed as $row){
+            $count_group_allowed  = $row['count'];
+        }
+
+        if($count_user_denied > 0)
+            return false;
+        elseif($count_user_allowed > 0)
+            return true;
+        elseif($count_group_denied > 0)
+            return false;
+        elseif($count_group_allowed > 0)
+            return true;
+        else
+            return false;
+    }
+    
 }
