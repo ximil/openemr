@@ -39,13 +39,12 @@ class InstModuleTable
 {
     protected $tableGateway;
 		protected $applicationTable;
-
     public function __construct(TableGateway $tableGateway){
-        $this->tableGateway = $tableGateway;
-	$adapter = \Zend\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
-        $this->adapter              = $adapter;
-        $this->resultSetPrototype   = new ResultSet();
-				$this->applicationTable	= new ApplicationTable;
+      $this->tableGateway = $tableGateway;
+      $adapter = \Zend\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
+      $this->adapter              = $adapter;
+      $this->resultSetPrototype   = new ResultSet();
+      $this->applicationTable	    = new ApplicationTable;
     }
     
     /**
@@ -105,7 +104,7 @@ class InstModuleTable
         $params = array(
                    $directory,
                 );
-        $check = $this->application->sqlQuery($sql, $params);
+        $check = $this->applicationTable->sqlQuery($sql, $params);
 
         if ($check->count() == 0) {
     		$added = "";
@@ -139,7 +138,7 @@ class InstModuleTable
                    mysql_escape_string($directory),
                 );
                 
-                $result = $this->application->sqlQuery($sql, $params);
+                $result = $this->applicationTable->sqlQuery($sql, $params);
                 $moduleInsertId = $result->getGeneratedValue();
 
     		/*$moduleInsertId = sqlInsert("insert into modules set
@@ -174,14 +173,14 @@ class InstModuleTable
                             /*sqlStatement("INSERT INTO modules_settings VALUES (?,?,?,?,?)",array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']));*/
                             $sql = "INSERT INTO modules_settings VALUES (?,?,?,?,?)";
                             $params = array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']);
-                            $result = $this->application->sqlQuery($sql, $params);
+                            $result = $this->applicationTable->sqlQuery($sql, $params);
                         }
                     }
                 }
                 /*sqlStatement("INSERT INTO module_acl_sections VALUES (?,?,?,?)",array($moduleInsertId,$name,0,strtolower($directory)));*/
                 $sql = "INSERT INTO module_acl_sections VALUES (?,?,?,?)";
                 $params = array($moduleInsertId,$name,0,strtolower($directory));
-                $result = $this->application->sqlQuery($sql, $params);
+                $result = $this->applicationTable->sqlQuery($sql, $params);
                 return $moduleInsertId;
     	}
     	return false;
@@ -195,9 +194,9 @@ class InstModuleTable
     public function allModules(){
     	$sql    = "SELECT * FROM modules ORDER BY mod_ui_order ASC";
         $params = array();
-        $result = $this->application->sqlQuery($sql, $params);
+        $result = $this->applicationTable->sqlQuery($sql, $params);
         return $result;
-    	
+    }
     /**
      * get the list of all modules
      * @return multitype:
@@ -280,7 +279,7 @@ class InstModuleTable
                             date('Y-m-d H:i:s'),
                             $id,
                          );
-                $results   = $this->application->sqlQuery($sql, $params);
+                $results   = $this->applicationTable->sqlQuery($sql, $params);
                 
                 /*$adapter = $this->adapter;
                 $sql = new Sql($adapter);
@@ -313,7 +312,7 @@ class InstModuleTable
                    date('Y-m-d H:i:s'),
                    $id,
                 );
-                $results   = $this->application->sqlQuery($sql, $params);
+                $results   = $this->applicationTable->sqlQuery($sql, $params);
                 /*$adapter = $this->adapter;
                 $sql = new Sql($adapter);
                 $update = $sql->update("modules");
@@ -342,7 +341,7 @@ class InstModuleTable
                 $params = array(
                    $id,
                 );
-                $resp   = $this->application->sqlQuery($sql, $params);
+                $resp   = $this->applicationTable->sqlQuery($sql, $params);
         }
 	return $resp;
     }
