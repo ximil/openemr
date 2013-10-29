@@ -201,8 +201,8 @@ class InstallerController extends AbstractActionController
 	$request = $this->getRequest();
 	$postArr	= $request->getPost();
 	
-			//DELETE OLD HOOKS OF A MODULE
-			$this->getInstallerTable()->deleteModuleHooks($postArr['mod_id']);
+	//DELETE OLD HOOKS OF A MODULE
+	$this->getInstallerTable()->deleteModuleHooks($postArr['mod_id']);
 	
 	if(count($postArr['hook_hanger']) > 0){
 	    
@@ -238,17 +238,18 @@ class InstallerController extends AbstractActionController
 	
 			//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
 			$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
-
+			
 			if(count($hooksArr) > 0){
 				foreach($hooksArr as $hook){
 					if(count($hook) > 0){
-						if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){								
+						
+						if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){
 								$this->getInstallerTable()->saveModuleHooks($modId,$hook['name'],$hook['title'],$hook['path']);
 								}
 						}
 					}
 				}                     
-			}
+			
 			else{
 				//DELETE ADDED HOOKS TO HANGERS OF THIS MODULE, IF NO HOOKS EXIST IN THIS MODULE
 				$this->getInstallerTable()->deleteModuleHooks($modId);

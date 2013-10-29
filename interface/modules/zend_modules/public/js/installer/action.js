@@ -61,17 +61,12 @@ function manage(id,action){
 }
 
 function configure(id,imgpath){
-	//$("#ConfigRow_"+id).toggle();
-	//$("#ConfigRow_"+id).html('<td colspan="10" align="center"><img src="'+imgpath+'/images/pulling.gif"></td>');
-	//$("#ConfigRow_"+id).load("./Installer/configure");
 	if($("#ConfigRow_"+id).css("display")!="none"){
-		
 		$(".config").hide();		
 		$("#ConfigRow_"+id).fadeOut();
 	}
 	else{
-		
-		$.post("./Installer/configure", {a:"fgfgfg", mod_id:id},
+		$.post("./Installer/configure", {mod_id:id},
 			function(data) {
 				$(".config").hide();
 				$("#ConfigRow_"+id).hide();
@@ -101,28 +96,7 @@ function SaveMe(frmId,mod_id){
 	if(SelTab)
 		var Tabtitle = SelTab.panel('options').title;
 		
-	if(frmId=='aclform'){
-		$.ajax({
-			type: 'POST',
-			url: "./Installer/SaveConfigurations",
-			data: $('#'+frmId+mod_id).serialize(),   
-			success: function(data){
-				$.each(data, function(jsonIndex, jsonValue){
-					if (jsonValue['return'] == 1) {
-						$("#ConfigRow_"+mod_id).hide();
-						configure(mod_id,'');
-						alert(jsonValue['msg']);
-						//alert("MSG: "+tit);
-						$(document).ready(function(){
-						if(Acctitle)
-							$('#configaccord'+mod_id).accordion('select',Acctitle);
-						});
-					}
-				});
-			}
-		});
-	}
-	else if(frmId == 'hooksform'){
+	if(frmId == 'hooksform'){
 		$.ajax({
 			type: 'POST',
 			url: "./Installer/SaveHooks",
@@ -130,9 +104,7 @@ function SaveMe(frmId,mod_id){
 			success: function(data){
 				$.each(data, function(jsonIndex, jsonValue){
 					if (jsonValue['return'] == 1) {
-						$("#ConfigRow_"+mod_id).hide();
-						configure(mod_id,'');
-						alert(jsonValue['msg']);
+						$("#hook_response"+mod_id).html(jsonValue['msg']).fadeIn().fadeOut(1000);
 						$(document).ready(function(){
 						if(Tabtitle)
 						$('#tab'+mod_id).tabs('select',Tabtitle);

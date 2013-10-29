@@ -21,6 +21,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // 
 // Author:   Jacob T.Paul <jacob@zhservices.com>
+//           Vipin Kumar <vipink@zhservices.com>
 //
 // +------------------------------------------------------------------------------+
 $listener	= $this->listenerObject;
@@ -79,7 +80,7 @@ if($TabSettings[3]['cnt'] > 0){
                   <form name="hooksform<?php echo $mod_id; ?>" id="hooksform<?php echo $mod_id; ?>">                    
                     <table  width="100%">
                         <tr>
-                            <td></td>
+                            <td style="width: 150px"><span id="hook_response<?php echo $mod_id; ?>">&nbsp;</span></td>
                             <?php
                                 $hanger_count = 0;
                                 foreach($hangers as $value => $title){ 
@@ -144,7 +145,7 @@ if($TabSettings[3]['cnt'] > 0){
                     $form->prepare();                
         ?>
          <form name="configform" id="configform<?php echo $mod_id; ?>">
-            <table style="width:98%; margin: 10px; height: 140px">
+            <table style="width:100%; margin: 0px; height: 140px">
                     <?php
                             
                     $i = 0;

@@ -592,16 +592,10 @@ class InstModuleTable
      * Function to Delete Module Hooks
      */
     public function deleteModuleHooks($modId){
-			if($modId){						
+			if($modId){
+				//DELETE MODULE HOOKS							
 				$this->applicationTable->sqlQuery("DELETE FROM modules_hooks_settings WHERE mod_id = ? ",array($modId));
-				//DELETE MODULE HOOKS
-				$sql = "DELETE FROM modules_settings
-												WHERE mod_id = ?
-												AND fld_type = '3'";
-        $params = array(
-										$modId,
-									);
-				$this->applicationTable->sqlQuery($sql, $params);
+					
 			}
     }
     
@@ -748,7 +742,6 @@ class InstModuleTable
 					'reports' 	=> "Reports",
 					'encounter' => "Encounter",
 					'demographics' => "Demographics",
-					'combination_forms' => "Combination Forms"
 				);
 		}
     
@@ -772,9 +765,8 @@ class InstModuleTable
 			$res	= $this->applicationTable->sqlQuery("SELECT obj_name FROM modules_settings WHERE mod_id = ? AND fld_type = ? AND obj_name = ? ",array($mod_id,"3",$hookId));
 			foreach($res as $row){
 					$modArr	= $row;
-			}
-       
-			if($modArr['obj_name'] <> ""){
+			}			
+				if($modArr['obj_name'] <> ""){
 				return "1";
 			} else {
 				return "0";
@@ -886,8 +878,8 @@ class InstModuleTable
 		/**
      * Function to Save Module Hooks
      */
-		public function saveModuleHooks($modId,$hookId,$hookTitle,$hookPath){
-				if($modId){						
+		public function saveModuleHooks($modId,$hookId,$hookTitle,$hookPath){				
+				if($modId){
 						$this->applicationTable->sqlQuery("INSERT INTO modules_settings(mod_id, fld_type, obj_name, menu_name, path) VALUES (?,?,?,?,?) ",array($modId,"3",$hookId,$hookTitle,$hookPath));			
 				}
     }
