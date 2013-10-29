@@ -83,43 +83,35 @@ class InstModuleTable
 		 * Save Configuration Settings
 		 *
 		 */
-		public function saveSettings($post)
+		public function saveSettings($fieldName, $fieldValue, $moduleId)
 		{
-			$i = 0;
-			$moduleId   = $request->getPost()->module_id;
-			foreach ($request->getPost() as $key => $value) {
-				$fieldName  = $key;
-				$fieldValue = $value;
-				if ($fieldName != 'module_id') {
-					/** Check the field exist */
-					$sql = "SELECT * FROM module_configuration
-														WHERE module_id = ?
-														AND field_name = ?";
-					$params = array(
-										$fieldName,
-										$moduleId,
-									);
-					$result = $this->applicationTable->sqlQuery($sql, $params);
-					if ($result->count() > 0) {
-						$sql = "UPDATE module_configuration SET field_value = ?
-																								WHERE module_id = ?
-																								AND field_name = ?";
-						$params = array(
-												$fieldValue,
-												$moduleId,
-												$fieldName,
-											);
-						$result = $this->applicationTable->sqlQuery($sql, $params);
-					} else {
-							$sql = "INSERT INTO module_configuration";
-							$params = array(
-													$fieldName,
-													$fieldValue,
-													$moduleId,
-											);
-							$result = $this->applicationTable->sqlQuery($sql, $params);
-					}
-				}
+      /** Check the field exist */
+      $sql = "SELECT * FROM module_configuration
+                        WHERE field_name = ?
+                        AND module_id = ?";
+      $params = array(
+                $fieldName,
+                $moduleId,
+              );
+      $result = $this->applicationTable->sqlQuery($sql, $params);
+      if ($result->count() > 0) {
+        $sql = "UPDATE module_configuration SET field_value = ?
+                                            WHERE module_id = ?
+                                            AND field_name = ?";
+        $params = array(
+                    $fieldValue,
+                    $moduleId,
+                    $fieldName,
+                  );
+        $result = $this->applicationTable->sqlQuery($sql, $params);
+      } else {
+          $sql = "INSERT INTO module_configuration SET field_name = ?, field_value = ?, module_id = ?";
+          $params = array(
+                      $fieldName,
+                      $fieldValue,
+                      $moduleId,
+                  );
+          $result = $this->applicationTable->sqlQuery($sql, $params);
       }
 		}
 	
@@ -240,8 +232,8 @@ class InstModuleTable
                     }
                 }
                 /*sqlStatement("INSERT INTO module_acl_sections VALUES (?,?,?,?)",array($moduleInsertId,$name,0,strtolower($directory)));*/
-                $sql = "INSERT INTO module_acl_sections VALUES (?,?,?,?)";
-                $params = array($moduleInsertId,$name,0,strtolower($directory));
+                $sql = "INSERT INTO module_acl_sections VALUES (?,?,?,?,?)";
+                $params = array($moduleInsertId,$name,0,strtolower($directory),$moduleInsertId);
                 $result = $this->applicationTable->sqlQuery($sql, $params);
                 return $moduleInsertId;
     	}
@@ -595,7 +587,7 @@ class InstModuleTable
 		/**
 		 * Save Module Hook settings
 		 */
-		public function saveModuleHookSettings($hook)
+		public function saveModuleHookSettings($modId,$hook)
 		{
 			$sql = "INSERT INTO modules_settings SET mod_id = ?,
 																								fld_type = 3,
@@ -895,7 +887,7 @@ class InstModuleTable
 						$obj->sqlQuery($sql_insert,array($section_id,$name,$parent_id,$identifier,$module_id));
 				}
 				
-				$sql = "SELECT COUNT(mod_id) AS count FROM modules_settings WHERE mod_id = ?";
+				$sql = "SELECT COUNT(mod_id) AS count FROM modules_settings WHERE mod_id = ? AND fld_type = 1";
 				$result = $obj->sqlQuery($sql,array($module_id));
 				$exists = 0;
 				foreach($result as $row){
@@ -911,7 +903,7 @@ class InstModuleTable
 				$sql 		= "DELETE FROM module_acl_sections WHERE module_id =? AND parent_section <> 0";
 				$obj->sqlQuery($sql,array($module_id));
 				
-				$sqsl		= "DELETE FROM modules_settings WHERE mod_id =?";
+				$sqsl		= "DELETE FROM modules_settings WHERE mod_id =? AND fld_type = 1";
 				$obj->sqlQuery($sql,array($module_id));
 		}
 }

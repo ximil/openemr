@@ -150,8 +150,8 @@ CREATE TABLE `module_configuration` (
   `module_id` int(10) unsigned NOT NULL,
   `field_name` varchar(45) NOT NULL,
   `field_value` varchar(255) NOT NULL,
-  PRIMARY KEY (`module_config_id`);
-)
+  PRIMARY KEY (`module_config_id`)
+);
 #EndIf
 
 #IfNotTable modules_hooks_settings

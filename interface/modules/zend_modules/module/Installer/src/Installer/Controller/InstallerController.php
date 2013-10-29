@@ -244,12 +244,12 @@ class InstallerController extends AbstractActionController
 	
 		//GET MODULE HOOKS FROM A FUNCTION IN CONFIGURATION MODEL CLASS
 	$hooksArr	= $this->getInstallerTable()->getModuleHooks($moduleDirectory);
-		
+
 		if(count($hooksArr) > 0){
 				foreach($hooksArr as $hook){
 						if(count($hook) > 0){
 						if($this->getInstallerTable()->checkModuleHookExists($modId,$hook['name']) == "0"){
-							$this->getInstallerTable()->saveModuleHookSettings($hook);
+							$this->getInstallerTable()->saveModuleHookSettings($modId,$hook);
 								}
 						}
 				}                     
@@ -267,7 +267,12 @@ class InstallerController extends AbstractActionController
 				$this->getInstallerTable()->deleteACLSections($modId);
 		}
 		
-	
+      $phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\Model\Configuration();');
+      $className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\Model\Configuration');
+			if(class_exists($className)){
+					eval($phpObjCode);
+			}
+
 	return new ViewModel(array(
             'mod_id'                	=> $request->getPost('mod_id'),
             'TabSettings'           	=> $this->getInstallerTable()->getTabSettings($request->getPost('mod_id')),
@@ -292,10 +297,17 @@ class InstallerController extends AbstractActionController
     
     public function saveConfigAction()
     {   
-        $request    = $this->getRequest();
-        $moduleId   = $request->getPost()->module_id;
-        
-			$result = $this->getInstallerTable()->saveSettings($request->getPost());
+      $request    = $this->getRequest();
+      $moduleId   = $request->getPost()->module_id;
+     
+      foreach ($request->getPost() as $key => $value) {
+				$fieldName  = $key;
+				$fieldValue = $value;
+				if ($fieldName != 'module_id') {
+          $result = $this->getInstallerTable()->saveSettings($fieldName, $fieldValue, $moduleId);
+        }
+      }
+			
 			$data 		= array();
        
         $returnArr 	= array('modeId' => $moduleId);
