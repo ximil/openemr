@@ -1,0 +1,166 @@
+.menu-active{
+	background-color: #ffffff !important;
+	padding: 1px 4px 1px 1px !important;
+	border: 1px solid #ccc !important;
+}
+
+/**
+* Zend Lab
+* Result View Screen
+*/
+
+#fm{  
+	margin:0;  
+	padding:10px 30px;  
+}  
+.ftitle{  
+	font-size:14px;  
+	font-weight:bold;  
+	padding:5px 0;  
+	margin-bottom:10px;  
+	border-bottom:1px solid #ccc;  
+}  
+.fitem{  
+	margin-bottom:5px;  
+}  
+.fitem label{  
+	display:inline-block;  
+	width:80px;  
+}
+.extlab {
+    border: 1px solid black;
+	padding: 1px;
+	background: #E0ECFF;
+}
+
+.local {
+    border: 1px solid black;
+	padding: 1px;
+	background: #fff;
+}
+
+/**
+* Specimen Collection Screen
+*/
+
+#specimentable{
+	border: 1px solid #95B8E7;
+}
+.mainhead{
+	background-color: #79b8ec;
+	text-align: center;
+}
+.subhead{
+	background-color: #a8d1f2;
+	text-align: center;
+}
+.left{
+	text-align: left;
+}
+.right{
+	text-align: right;
+}
+.bold{
+	font-weight: bold;
+}
+.mediumfont{
+	font-size: 12px;
+}
+.smallfont{
+	font-size: 11px;
+}
+
+/**
+* Specimen Collection Screen
+*/
+
+.smalltb{
+	width: 60px !important;
+}
+.mediumtb{
+	width: 100px !important;
+}
+.panel - header {
+	border - width: 1px;
+	border - style: solid;
+	padding: 5px 0px 5px 0px;
+	position: relative;
+}.panel - title {
+	background: url('images/blank.gif') no - repeat;
+}.panel - tool {
+	position: absolute;
+	top: 50 % ;
+	margin - top: -8px;
+	height: 16px;
+	overflow: hidden;
+	right: 5px;
+	width: auto;
+}.panel - body {
+	border - width: 1px;
+	border - style: solid;
+}
+table.gridview2 td {
+	border - style: dotted;
+	border - width: 1px 1px 1px 1px;
+	margin: 0;
+	padding: 0;
+	border - color: #cccccc;
+}
+
+
+table.thcolor th {
+    background: linear-gradient(to bottom, #EFF5FF 0px, #E0ECFF 100%) repeat-x scroll 0 0 transparent;
+    border: 1px solid #CCCCCC;
+    height: 20px;
+}
+
+.tdfont {
+	font - size: 11px ! important;
+}
+.clswidth {
+	width: 91 % ;
+
+}
+
+div.text-container {
+    margin: 0 auto;
+    padding-top: 5px;
+    width: 85%;    
+}
+
+.text-content{
+    line-height: 1em;
+}
+
+.short-text {
+    overflow: hidden;
+    height: 10em;
+}
+
+.full-text{
+    height: auto;
+}
+
+h1 {
+    font-size: 24px;        
+}
+
+.show-more {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.comments_blank_bg{
+  background-color:#ffffff;
+}
+
+.comments_col{
+  background-color:#f7f7f7;
+}
+
+.comments_td{
+  background-color:#f7f7f7;
+  border-right: 1px dotted #C0C0C0;
+  border-bottom: 1px dotted #C0C0C0;
+  border-left: 1px dotted #C0C0C0;
+}
