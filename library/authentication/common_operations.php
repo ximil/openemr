@@ -32,6 +32,7 @@ define("COL_SALT","salt");
 define("COL_LU","last_update");
 define("COL_PWD_H1","password_history1");
 define("COL_SALT_H1","salt_history1");
+define("COL_ACTIVE","active");
 
 define("COL_PWD_H2","password_history2");
 define("COL_SALT_H2","salt_history2");
@@ -46,8 +47,8 @@ define("COL_SALT_H2","salt_history2");
 function initializePassword($username,$userid,&$password)
 {
 
-    $salt=password_salt();
-    $hash=password_hash($password,$salt);
+    $salt=oemr_password_salt();
+    $hash=oemr_password_hash($password,$salt);
     $passwordSQL= "INSERT INTO ".TBL_USERS_SECURE.
                   " (".implode(",",array(COL_ID,COL_UNM,COL_PWD,COL_SALT,COL_LU)).")".
                   " VALUES (?,?,?,?,NOW()) ";
@@ -59,6 +60,7 @@ function initializePassword($username,$userid,&$password)
                     $salt
     );
     privStatement($passwordSQL,$params); 
+    return $hash;
 }
 
 
@@ -94,7 +96,7 @@ function confirm_user_password($username,&$password)
     $userSecure=privQuery($getUserSecureSQL,array($username));
     if(is_array($userSecure))
     {
-        $phash=password_hash($password,$userSecure[COL_SALT]);
+        $phash=oemr_password_hash($password,$userSecure[COL_SALT]);
         if($phash==$userSecure[COL_PWD])
         {
             
