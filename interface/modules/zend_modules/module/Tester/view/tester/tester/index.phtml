@@ -1,0 +1,21 @@
+<div>
+    <h1>ACL Test Page</h1>
+    <br><br><br><br>
+    
+    
+    <h2>Section 1</h2>
+    <h4>Shows Button 1 if ACL is set Allowed</h4>
+    <br>
+        <?php if($this->acl_bitton_1 == 1) { ?>
+        <input type="button" value="Button 1">
+        <?php } ?>
+    <br><br><br><br>
+    
+    <h2>Section 2</h2>
+    <h4>Shows Button 2 if ACL is set Allowed</h4>
+    <br>
+        <?php if($this->acl_bitton_2 == 1) { ?>
+    <input type="button" value="Button 2">
+        <?php } ?>
+</div>
+
