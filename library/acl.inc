@@ -111,6 +111,8 @@
   //
   // Section "patientportal" (Patient Portal):
   //   portal     Patient Portal
+  // Section "menus" (Menus):
+  //   modle      Module
   
   if (isset ($phpgacl_location)) {
     $GLOBALS['phpgacl_location_global'] = $phpgacl_location;
