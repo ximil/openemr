@@ -659,9 +659,88 @@ $GLOBALS_METADATA = array(
       '0',                              // default = true
       xl('This will use the custom immunizations list rather than the standard CVX immunization list.')
     ),
+    
+      'cms_1500' => array(
+      xl('CMS 1500 Paper Form Format'),
+      array(
+        '0' => xl('08/05'),
+        '1' => xl('02/12'),
+      ),
+      '0',                              // default
+      xl('This specifies which revision of the form the billing module should generate')
+    ),
+     
+      'cms_1500_box_31_format' => array(
+      xl('CMS 1500: Box 31 Format'),
+      array(
+        '0' => xl('Signature on File'),
+        '1' => xl('Firstname Lastname'),
+        '2' => xl('None'),
+      ),
+      '0',                              // default
+      xl('This specifies whether to include date in Box 31.')
+    ),
+
+      
+     'cms_1500_box_31_date' => array(
+      xl('CMS 1500: Date in Box 31 (Signature)'),
+      array(
+        '0' => xl('None'),
+        '1' => xl('Date of Service'),
+        '2' => xl('Today'),
+      ),
+      '0',                              // default
+      xl('This specifies whether to include date in Box 31.')
+    ),
 
   ),
+    // E-Sign Tab
+    //
+    'E-Sign' => array(
+            
+    'esign_all' => array(
+      xl('Allows E-Sign on the entire encounter'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('This will enable signing an entire encounter, rather than individual forms')
+    ),
 
+    'lock_esign_all' => array(
+      xl('Lock e-signed encounters and their forms'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('This will disable the Edit button on all forms whose parent encounter is e-signed')
+    ),
+            
+    'esign_individual' => array(
+      xl('Allows E-Signing Individual Forms'),
+      'bool',                           // data type
+      '1',                              // default = false
+      xl('This will enable signing individual forms separately')
+    ),
+
+    'lock_esign_individual' => array(
+      xl('Lock an e-signed form individually'),
+      'bool',                           // data type
+      '1',                              // default = false
+      xl('This will disable the Edit button on any form that is e-signed')
+    ),
+            
+    'esign_lock_toggle' => array(
+      xl('Enable lock toggle'),
+      'bool',                           // data type
+      '0',                              // default = false
+      xl('This will give the user the option to lock (separate locking and signing)')
+    ),
+
+    'esign_report_hide_empty_sig' => array(
+      xl('Hide Empty E-Sign Logs On Report'),
+      'bool',                           // data type
+      '1',                              // default = false
+      xl('This will hide empty e-sign logs on the patient report')
+    ),
+
+  ),
     //Documents Tab
     'Documents' => array(
         'document_storage_method' => array(
