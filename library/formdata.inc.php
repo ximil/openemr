@@ -74,6 +74,10 @@ function escape_sort_order($s) {
  * the error log. This function should not be used for escaping tables outside the openemr
  * database (should use escape_identifier() function below for that scenario)
  *
+ * Same function  in ZF2 Module Installer
+ * Function Name zEscapeColumnName
+ * Path /interface/modules/zend_modules/module/Application/src/Application/Model/ApplicationTable.php
+ * 
  * @param   string        $s       sql column name variable to be escaped/sanitized.
  * @param   array         $tables  The table(s) that the sql columns is from (in an array).
  * @param   boolean       $long    Use long form (ie. table.colname) vs short form (ie. colname).
@@ -132,6 +136,10 @@ function escape_sql_column_name($s,$tables,$long=FALSE) {
  * table name through this function (To avoid confusion, there is a wrapper function
  * entitled mitigateSqlTableUpperCase() that is used when just need to mitigate casing
  * for table names that contain any uppercase letters).
+ * 
+ * Same function  in ZF2 Module Installer
+ * Function Name zEscapeTableName
+ * Path /interface/modules/zend_modules/module/Application/src/Application/Model/ApplicationTable.php
  *
  * @param   string $s  sql table name variable to be escaped/sanitized.
  * @return  string     Escaped table name variable.
@@ -177,6 +185,10 @@ function mitigateSqlTableUpperCase($s) {
  * the second option is still experimental as we figure out the ideal items to
  * filter out of the identifier. The first option is ideal if all the possible identifiers
  * are known, however we realize this may not always be the case.
+ *
+ * Same function  in ZF2 Module Installer
+ * Function Name zEscapeIdentifier
+ * Path /interface/modules/zend_modules/module/Application/src/Application/Model/ApplicationTable.php
  *
  * @param   string   $s                Sql identifier variable to be escaped/sanitized.
  * @param   array    $whitelist_items  Items used in whitelisting method (See function description for details of whitelisting method).
