@@ -53,8 +53,8 @@ class ApplicationTable extends AbstractTableGateway
      * 
      * @param String  $sql      SQL Query Statment
      * @param array   $params   SQL Parameters
-     * @param boolean $log      Logging Yes /  No
-     * @param boolean $error    Error Display Yes / No
+     * @param boolean $log      Logging True / False
+     * @param boolean $error    Error Display True / False
      * @return type
      */
     public function zQuery($sql, $params = '', $log = TRUE, $error = TRUE)
@@ -67,7 +67,7 @@ class ApplicationTable extends AbstractTableGateway
         $return     = $statement->execute($params);
         $result     = true;
       } catch (\Zend\Db\Adapter\ExceptionInterface $e) {
-        if ($error) {echo $e->getSql();
+        if ($error) {
           $this->errorHandler($e, $sql, $params);
         }
       } catch (\Exception $e) {
@@ -132,7 +132,7 @@ class ApplicationTable extends AbstractTableGateway
         echo 'ERROR : ' . $logMsg;
         echo "\r\n";
         echo 'SQL statement : ' . $escaper->escapeHtml($sql);
-        echo $processedBinds;
+        echo $escaper->escapeHtml($processedBinds);
         echo '</span></pre>';
         echo '<pre>'; 
         echo $trace;
@@ -301,5 +301,89 @@ class ApplicationTable extends AbstractTableGateway
             return true;
         else
             return false;
+    }
+    
+    /**
+     * Auto Suggest
+     */
+    public function listAutoSuggest($post, $limit)
+    {
+        $pages        = 0;
+        $limitEnd     = $limit;
+      
+        if (isset($GLOBALS['set_autosuggest_options'])) {
+          
+            if ($GLOBALS['set_autosuggest_options'] == 1) {
+                $leading        = '%';
+            } else {
+                $leaging        = $post->leading;
+            }
+            if ($GLOBALS['set_autosuggest_options'] == 2) {
+                $trailing       = '%';
+            } else {
+                $trailing       = $post->trailing;
+            }
+            if ($GLOBALS['set_autosuggest_options'] == 3) {
+                $leading        = '%';
+                $trailing       = '%';
+            }
+        } else {
+            $leaging        = $post->leading;
+            $trailing       = $post->trailing;
+        }
+      
+        $queryString  = $post->queryString;
+        
+        
+        $page         = $post->page;
+        $searchType   = $post->searchType;
+        $searchEleNo  = $post->searchEleNo;
+      
+        if ($page == '') {
+            $limitStart = 0;
+        } else {
+            $limitStart = $page;
+        }
+
+        $keyword = $leaging . $queryString . $trailing;
+        if ($searchType == strtolower('Patient')) {
+            $sql = "SELECT fname, mname, lname, pid, DOB FROM patient_data 
+                    WHERE pid LIKE ? 
+                    OR  CONCAT(fname, ' ', lname) LIKE ?  
+                    OR  CONCAT(lname, ' ', fname) LIKE ? 
+                    OR DATE_FORMAT(DOB,'%m-%d-%Y') LIKE ?  
+                    OR DATE_FORMAT(DOB,'%d-%m-%Y') LIKE ?  
+                    OR DATE_FORMAT(DOB,'%Y-%m-%d') LIKE ?  
+                    ORDER BY fname ";
+            $result = $this->zQuery($sql, array(
+                                              $keyword,                               
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword
+                                          ));
+            //$rowCount = $this->sqlNumRows($result);
+            $rowCount   =  $result->count();  
+            $sql        .= "LIMIT $limitStart, $limitEnd";
+            $result     = $this->zQuery($sql, array(
+                                              $keyword,                               
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword, 
+                                              $keyword,
+                                              /*$limitStart, 
+                                              $limitEnd,*/
+                                          ));
+        }
+        $arr = array();
+        if ($result) {
+            foreach ($result as $row) {
+                $arr[] = $row;
+            }
+            $arr['rowCount'] = $rowCount;
+        }
+        return $arr;
     }
 }

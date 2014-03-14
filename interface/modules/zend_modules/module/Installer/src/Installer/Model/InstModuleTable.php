@@ -135,79 +135,60 @@ class InstModuleTable
     $check = $this->applicationTable->zQuery($sql, $params);
 
     if ($check->count() == 0) {
-    $added = "";
-    $typeSet = "";
-    if($base != "custom_modules"){
-      $added = "module/";
-      $typeSet = "type=1,";
-    }
-    $lines = @file($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/info.txt");
-    if ($lines){
-      $name = $lines[0];
-    }	else {
-      $name = $directory;
-    }
-    $uiname = ucwords(strtolower($directory));
-    $section_id = 0;
-    $sec_count = "SELECT count(*) as total FROM module_acl_sections";
-    $sec_result = $this->applicationTable->zQuery($sec_count);
-    $arr = $sec_result->current();
-    if($arr['total'] > 0){
-      $sql_max_id = "SELECT MAX(section_id) as max_id FROM module_acl_sections";
-      $sec_result = $this->applicationTable->zQuery($sql_max_id);
-      $arr = $sec_result->current();
-      $section_id = $arr['max_id'];
-    }
-    $section_id++;
+      $added = "";
+      $typeSet = "";
 
-    $sql = "INSERT INTO modules SET mod_id = ?,  mod_name = ?,
-                                    mod_active = ?, 
-                                    mod_ui_name = ?, 
-                                    mod_relative_link = ?,
-                                    $typeSet 
-                                    mod_directory = ?, 
-                                    date=NOW()
-                                    ";
-    $params = array(
-       $section_id, 
-       $name,
-       $state,
-       $uiname,
-       strtolower($rel_path),
-       mysql_escape_string($directory),
-    );
-              
-    $result = $this->applicationTable->zQuery($sql, $params);
-    $moduleInsertId = $result->getGeneratedValue();
-
-   
-    if(file_exists($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php")){
-      $ModuleObject = 'modules_'.strtolower($directory);
-      $ModuleObjectTitle = 'Module '.ucwords($directory);
-      global $MODULESETTINGS;
-      include_once($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/moduleSettings.php");
-      foreach($MODULESETTINGS as $Settings=>$SettingsArray){
-        if($Settings=='ACL')
-                $SettingsVal =1;
-        elseif($Settings=='preferences')
-                $SettingsVal =2;
-        else
-                $SettingsVal =3;
-        $i = 0;
-        foreach($SettingsArray as $k=>$v){
-          if($SettingsVal==1){
-            if($i==0)
-                    addObjectSectionAcl($ModuleObject, $ModuleObjectTitle);
-            addObjectAcl($ModuleObject, $ModuleObjectTitle, $k, $v['menu_name']);
-            $i++;
-          }
-         
-          $sql = "INSERT INTO modules_settings VALUES (?,?,?,?,?)";
-          $params = array($moduleInsertId,$SettingsVal,$k,$v['menu_name'],$v['[path']);
-          $result = $this->applicationTable->zQuery($sql, $params);
-        }
+      $lines = @file($GLOBALS['srcdir']."/../interface/modules/$base/$added$directory/info.txt");
+      if ($lines){
+        $name = $lines[0];
+      }	else {
+        $name = $directory;
       }
-    }
+      $uiname = ucwords(strtolower($directory));
+      $section_id = 0;
+      $sec_count = "SELECT count(*) as total FROM module_acl_sections";
+      $sec_result = $this->applicationTable->zQuery($sec_count);
+      $arr = $sec_result->current();
+      if($arr['total'] > 0){
+        $sql_max_id = "SELECT MAX(section_id) as max_id FROM module_acl_sections";
+        $sec_result = $this->applicationTable->zQuery($sql_max_id);
+        $arr = $sec_result->current();
+        $section_id = $arr['max_id'];
+      }
+      $section_id++;
+      if($base != "custom_modules"){
+        $added = "module/";
+
+        $sql = "INSERT INTO modules SET mod_id = ?,  mod_name = ?,
+                                      mod_active = ?, 
+                                      mod_ui_name = ?, 
+                                      mod_relative_link = ?,
+                                      type=1,  
+                                      mod_directory = ?, 
+                                      date=NOW()
+                                      ";
+      } else {
+        $sql = "INSERT INTO modules SET mod_id = ?,  mod_name = ?,
+                                      mod_active = ?, 
+                                      mod_ui_name = ?, 
+                                      mod_relative_link = ?,
+                                      mod_directory = ?, 
+                                      date=NOW()
+                                      ";
+      }
+
+      $params = array(
+         $section_id, 
+         $name,
+         $state,
+         $uiname,
+         strtolower($rel_path),
+         $directory,
+      );
+
+      $result = $this->applicationTable->zQuery($sql, $params);
+      $moduleInsertId = $result->getGeneratedValue();
+      
       $sql = "INSERT INTO module_acl_sections VALUES (?,?,0,?,?)";
       $params = array($moduleInsertId,$name,strtolower($directory),$moduleInsertId);
       $result = $this->applicationTable->zQuery($sql, $params);
@@ -273,7 +254,7 @@ class InstModuleTable
    * @param int 		$id		Module PK
    * @param string 	$mod	Status
    */
-  public function updateRegistered ( $id, $mod ) 
+  public function updateRegistered ( $id, $mod = '', $values = '' ) 
   {
     if($mod == "mod_active=1"){
       $resp	= $this->checkDependencyOnEnable($id);
@@ -300,10 +281,12 @@ class InstModuleTable
         $results   = $this->applicationTable->zQuery($sql, $params);                
       }	 
     } else {
-      $sql = "UPDATE modules SET $mod, 
+      $sql = "UPDATE modules SET sql_run=1, mod_nick_name=?, mod_enc_menu=?, 
                                  date=NOW() 
                              WHERE mod_id = ?";
       $params = array(
+        $values[0],
+        $values[1],  
         $id,
       );
       $resp   = $this->applicationTable->zQuery($sql, $params);
@@ -847,17 +830,34 @@ class InstModuleTable
   
   /**
    * Function getObject
-   * Dynamically create Module Controller / Form Object
+   * Dynamically create Module Controller / Form / Setup Object 
    *  
    * @param string $moduleDirectory Module Directory Name
-   * @param string $option Controller / Form to create Object
+   * @param string $option Controller / Form / Setup to create an Object
+   * @param type $adapter 
    * @return type
    */
-  public function getObject($moduleDirectory, $option = 'Controller')
+  public function getObject($moduleDirectory, $option = 'Controller', $adapter = '')
   {
-    $phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\\' . $option . '\Moduleconfig' . $option . '();');
-    $className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\\' . $option  . '\Moduleconfig' . $option . '');
-
+    if ($option == 'Form' && ($moduleDirectory != 'Installer' || $option != 'Model')) {
+      $phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\\' . $option . '\Moduleconfig' . $option . '($adapter);');
+      $className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\\' . $option  . '\Moduleconfig' . $option . '');
+    } elseif ($option == 'Setup') {
+      $phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\Controller\SetupController;');
+      $setupClass = str_replace('[module_name]', $moduleDirectory, '\[module_name]\Controller\SetupController');
+      $setup = array();
+      if (class_exists($setupClass)) {
+        eval($phpObjCode);
+        $setupTile = $obj->getTitle();
+        $setup['module_dir']  = strtolower($moduleDirectory);
+        $setup['title']       = $setupTile;
+      }
+      return $setup;
+    } else {
+      $phpObjCode 	= str_replace('[module_name]', $moduleDirectory, '$obj  = new \[module_name]\\' . $option . '\Moduleconfig' . $option . '();');
+      $className		= str_replace('[module_name]', $moduleDirectory, '\[module_name]\\' . $option  . '\Moduleconfig' . $option . '');
+    }
+    
     if(class_exists($className)){
       eval($phpObjCode);
     }

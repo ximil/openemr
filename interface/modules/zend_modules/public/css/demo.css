@@ -72,3 +72,17 @@ legend
 	height:25px;
 	font-size:7.5pt;
 }
+
+#maximize_span{
+	background-image:url("../images/maximize.png");
+	height: 30px;
+  width: 28px;
+	float:right;
+}
+
+#minimize_span{
+	background-image:url("../images/minimize.png");
+	height: 30px;
+  width: 28px;
+	float:right;	
+}

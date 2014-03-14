@@ -147,9 +147,10 @@ class InstallerController extends AbstractActionController
       } elseif ($request->getPost('modAction') == "install"){    
         $dirModule = $this->getInstallerTable()->getRegistryEntry( $request->getPost('modId'), "mod_directory" );
         $mod_enc_menu = $request->getPost('mod_enc_menu');
-        $mod_nick_name = mysql_real_escape_string($request->getPost('mod_nick_name'));
+        $mod_nick_name = $request->getPost('mod_nick_name');
           if ($this->getInstallerTable()->installSQL ($GLOBALS['srcdir']."/../".$GLOBALS['baseModDir'].$GLOBALS['customModDir']."/".$dirModule -> modDirectory)){
-            $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), "sql_run=1,mod_nick_name='".$mod_nick_name."',mod_enc_menu='".$mod_enc_menu."'" );
+            $values = array($mod_nick_name, $mod_enc_menu);
+            $this -> getInstallerTable() -> updateRegistered ( $request->getPost('modId'), '', $values);
             $status = "Success";
           } else {
             $status = "ERROR: could not open table.sql, broken form?";
@@ -263,7 +264,12 @@ class InstallerController extends AbstractActionController
     }
 
     /** Configuration Form and Configuration Form Class */
-    $configForm = $this->getInstallerTable()->getObject($moduleDirectory, 'Form');
+    /** Adapter for DB in Forms  */
+    $dbAdapter = $this->getServiceLocator()->get('Zend\Db\Adapter\Adapter');
+    $configForm = $this->getInstallerTable()->getObject($moduleDirectory, 'Form', $dbAdapter);
+    
+    /** Setup Config Details */
+    $setup = $this->getInstallerTable()->getObject($moduleDirectory, 'Setup');
 
     return new ViewModel(array(
           'mod_id'                	=> $request->getPost('mod_id'),
@@ -281,6 +287,7 @@ class InstallerController extends AbstractActionController
           'hookObject'            	=> $this->getInstallerTable(),
           'settings'              	=> $configForm,
           'listenerObject'          => $this->listenerObject,
+          'setup'                   => $setup,
       ));
   }
 

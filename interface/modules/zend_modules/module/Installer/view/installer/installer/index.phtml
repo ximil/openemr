@@ -83,7 +83,7 @@ $depObj 	= $this->dependencyObject;
 							$count++;							
 						?>
 					     	<tr  id="<?php echo $this->escapeHtml($moduleResult -> modId);?>">
-								<td  ><?php echo $count;?>	</td>
+								<td  ><?php echo $this->escapeHtml($count);?>	</td>
 								<td  ><?php echo $this->escapeHtml($moduleResult -> modName); ?></td>
 								<td  >
 									<?php					
@@ -216,7 +216,7 @@ $depObj 	= $this->dependencyObject;
 							<?php echo $listener->z_xlt('Normal');?>
 						</td>	
 						<td >
-						 <a href="javascript:void(0)" onclick="register(1,'<?php echo $this->escapeHtml($form_title);?>','<?php echo $this->escapeHtml($fname)?>','register','');"><input type='button' class='activate' value='Register'/></a>
+						 <a href="javascript:void(0)" onclick="register(1,'<?php echo $this->escapeHtml($form_title);?>','<?php echo $this->escapeHtml($fname)?>','register','');"><input type='button' class='activate' value="<?php echo $listener->z_xlt('Register');?>"/></a>
 						</td>	
 					</tr>
 					<?php								
@@ -241,7 +241,7 @@ $depObj 	= $this->dependencyObject;
 					$slno++;
 					?>
 					<tr>
-						<td ><?php echo $slno;?> </td>
+						<td ><?php echo $this->escapeHtml($slno);?> </td>
 						<td > 
 	        			<?php
 	                		$form_title_file = @file($GLOBALS['srcdir']."/../{$baseModuleDir}{$zendModDir}/$fname/info.txt");
@@ -256,7 +256,7 @@ $depObj 	= $this->dependencyObject;
 							<?php echo $listener->z_xlt('Zend Module');?>
 						</td>	
 						<td >
-							<a href="javascript:void(0)" onclick="register(1,'<?php echo $this->escapeHtml($form_title);?>','<?php echo $this->escapeHtml($fname)?>','register','zend');"><input type='button' class='activate' value='Register'/></a>
+							<a href="javascript:void(0)" onclick="register(1,'<?php echo $this->escapeHtml($form_title);?>','<?php echo $this->escapeHtml($fname)?>','register','zend');"><input type='button' class='activate' value="<?php echo $listener->z_xlt('Register');?>"/></a>
 						</td>							
 					</tr>
 					<?php					
