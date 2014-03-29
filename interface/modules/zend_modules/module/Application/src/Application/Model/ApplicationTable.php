@@ -1,7 +1,7 @@
 <?php
 /* +-----------------------------------------------------------------------------+
 *    OpenEMR - Open Source Electronic Medical Record
-*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*    Copyright (C) 2014 Z&H Consultancy Services Private Limited <sam@zhservices.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU Affero General Public License as
@@ -53,8 +53,8 @@ class ApplicationTable extends AbstractTableGateway
      * 
      * @param String  $sql      SQL Query Statment
      * @param array   $params   SQL Parameters
-     * @param boolean $log      Logging Yes /  No
-     * @param boolean $error    Error Display Yes / No
+     * @param boolean $log      Logging True / False
+     * @param boolean $error    Error Display True / False
      * @return type
      */
     public function zQuery($sql, $params = '', $log = TRUE, $error = TRUE)
@@ -67,7 +67,7 @@ class ApplicationTable extends AbstractTableGateway
         $return     = $statement->execute($params);
         $result     = true;
       } catch (\Zend\Db\Adapter\ExceptionInterface $e) {
-        if ($error) {echo $e->getSql();
+        if ($error) {
           $this->errorHandler($e, $sql, $params);
         }
       } catch (\Exception $e) {
@@ -132,7 +132,7 @@ class ApplicationTable extends AbstractTableGateway
         echo 'ERROR : ' . $logMsg;
         echo "\r\n";
         echo 'SQL statement : ' . $escaper->escapeHtml($sql);
-        echo $processedBinds;
+        echo $escaper->escapeHtml($processedBinds);
         echo '</span></pre>';
         echo '<pre>'; 
         echo $trace;
@@ -301,5 +301,145 @@ class ApplicationTable extends AbstractTableGateway
             return true;
         else
             return false;
+    }
+
+    /**
+     * Auto Suggest
+     */
+    public function listAutoSuggest($post, $limit)
+    {
+      $pages        = 0;
+      $limitEnd     = $limit;
+      
+        if (isset($GLOBALS['set_autosuggest_options'])) {
+          
+            if ($GLOBALS['set_autosuggest_options'] == 1) {
+                $leading        = '%';
+            } else {
+                $leaging        = $post->leading;
+            }
+            if ($GLOBALS['set_autosuggest_options'] == 2) {
+                $trailing       = '%';
+            } else {
+                $trailing       = $post->trailing;
+            }
+            if ($GLOBALS['set_autosuggest_options'] == 3) {
+                $leading        = '%';
+                $trailing       = '%';
+            }
+        } else {
+            $leaging        = $post->leading;
+            $trailing       = $post->trailing;
+        }
+      
+      $queryString  = $post->queryString;
+      
+      
+      $page         = $post->page;
+      $searchType   = $post->searchType;
+      $searchEleNo  = $post->searchEleNo;
+      
+      if ($page == '') {
+        $limitStart = 0;
+      } else {
+        $limitStart = $page;
+      }
+
+      $keyword = $leaging . $queryString . $trailing;
+      if ($searchType == strtolower('Patient')) {
+        $sql = "SELECT fname, mname, lname, pid, DOB FROM patient_data 
+                WHERE pid LIKE ? 
+                OR  CONCAT(fname, ' ', lname) LIKE ?  
+                OR  CONCAT(lname, ' ', fname) LIKE ? 
+                OR DATE_FORMAT(DOB,'%m-%d-%Y') LIKE ?  
+                OR DATE_FORMAT(DOB,'%d-%m-%Y') LIKE ?  
+                OR DATE_FORMAT(DOB,'%Y-%m-%d') LIKE ?  
+                ORDER BY fname ";
+        $result = $this->zQuery($sql, array(
+                                          $keyword,                               
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword
+                                      ));
+        //$rowCount = $this->sqlNumRows($result);
+        $rowCount   =  $result->count();  
+        $sql        .= "LIMIT $limitStart, $limitEnd";
+        $result     = $this->zQuery($sql, array(
+                                          $keyword,                               
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword, 
+                                          $keyword,
+                                          /*$limitStart, 
+                                          $limitEnd,*/
+                                      ));
+      }
+      $arr = array();
+      if ($result) {
+        foreach ($result as $row) {
+          $arr[] = $row;
+        }
+        $arr['rowCount'] = $rowCount;
+      }
+      return $arr;
+    }
+    
+    /*
+    * Retrive the data format from GLOBALS
+    *
+    * @param    Date format set in GLOBALS
+    * @return   Date format in PHP
+    **/
+    public function dateFormat($format)
+    {
+        if($format == 1)
+            $date_format = 'mm/dd/yyyy';
+        else if($format == 2)
+            $date_format = 'dd/mm/yyyy';
+        else
+            $date_format = $format;
+        return $date_format;
+    }
+    /**
+    * fixDate - Date Conversion Between Different Formats
+    * @param String $input_date Date to be converted
+    * @param String $date_format Target Date Format
+    */
+    public function fixDate($input_date, $output_format=null, $input_format=null)
+    {
+        if(!$input_date) return;
+        
+        $input_date = preg_replace('/T|Z/', ' ', $input_date);
+        
+        $temp 	= explode(' ',$input_date); //split using space and consider the first portion, in case of date with time
+        $input_date = $temp[0];
+        
+        $output_format = \Application\Model\ApplicationTable::dateFormat($output_format);
+        $input_format = \Application\Model\ApplicationTable::dateFormat($input_format);        
+        
+        preg_match("/[^ymd]/", $output_format,$date_seperator_output);
+        $seperator_output   = $date_seperator_output[0];
+        $output_date_arr    = explode($seperator_output, $output_format);
+        
+        preg_match("/[^ymd]/", $input_format,$date_seperator_input);
+        $seperator_input    = $date_seperator_input[0];
+        $input_date_array   = explode($seperator_input, $input_format);
+        
+        preg_match("/[^1234567890]/", $input_date,$date_seperator_input);
+        $seperator_input    = $date_seperator_input[0];
+        $input_date_arr     = explode($seperator_input, $input_date);
+  
+        foreach($output_date_arr as $key => $format) {
+            $index = array_search($format,$input_date_array);
+            $output_date_arr[$key] = $input_date_arr[$index];
+        }
+        
+        $output_date = implode($seperator_output, $output_date_arr);
+        
+        $output_date = $temp[1] ? $output_date." ".$temp[1] : $output_date; //append the time, if exists, with the new formatted date
+        return $output_date;
     }
 }

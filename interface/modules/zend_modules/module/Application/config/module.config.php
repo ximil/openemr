@@ -1,7 +1,7 @@
 <?php
 /* +-----------------------------------------------------------------------------+
 *    OpenEMR - Open Source Electronic Medical Record
-*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*    Copyright (C) 2014 Z&H Consultancy Services Private Limited <sam@zhservices.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU Affero General Public License as
@@ -84,7 +84,8 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'Application\Controller\Index' => 'Application\Controller\IndexController'
+            'Application\Controller\Index' => 'Application\Controller\IndexController',
+			'Application\Controller\Sendto' => 'Application\Controller\SendtoController'
         ),
     ),
     'view_manager' => array(
@@ -102,5 +103,11 @@ return array(
         'template_path_stack' => array(
             __DIR__ . '/../view',
         ),
+    ),
+    'view_helpers' => array(
+        'invokables'=> array(
+            'getVariables'      => 'Application\Helper\Getvariables',
+            'javascriptGlobals' => 'Application\Helper\Javascript',
+        )
     ),
 );
