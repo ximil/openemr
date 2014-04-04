@@ -1,7 +1,7 @@
 <?php
 /* +-----------------------------------------------------------------------------+
 *    OpenEMR - Open Source Electronic Medical Record
-*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*    Copyright (C) 2014 Z&H Consultancy Services Private Limited <sam@zhservices.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU Affero General Public License as
@@ -51,5 +51,39 @@ class CommonPlugin extends AbstractPlugin
   public function checkACL($useID, $sectionID)
   {
     return $this->application->zAclCheck($useID, $sectionID);
+  }
+  
+  /**
+    * Keyword color hightlight (primary keyword and secondary)
+    * ? - The question mark used for omit the error.
+    * Error occur in second word of the search keyword,
+    * if maches any of the letter in the html element
+  */
+  public function hightlight($str, $keywords = '') {
+    
+    $keywords   = strtoupper($keywords);
+    $keywords   = preg_replace('/\s\s+/', ' ', strip_tags(trim($keywords)));
+    $style      = '???';
+    $style_i	= 'highlight_i';
+    $var        = '';
+    foreach(explode(' ', $keywords) as $keyword) {
+      $replacement  =   "<?? ?='" . $style . "'>" . trim($keyword). "</??>";
+      $var          .=  $replacement . " ";
+      $str	    =   strtoupper(str_ireplace($keyword, $replacement, $str));
+    }
+
+    $str = str_ireplace(rtrim($var), "<?? ?='" . $style_i . "'>" . trim($keywords) . "</??>", $str);
+    $str = str_ireplace('???', 'highlight_i', $str);
+    //$str = str_ireplace('????', 'highlight_i', $str);
+    $str = str_ireplace('??', 'span', $str);
+    $str = str_ireplace('?', 'class', $str);
+    return $str;
+  }
+  
+  public function date_format($date, $output_format, $input_format)
+  {
+    $this->application    = new ApplicationTable();
+    $date_formatted = $this->application->fixDate($date, $output_format, $input_format);
+    return $date_formatted;
   }
 }

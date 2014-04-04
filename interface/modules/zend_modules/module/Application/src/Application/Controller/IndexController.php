@@ -1,7 +1,7 @@
 <?php
 /* +-----------------------------------------------------------------------------+
 *    OpenEMR - Open Source Electronic Medical Record
-*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*    Copyright (C) 2014 Z&H Consultancy Services Private Limited <sam@zhservices.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU Affero General Public License as
@@ -68,5 +68,48 @@ class IndexController extends AbstractActionController
         $this->applicationTable = $sm->get('Application\Model\ApplicationTable');
       }
       return $this->applicationTable;
+    }
+    
+    /**
+     * Search Mechanism
+     * Auto Suggest
+     * 
+     * @return string
+     */
+    public function searchAction()
+    {
+      $request      = $this->getRequest();
+      $result       = $this->forward()->dispatch('Application\Controller\Index', array(
+                                                      'action' => 'auto-suggest'
+                                                 ));
+      return $result;
+    }
+    
+    public function autoSuggestAction()
+    {
+      $request      = $this->getRequest();
+      $post         = $request->getPost();
+      $keyword      = $request->getPost()->queryString;
+      $page         = $request->getPost()->page;
+      $searchType   = $request->getPost()->searchType;
+      $searchEleNo  = $request->getPost()->searchEleNo;
+      $searchMode   = $request->getPost()->searchMode;
+      $limit        = 20;
+      $result       = $this->getApplicationTable()->listAutoSuggest($post, $limit);
+      /** disable layout **/
+      $index        = new ViewModel(); 
+      $index->setTerminal(true);
+      $index->setVariables(array(
+                                        'result'        => $result,
+                                        'keyword'       => $keyword,
+                                        'page'          => $page,
+                                        'searchType'    => $searchType,
+                                        'searchEleNo'   => $searchEleNo,
+                                        'searchMode'    => $searchMode,
+                                        'limit'         => $limit,
+                                        'CommonPlugin'  => $this->CommonPlugin(),
+                                        'listenerObject'=>$this->listenerObject,
+                                    ));
+      return $index;
     }
 }

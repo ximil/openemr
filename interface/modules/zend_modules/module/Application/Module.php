@@ -1,7 +1,7 @@
 <?php
 /* +-----------------------------------------------------------------------------+
 *    OpenEMR - Open Source Electronic Medical Record
-*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*    Copyright (C) 2014 Z&H Consultancy Services Private Limited <sam@zhservices.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,7 @@
 namespace Application;
 
 use Application\Model\ApplicationTable;
+use Application\Model\SendtoTable;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 
@@ -56,6 +57,11 @@ class Module
             $table = new ApplicationTable($dbAdapter);
             return $table;
           },
+			'Application\Model\SendtoTable' =>  function($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $table = new SendtoTable($dbAdapter);
+                    return $table;
+          	},
         ),
       );
     }
