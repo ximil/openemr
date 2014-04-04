@@ -1,0 +1,58 @@
+<?php
+/* +-----------------------------------------------------------------------------+
+*    OpenEMR - Open Source Electronic Medical Record
+*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Affero General Public License as
+*    published by the Free Software Foundation, either version 3 of the
+*    License, or (at your option) any later version.
+*
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Affero General Public License for more details.
+*
+*    You should have received a copy of the GNU Affero General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*    @author  Remesh Babu S <remesh@zhservices.com>
+* +------------------------------------------------------------------------------+
+*/
+  // module/Lab/view/tester/setup/index.phtml
+  $listener	= $this->listenerObject;
+	$form     = $this->form;
+	$form->setAttribute('action', $this->url('tester-setup', array('action' => 'savedata')));
+	$form->prepare();
+	echo $this->form()->openTag($form);
+	echo $this->formHidden($form->get('id'));
+?>
+<style>
+  table td {
+    background: none repeat scroll 0 0 #EFEFFF;
+    border-bottom: 1px solid #DDDDDD;
+    color: #696969;
+    margin-bottom: 1px;
+    padding: 3px;
+}
+</style>
+
+<table width='100%'>
+  <tr>
+    <td><?php echo $listener->z_xlt('Title'); ?></td><td><?php echo $this->formRow($form->get('title')); ?></td>
+  </tr>
+  <tr>
+    <td><?php echo $listener->z_xlt('Name'); ?></td><td><?php echo $this->formRow($form->get('fname')); ?></td>
+  </tr>
+  <tr>
+    <td><?php echo $listener->z_xlt('Comments'); ?></td><td><?php echo $this->formRow($form->get('comments')); ?></td>
+  </tr>
+  <tr>
+    <td><?php echo $listener->z_xlt('Photo'); ?></td><td><?php echo $this->formRow($form->get('photo_upload')); ?></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td><td><?php echo $this->formInput($form->get('submit')); ?></td>
+  </tr>
+  </table>
+<?php 
+	echo $this->form()->closeTag($form);
+?>
