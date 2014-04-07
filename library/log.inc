@@ -3,15 +3,40 @@
 require_once(dirname(__FILE__). "/sql.inc");
 require_once(dirname(__FILE__). "/formdata.inc.php");
 
-function newEvent($event, $user, $groupname, $success, $comments="", $patient_id=null) {
+function newEvent($event, $user, $groupname, $success, $comments="", $patient_id=null, $log_from = 'open-emr', $menu_item = 'dashboard') {
     $adodb = $GLOBALS['adodb']['db'];
     $crt_user=isset($_SERVER['SSL_CLIENT_S_DN_CN']) ?  $_SERVER['SSL_CLIENT_S_DN_CN'] : null;
-    /* More details added to the log */
-    $sql = "insert into log ( date, event, user, groupname, success, comments, crt_user, patient_id) " .
-            "values ( NOW(), " . $adodb->qstr($event) . "," . $adodb->qstr($user) .
-            "," . $adodb->qstr($groupname) . "," . $adodb->qstr($success) . "," .
+    
+    if ($log_from == 'patient-portal') {
+
+        $sqlMenuItems = "SELECT * FROM patient_portal_menu";
+
+        $resMenuItems = sqlStatement($sqlMenuItems);
+        for($iter=0; $rowMenuItem=sqlFetchArray($resMenuItems); $iter++) {
+            $menuItems[$rowMenuItem['patient_portal_menu_id']] = $rowMenuItem['menu_name'];
+        }
+
+        $menuItemId = array_search($menu_item, $menuItems);
+        $sql = "insert into log ( date, event, user, patient_id, groupname, success, comments, 
+
+            log_from, menu_item_id, 
+            crt_user) " .
+            "values ( NOW(), " . $adodb->qstr($event) . "," . $adodb->qstr($user) ."," .
+            $adodb->qstr($patient_id) ."," .
+            $adodb->qstr($groupname) . "," . $adodb->qstr($success) . "," .
             $adodb->qstr($comments) ."," .
-            $adodb->qstr($crt_user) ."," . $adodb->qstr($patient_id). ")";
+            $adodb->qstr($log_from) ."," .
+            $adodb->qstr($menuItemId) ."," .
+            $adodb->qstr($crt_user) .  ")";
+
+    } else {    
+        /* More details added to the log */
+        $sql = "insert into log ( date, event, user, groupname, success, comments, crt_user, patient_id) " .
+                "values ( NOW(), " . $adodb->qstr($event) . "," . $adodb->qstr($user) .
+                "," . $adodb->qstr($groupname) . "," . $adodb->qstr($success) . "," .
+                $adodb->qstr($comments) ."," .
+                $adodb->qstr($crt_user) ."," . $adodb->qstr($patient_id). ")";
+    }
 
     $ret = sqlInsertClean_audit($sql);
     if(($patient_id=="NULL") || ($patient_id==null))$patient_id=0;

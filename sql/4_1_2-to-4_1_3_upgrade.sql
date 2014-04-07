@@ -1658,3 +1658,52 @@ update patient_data set language='tur' where language='turkish';
 update patient_data set language='vie' where language='vietnamese';
 update patient_data set language='yid' where language='yiddish';
 update patient_data set language='zul' where language='zulu';
+
+#IfNotTable patient_portal_menu
+CREATE TABLE `patient_portal_menu` (                                                                                                                                                                                                                                                                                                                                                
+    `patient_portal_menu_id` int(11) NOT NULL AUTO_INCREMENT,                                                                                                                                                                                                                                                                                                                         
+    `patient_portal_menu_group_id` int(11) DEFAULT NULL,                                                                                                                                                                                                                                                                                                                              
+    `menu_name` varchar(40) DEFAULT NULL,                                                                                                                                                                                                                                                                                                                                             
+    `menu_order` smallint(4) DEFAULT NULL,                                                                                                                                                                                                                                                                                                                                            
+    `menu_status` tinyint(2) DEFAULT '1',                                                                                                                                                                                                                                                                                                                                             
+    PRIMARY KEY (`patient_portal_menu_id`)                                                                                                                                                                                                                                                                                                                                            
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+#EndIf
+
+#IfNotRow patient_portal_menu menu_name Dashboard
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (1,1,'Dashboard',3,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (2,1,'My Profile',6,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (3,1,'Appointments',9,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (4,1,'Documents',12,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (5,1,'Med Records',15,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (6,1,'My Account',18,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (7,1,'Mailbox',21,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (8,1,'Password',24,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (9,1,'View Log',27,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (10,1,'Logout',30,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (11,1,'View Health Information',33,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (12,1,'Download Health Information',36,1);
+insert  into `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) values (13,1,'Transmit Health Information',39,1);					 
+#EndIf
+
+#IfNotTable patient_portal_menu_group	 
+CREATE TABLE `patient_portal_menu_group` (                                                                                                                                                                                                                                                                                                                      
+    `patient_portal_menu_group_id` int(11) NOT NULL AUTO_INCREMENT,                                                                                                                                                                                                                                                                                               
+    `menu_group_name` varchar(40) DEFAULT NULL,                                                                                                                                                                                                                                                                                                                   
+    `menu_group_order` smallint(4) DEFAULT NULL,                                                                                                                                                                                                                                                                                                                  
+    `menu_group_status` tinyint(2) DEFAULT '1',                                                                                                                                                                                                                                                                                                                   
+    PRIMARY KEY (`patient_portal_menu_group_id`)                                                                                                                                                                                                                                                                                                                  
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;						   
+#EndIf	 
+
+#IfNotRow patient_portal_menu_group menu_group_name Demographics
+insert  into `patient_portal_menu_group`(`patient_portal_menu_group_id`,`menu_group_name`,`menu_group_order`,`menu_group_status`) values (1,'Demographics',3,1);
+#EndIf	
+
+#IfMissingColumn log log_from
+ALTER TABLE `log` ADD COLUMN `log_from` varchar(20) DEFAULT 'open-emr'; 
+#EndIf
+
+#IfMissingColumn log menu_item_id                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ALTER TABLE `log` ADD COLUMN `menu_item_id` int(11) DEFAULT NULL;
+#EndIf
