@@ -190,7 +190,7 @@ $depObj 	= $this->dependencyObject;
 					foreach ( $InstallersExisting as $modules ){
 						 $key = "";
 						 $key = array_search($modules -> modDirectory, $inDir) ;  /* returns integer or FALSE */
-						 if($key != "")
+						 if($key !== false)
 						 	unset($inDir[$key]);
 					}
 				}				
@@ -231,7 +231,7 @@ $depObj 	= $this->dependencyObject;
 					foreach ( $InstallersExisting as $modules ){
 						 $key = "";
 						 $key = array_search($modules -> modDirectory, $inDir) ;  /* returns integer or FALSE */
-						 if($key != "")
+						 if($key !== false)
 						 	unset($inDir[$key]);
 					}
 				}							
