@@ -91,7 +91,25 @@ body {
 </head>
 <body>
 <?php
+if (empty($_POST['form_sign_list'])) {
   generate_order_report($orderid, true);
+}
+else {
+?>
+<script language='JavaScript'>
+ if (opener.document.forms && opener.document.forms[0]) {
+  // Opener should be list_reports.php. Make it refresh.
+  var f = opener.document.forms[0];
+  if (f.form_external_refresh) {
+   f.form_external_refresh.value = '1';
+   f.submit();
+  }
+ }
+ window.close();
+</script>
+<?php
+}
 ?>
 </body>
 </html>
+
