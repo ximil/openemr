@@ -28,5 +28,5 @@ $v_database = 110;
 $v_acl = 2;
 
 //Offsite Portal SOAP functions version, which are at myportal directory.
-$v_offsite_portal='1.46';
+$v_offsite_portal='1.47';
 ?>
