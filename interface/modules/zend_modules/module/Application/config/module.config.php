@@ -16,6 +16,7 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  Remesh Babu S <remesh@zhservices.com>
+*    @author  Chandni Babu <chandnib@zhservices.com> 
 * +------------------------------------------------------------------------------+
 */
 
@@ -84,7 +85,9 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'Application\Controller\Index' => 'Application\Controller\IndexController'
+            'Application\Controller\Index' => 'Application\Controller\IndexController',
+			'Application\Controller\Sendto' => 'Application\Controller\SendtoController',
+            'Application\Controller\Soap' => 'Application\Controller\SoapController',
         ),
     ),
     'view_manager' => array(
@@ -102,5 +105,12 @@ return array(
         'template_path_stack' => array(
             __DIR__ . '/../view',
         ),
+    ),
+    'view_helpers' => array(
+        'invokables'=> array(
+            'getVariables'      => 'Application\Helper\Getvariables',
+            'javascriptGlobals' => 'Application\Helper\Javascript',
+            'translation_helper'=> 'Application\Helper\Translationhelper',
+        )
     ),
 );

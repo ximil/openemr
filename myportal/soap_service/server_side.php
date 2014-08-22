@@ -41,6 +41,11 @@ ob_start();
 require_once("../../interface/globals.php");
 require_once(dirname(__FILE__)."/../../controllers/C_Document.class.php");
 require_once(dirname(__FILE__)."/../../library/options.inc.php");
+require_once(dirname(__FILE__) . "/../../library/log.inc");
+require_once(dirname(__FILE__) . "/../../library/sql.inc");
+require_once(dirname(__FILE__) . "/../../library/patient.inc");
+require_once(dirname(__FILE__) . "/../../library/direct_message_check.inc");
+
 $err = '';
 if(!extension_loaded("soap")){
   dl("php_soap.dll");
