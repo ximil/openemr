@@ -412,7 +412,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 			$field_name[] 	= $params;
 		}
 		else if($recipients == 'patient'){
-			$query			= "select fname, lname from patient_data WHERE id = ?";
+			$query			= "select fname, lname from patient_data WHERE pid = ?";
 			$field_name[] 	= $params;
 		}
 		else{
@@ -476,7 +476,11 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     public function getPrimaryCareProvider($pid, $encounter)
     {
         $primary_care_provider = '';
-        $details = $this->getDetails('hie_primary_care_provider_id');
+        $getprovider = $this->getProviderId($pid);
+        if($getprovider !=0 && $getprovider != '')
+            $details = $this->getUserDetails($getprovider);
+        else
+            $details = $this->getDetails('hie_primary_care_provider_id');
         
         $primary_care_provider = "
         <primary_care_provider>

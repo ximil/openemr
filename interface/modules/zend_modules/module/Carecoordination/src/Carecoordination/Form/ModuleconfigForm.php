@@ -78,7 +78,7 @@ class ModuleconfigForm extends Form
 				),
 				'options' => array(
 					'label' 	=> \Application\Listener\Listener::z_xlt('Author'),
-					'value_options' => $this->getUsers(),
+					'value_options' => $this->getProviders(),
 				),
 			));
 		
@@ -97,7 +97,7 @@ class ModuleconfigForm extends Form
 				),
 				'options' => array(
 					'label' 	=> \Application\Listener\Listener::z_xlt('Data Enterer'),
-					'value_options' => $this->getUsers(),
+					'value_options' => $this->getUsersList(),
 				),
 			));
 		
@@ -116,7 +116,7 @@ class ModuleconfigForm extends Form
 				),
 				'options' => array(
 					'label' 	=> \Application\Listener\Listener::z_xlt('Informant'),
-					'value_options' => $this->getUsers(),
+					'value_options' => $this->getProviders(),
 				),
 			));
 		
@@ -149,28 +149,28 @@ class ModuleconfigForm extends Form
 				),
 				'options' => array(
 					'label' 	=> \Application\Listener\Listener::z_xlt('Custodian'),
-					'value_options' => $this->getUsers(),
+					'value_options' => $this->getFacilities(),
 				),
 			));
 		
 		/*
 		* Recipient settings
 		*/
-		$this->add(array(
-				'name' 	=> 'hie_recipient_id',
-				'type'  	=> 'Zend\Form\Element\Select',
-				'attributes'=> array(
-					'class' 	=> '',
-					'data-options' 	=> 'required:true',
-					'editable' 	=> 'false',
-					'required' 	=> 'required',
-					'id' 		=> 'hie_recipient_id'
-				),
-				'options' => array(
-					'label' 	=> \Application\Listener\Listener::z_xlt('Recipient'),
-					'value_options' => $this->getUsers(),
-				),
-			));
+		//$this->add(array(
+		//		'name' 	=> 'hie_recipient_id',
+		//		'type'  	=> 'Zend\Form\Element\Select',
+		//		'attributes'=> array(
+		//			'class' 	=> '',
+		//			'data-options' 	=> 'required:true',
+		//			'editable' 	=> 'false',
+		//			'required' 	=> 'required',
+		//			'id' 		=> 'hie_recipient_id'
+		//		),
+		//		'options' => array(
+		//			'label' 	=> \Application\Listener\Listener::z_xlt('Recipient'),
+		//			'value_options' => $this->getUsers(),
+		//		),
+		//	));
 		
 		/*
 		* Legal Authenticator settings
@@ -225,7 +225,7 @@ class ModuleconfigForm extends Form
 				),
 				'options' => array(
 					'label' 	=> \Application\Listener\Listener::z_xlt('Primary Care Provider'),
-					'value_options' => $this->getUsers(),
+					'value_options' => $this->getProviders(),
 				),
 			));
 		
@@ -300,5 +300,35 @@ class ModuleconfigForm extends Form
 			$users[$row['id']] = $row['fname']." ".$row['lname'];
 		}
 		return $users;
+    }
+	
+	public function getFacilities()
+    {
+        $users = array('0' => '');
+        $res = $this->application->zQuery(("SELECT `id`,`name` FROM `facility`"));
+        foreach($res as $row){
+           $users[$row['id']] = $row['name'];
+        }
+        return $users;
+    }
+	
+    public function getProviders()
+    {
+        $users = array('0' => '');
+        $res = $this->application->zQuery(("SELECT id, fname, lname FROM users WHERE authorized=1 AND active ='1'"));
+        foreach($res as $row){
+           $users[$row['id']] = $row['fname']." ".$row['lname'];
+        }
+        return $users;
+    }
+	
+    public function getUsersList()
+    {
+        $users = array('0' => '');
+        $res = $this->application->zQuery(("SELECT id, fname, lname FROM users WHERE active ='1' AND `username` IS NOT NULL AND `password` IS NOT NULL"));
+        foreach($res as $row){
+           $users[$row['id']] = $row['fname']." ".$row['lname'];
+        }
+        return $users;
     }
 }
