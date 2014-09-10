@@ -476,7 +476,11 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     public function getPrimaryCareProvider($pid, $encounter)
     {
         $primary_care_provider = '';
-        $details = $this->getDetails('hie_primary_care_provider_id');
+        $getprovider = $this->getProviderId($pid);
+        if($getprovider !=0 && $getprovider != '')
+            $details = $this->getUserDetails($getprovider);
+        else
+            $details = $this->getDetails('hie_primary_care_provider_id');
         
         $primary_care_provider = "
         <primary_care_provider>
