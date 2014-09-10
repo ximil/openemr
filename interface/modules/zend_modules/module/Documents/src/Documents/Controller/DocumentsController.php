@@ -16,7 +16,6 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  Basil PT <basil@zhservices.com>
-*    @author  Chandni Babu <chandnib@zhservices.com>  
 * +------------------------------------------------------------------------------+
 */
 
@@ -167,7 +166,7 @@ class DocumentsController extends AbstractActionController
 			'image/gif',
 			'text/plain',
 			'text/html',
-      'text/xml',
+            'text/xml',
 		);
     
     $request        = $this->getRequest();
@@ -182,7 +181,7 @@ class DocumentsController extends AbstractActionController
     
     $document       = \Documents\Plugin\Documents::getDocument($documentId,$doEncryption,$encryptionKey);
     $categoryIds    = $this->getDocumentsTable()->getCategoryIDs(array('CCD','CCR','CCDA'));
-    if(in_array($result['category_id'],$categoryIds) && $contentType == 'text/xml' && !$doEncryption) {
+    if(in_array($result['category_id'],$categoryIds)) {
       $xml          = simplexml_load_string($document);
       $xsl          = new \DomDocument;
       
@@ -201,14 +200,14 @@ class DocumentsController extends AbstractActionController
       $xsl->load(__DIR__.'/../../../../../public/xsl/'.$style);
       $proc         = new \XSLTProcessor;
       $proc->importStyleSheet($xsl);
-      //echo $xml;
+      echo $xml;
       $document     = $proc->transformToXML($xml);
-      //echo $document;
+      echo $document;
     }
     
     if($type=="inline" && !$doEncryption) {
       if(in_array($result['mimetype'],$previewAvailableFiles)){
-        if(in_array($result['category_id'],$categoryIds) && $contentType == 'text/xml') {
+        if(in_array($result['category_id'],$categoryIds)) {
           $contentType  = 'text/html';
         }
       } else {
@@ -216,7 +215,7 @@ class DocumentsController extends AbstractActionController
       }
     } else {
       if($doEncryption) {
-        //$document     = \Documents\Plugin\Documents::encrypt($document,$encryptionKey);
+        $document     = \Documents\Plugin\Documents::encrypt($document,$encryptionKey);
         $contentType  = "application/octet-stream";
       } else {
         $contentType  = $result['mimetype'];
@@ -235,9 +234,9 @@ class DocumentsController extends AbstractActionController
       return $this->response;
     }
     
-//    $view = new ViewModel(array(
-//      'listenerObject'=> $this->listenerObject,
-//    ));
-//    return $view;
+    $view = new ViewModel(array(
+      'listenerObject'=> $this->listenerObject,
+    ));
+    return $view;
   }
 }

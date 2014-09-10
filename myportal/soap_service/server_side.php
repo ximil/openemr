@@ -1287,6 +1287,110 @@ static  public function batch_despatch($var,$func,$data_credentials){
 	   return 'notok';
        }
     }
+    
+    /**
+     * Soap function to add direct address
+     * @param type $data
+     * @return boolean
+     */
+     public function addDirectAddress($data){
+        if($this->valid($data[0])=='existingpatient'){
+           $qry = "SELECT email FROM users WHERE LOWER(email) = ?";
+	       $res=sqlStatement($qry,array(strtolower($data['direct_address_string'])));
+            if(!(sqlNumRows($res) > 0)){
+                sqlStatement("INSERT INTO users SET fname=? , mname=?, lname = ?, email = ?, active = ?, abook_type = ? ",array($data['first_name'],$data['middle_name'], $data['middle_name'], $data['direct_address_string'], 1, 'emr_direct'));
+                $status = 'insert-success';
+            } else {
+                $status = 'duplicate-address';
+            }
+           
+		} else {
+            $status = 'auth-failed';
+        }
+        return '<!--?xml version="1.0"?-->
+                    <root>
+                      <level>
+                        <status>' . $status . '</status>
+                      </level>
+                    </root>';
+    }
+    
+    /**
+     * Soap function to edit direct address
+     */
+      public function updateDirectAddress($data){
+        if($this->valid($data[0])=='existingpatient'){
+
+           $qry = "SELECT email FROM users WHERE LOWER(email) = ? AND id <> ?";
+	       $res=sqlStatement($qry,array($data['direct_address_string'], $data['id']));
+
+            if(!(sqlNumRows($res) > 0)){
+                sqlStatement("UPDATE users SET fname=? , mname=?, lname = ?, email = ?  WHERE id = ?", array($data['first_name'],$data['middle_name'], $data['middle_name'], $data['direct_address_string'], $data['id']));
+                $status = 'insert-success';
+            } else {
+                $status = 'duplicate-address';
+            }
+           
+		} else {
+            $status = 'auth-failed';
+        }
+        return '<!--?xml version="1.0"?-->
+                    <root>
+                      <level>
+                        <status>' . $status . '</status>
+                      </level>
+                    </root>';
+    }   
+    
+    
+    /**
+     * Soap function to get direct address details
+     */
+      public function getDirectAddressDetails($data){
+        if($this->valid($data[0])=='existingpatient'){
+           $qry = "SELECT fname, mname, lname,email,id FROM users WHERE id = ?";
+           
+	       $res=sqlStatement($qry,array($data['id']));
+            if(sqlNumRows($res)>0){
+                return $this->resourcetoxml($res);
+            }else {
+                $status = 'invalid-id';
+            }
+           
+		} else {
+            $status = 'auth-failed';
+        }
+        return '<!--?xml version="1.0"?-->
+                    <root>
+                      <level>
+                        <status>' . $status . '</status>
+                      </level>
+                    </root>';
+    }       
+    
+    /**
+     * Soap function to get list of direct address
+     */
+      public function getDirectAddressList($data){
+        if($this->valid($data[0])=='existingpatient'){
+           $qry = "SELECT fname, mname, lname,email,id FROM users WHERE abook_type = ?";
+	       $res=sqlStatement($qry, array('emr_direct'));
+            if(sqlNumRows($res)>0){
+                return $this->resourcetoxml($res);
+            } else {
+                $status = 'empty-records';
+            }
+           
+		} else {
+            $status = 'auth-failed';
+        }
+        return '<!--?xml version="1.0"?-->
+                    <root>
+                      <level>
+                        <status>' . $status . '</status>
+                      </level>
+                    </root>';
+    }       
 }
 $server = new SoapServer(null,array('uri' => "urn://portal/res"));
 $server->setClass('UserService');

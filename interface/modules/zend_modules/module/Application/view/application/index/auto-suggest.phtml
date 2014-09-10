@@ -46,6 +46,7 @@
     color: #f00;
     cursor:pointer;
   }
+}
 </style>
 <div class="panel_content_wrapper">
 <div class="panel-head">
@@ -150,10 +151,10 @@
       <div class="itemBox" style="width:30px;"><?php echo $this->escapeHtml($i); ?></div>
       <div class="itemBox" style="width: 232px;height: auto;">
       <?php
-        echo $name;
+        echo $this->listenerObject->z_xlt($name);
       ?>
       </div>
-      <div class="itemBox" style="width:40px;"><?php echo $patient_id; ?></div>
+      <div class="itemBox" style="width:40px;"><?php echo $this->escapeHtml($patient_id); ?></div>
       <div class="itemBox" style="width:60px; border-right:none;"><?php echo $dob; ?></div>					
       </li>
       </ul>					

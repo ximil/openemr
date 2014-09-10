@@ -75,6 +75,17 @@ class EncounterccdadispatchController extends AbstractActionController
 			$sent_by            = isset($parameterArray['sent_by']) ? $parameterArray['sent_by'] : '';
 			$send            	= isset($parameterArray['send']) ? $parameterArray['send'] : 0;
 			$view            	= isset($parameterArray['view']) ? $parameterArray['view'] : 0;
+            $this->recipients	= isset($parameterArray['recipients']) ? $parameterArray['recipients'] : '';
+            if ($this->recipients == 'patient') {
+                $this->params   = $this->patient_id;
+            } else {
+                $this->params		= isset($parameterArray['param']) ? $parameterArray['param'] : '';
+            }
+              
+            $fh12 = fopen(sys_get_temp_dir() . '/scriptLog.txt', 'a');
+                fwrite($fh12, print_r($parameterArray, 1) . 'Control Here......:)' . $this->params . PHP_EOL);
+                fclose($fh12);
+
 			
 			try {
 				$event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';

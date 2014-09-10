@@ -1672,39 +1672,3 @@ UPDATE categories_seq SET id = (select MAX(id) from categories);
 #IfNotRow2D list_options list_id abook_type option_id emr_direct
 INSERT INTO list_options (list_id, option_id, title , seq, option_value) VALUES ('abook_type', 'emr_direct', 'EMR Direct' ,105,4);
 #EndIf
-
-#IfNotRow2D list_options list_id abook_type option_id external_provider
-INSERT INTO list_options (list_id, option_id, title , seq, option_value) VALUES ('abook_type', 'external_provider', 'External Provider' ,110,1);
-#EndIf
-
-#IfNotRow2D list_options list_id abook_type option_id external_org
-INSERT INTO list_options (list_id, option_id, title , seq, option_value) VALUES ('abook_type', 'external_org', 'External Organization' ,120,1);
-#EndIf
-
-#IfMissingColumn immunizations external_id
-ALTER TABLE `immunizations` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn prescriptions external_id
-ALTER TABLE `prescriptions` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn lists external_id
-ALTER TABLE `lists` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn form_vitals external_id
-ALTER TABLE `form_vitals` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn form_encounter external_id
-ALTER TABLE `form_encounter` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn billing external_id
-ALTER TABLE `billing` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf
-
-#IfMissingColumn procedure_order external_id
-ALTER TABLE `procedure_order` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
-#EndIf

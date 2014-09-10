@@ -16,7 +16,6 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  Remesh Babu S <remesh@zhservices.com>
-*    @author  Chandni Babu <chandnib@zhservices.com> 
 * +------------------------------------------------------------------------------+
 */
 
@@ -110,7 +109,6 @@ return array(
         'invokables'=> array(
             'getVariables'      => 'Application\Helper\Getvariables',
             'javascriptGlobals' => 'Application\Helper\Javascript',
-            'translation_helper'=> 'Application\Helper\Translationhelper',
         )
     ),
 );
