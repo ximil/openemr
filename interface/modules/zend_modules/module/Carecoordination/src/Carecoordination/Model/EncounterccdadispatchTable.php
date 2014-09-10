@@ -411,6 +411,10 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 			$query			= "select fname, lname, organization from users where email = ?";
 			$field_name[] 	= $params;
 		}
+		else if($recipients == 'patient'){
+			$query			= "select fname, lname from patient_data WHERE id = ?";
+			$field_name[] 	= $params;
+		}
 		else{
 			$query			= "select fname, lname, organization from users where id = ?";
 			$field_name[] 	= $params;
