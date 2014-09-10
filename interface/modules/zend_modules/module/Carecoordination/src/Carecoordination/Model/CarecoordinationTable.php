@@ -1310,23 +1310,23 @@ class CarecoordinationTable extends AbstractTableGateway
                                                    $procedure_code,
                                                    $value['proc_name']));
 
-        $query3  = "INSERT INTO procedure_report
-                   ( procedure_order_id,
-                     procedure_order_seq,
-                     date_collected,
-                     date_report
-                   )
-                   VALUES
-                   (
-                     ?,
-                     1,
-                     ?,
-                     ?
-                   )";
-        $result3 = $appTable->zQuery($query3,array($poc_id,
-                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
-                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy')));
-        $proc_report_id = $result3->getGeneratedValue();
+//        $query3  = "INSERT INTO procedure_report
+//                   ( procedure_order_id,
+//                     procedure_order_seq,
+//                     date_collected,
+//                     date_report
+//                   )
+//                   VALUES
+//                   (
+//                     ?,
+//                     1,
+//                     ?,
+//                     ?
+//                   )";
+//        $result3 = $appTable->zQuery($query3,array($poc_id,
+//                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
+//                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy')));
+//        $proc_report_id = $result3->getGeneratedValue();
       }
       else {
         $appTable->zQuery("UPDATE procedure_order
@@ -1347,19 +1347,37 @@ class CarecoordinationTable extends AbstractTableGateway
                            WHERE procedure_order_id=?",array($value['proc_name'],
                                                              $proc_order_id));
 
-        $appTable->zQuery("UPDATE procedure_report
-                           SET date_collected=?,
-                           date_report=?
-                           WHERE procedure_order_id=?",array(\Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
-                                                             \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
-                                                             $proc_order_id));
-        
-        $res            = $appTable->zQuery("SELECT procedure_report_id
-                                  FROM procedure_report
-                                  WHERE procedure_order_id=?",array($proc_order_id));
-        $res_cur        = $res->current();
-        $proc_report_id = $res_cur['procedure_report_id'];
+//        $appTable->zQuery("UPDATE procedure_report
+//                           SET date_collected=?,
+//                           date_report=?
+//                           WHERE procedure_order_id=?",array(\Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
+//                                                             \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
+//                                                             $proc_order_id));
+//        
+//        $res            = $appTable->zQuery("SELECT procedure_report_id
+//                                  FROM procedure_report
+//                                  WHERE procedure_order_id=?",array($proc_order_id));
+//        $res_cur        = $res->current();
+//        $proc_report_id = $res_cur['procedure_report_id'];
       }
+      $query3  = "INSERT INTO procedure_report
+                   ( procedure_order_id,
+                     procedure_order_seq,
+                     date_collected,
+                     date_report
+                   )
+                   VALUES
+                   (
+                     ?,
+                     1,
+                     ?,
+                     ?
+                   )";
+      $result3 = $appTable->zQuery($query3,array($poc_id,
+                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy'),
+                                                   \Application\Model\ApplicationTable::fixDate($value['proc_date'],'yyyy-mm-dd','dd/mm/yyyy')));
+      $proc_report_id = $result3->getGeneratedValue();
+      
       if(count($value['result']) > 1) {
         foreach($value['result'] as $key1=>$value1 ) {
           $proc_result       = explode(" ",$value1['results_value']);
