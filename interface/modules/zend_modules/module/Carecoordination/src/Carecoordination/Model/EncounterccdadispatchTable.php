@@ -1524,11 +1524,20 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     
     public function getDetails($field_name)
     {
-        $query      = "SELECT u.title, u.fname, u.mname, u.lname, u.street, u.city, u.state, u.zip, CONCAT_WS(' ','',u.phonew1) AS phonew1, u.organization, u.specialty, conf.field_name, mo.mod_name
+		if($field_name == 'hie_custodian_id'){
+        $query      = "SELECT f.name AS organization, f.street, f.city, f.state, f.postal_code AS zip, f.phone AS phonew1
+			FROM facility AS f
+			JOIN modules AS mo ON mo.mod_directory='Carecoordination'
+			JOIN module_configuration AS conf ON conf.field_value=f.id AND mo.mod_id=conf.module_id
+			WHERE conf.field_name=?";
+		}
+		else{
+		$query      = "SELECT u.title, u.fname, u.mname, u.lname, u.street, u.city, u.state, u.zip, CONCAT_WS(' ','',u.phonew1) AS phonew1, u.organization, u.specialty, conf.field_name, mo.mod_name
             FROM users AS u
             JOIN modules AS mo ON mo.mod_directory='Carecoordination'
             JOIN module_configuration AS conf ON conf.field_value=u.id AND mo.mod_id=conf.module_id
-            WHERE u.abook_type='ccda' AND conf.field_name=?";        
+            WHERE u.abook_type='ccda' AND conf.field_name=?";	
+		}
         $appTable   = new ApplicationTable();
 		$res        = $appTable->zQuery($query, array($field_name));
         foreach($res as $result){
@@ -2002,6 +2011,26 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 	}
 	$code 	    = strtoupper(substr($code, 0, 6));
 	return $code;
+    }
+	
+	public function getProviderId($pid)
+	{
+        $appTable   = new ApplicationTable();
+        $query      = "SELECT providerID FROM patient_data WHERE `pid`  = ?";
+        $result     = $appTable->zQuery($query, array($pid));
+        $row        = $result->current();
+        return $row['providerID'];
+    }
+    
+    public function getUserDetails($uid)
+    {
+        $query      = "SELECT title,fname,mname,lname,street,city,state,zip,CONCAT_WS(' ','',phonew1) AS phonew1,
+                       organization,specialty FROM users WHERE `id` = ?";        
+        $appTable   = new ApplicationTable();
+		$res        = $appTable->zQuery($query, array($uid));
+        foreach($res as $result){
+            return $result;
+        }
     }
 }
 ?>
