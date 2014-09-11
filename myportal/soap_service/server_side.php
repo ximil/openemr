@@ -1372,6 +1372,11 @@ static  public function batch_despatch($var,$func,$data_credentials){
      * Soap function to get list of direct address
      */
       public function getDirectAddressList($data){
+                      $fh12 = fopen(sys_get_temp_dir() . '/scriptLog2.txt', 'a');
+                fwrite($fh12, 'getDirectAddressList' . print_r($data, 1) . PHP_EOL);
+                fclose($fh12);
+
+
         if($this->valid($data[0])=='existingpatient'){
            $qry = "SELECT fname, mname, lname,email,id FROM users WHERE abook_type = ?";
 	       $res=sqlStatement($qry, array('emr_direct'));

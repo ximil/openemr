@@ -2,10 +2,10 @@
 //  OpenEMR
 //  MySQL Config
 
-$host	= 'localhost';
+$host	= '127.0.0.1';
 $port	= '3306';
-$login	= 'openemr';
-$pass	= 'openemr';
+$login	= 'root';
+$pass	= 'navas';
 $dbase	= 'openemr';
 
 //Added ability to disable
