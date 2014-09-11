@@ -2003,5 +2003,25 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 	$code 	    = strtoupper(substr($code, 0, 6));
 	return $code;
     }
+	
+	public function getProviderId($pid)
+	{
+        $appTable   = new ApplicationTable();
+        $query      = "SELECT providerID FROM patient_data WHERE `pid`  = ?";
+        $result     = $appTable->zQuery($query, array($pid));
+        $row        = $result->current();
+        return $row['providerID'];
+    }
+    
+    public function getUserDetails($uid)
+    {
+        $query      = "SELECT title,fname,mname,lname,street,city,state,zip,CONCAT_WS(' ','',phonew1) AS phonew1,
+                       organization,specialty FROM users WHERE `id` = ?";        
+        $appTable   = new ApplicationTable();
+		$res        = $appTable->zQuery($query, array($uid));
+        foreach($res as $result){
+            return $result;
+        }
+    }
 }
 ?>
