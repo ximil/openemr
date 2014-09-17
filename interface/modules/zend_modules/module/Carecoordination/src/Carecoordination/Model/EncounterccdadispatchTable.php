@@ -421,11 +421,13 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 			$field_name[] 	= $params;
 		}
 		
-		$res        = $appTable->zQuery($query, $field_name);
-		$result	 	= $res->current();
-		$details['fname'] 		= $result['fname'];
-		$details['lname'] 		= $result['lname'];
-		$details['organization']= $result['organization'];
+		if($recipients != 'hie'){
+			$res        = $appTable->zQuery($query, $field_name);
+			$result	 	= $res->current();
+			$details['fname'] 		= $result['fname'];
+			$details['lname'] 		= $result['lname'];
+			$details['organization']= $result['organization'];
+		}
         
         $information_recipient = "<information_recipient>
             <fname>".htmlspecialchars($details['fname'],ENT_QUOTES)."</fname>

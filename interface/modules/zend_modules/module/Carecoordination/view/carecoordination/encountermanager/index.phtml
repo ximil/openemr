@@ -18,7 +18,7 @@
 *    @author  Vinish K <vinish@zhservices.com>
 * +------------------------------------------------------------------------------+
 */
-$status_title   = array('0' => 'Pending', '1' => 'Completed', '3' => 'View');
+$status_title   = array('0' => 'Pending', '1' => 'Completed','2' => 'Secure Transfer', '3' => 'View');
 $status_details = array();
 foreach($this->status_details as $row_status){
         $status_details[$row_status['pid']][] = $row_status;
@@ -268,10 +268,14 @@ foreach($this->status_details as $row_status){
                                                                         <td><?php echo ($row_status['user_id'] == 'Scheduler' ? $this->listenerObject->z_xlt('Auto Transfer') : $this->listenerObject->z_xlt($row_status['user_name']));?></td>
                                                                         <td>
                                                                                 <?php
-                                                                                if($row_status['view'] == 1)
-                                                                                        echo $this->listenerObject->z_xlt($status_title[3]);
-                                                                                else
-                                                                                        echo $this->listenerObject->z_xlt($status_title[$row_status['status']]);
+                                                                                if($row_status['emr_transfer'] == 1)
+                                                                                        echo $this->listenerObject->z_xlt($status_title[2]);
+                                                                                else {
+                                                                                  if($row_status['view'] == 1)
+                                                                                          echo $this->listenerObject->z_xlt($status_title[3]);
+                                                                                  else
+                                                                                          echo $this->listenerObject->z_xlt($status_title[$row_status['status']]);
+                                                                                }
                                                                                 ?>
                                                                                 </td>
                                                                         <td title="<?php echo $this->listenerObject->z_xlt('Download CCDA file');?>">
