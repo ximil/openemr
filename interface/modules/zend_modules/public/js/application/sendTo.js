@@ -370,7 +370,7 @@ function send(){
 		if(recipients != '') {
 			$.ajax({
 			type: "POST",
-			url : APP_URL+"/encounterccdadispatch/index?combination="+combination+"&sections="+components+"&send=1&recipient=emr_direct&param="+recipients,
+			url : APP_URL+"/encounterccdadispatch/index?combination="+combination+"&sections="+components+"&view=1&emr_transfer=1&recipient=emr_direct&param="+recipients,
 			dataType: "html",
 			data: {
 			},

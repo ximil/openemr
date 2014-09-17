@@ -16,6 +16,7 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  BASIL PT <basil@zhservices.com>
+*   @author  Riju K P <rijukp@zhservices.com>
 * +------------------------------------------------------------------------------+
 */
 
@@ -152,9 +153,9 @@ $download_format		= $this->download_format;
 						<td>
 						  <label style="padding-left: 0px!important;"><?php echo $this->listenerObject->z_xlt('Direct Address:'); ?></label><input type="text" name="emr_to_phimail" class="lookup multiple" id="inputString1" onKeyDown="PreventIt(event)" onkeyup="lookup(this.value.trim(), 'emrdirect', '1', 'multiple');" autocomplete="off">
 						</td>
-						<td><input type="radio" class="ap-st-st-3" name="phimail_format" value="html" checked="true"><?php echo $this->listenerObject->z_xlt('HTML'); ?></td>
+						<td><input type="radio" class="ap-st-st-3" name="phimail_format" value="xml" checked="true"><?php echo $this->listenerObject->z_xlt('XML'); ?></td>
 						<td><input type="radio" class="ap-st-st-3" name="phimail_format" value="pdf"><?php echo $this->listenerObject->z_xlt('PDF'); ?></td>
-						<td><input type="radio" class="ap-st-st-3" name="phimail_format" value="xml"><?php echo $this->listenerObject->z_xlt('XML'); ?></td>
+						<td><input type="radio" class="ap-st-st-3" name="phimail_format" value="html"><?php echo $this->listenerObject->z_xlt('HTML'); ?></td>
 					</tr>
 				</table>
 				<div class="suggestions" id="suggestions1" style="display: none; float: left; position: absolute; width: 450px;left:18px;z-index: 1;">

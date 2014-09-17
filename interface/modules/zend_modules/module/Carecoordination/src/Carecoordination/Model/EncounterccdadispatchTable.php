@@ -17,6 +17,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *    @author  Vinish K <vinish@zhservices.com>
+*    @author  Riju K P <rijukp@zhservices.com>  
 * +------------------------------------------------------------------------------+
 */
 
@@ -979,22 +980,22 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         return $hospital_course;
     }
     
-    public function getPlanOfCare($pid, $encounter)
-    {
-        $plan_of_care = '';
-        $formTables_details = $this->fetchFields('discharge_summary', 'plan_of_care', 1);        
-        $result = $this->fetchFormValues($pid, $encounter, $formTables_details);
-        
-        $plan_of_care .= "<planofcare>";
-        foreach($result as $row){
-	    foreach($row as $key=>$value){
-		$plan_of_care .= "<item>".htmlspecialchars($value,ENT_QUOTES)."</item>";
-	    }
-        }
-        $plan_of_care .= "</planofcare>";
-        
-        return $plan_of_care;
-    }
+//    public function getPlanOfCare($pid, $encounter)
+//    {
+//        $plan_of_care = '';
+//        $formTables_details = $this->fetchFields('discharge_summary', 'plan_of_care', 1);        
+//        $result = $this->fetchFormValues($pid, $encounter, $formTables_details);
+//        
+//        $plan_of_care .= "<planofcare>";
+//        foreach($result as $row){
+//	    foreach($row as $key=>$value){
+//		$plan_of_care .= "<item>".htmlspecialchars($value,ENT_QUOTES)."</item>";
+//	    }
+//        }
+//        $plan_of_care .= "</planofcare>";
+//        
+//        return $plan_of_care;
+//    }
     
     public function getDischargeDiagnosis($pid, $encounter)
     {
@@ -1559,9 +1560,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 		$res        = $appTable->zQuery($query, array($pid));
         
         foreach($res as $row){
-            foreach($row as $r){
-                $age = $r['age'];
-            }
+                $age = $row['age'];
         }
         return $age;
     }
@@ -1926,7 +1925,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     * @param    integer     $status
     * @return   None
     */
-    public function logCCDA($pid, $encounter, $content, $time, $status, $user_id, $view = 0, $transfer = 0)
+    public function logCCDA($pid, $encounter, $content, $time, $status, $user_id, $view = 0, $transfer = 0,$emr_transfer = 0)
     {
 		$content    = base64_decode($content);
 		$file_path	= '';
@@ -1953,9 +1952,9 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 			$file_path = $file_path."/".$file_name;
 		}
 		
-        $query      = "insert into ccda (pid, encounter, ccda_data, time, status, user_id, couch_docid, couch_revid, view, transfer) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $query      = "insert into ccda (pid, encounter, ccda_data, time, status, user_id, couch_docid, couch_revid, view, transfer,emr_transfer) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)";
         $appTable   = new ApplicationTable();
-        $result     = $appTable->zQuery($query, array($pid, $encounter, $file_path, $time, $status, $user_id, $couch_id[0], $couch_id[1], $view, $transfer));
+        $result     = $appTable->zQuery($query, array($pid, $encounter, $file_path, $time, $status, $user_id, $couch_id[0], $couch_id[1], $view, $transfer,$emr_transfer));
         return;
     }
     
@@ -2031,6 +2030,73 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         foreach($res as $result){
             return $result;
         }
+    }
+    /*
+    * get details from care plan form 
+    * @param    int     $pid           Patient Internal Identifier.
+    * @param    int     $encounter     Current selected encounter.
+    
+    * return    string  $planofcare  XML which contains the details collected from the patient.
+    */
+    public function getPlanOfCare($pid,$encounter) 
+    {
+      $planofcare = '';
+      $query  = "SELECT fcp.* FROM forms AS f
+                LEFT JOIN form_care_plan AS fcp ON fcp.id = f.form_id
+                WHERE f.pid = ? AND f.formdir = ? AND f.deleted = ?";
+      $appTable   = new ApplicationTable();
+	    $res        = $appTable->zQuery($query, array($pid,'care_plan',0));
+      
+      $planofcare .= '<planofcare>';
+      foreach($res as $row) {
+        $planofcare .= '<item>
+        <code>'.htmlspecialchars($row['code'],ENT_QUOTES).'</code>
+        <code_text>'.htmlspecialchars($row['codetext'],ENT_QUOTES).'</code_text>
+        <description>'.htmlspecialchars($row['description'],ENT_QUOTES).'</description>
+        <date>'.htmlspecialchars($row['date'],ENT_QUOTES).'</date>
+        </item>';
+      }
+      $planofcare .= '</planofcare>';
+      return $planofcare;
+    }
+     /*
+    * get details from functional and cognitive status form 
+    * @param    int     $pid           Patient Internal Identifier.
+    * @param    int     $encounter     Current selected encounter.
+    
+    * return    string  $functional_cognitive  XML which contains the details collected from the patient.
+    */
+    public function getFunctionalCognitiveStatus($pid,$encounter)
+    {
+      $functional_cognitive = '';
+      $query  = "SELECT ffcs.* FROM forms AS f
+                LEFT JOIN form_functional_cognitive_status AS ffcs ON ffcs.id = f.form_id
+                WHERE f.pid = ? AND f.formdir = ? AND f.deleted = ?";
+      $appTable   = new ApplicationTable();
+	    $res        = $appTable->zQuery($query, array($pid,'functional_cognitive_status',0));
+      
+      $functional_cognitive .= '<functional_cognitive_status>';
+      foreach($res as $row) { 
+        if($row['activity'] == 1) {
+          $status      = 'Active';
+          $status_code = '55561003';
+        }
+        else {
+          $status      = 'Inactive';
+          $status_code = '73425007';
+        }
+        $functional_cognitive .= '<item>
+        <code>'.htmlspecialchars($row['code'],ENT_QUOTES).'</code>
+        <code_text>'.htmlspecialchars($row['codetext'],ENT_QUOTES).'</code_text>
+        <description>'.htmlspecialchars($row['description'],ENT_QUOTES).'</description>
+        <date>'.htmlspecialchars($row['date'],ENT_QUOTES).'</date>
+        <status>'.$status.'</status>
+        <status_code>'.$status_code.'</status_code>
+        <age>'.$this->getAge($pid).'</age>
+        </item>';
+      }
+      $functional_cognitive .= '</functional_cognitive_status>';
+      return $functional_cognitive;
     }
 }
 ?>
