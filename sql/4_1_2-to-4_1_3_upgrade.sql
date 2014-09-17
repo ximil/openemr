@@ -1672,3 +1672,7 @@ UPDATE categories_seq SET id = (select MAX(id) from categories);
 #IfNotRow2D list_options list_id abook_type option_id emr_direct
 INSERT INTO list_options (list_id, option_id, title , seq, option_value) VALUES ('abook_type', 'emr_direct', 'EMR Direct' ,105,4);
 #EndIf
+
+#IfMissingColumn ccda emr_transfer
+ALTER TABLE `ccda` ADD COLUMN `emr_transfer` tinyint(4) NOT NULL DEFAULT '0';
+#EndIf

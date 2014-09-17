@@ -17,6 +17,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *    @author  Vinish K <vinish@zhservices.com>
+*    @author  Riju K P <rijukp@zhservices.com> 
 * +------------------------------------------------------------------------------+
 */
 namespace Carecoordination\Controller;
@@ -218,6 +219,7 @@ class EncounterccdadispatchController extends AbstractActionController
         $sent_by            = $this->getRequest()->getQuery('sent_by');
 		$send            	= $this->getRequest()->getQuery('send') ? $this->getRequest()->getQuery('send') : 0;
 		$view            	= $this->getRequest()->getQuery('view') ? $this->getRequest()->getQuery('view') : 0;
+		$emr_transfer     = $this->getRequest()->getQuery('emr_transfer') ? $this->getRequest()->getQuery('emr_transfer') : 0;
 		$this->recipients	= $this->getRequest()->getQuery('recipient');
 		$this->params		= $this->getRequest()->getQuery('param');
 		
@@ -256,7 +258,7 @@ class EncounterccdadispatchController extends AbstractActionController
 				xmlns:mif="urn:hl7-org:v3/mif">
 				<!--';
 				$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-                $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+                $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send ,$emr_transfer);
 				if(!$view)
 					echo $this->listenerObject->z_xlt("Queued for Transfer");
             }
@@ -286,7 +288,7 @@ class EncounterccdadispatchController extends AbstractActionController
             xmlns:mif="urn:hl7-org:v3/mif">
             <!--';
 			$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-            $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+            $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send,$emr_transfer);
 			echo $content;
 			die;
         }        
@@ -451,6 +453,8 @@ class EncounterccdadispatchController extends AbstractActionController
         $ccd .= $this->getEncounterccdadispatchTable()->getProcedures($pid,$encounter);
         $ccd .= $this->getEncounterccdadispatchTable()->getResults($pid,$encounter);
         $ccd .= $this->getEncounterccdadispatchTable()->getImmunization($pid, $encounter);
+        $ccd .= $this->getEncounterccdadispatchTable()->getPlanOfCare($pid,$encounter);
+        $ccd .= $this->getEncounterccdadispatchTable()->getFunctionalCognitiveStatus($pid,$encounter);
         return $ccd;
     }
     
@@ -459,7 +463,7 @@ class EncounterccdadispatchController extends AbstractActionController
         $discharge_summary = '';
         
         $discharge_summary .= $this->getEncounterccdadispatchTable()->getHospitalCourse($pid,$encounter);
-        $discharge_summary .= $this->getEncounterccdadispatchTable()->getPlanOfCare($pid,$encounter);
+//        $discharge_summary .= $this->getEncounterccdadispatchTable()->getPlanOfCare($pid,$encounter);
         $discharge_summary .= $this->getEncounterccdadispatchTable()->getDischargeDiagnosis($pid,$encounter);
         $discharge_summary .= $this->getEncounterccdadispatchTable()->getDischargeMedications($pid,$encounter);
         

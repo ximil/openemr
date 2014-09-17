@@ -7200,6 +7200,7 @@ CREATE TABLE ccda (
   couch_revid VARCHAR(100) NULL,
   `view` tinyint(4) NOT NULL DEFAULT '0',
   `transfer` tinyint(4) NOT NULL DEFAULT '0',
+  `emr_transfer` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (id),
   UNIQUE KEY unique_key (pid,encounter,time)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 ;
