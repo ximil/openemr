@@ -275,7 +275,19 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 				<race_code>".htmlspecialchars($result['race_code'],ENT_QUOTES)."</race_code>
                 <ethnicity>".htmlspecialchars($result['ethnicity_title'],ENT_QUOTES)."</ethnicity>
 				<ethnicity_code>".htmlspecialchars($result['ethnicity_code'],ENT_QUOTES)."</ethnicity_code>
-            </patient>";
+            </patient>
+		<guardian>
+			<fname>".htmlspecialchars($result[''],ENT_QUOTES)."</fname>
+			<lname>".htmlspecialchars($result[''],ENT_QUOTES)."</lname>
+			<code>".htmlspecialchars($result[''],ENT_QUOTES)."</code>
+			<display_name>".htmlspecialchars($result[''],ENT_QUOTES)."</display_name>
+			<street>".htmlspecialchars($result[''],ENT_QUOTES)."</street>
+			<city>".htmlspecialchars($result[''],ENT_QUOTES)."</city>
+			<state>".htmlspecialchars($result[''],ENT_QUOTES)."</state>
+			<postalCode>".htmlspecialchars($result[''],ENT_QUOTES)."</postalCode>
+			<country>".htmlspecialchars($result[''],ENT_QUOTES)."</country>
+			<telecom>".htmlspecialchars($result[''],ENT_QUOTES)."</telecom>
+		</guardian>";
         }
         return $patient_data;
     }
@@ -1539,7 +1551,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
             FROM users AS u
             JOIN modules AS mo ON mo.mod_directory='Carecoordination'
             JOIN module_configuration AS conf ON conf.field_value=u.id AND mo.mod_id=conf.module_id
-            WHERE u.abook_type='ccda' AND conf.field_name=?";	
+            WHERE conf.field_name=?";	
 		}
         $appTable   = new ApplicationTable();
 		$res        = $appTable->zQuery($query, array($field_name));
