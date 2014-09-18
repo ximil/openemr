@@ -42,29 +42,17 @@ $code_des = $_POST["description"];
 $code_activity = $_POST["activity1"];
 
 if ($id && $id != 0) {
-    sqlStatement("DELETE FROM `form_functional_cognitive_status` WHERE pid = ? AND encounter = ?", array($_SESSION["pid"], $_SESSION["encounter"]));
+    sqlStatement("DELETE FROM `form_functional_cognitive_status` WHERE id=? AND pid = ? AND encounter = ?", array($id, $_SESSION["pid"], $_SESSION["encounter"]));
     $newid = $id;
 } else {
-    $res = sqlStatement("SELECT MAX(f1.id) AS largestId FROM `form_functional_cognitive_status` f1 LEFT JOIN `forms` f ON f1.`id`=f.`form_id` WHERE f1.pid = ? 
-                         AND f1.encounter = ? AND f.`deleted` != ?", array($_SESSION["pid"], $_SESSION["encounter"], 1));
-    $getMaxid = sqlFetchArray($res);
+    $res2 = sqlStatement("SELECT MAX(id) as largestId FROM `form_functional_cognitive_status`");
+    $getMaxid = sqlFetchArray($res2);
     if ($getMaxid['largestId']) {
-        $newid = $getMaxid['largestId'];
+        $newid = $getMaxid['largestId'] + 1;
     } else {
-        $res1 = sqlStatement("SELECT MAX(f1.id) AS largestId FROM `form_functional_cognitive_status` f1 LEFT JOIN `forms` f ON f1.`id`=f.`form_id` WHERE f1.pid = ? 
-                         AND f1.encounter = ? AND f.`deleted` = ?", array($_SESSION["pid"], $_SESSION["encounter"], 1));
-        $getMaxid1 = sqlFetchArray($res1);
-        if ($getMaxid1['largestId']) {
-            sqlStatement("DELETE FROM `form_functional_cognitive_status` WHERE pid = ? AND encounter = ?", array($_SESSION["pid"], $_SESSION["encounter"]));
-        }
-        $res2 = sqlStatement("SELECT MAX(id) as largestId FROM `form_functional_cognitive_status`");
-        $getMaxid = sqlFetchArray($res2);
-        if ($getMaxid['largestId']) {
-            $newid = $getMaxid['largestId'] + 1;
-        } else {
-            $newid = 1;
-        }
+        $newid = 1;
     }
+    addForm($encounter, "Functional and Cognitive Status Form", $newid, "functional_cognitive_status", $_SESSION["pid"], $userauthorized);
 }
 $code_text = array_filter($code_text);
 
@@ -83,8 +71,6 @@ if (!empty($code_text)) {
             date       =  '" . add_escape_custom($code_date[$key]) . "'";
         sqlInsert("INSERT INTO form_functional_cognitive_status SET $sets");
     endforeach;
-    sqlStatement("DELETE FROM forms WHERE pid = ? AND encounter = ? AND formdir=?", array($_SESSION["pid"], $_SESSION["encounter"], 'functional_cognitive_status'));
-    addForm($encounter, "Functional and Cognitive Status Form", $newid, "functional_cognitive_status", $pid, $userauthorized);
 }
 $_SESSION["encounter"] = $encounter;
 formHeader("Redirecting....");

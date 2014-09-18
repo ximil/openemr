@@ -35,13 +35,12 @@ formHeader("Form:Functional and Cognitive Status Form");
 $returnurl = $GLOBALS['concurrent_layout'] ? 'encounter_top.php' : 'patient_encounter.php';
 $formid = 0 + (isset($_GET['id']) ? $_GET['id'] : '');
 if ($formid) {
-    $sql = "SELECT * FROM `form_functional_cognitive_status` WHERE pid = ? AND encounter = ?";
-    $res = sqlStatement($sql, array($_SESSION["pid"], $_SESSION["encounter"]));
+    $sql = "SELECT * FROM `form_functional_cognitive_status` WHERE id=? AND pid = ? AND encounter = ?";
+    $res = sqlStatement($sql, array($formid,$_SESSION["pid"], $_SESSION["encounter"]));
 
     for ($iter = 0; $row = sqlFetchArray($res); $iter++)
         $all[$iter] = $row;
     $check_res = $all;
-    $exixting_cnt = count($check_res);
 }
 
 $check_res = $formid ? $check_res : array();

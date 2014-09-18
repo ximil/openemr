@@ -141,7 +141,23 @@
             style="margin:0; padding:0;" 
             class="<?php if ($lineNo == 1) { echo "row"; } else { echo $row;} ?>">
         <li>
-      <?php 
+	  <?php  
+      if($this->searchType == 'emrdirect') {?>
+          <span style="float: left;" 
+              id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
+              onClick='fill("<?php echo $this->escapeHtml($value['email']).'|'.$value['id'];?>", "<?php echo $this->searchType; ?>", "<?php echo $this->searchEleNo;?>" , "<?php echo $this->searchMode; ?>");'>
+      <div class="itemBox" style="width:30px;"><?php echo htmlspecialchars($i); ?></div>
+      <div class="itemBox" style="width: 180px;height: auto;">
+      <?php
+        echo $name;
+      ?>
+      </div>
+      <div class="itemBox" style="width:180px"><?php echo $d_adress; ?></div>			
+      </li>
+      </ul>					
+      </span>	
+        <?php }
+	else{
         if ($this->searchType == 'patient') { ?>
           <span style="float: left;" 
               id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
@@ -158,22 +174,9 @@
       </li>
       </ul>					
       </span>
-	  <?php  
-      if($this->searchType == 'emrdirect') {?>
-          <span style="float: left;" 
-              id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
-              onClick='fill("<?php echo $this->escapeHtml($value['email']).'|'.$value['id'];?>", "<?php echo $this->searchType; ?>", "<?php echo $this->searchEleNo;?>" , "<?php echo $this->searchMode; ?>");'>
-      <div class="itemBox" style="width:30px;"><?php echo htmlspecialchars($i); ?></div>
-      <div class="itemBox" style="width: 180px;height: auto;">
-      <?php
-        echo $name;
-      ?>
-      </div>
-      <div class="itemBox" style="width:180px"><?php echo $d_adress; ?></div>			
-      </li>
-      </ul>					
-      </span>	
-        <?php } ?>
+	  <?php
+	}
+	  ?>
      <div style="clear:both;"></div>
       </div>
 

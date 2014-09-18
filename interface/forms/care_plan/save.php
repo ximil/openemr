@@ -41,29 +41,17 @@ $code_date = $_POST["code_date"];
 $code_des = $_POST["description"];
 
 if ($id && $id != 0) {
-    sqlStatement("DELETE FROM `form_care_plan` WHERE pid = ? AND encounter = ?", array($_SESSION["pid"], $_SESSION["encounter"]));
+    sqlStatement("DELETE FROM `form_care_plan` WHERE id=? AND pid = ? AND encounter = ?", array($id, $_SESSION["pid"], $_SESSION["encounter"]));
     $newid = $id;
 } else {
-    $res = sqlStatement("SELECT MAX(f1.id) AS largestId FROM `form_care_plan` f1 LEFT JOIN `forms` f ON f1.`id`=f.`form_id` WHERE f1.pid = ? 
-                         AND f1.encounter = ? AND f.`deleted` != ?", array($_SESSION["pid"], $_SESSION["encounter"], 1));
-    $getMaxid = sqlFetchArray($res);
+    $res2 = sqlStatement("SELECT MAX(id) as largestId FROM `form_care_plan`");
+    $getMaxid = sqlFetchArray($res2);
     if ($getMaxid['largestId']) {
-        $newid = $getMaxid['largestId'];
+        $newid = $getMaxid['largestId'] + 1;
     } else {
-        $res1 = sqlStatement("SELECT MAX(f1.id) AS largestId FROM `form_care_plan` f1 LEFT JOIN `forms` f ON f1.`id`=f.`form_id` WHERE f1.pid = ? 
-                         AND f1.encounter = ? AND f.`deleted` = ?", array($_SESSION["pid"], $_SESSION["encounter"], 1));
-        $getMaxid1 = sqlFetchArray($res1);
-        if ($getMaxid1['largestId']) {
-            sqlStatement("DELETE FROM `form_care_plan` WHERE pid = ? AND encounter = ?", array($_SESSION["pid"], $_SESSION["encounter"]));
-        }
-        $res2 = sqlStatement("SELECT MAX(id) as largestId FROM `form_care_plan`");
-        $getMaxid = sqlFetchArray($res2);
-        if ($getMaxid['largestId']) {
-            $newid = $getMaxid['largestId'] + 1;
-        } else {
-            $newid = 1;
-        }
+        $newid = 1;
     }
+    addForm($encounter, "Care Plan Form", $newid, "care_plan", $_SESSION["pid"], $userauthorized);
 }
 
 $code_text = array_filter($code_text);
@@ -82,8 +70,6 @@ if (!empty($code_text)) {
             date       =  '" . add_escape_custom($code_date[$key]) . "'";
         sqlInsert("INSERT INTO form_care_plan SET $sets");
     endforeach;
-    sqlStatement("DELETE FROM forms WHERE pid = ? AND encounter = ? AND formdir=?", array($_SESSION["pid"], $_SESSION["encounter"], 'care_plan'));
-    addForm($encounter, "Care Plan Form", $newid, "care_plan", $pid, $userauthorized);
 }
 $_SESSION["encounter"] = $encounter;
 formHeader("Redirecting....");
