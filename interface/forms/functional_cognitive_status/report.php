@@ -32,16 +32,18 @@ function functional_cognitive_status_report($pid, $encounter, $cols, $id) {
         $data[$iter] = $row;
     if ($data) {
         print "<table class='ccda_listing' width='100%' border='1'>
-            <tr>
-                <th align='center' style='font-size: 14px;'>" . text('Description') . "</th> 
+            <tr> 
                 <th align='center' style='font-size: 14px;'>" . text('Code') . "</th>
+                <th align='center' style='font-size: 14px;'>" . text('Code Text') . "</th>
+                <th align='center' style='font-size: 14px;'>" . text('Description') . "</th>
                 <th align='center' style='font-size: 14px;'>" . text('Date') . "</th> 
                 <th align='center' style='font-size: 14px;'>" . text('Active') . "</th>
             </tr>";
         foreach ($data as $key => $value) {
             print "<tr>
-                        <td><span class=text>" . text($value['description']) . "</span></td>
+                        <td><span class=text>" . text($value['code']) . "</span></td>
                         <td><span class=text>" . text($value['codetext']) . "</span></td>
+                        <td><span class=text>" . text($value['description']) . "</span></td>
                         <td><span class=text>" . text($value['date']) . "</span></td>
                         <td><span class=text>" . text(($value['activity'] == 1)?'Yes':'No') . "</span></td>
                     </tr>";
