@@ -28,7 +28,6 @@ $urlArray = explode('/', $_SERVER['REQUEST_URI']);
 $countUrlArray = count($urlArray);
 $actionName = isset($urlArray[$countUrlArray-1]) ? $urlArray[$countUrlArray-1] : '';
 $controllerName = isset($urlArray[$countUrlArray-2]) ? $urlArray[$countUrlArray-2] : '';
-
 if(strtolower($controllerName) == 'notification') {
 	$_SESSION['notification_action'] = 1;	
 }
