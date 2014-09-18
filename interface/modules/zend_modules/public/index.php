@@ -28,7 +28,6 @@ $urlArray = explode('/', $_SERVER['REQUEST_URI']);
 $countUrlArray = count($urlArray);
 $actionName = isset($urlArray[$countUrlArray-1]) ? $urlArray[$countUrlArray-1] : '';
 $controllerName = isset($urlArray[$countUrlArray-2]) ? $urlArray[$countUrlArray-2] : '';
-
 if(strtolower($controllerName) == 'notification') {
 	$_SESSION['notification_action'] = 1;	
 }
@@ -38,7 +37,15 @@ $zendPathArray = explode('/', $zendPath);
 
 if(strtolower($actionName) == 'soap' &&  strtolower($controllerName) == 'document') {        
 	$_SESSION['user_webservice_flag'] = 0;
-} else{
+}
+else if(strtolower($controllerName) == 'carecoordination') {
+  $ignoreAuth = true;
+  require_once(dirname(__FILE__)."/../../../globals.php");
+	require_once(dirname(__FILE__)."/../../../../library/forms.inc");
+	require_once(dirname(__FILE__)."/../../../../library/options.inc.php");
+	require_once(dirname(__FILE__)."/../../../../library/acl.inc");
+}
+else{
 	if(isset($zendPathArray[1]) && strtolower($zendPathArray[1]) == 'soap') {
         $ignoreAuth = true;
     }

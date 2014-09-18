@@ -18,6 +18,7 @@
 *
 *    @author  Vinish K <vinish@zhservices.com>
 *    @author  Chandni Babu <chandnib@zhservices.com> 
+*    @author  Riju KP <rijukp@zhservices.com> 
 * +------------------------------------------------------------------------------+
 */
 namespace Carecoordination\Controller;
@@ -101,7 +102,13 @@ class CarecoordinationController extends AbstractActionController
     * @return   none
     */
     public function importAction()
-    {
+    { 
+        $request     = $this->getRequest();
+        if($request->getQuery('document_id')) {
+          $_REQUEST["document_id"] = $request->getQuery('document_id');
+          $category_details  	     = $this->getCarecoordinationTable()->fetch_cat_id('CCDA');
+          \Documents\Controller\DocumentsController::getDocumentsTable()->updateDocumentCategory($category_details[0]['id'],$_REQUEST["document_id"]);
+        }
         $document_id                      =    $_REQUEST["document_id"]; 
         $xml_content                      =    $this->getCarecoordinationTable()->getDocument($document_id);
         

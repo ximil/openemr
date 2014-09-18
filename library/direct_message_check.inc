@@ -236,7 +236,6 @@ function phimail_check() {
 	  	}
  	     }
 	  }
-
 	  //main part gets stored as document if not plain text content
 	  //(if plain text it will be the body of the final pnote)
           $all_doc_ids = array();
@@ -295,6 +294,19 @@ function phimail_check() {
 	     $url=substr($url,strrpos($url,"/")+1);
              $att_detail = $att_detail . "\n" . xl ("Document") . " $idnum (\"$url\"; $attmime; " . 
 		 filesize($attdata) . " bytes) " . trim($attinfo[$attnum]['desc']);
+             if(strpos($attmime,'xml') !== false) {
+               $ch = curl_init();
+               $url = $_SERVER['SERVER_ADDR'].$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?document_id=$idnum";
+               curl_setopt($ch, CURLOPT_URL,$url);
+               curl_setopt($ch, CURLOPT_COOKIEFILE, "cookiefile"); 
+               curl_setopt($ch, CURLOPT_COOKIEJAR, "cookiefile");
+               curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+               //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+               curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+               curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+               $result = curl_exec($ch) or die(curl_error($ch));
+               curl_close($ch);
+             }
 	 }
 
 	 if ($att_detail != "") 

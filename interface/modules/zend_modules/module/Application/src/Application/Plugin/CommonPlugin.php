@@ -63,7 +63,7 @@ class CommonPlugin extends AbstractPlugin
   */
   public function hightlight($str, $keywords = '') {
     
-    $keywords   = strtoupper($keywords);
+//    $keywords   = strtoupper($keywords);
     $keywords   = preg_replace('/\s\s+/', ' ', strip_tags(trim($keywords)));
     $style      = '???';
     $style_i	= 'highlight_i';
@@ -71,7 +71,8 @@ class CommonPlugin extends AbstractPlugin
     foreach(explode(' ', $keywords) as $keyword) {
       $replacement  =   "<?? ?='" . $style . "'>" . trim($keyword). "</??>";
       $var          .=  $replacement . " ";
-      $str	    =   strtoupper(str_ireplace($keyword, $replacement, $str));
+//      $str	    =   strtoupper(str_ireplace($keyword, $replacement, $str));
+      $str	    =   str_ireplace($keyword, $replacement, $str);
     }
 
     $str = str_ireplace(rtrim($var), "<?? ?='" . $style_i . "'>" . trim($keywords) . "</??>", $str);
