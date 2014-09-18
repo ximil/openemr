@@ -16,6 +16,7 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  Vinish K <vinish@zhservices.com>
+*    @author  Riju K P <rijukp@zhservices.com>
 * +------------------------------------------------------------------------------+
 */
 $status_title   = array('0' => 'Pending', '1' => 'Completed','2' => 'Secure Transfer', '3' => 'View');
@@ -32,54 +33,96 @@ foreach($this->status_details as $row_status){
             "margin-left" :"30%"
           });
         });
-        
-        /* Main tab click function **/
-        $('.main-tab-head li').on("click",function(){
-          $('.main-tab-head li').removeClass("main_active");
-          $(this).addClass("main_active");
-          $('.child-all').hide(); $('.child-tab-1').show();
-          var mainIndex = $(this).index() + 1;
-          $('.main-all').hide();
-          $('.main-tab-'+mainIndex).fadeIn();
-        });
-        
-        /* Child tab Click function */
-        $('.child-tab-head li').not('.disabled_child').click(function(){
-          $('.child-tab-head li').removeClass("child_active");
-          $(this).addClass("child_active");
-          var mainIndex = $(this).index() + 1;
-          $('.child-all').hide();
-          $('.child-tab-'+mainIndex).fadeIn();
-        });
-        
-        /* Import tab Click function */
-        $('.child-tab-head-import li').not('.disabled_child').click(function(){
-          $('.child-tab-head-import li').removeClass("child_active");
-          $(this).addClass("child_active");
-          var mainIndex = $(this).index() + 1;
-          $('.child-all-import').hide();
-          $('.import-child-tab-'+mainIndex).fadeIn();
-        });
-      });
-    </script>
-<div class="new_wrapper">
-        <ul class="main-tab-head">
-          <li class="main_active"><?php echo $this->listenerObject->z_xlt('Export');?></li>
-          <li class=""><?php echo $this->listenerObject->z_xlt('Import');?></li>
-          <li class=""><?php echo $this->listenerObject->z_xlt('MyHealth');?></li>
-        </ul>
-        <div class="clear"></div>
-        <div class="main-tab-1 main-all" style="display: block;">
-          <ul class="child-tab-head">
-            <li class="child_active"><?php echo $this->listenerObject->z_xlt('Transition Of Care');?></li>
-            <li><?php echo $this->listenerObject->z_xlt('Cancer');?></li>
-            <li><?php echo $this->listenerObject->z_xlt('Immunization');?></li>            
-            <li><?php echo $this->listenerObject->z_xlt('Syndromic Surveillance');?></li>
-          </ul>
-          <div class="clear"></div>
-          <div class="child-tab-1 child-all">
-            <!-- -->
-            <div>
+    $(".search_button2").click(function(e){
+      $(".ap-st-st-12").css("left",Number(e.pageX)+"px");
+      $(".ap-st-st-12").toggle();
+    });
+      
+    $(document).mouseup(function (e){
+        var container = $(".ap-st-st-12");
+        button = $(".search_button2");
+        if(!container.is(e.target) && container.has(e.target).length === 0 && !button.is(e.target) )
+        {
+          $(container).css("display","none");
+        }
+    });
+      
+    /* Main tab click function **/
+    $('.main-tab-head li').on("click",function(){
+      $('.main-tab-head li').removeClass("main_active");
+      $(this).addClass("main_active");
+      $('.child-all').hide(); $('.child-tab-1').show();
+      var mainIndex = $(this).index() + 1;
+      $('.main-all').hide();
+      $('.main-tab-'+mainIndex).fadeIn();
+    });
+
+    /* Child tab Click function */
+    $('.child-tab-head li').not('.disabled_child').click(function(){
+      $('.child-tab-head li').removeClass("child_active");
+      $(this).addClass("child_active");
+      var mainIndex = $(this).index() + 1;
+      $('.child-all').hide();
+      $('.child-tab-'+mainIndex).fadeIn();
+    });
+
+    /* Import tab Click function */
+    $('.child-tab-head-import li').not('.disabled_child').click(function(){
+      $('.child-tab-head-import li').removeClass("child_active");
+      $(this).addClass("child_active");
+      var mainIndex = $(this).index() + 1;
+      $('.child-all-import').hide();
+      $('.import-child-tab-'+mainIndex).fadeIn();
+    });
+
+    $("#download_ccda").click(function(){
+      $('#downloadccda').val('download_ccda');
+      $('#theform').submit();
+    });
+    
+    $("#download_ccr").click(function(){
+      $("#downloadccr").val('download_ccr');
+      $("#theform").submit();
+    });
+    
+    $("#download_ccd").click(function(){
+      $("#downloadccd").val('download_ccd');
+      $("#theform").submit();
+    });
+    
+  });
+  function reloadIframe()
+  {
+    document.getElementById('documents_iframe').src=document.getElementById('documents_iframe').src;
+  }
+</script>
+
+    <style>
+      .ap-st-st-12 {
+        display: none;
+        width: 550px;
+      }
+    </style>
+    <div class="new_wrapper">
+  <ul class="main-tab-head">
+    <li class="main_active">Export</li>
+    <li class="">Import</li>
+    <li class="">CQM</li>
+    <li class="">MyHealth</li>
+  </ul>
+  <div class="clear"></div>
+  <div class="main-tab-1 main-all" style="display: block;">
+    <ul class="child-tab-head">
+      <li class="child_active">Transition Of Care</li>
+      <li>Cancer</li>
+      <li>Immunization</li>
+      <!--<li>Transition Of Care</li>-->
+      <li>Syndromic Surveillance</li>
+    </ul>
+    <div class="clear"></div>
+    <div class="child-tab-1 child-all">
+      <!-- -->
+      <div>
         <form method="post" id="theform" style="font-size: 12px;">
         <div class="se_in_15 se_in_16">
                 <table>
@@ -125,9 +168,16 @@ foreach($this->status_details as $row_status){
             <div class="header_wrap">
                 <div class="header_wrap_left">
                     <div class="search_button" title="Search"><?php echo $this->listenerObject->z_xlt('SEARCH'); ?></div>&nbsp;&nbsp;
+                    <div id="download_ccda" style="display: none;"><?php echo $this->listenerObject->z_xlt('DOWNLOAD'); ?></div>&nbsp;&nbsp;
+                    <input type="hidden" name="downloadccda" id="downloadccda" value="">
+                    <div style="display:none;" id="download_ccr"><?php echo $this->listenerObject->z_xlt('DOWNLOAD'); ?></div>&nbsp;&nbsp;
+                    <input type="hidden" name="downloadccr" id="downloadccr" value="">
+                    <div style="display:none;" id="download_ccd"><?php echo $this->listenerObject->z_xlt('DOWNLOAD'); ?></div>&nbsp;&nbsp;
+                    <input type="hidden" name="downloadccd" id="downloadccd" value="">
+                    <input type="hidden" name="pid_ccda" id="pid_ccda" value="">
                     <?php
                     $arr = $this->getVariables('Application\Controller\SendtoController','sendAction');
-                    $arr['required_butons'] = array('hie','emr_direct');
+                    $arr['required_butons'] = array('hie','emr_direct','download_all');
                     $arr['send_via']        = 'hie';
                     $this->layout('carecoordination/layout/encountermanager');
                     echo $this->partial("application/sendto/send",$arr);

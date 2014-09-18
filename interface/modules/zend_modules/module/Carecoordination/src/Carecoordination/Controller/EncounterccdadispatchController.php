@@ -223,6 +223,11 @@ class EncounterccdadispatchController extends AbstractActionController
 		$this->recipients	= $this->getRequest()->getQuery('recipient');
 		$this->params		= $this->getRequest()->getQuery('param');
 		
+    $downloadccda           = $this->params('downloadccda');
+        if($downloadccda == 'download_ccda') {
+          $combination      = $this->params('pids');
+          $view             = $this->params('view');
+        }
         if($sent_by!= ''){
             $_SESSION['authId'] = $sent_by;
         }
@@ -262,7 +267,7 @@ class EncounterccdadispatchController extends AbstractActionController
 				if(!$view)
 					echo $this->listenerObject->z_xlt("Queued for Transfer");
             }
-			if($view){
+			if($view && !$downloadccda){
 				$xml = simplexml_load_string($content);
 				$xsl = new \DOMDocument;
 				$xsl->load(dirname(__FILE__).'/../../../../../public/xsl/ccda.xsl');
@@ -274,7 +279,11 @@ class EncounterccdadispatchController extends AbstractActionController
 				$htmlContent = file_get_contents($outputFile);
 				echo $htmlContent;
 			}
-            die;
+      if($downloadccda)
+        $this->forward()->dispatch('encountermanager',array('action'    => 'downloadall',
+                                                            'pids'      => $this->params('pids')));
+      else 
+           die;
         }
         else{
             $practice_filename  = "CCDA_{$this->patient_id}.xml";

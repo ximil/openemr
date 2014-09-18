@@ -71,7 +71,7 @@
 .clear {
 		clear: both;
 	}
-	#combination_form_div,#hie_div,#emrDirect_div,#download_div {
+	#combination_form_div,#hie_div,#emrDirect_div,#download_div,#download_all_div {
 		display: none;
 	}
 	.display_block {
