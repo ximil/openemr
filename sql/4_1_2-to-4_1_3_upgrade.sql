@@ -1708,3 +1708,7 @@ ALTER TABLE `billing` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
 #IfMissingColumn procedure_order external_id
 ALTER TABLE `procedure_order` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
 #EndIf
+
+#IfMissingColumn ccda emr_transfer
+ALTER TABLE `ccda` ADD COLUMN `emr_transfer` tinyint(4) NOT NULL DEFAULT '0';
+#EndIf
