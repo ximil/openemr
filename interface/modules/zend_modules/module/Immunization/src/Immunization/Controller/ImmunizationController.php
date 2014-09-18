@@ -107,6 +107,7 @@ class ImmunizationController extends AbstractActionController
         $params['total_pages'] = $totalpages;
       
         $codes  = $this->getAllCodes($data);
+        if($codes != '')
         $form->get('codes')->setValueOptions($codes);
         
         $view = new ViewModel(array(
@@ -115,7 +116,6 @@ class ImmunizationController extends AbstractActionController
                 'view'             =>  $rows, 
                 'isFormRefresh'    =>  $isFormRefresh,
                 'form_data'        =>  $params,
-                'listenerObject'=> $this->listenerObject,
 				'commonplugin'  => $this->CommonPlugin(),
             ));
         //$view->setTerminal(true);
