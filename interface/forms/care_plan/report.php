@@ -33,14 +33,16 @@ function care_plan_report($pid, $encounter, $cols, $id) {
     if ($data) {
         print "<table class='ccda_listing' width='100%' border='1'>
             <tr>
-                <th align='center' style='font-size: 14px;'>".text('Description')."</th> 
                 <th align='center' style='font-size: 14px;'>".text('Code')."</th>
+                <th align='center' style='font-size: 14px;'>".text('Code Text')."</th>
+                <th align='center' style='font-size: 14px;'>".text('Description')."</th> 
                 <th align='center' style='font-size: 14px;'>".text('Date')."</th>
             </tr>";
         foreach ($data as $key => $value) {
             print "<tr>
-                        <td><span class=text>".text($value['description'])."</span></td>
+                        <td><span class=text>".text($value['code'])."</span></td>
                         <td><span class=text>".text($value['codetext'])."</span></td>
+                        <td><span class=text>".text($value['description'])."</span></td>
                         <td><span class=text>".text($value['date'])."</span></td>
                     </tr>";
             print "\n";

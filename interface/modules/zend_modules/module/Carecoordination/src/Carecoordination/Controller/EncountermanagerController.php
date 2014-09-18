@@ -17,6 +17,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 *    @author  Vinish K <vinish@zhservices.com>
+*    @author  Riju K P <rijukp@zhservices.com>
 * +------------------------------------------------------------------------------+
 */
 namespace Carecoordination\Controller;
@@ -62,6 +63,35 @@ class EncountermanagerController extends AbstractActionController
         $start          = ($end - $results);
         $new_search     = $request->getPost('form_new_search',null);
         $form_sl_no     = $request->getPost('form_sl_no', 0);
+        
+        $downloadccda       = $request->getPost('downloadccda') ? $request->getPost('downloadccda') : $request->getQuery()->downloadccda;
+        if($downloadccda == 'download_ccda') {
+          $pids           = '';
+          if($request->getQuery('pid_ccda')) {
+            $pid             = $request->getQuery('pid_ccda');
+            if($pid !='') {
+              $combination = $pid;
+            }
+          }
+          else {
+            $combination     = $request->getPost('ccda_pid');
+          }
+          
+          for($i=0 ; $i<count($combination) ; $i++){
+            if($i == (count($combination)-1)) {
+              if($combination == $pid)
+                $pids = $pid;
+              else
+                $pids .= $combination[$i];
+            }
+            else
+              $pids .= $combination[$i].'|';
+          }
+          $this->forward()->dispatch('encounterccdadispatch',array('action'       => 'index',
+                                                                   'pids'         => $pids,
+                                                                   'view'         => 1,
+                                                                   'downloadccda' => $downloadccda));
+        }
         
         $params     = array(
                         'from_date'     => $fromDate,
@@ -141,7 +171,48 @@ class EncountermanagerController extends AbstractActionController
         $view->setTerminal(true);
         return $view;
     }
-    
+    public function downloadallAction()
+    {
+      $pids     = $this->params('pids');
+      if($pids != ''){
+        $zip        = new Zip();
+        $parent_dir = sys_get_temp_dir()."/CCDA_".time();
+        if(!is_dir($parent_dir)){
+          mkdir($parent_dir, true);
+          chmod($parent_dir, 0777);
+        }
+        $arr = explode('|', $pids); 
+        foreach($arr as $row){ 
+            $pid      = $row; 
+            $id       = $this->getEncountermanagerTable()->getFileID($pid); 
+            $dir      = $parent_dir."/CCDA_$id/";
+            $filename = "CCDA_$id.xml";
+            if(!is_dir($dir)){
+              mkdir($dir, true);
+              chmod($dir, 0777);
+            }
+            $content = $this->getEncountermanagerTable()->getFile($id);        
+            $f2      = fopen($dir.$filename, "w");
+            fwrite($f2, $content);
+            fclose($f2);
+            copy(dirname(__FILE__)."/../../../../../public/css/CDA.xsl", $dir."CDA.xsl");
+        }
+        $zip_dir  = sys_get_temp_dir()."/";
+        $zip_name = "CCDA.zip";
+        $zip->setArchive($zip_dir.$zip_name);
+        $zip->compress($parent_dir);
+        
+        ob_clean();
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=$zip_name");
+        header("Content-Type: application/download");
+        header("Content-Transfer-Encoding: binary");
+        readfile($zip_dir.$zip_name);
+        
+        exit;
+      }
+    }
     public function transmitCCDAction()
     {
         $combination  = $this->getRequest()->getQuery('combination');

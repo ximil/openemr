@@ -16,6 +16,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  BASIL PT <basil@zhservices.com>
 *    @author  FASALU RAHMAN K.M <fasalu@zhservices.com>
+*    @author  Riju K P <rijukp@zhservices.com>
 * +------------------------------------------------------------------------------+
 */
 
@@ -130,7 +131,10 @@ $(document).ready(function(){
 			$(".display_block").removeClass("display_block");
 			$("#emrDirect_div").addClass("display_block");
 		}
-		
+		else if($(this).attr("id") == "download_all"){
+			$(".display_block").removeClass("display_block");
+			$("#download_all_div").addClass("display_block");
+		}
 	});
 	
 	//
@@ -221,6 +225,9 @@ function send(){
 	$('.activity_indicator').css({
             "display" :"block"
             });
+  $("#downloadccda").val('');
+  $("#downloadccr").val('');
+  $("#downloadccd").val('');
 	if(send_to == "printer" || send_to == "fax"){
 		formnames 			= "";
 		formnames_title	= "";
@@ -321,6 +328,7 @@ function send(){
                 }
             });
         }
+        
 	else if(send_to == "download"){
 		$('.activity_indicator').css({"display" :"none"});
 		obj = document.getElementsByName('download_format');
@@ -398,4 +406,61 @@ function send(){
 			alert('Please Specify Atleast One Direct Address');
 		}
 	}
+        else if(send_to == "download_all") {
+    var count = 0; 
+     if($('#ccda_pid').val()) {
+       pids = $('#ccda_pid').val();
+       pids = pids.split("_");
+       pid = pids[0];
+       count++;
+     }
+     else {
+       pids = document.getElementsByName('ccda_pid[]');   
+       for(i=0 ; i<pids.length ; i++){        
+         if(pids[i].checked){          
+           count++;        
+         }      
+       }
+     } 
+         
+    if(count == 0) {
+      $('.ap-st-st-12').fadeOut();
+      $('.activity_indicator').css({"display" :"none"});
+      alert("Please select atleast one patient.");
+      return false;
+    }
+    else {
+      var download_format = $('input:radio[name="downloadformat"]:checked').val();	
+      if(download_format == 'ccda') {
+        if($('#ccda_pid').val()) {
+          window.location.assign(WEB_ROOT+"/interface/modules/zend_modules/public/encountermanager/index?pid_ccda="+pid+"&downloadccda=download_ccda");
+        }
+        else {
+          $('#download_ccda').trigger("click"); 
+          $(".check_pid").prop("checked",false);
+        }
+      }
+      else if(download_format == 'ccr') {
+        if($('#ccda_pid').val()) {
+          window.location.assign(WEB_ROOT+"/interface/modules/zend_modules/public/encountermanager/index?pid_ccr="+pid+"&downloadccr=download_ccr");
+        }
+        else {
+          $('#download_ccr').trigger("click"); 
+          $(".check_pid").prop("checked",false);
+        }   
+      }
+      else if(download_format == 'ccd') {
+        if($('#ccda_pid').val()) {
+          window.location.assign(WEB_ROOT+"/interface/modules/zend_modules/public/encountermanager/index?pid_ccd="+pid+"&downloadccd=download_ccd");
+        }
+        else {
+          $('#download_ccd').trigger("click"); 
+          $(".check_pid").prop("checked",false);
+        }   
+      }
+      //$(".check_pid").prop("checked",false);
+      $('.ap-st-st-12').fadeOut();
+      $('.activity_indicator').css({"display" :"none"});
+    }
+  }
 }

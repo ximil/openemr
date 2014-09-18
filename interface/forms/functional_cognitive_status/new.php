@@ -73,6 +73,7 @@ $check_res = $formid ? $check_res : array();
                 changeIds('codetext');
                 changeIds('img_code_date');
                 changeIds('code_date');
+                changeIds('displaytext');
                 removeVal(newRow.id);
             }
 
@@ -87,6 +88,7 @@ $check_res = $formid ? $check_res : array();
                 document.getElementById("codetext_" + rowid1[1]).value = '';
                 document.getElementById("img_code_date_" + rowid1[1]).value = '';
                 document.getElementById("code_date_" + rowid1[1]).value = '';
+                document.getElementById("displaytext_" + rowid1[1]).innerHTML = '';
             }
 
             function changeIds(class_val) {
@@ -122,9 +124,9 @@ $check_res = $formid ? $check_res : array();
             
             function set_related(codetype, code, selector, codedesc) {
                 var checkId = document.getElementById('clickId').value;
-                document.getElementById("code" + checkId).value = codetype;
-                document.getElementById("codetext" + checkId).value = codetype + ':' + code;
-                document.getElementById('description' + checkId).value = codedesc;
+                document.getElementById("code" + checkId).value = code;
+                document.getElementById("codetext" + checkId).value = codedesc;
+                document.getElementById("displaytext" + checkId).innerHTML  = codedesc;
             }
 
             function checkVal(id)
@@ -152,12 +154,11 @@ $check_res = $formid ? $check_res : array();
                 foreach ($check_res as $key => $obj) {
                     ?>
                     <tr class="tb_row" id="tb_row_<?php echo $key + 1; ?>">
+                        <td align="left" class="forms"><?php echo xlt('Code'); ?>:</td>
                         <td class="forms">
-                            <input type="hidden" id="code_<?php echo $key + 1; ?>" name="code[]" class="code" value="<?php echo text($obj{"code"}); ?>">
-                        </td>
-                        <td align="left" class="forms"><?php echo xlt('Code Text'); ?>:</td>
-                        <td class="forms">
-                            <input type="text" id="codetext_<?php echo $key + 1; ?>" name="codetext[]" class="codetext" value="<?php echo text($obj{"codetext"}); ?>" onclick='sel_code(this.parentElement.parentElement.id);'>
+                            <input type="text" id="code_<?php echo $key + 1; ?>" style="width:210px" name="code[]" class="code" value="<?php echo text($obj{"code"}); ?>" onclick='sel_code(this.parentElement.parentElement.id);'><br>
+                            <span id="displaytext_<?php echo $key + 1; ?>" style="width:210px !important;display: block;font-size:13px;color: blue;" class="displaytext"><?php echo text($obj{"codetext"}); ?></span>
+                            <input type="hidden" id="codetext_<?php echo $key + 1; ?>" name="codetext[]" class="codetext" value="<?php echo text($obj{"codetext"}); ?>">
                         </td>
                         <td align="left" class="forms"><?php echo xlt('Description'); ?>:</td>
                         <td class="forms">
@@ -187,12 +188,11 @@ $check_res = $formid ? $check_res : array();
         } else {
             ?>
             <tr class="tb_row" id="tb_row_1">
+                <td align="left" class="forms"><?php echo xlt('Code'); ?>:</td>
                 <td class="forms">
-                    <input type="hidden" id="code_1" name="code[]" class="code" value="<?php echo text($obj{"code"}); ?>">
-                </td>
-                <td align="left" class="forms"><?php echo xlt('Code Text'); ?>:</td>
-                <td class="forms">
-                    <input type="text" id="codetext_1" name="codetext[]" class="codetext" value="<?php echo text($obj{"codetext"}); ?>" onclick='sel_code(this.parentElement.parentElement.id);'>
+                    <input type="text" id="code_1" name="code[]" class="code" style="width:210px" value="<?php echo text($obj{"code"}); ?>" onclick='sel_code(this.parentElement.parentElement.id);'><br>
+                    <span id="displaytext_1" style="width:210px !important;display: block;font-size:13px;color: blue;" class="displaytext"></span>
+                    <input type="hidden" id="codetext_1" name="codetext[]" class="codetext" value="<?php echo text($obj{"codetext"}); ?>">
                 </td>
                 <td align="left" class="forms"><?php echo xlt('Description'); ?>:</td>
                 <td class="forms">

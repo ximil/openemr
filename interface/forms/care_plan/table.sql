@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `form_care_plan` (
   `authorized` tinyint(4) DEFAULT NULL,
   `activity` tinyint(4) DEFAULT NULL,
   `code` varchar(255) DEFAULT NULL,
-  `codetext` varchar(255) DEFAULT NULL,
+  `codetext` text,
   `description` text
 ) ENGINE=InnoDB;
 
