@@ -46,7 +46,6 @@
     color: #f00;
     cursor:pointer;
   }
-}
 </style>
 <div class="panel_content_wrapper">
 <div class="panel-head">
@@ -142,8 +141,25 @@
             style="margin:0; padding:0;" 
             class="<?php if ($lineNo == 1) { echo "row"; } else { echo $row;} ?>">
         <li>
-	<?php  
-        if($this->searchType == 'emrdirect') {?>
+      <?php 
+        if ($this->searchType == 'patient') { ?>
+          <span style="float: left;" 
+              id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
+              onClick='fill("<?php echo $this->escapeHtml($value['fname']) . ' ' . $this->escapeHtml($value['lname']) . '|' . $this->escapeHtml($value['pid']); ?>", "<?php echo $this->escapeHtml($this->searchType); ?>", "<?php echo $this->escapeHtml($this->searchEleNo);?>" , "<?php echo $this->escapeHtml($this->searchMode); ?>");'>
+      <?php } ?>
+      <div class="itemBox" style="width:30px;"><?php echo $this->escapeHtml($i); ?></div>
+      <div class="itemBox" style="width: 232px;height: auto;">
+      <?php
+        echo $name;
+      ?>
+      </div>
+      <div class="itemBox" style="width:40px;"><?php echo $patient_id; ?></div>
+      <div class="itemBox" style="width:60px; border-right:none;"><?php echo $dob; ?></div>					
+      </li>
+      </ul>					
+      </span>
+	  <?php  
+      if($this->searchType == 'emrdirect') {?>
           <span style="float: left;" 
               id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
               onClick='fill("<?php echo $this->escapeHtml($value['email']).'|'.$value['id'];?>", "<?php echo $this->searchType; ?>", "<?php echo $this->searchEleNo;?>" , "<?php echo $this->searchMode; ?>");'>
@@ -157,25 +173,7 @@
       </li>
       </ul>					
       </span>	
-        <?php } 
-      else{
-        if ($this->searchType == 'patient') { ?>
-          <span style="float: left;" 
-              id="<?php echo $fill . '_' . $this->searchEleNo . '_' . $lineNo; ?>" 
-              onClick='fill("<?php echo $this->escapeHtml($value['fname']) . ' ' . $this->escapeHtml($value['lname']) . '|' . $this->escapeHtml($value['pid']); ?>", "<?php echo $this->escapeHtml($this->searchType); ?>", "<?php echo $this->escapeHtml($this->searchEleNo);?>" , "<?php echo $this->escapeHtml($this->searchMode); ?>");'>
-      <?php } ?>
-      <div class="itemBox" style="width:30px;"><?php echo $this->escapeHtml($i); ?></div>
-      <div class="itemBox" style="width: 232px;height: auto;">
-      <?php
-        echo $this->listenerObject->z_xlt($name);
-      ?>
-      </div>
-      <div class="itemBox" style="width:40px;"><?php echo $this->escapeHtml($patient_id); ?></div>
-      <div class="itemBox" style="width:60px; border-right:none;"><?php echo $dob; ?></div>					
-      </li>
-      </ul>					
-      </span>
-	<?php } ?>
+        <?php } ?>
      <div style="clear:both;"></div>
       </div>
 

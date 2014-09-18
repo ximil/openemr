@@ -164,6 +164,7 @@ CREATE TABLE `billing` (
   `x12_partner_id` int(11) default NULL,
   `ndc_info` varchar(255) default NULL,
   `notecodes` varchar(25) NOT NULL default '',
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -203,6 +204,7 @@ INSERT INTO `categories` VALUES (9, 'Living Will', '', 6, 16, 17);
 INSERT INTO `categories` VALUES (10, 'Patient Photograph', '', 4, 8, 9);
 INSERT INTO `categories` VALUES (11, 'CCR', '', 1, 19, 20);
 INSERT INTO `categories` VALUES (12, 'CCD', '', 1, 21, 22);
+INSERT INTO `categories` VALUES (13, 'CCDA', '', 1, 23, 24);
 
 -- --------------------------------------------------------
 
@@ -1148,6 +1150,7 @@ CREATE TABLE `form_encounter` (
   `invoice_refno` varchar(31) NOT NULL DEFAULT '',
   `referral_source` varchar(31) NOT NULL DEFAULT '',
   `billing_facility` INT(11) NOT NULL DEFAULT 0,
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `pid_encounter` (`pid`, `encounter`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -1520,6 +1523,7 @@ CREATE TABLE `form_vitals` (
   `waist_circ` float(5,2) default '0.00',
   `head_circ` float(4,2) default '0.00',
   `oxygen_saturation` float(5,2) default '0.00',
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -2265,6 +2269,7 @@ CREATE TABLE `immunizations` (
   `route` varchar(100) DEFAULT NULL,			
   `administration_site` varchar(100) DEFAULT NULL,			
   `added_erroneously` tinyint(1) NOT NULL DEFAULT '0',  
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -3080,6 +3085,8 @@ INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES
 INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','oth'    ,'Other'               ,95,1);
 INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type', 'ccda', 'Care Coordination', 35, 2);
 INSERT INTO list_options (list_id, option_id, title , seq, option_value ) VALUES ('abook_type', 'emr_direct', 'EMR Direct' ,105,4);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','external_provider' ,'External Provider',110,1);
+INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES ('abook_type','external_org' ,'External Organization',120,1);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','proc_type','Procedure Types', 1,0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('proc_type','grp','Group'          ,10,0);
@@ -3901,6 +3908,7 @@ CREATE TABLE `lists` (
   `erx_uploaded` ENUM('0','1') DEFAULT '0' NOT NULL  COMMENT '0-Pending NewCrop upload 1-Uploaded TO NewCrop',
   `modifydate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `severity_al` VARCHAR( 50 ) DEFAULT NULL,
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`),
   KEY `type` (`type`)
@@ -4730,6 +4738,7 @@ CREATE TABLE `prescriptions` (
   `drug_info_erx` TEXT DEFAULT NULL,
   `erx_diagnosis` VARCHAR(10) DEFAULT NULL,
   `erx_diagnosis_name` TEXT DEFAULT NULL,
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `patient_id` (`patient_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -5914,6 +5923,7 @@ CREATE TABLE `procedure_order` (
   `specimen_volume`        varchar(30)  NOT NULL DEFAULT '' COMMENT 'from a text input field',
   `date_transmitted`       datetime     DEFAULT NULL        COMMENT 'time of order transmission, null if unsent',
   `clinical_hx`            varchar(255) NOT NULL DEFAULT '' COMMENT 'clinical history text that may be relevant to the order',
+  `external_id` varchar(20) NOT NULL,
   PRIMARY KEY (`procedure_order_id`),
   KEY datepid (date_ordered, patient_id),
   KEY `patient_id` (`patient_id`)
@@ -7200,7 +7210,6 @@ CREATE TABLE ccda (
   couch_revid VARCHAR(100) NULL,
   `view` tinyint(4) NOT NULL DEFAULT '0',
   `transfer` tinyint(4) NOT NULL DEFAULT '0',
-  `emr_transfer` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (id),
   UNIQUE KEY unique_key (pid,encounter,time)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 ;
