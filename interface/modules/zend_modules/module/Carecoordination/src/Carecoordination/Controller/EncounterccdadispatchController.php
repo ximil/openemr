@@ -47,6 +47,8 @@ class EncounterccdadispatchController extends AbstractActionController
 	protected $recipients;
 	
 	protected $params;
+        
+    protected $referral_reason;
     
     public function __construct($serviceManager = null)
     {
@@ -222,6 +224,7 @@ class EncounterccdadispatchController extends AbstractActionController
 		$emr_transfer     = $this->getRequest()->getQuery('emr_transfer') ? $this->getRequest()->getQuery('emr_transfer') : 0;
 		$this->recipients	= $this->getRequest()->getQuery('recipient');
 		$this->params		= $this->getRequest()->getQuery('param');
+                $this->referral_reason	= $this->getRequest()->getQuery('referral_reason');
 		
     $downloadccda           = $this->params('downloadccda');
         if($downloadccda == 'download_ccda') {
@@ -388,6 +391,7 @@ class EncounterccdadispatchController extends AbstractActionController
                 <postalCode>".htmlspecialchars($representedOrganization['postalCode'],ENT_QUOTES)."</postalCode>
                 <country>".htmlspecialchars($representedOrganization['country'],ENT_QUOTES)."</country>
             </representedOrganization>";
+        $this->data .="<referral_reason><text>".htmlspecialchars($this->referral_reason,ENT_QUOTES)."</text></referral_reason>";
         
         /***************CCDA Header Information***************/
         $this->data .= $this->getEncounterccdadispatchTable()->getPatientdata($pid,$encounter);
