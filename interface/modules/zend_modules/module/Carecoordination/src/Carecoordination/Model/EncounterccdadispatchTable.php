@@ -241,11 +241,12 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     */
     public function getPatientdata($pid,$encounter)
     {
-        $query      = "select patient_data.*, l1.notes AS race_code, l1.title as race_title, l2.notes AS ethnicity_code, l2.title as ethnicity_title, l3.title as religion, l3.notes as religion_code
+        $query      = "select patient_data.*, l1.notes AS race_code, l1.title as race_title, l2.notes AS ethnicity_code, l2.title as ethnicity_title, l3.title as religion, l3.notes as religion_code, l4.notes as languange_code, l4.title as language_title
                         from patient_data
                         left join list_options as l1 on l1.list_id=? AND l1.option_id=race
                         left join list_options as l2 on l2.list_id=? AND l2.option_id=ethnicity
 			left join list_options AS l3 ON l3.list_id=? AND l3.option_id=religion
+			left join list_options AS l4 ON l4.list_id=? AND l4.option_id=language
                         where pid=?";
         $appTable   = new ApplicationTable();
 	$row        = $appTable->zQuery($query, array('race','ethnicity','religious_affiliation',$pid));
@@ -275,6 +276,8 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 				<race_code>".htmlspecialchars($result['race_code'],ENT_QUOTES)."</race_code>
                 <ethnicity>".htmlspecialchars($result['ethnicity_title'],ENT_QUOTES)."</ethnicity>
 				<ethnicity_code>".htmlspecialchars($result['ethnicity_code'],ENT_QUOTES)."</ethnicity_code>
+		<language>".htmlspecialchars($result['language_title'],ENT_QUOTES)."</language>
+		<language_code>".htmlspecialchars($result['language_code'],ENT_QUOTES)."</language_code>
             </patient>
 		<guardian>
 			<fname>".htmlspecialchars($result[''],ENT_QUOTES)."</fname>
