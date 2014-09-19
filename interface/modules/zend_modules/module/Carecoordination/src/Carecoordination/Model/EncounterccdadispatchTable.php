@@ -241,7 +241,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     */
     public function getPatientdata($pid,$encounter)
     {
-        $query      = "select patient_data.*, l1.notes AS race_code, l1.title as race_title, l2.notes AS ethnicity_code, l2.title as ethnicity_title, l3.title as religion, l3.notes as religion_code, l4.notes as languange_code, l4.title as language_title
+        $query      = "select patient_data.*, l1.notes AS race_code, l1.title as race_title, l2.notes AS ethnicity_code, l2.title as ethnicity_title, l3.title as religion, l3.notes as religion_code, l4.notes as language_code, l4.title as language_title
                         from patient_data
                         left join list_options as l1 on l1.list_id=? AND l1.option_id=race
                         left join list_options as l2 on l2.list_id=? AND l2.option_id=ethnicity
@@ -249,7 +249,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 			left join list_options AS l4 ON l4.list_id=? AND l4.option_id=language
                         where pid=?";
         $appTable   = new ApplicationTable();
-	$row        = $appTable->zQuery($query, array('race','ethnicity','religious_affiliation',$pid));
+	$row        = $appTable->zQuery($query, array('race','ethnicity','religious_affiliation','language',$pid));
         
         foreach($row as $result){
             $patient_data = "<patient>
@@ -824,7 +824,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 	    JOIN procedure_subtest_result AS psr ON psr.procedure_report_id = pr.procedure_report_id
 	    WHERE po.patient_id = ? AND psr.result_value NOT IN ('DNR','TNP')
 	    UNION
-	    SELECT prs.result AS result_value, prs.units, prs.range, prs.order_title, prs.result_code as result_code,
+	    SELECT prs.result AS result_value, prs.units, prs.range, prs.result_text as order_title, prs.result_code as result_code,
 	    prs.result_text as result_desc, prs.code_suffix AS test_code, po.date_ordered, prs.date AS result_time, prs.abnormal AS abnormal_flag
 	    FROM procedure_order AS po
 	    JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id
