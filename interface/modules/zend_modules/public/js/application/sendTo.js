@@ -375,10 +375,11 @@ function send(){
 		}
 		});
 		recipients = $(".emr_to_phimail").val();
+                var referral_reason = $("#referral_reason").val();
 		if(recipients != '') {
 			$.ajax({
 			type: "POST",
-			url : APP_URL+"/encounterccdadispatch/index?combination="+combination+"&sections="+components+"&view=1&emr_transfer=1&recipient=emr_direct&param="+recipients,
+			url : APP_URL+"/encounterccdadispatch/index?combination="+combination+"&sections="+components+"&view=1&emr_transfer=1&recipient=emr_direct&param="+recipients+"&referral_reason="+referral_reason,
 			dataType: "html",
 			data: {
 			},
