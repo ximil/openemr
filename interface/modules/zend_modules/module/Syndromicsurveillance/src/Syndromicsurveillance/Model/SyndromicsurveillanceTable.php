@@ -280,7 +280,7 @@ class SyndromicsurveillanceTable extends AbstractTableGateway
 		$result     = $appTable->zQuery($query, $query_string);
 		
 		$D="\r";
-		$nowdate    = date('Ymd');
+		$nowdate    = date('YmdHis');
 		$now 	    = date('YmdGi');
 		$now1 	    = date('Y-m-d G:i');
 		$filename   = "syn_sur_". $now . ".hl7";

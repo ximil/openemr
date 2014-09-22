@@ -96,7 +96,7 @@ class ImmunizationTable extends AbstractTableGateway
 				"i.manufacturer AS manufacturer, ".
 				"concat(p.fname, '^', p.lname) AS patientname, ".
 				"f.facility_code,".
-				"i.administered_by_id,";   
+				"i.administered_by_id,i.note,";   
         } else {
 			$query .= "concat(p.fname, ' ',p.mname,' ', p.lname) AS patientname, ".
 				"i.vis_date AS immunizationdate, "  ;
