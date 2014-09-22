@@ -1712,3 +1712,15 @@ ALTER TABLE `procedure_order` ADD COLUMN `external_id` VARCHAR(20) NOT NULL;
 #IfMissingColumn ccda emr_transfer
 ALTER TABLE `ccda` ADD COLUMN `emr_transfer` tinyint(4) NOT NULL DEFAULT '0';
 #EndIf
+
+#IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Laterality
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Laterality','Cancer Diagnosis Laterality','301','1','0','','','','1');
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Behavior
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Behavior','Cancer Diagnosis Behavior','302','1','0','','','','1');
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Confirmation
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Confirmation','Cancer Diagnosis Confirmation','300','1','0','','','','1');
+#EndIf
