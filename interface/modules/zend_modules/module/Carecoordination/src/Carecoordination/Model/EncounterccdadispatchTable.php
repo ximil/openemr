@@ -2071,6 +2071,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         <code_text>'.htmlspecialchars($row['codetext'],ENT_QUOTES).'</code_text>
         <description>'.htmlspecialchars($row['description'],ENT_QUOTES).'</description>
         <date>'.htmlspecialchars($row['date'],ENT_QUOTES).'</date>
+	<date_formatted>'.htmlspecialchars(preg_replace('/-/','',$row['date']),ENT_QUOTES).'</date_formatted>
         </item>';
       }
       $planofcare .= '</planofcare>';
@@ -2107,6 +2108,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         <code_text>'.htmlspecialchars($row['codetext'],ENT_QUOTES).'</code_text>
         <description>'.htmlspecialchars($row['description'],ENT_QUOTES).'</description>
         <date>'.htmlspecialchars($row['date'],ENT_QUOTES).'</date>
+	<date_formatted>'.htmlspecialchars(preg_replace('/-/','',$row['date']),ENT_QUOTES).'</date_formatted>
         <status>'.$status.'</status>
         <status_code>'.$status_code.'</status_code>
         <age>'.$this->getAge($pid).'</age>
