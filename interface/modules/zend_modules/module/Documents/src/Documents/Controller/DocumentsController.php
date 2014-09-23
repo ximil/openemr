@@ -16,7 +16,8 @@
 *    You should have received a copy of the GNU Affero General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *    @author  Basil PT <basil@zhservices.com>
-*    @author  Chandni Babu <chandnib@zhservices.com>  
+*    @author  Chandni Babu <chandnib@zhservices.com> 
+*    @author  Riju KP <rijukp@zhservices.com> 
 * +------------------------------------------------------------------------------+
 */
 
@@ -54,7 +55,7 @@ class DocumentsController extends AbstractActionController
     if($request->isPost()) {
       $error          = false;
       $files          = array();
-      $uploaddir      = __DIR__ .'/../../../../../sites/'.$_SESSION['site_id'].'/documents/'.$request->getPost('file_location');
+      $uploaddir      = $GLOBALS['OE_SITE_DIR'].'/documents/'.$request->getPost('file_location');
       $pid            = $request->getPost('patient_id');
       $encounter      = $request->getPost('encounter_id');
       $batch_upload   = $request->getPost('batch_upload');
@@ -182,7 +183,7 @@ class DocumentsController extends AbstractActionController
     
     $document       = \Documents\Plugin\Documents::getDocument($documentId,$doEncryption,$encryptionKey);
     $categoryIds    = $this->getDocumentsTable()->getCategoryIDs(array('CCD','CCR','CCDA'));
-    if(in_array($result['category_id'],$categoryIds) && $contentType == 'text/xml' && !$doEncryption) {
+    if(in_array($result['category_id'],$categoryIds) && $contentType == 'text/xml'  && !$doEncryption) {
       $xml          = simplexml_load_string($document);
       $xsl          = new \DomDocument;
       

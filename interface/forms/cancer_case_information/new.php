@@ -35,18 +35,6 @@ formHeader("Form:Cancer Case Information Form");
 $returnurl = $GLOBALS['concurrent_layout'] ? 'encounter_top.php' : 'patient_encounter.php';
 $formid = 0 + (isset($_GET['id']) ? $_GET['id'] : '');
 
-function getOptionList($list_id) {
-    $lres = sqlStatement("SELECT * FROM list_options WHERE list_id = ? ORDER BY seq, title", array($list_id));
-    while ($lrow = sqlFetchArray($lres)) {
-        $all[$lrow['option_id']] = $lrow['title'];
-    }
-    return $all;
-}
-
-$laterality = getOptionList('Cancer_Diagnosis_Laterality');
-$behaviour = getOptionList('Cancer_Diagnosis_Behavior');
-$confirmation = getOptionList('Cancer_Diagnosis_Confirmation');
-
 $obj = $formid ? sqlQuery("SELECT * FROM `form_cancer_case_information` WHERE id=? AND pid = ? ORDER BY DATE DESC LIMIT 0,1", array($formid, $GLOBALS['pid'])) : array();
 ?>
 <html>
