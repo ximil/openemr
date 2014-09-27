@@ -296,7 +296,7 @@ function phimail_check() {
 		 filesize($attdata) . " bytes) " . trim($attinfo[$attnum]['desc']);
              if(strpos($attmime,'xml') !== false) {
                $ch = curl_init();
-               $url = $_SERVER['SERVER_ADDR'].$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?document_id=$idnum";
+               $url = $_SERVER['SERVER_ADDR'].$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?document_id=$idnum"; 
                curl_setopt($ch, CURLOPT_URL,$url);
                curl_setopt($ch, CURLOPT_COOKIEFILE, "cookiefile"); 
                curl_setopt($ch, CURLOPT_COOKIEJAR, "cookiefile");
@@ -306,6 +306,7 @@ function phimail_check() {
                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                $result = curl_exec($ch) or die(curl_error($ch));
                curl_close($ch);
+               
              }
 	 }
 
@@ -463,6 +464,9 @@ function phimail_store($name,$mime_type,$fn) {
     $user = phimail_service_userID();
 
     // Import the document
+    if(strpos($mime_type,'xml') !== false) {
+      $mime_type = 'text/xml';
+    }
     $return = addNewDocument($name,$mime_type,$fn,0,filesize($fn),$user,'direct');
 
     // Remove the temporary file
