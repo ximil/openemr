@@ -255,6 +255,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
             $patient_data = "<patient>
                 <id>".$result['pid']."</id>
                 <encounter>".$encounter."</encounter>
+		<prefix>".htmlspecialchars($result['title'],ENT_QUOTES)."</prefix>
                 <fname>".htmlspecialchars($result['fname'],ENT_QUOTES)."</fname>
                 <mname>".htmlspecialchars($result['mname'],ENT_QUOTES)."</mname>
                 <lname>".htmlspecialchars($result['lname'],ENT_QUOTES)."</lname>
