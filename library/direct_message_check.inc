@@ -311,9 +311,6 @@ function phimail_check() {
              if(strpos($attmime,'xml') !== false) {
                $ch = curl_init();
                $url = $server_url.$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?site=$site_id&document_id=$idnum"; 
-                $fc =  fopen(__DIR__."/url.txt","w");
-          fwrite($fc,"url:".$url);
-          fclose($fc);
                curl_setopt($ch, CURLOPT_URL,$url);
                curl_setopt($ch, CURLOPT_COOKIEFILE, "cookiefile"); 
                curl_setopt($ch, CURLOPT_COOKIEJAR, "cookiefile");

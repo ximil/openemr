@@ -59,7 +59,6 @@ class CarecoordinationController extends AbstractActionController
     */
     public function uploadAction()
     {
-      
       $request     = $this->getRequest();
       $action      = $request->getPost('action');
       $am_id       = $request->getPost('am_id');
