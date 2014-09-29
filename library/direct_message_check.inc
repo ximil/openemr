@@ -294,9 +294,13 @@ function phimail_check() {
 	     $url=substr($url,strrpos($url,"/")+1);
              $att_detail = $att_detail . "\n" . xl ("Document") . " $idnum (\"$url\"; $attmime; " . 
 		 filesize($attdata) . " bytes) " . trim($attinfo[$attnum]['desc']);
+             $site_id = $_SESSION['site_id'];
              if(strpos($attmime,'xml') !== false) {
                $ch = curl_init();
-               $url = $_SERVER['SERVER_ADDR'].$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?document_id=$idnum"; 
+               $url = $_SERVER['SERVER_ADDR'].$GLOBALS['webroot']."/interface/modules/zend_modules/public/carecoordination/import?site=$site_id&document_id=$idnum"; 
+                $fc =  fopen(__DIR__."/url.txt","w");
+          fwrite($fc,"url:".$url);
+          fclose($fc);
                curl_setopt($ch, CURLOPT_URL,$url);
                curl_setopt($ch, CURLOPT_COOKIEFILE, "cookiefile"); 
                curl_setopt($ch, CURLOPT_COOKIEJAR, "cookiefile");
