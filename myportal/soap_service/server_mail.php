@@ -42,21 +42,27 @@ class UserMail {
     if(UserService::valid($data[0])=='existingpatient'){
       require_once("../../library/pnotes.inc");
       if($data[2] == "inbox"){
+        $portal_relation = isset($data[5]) ? $data[5] : '';
+          $prt_rel_bas = isset($data[6]) ? $data[6] : false;
         if($data[3] && $data[4]){
-          $result_notes = getPatientNotes($pid,'','0',$data[3]);
+            
+          $result_notes = getPatientNotes($pid,'','0',$data[3],$portal_relation,$prt_rel_bas );
           $result_notifications = getPatientNotifications($pid,'','0',$data[4]);
           $result = array_merge((array)$result_notes,(array)$result_notifications);
         }else{
-          $result_notes = getPatientNotes($pid);
+            
+          $result_notes = getPatientNotes($pid,'','0','',$portal_relation,$prt_rel_bas);
           $result_notifications = getPatientNotifications($pid);
           $result = array_merge((array)$result_notes,(array)$result_notifications);
         }
         return $result;
       }elseif($data[2] == "sent"){
+             $portal_relation = isset($data[4]) ? $data[4] : '';
+            $prt_rel_bas = isset($data[5]) ? $data[5] : false;
         if($data[3]){
-          $result_sent_notes = getPatientSentNotes($pid,'','0',$data[3]);
+          $result_sent_notes = getPatientSentNotes($pid,'','0',$data[3],$portal_relation,$prt_rel_bas);
         }else{
-          $result_sent_notes = getPatientSentNotes($pid);
+          $result_sent_notes = getPatientSentNotes($pid,'','0','',$portal_relation,$prt_rel_bas);
         }
         return $result_sent_notes;
       }
@@ -92,7 +98,9 @@ class UserMail {
       require_once("../../library/pnotes.inc");
       $to_list = explode(';',$data[2]);
       foreach($to_list as $to){
-        addMailboxPnote($pid,$data[4],'1','1',$data[3],$to);
+          $portal_relation = isset($data[5]) ? $data[5] : "";
+          $is_encrypted =  isset($data[6]) ? $data[6] : 0;
+        addMailboxPnote($pid,$data[4],'1','1',$data[3],$to, $datetime = '', $message_status = "New", $portal_relation, $is_encrypted);
       }
       return 1;
     }else{

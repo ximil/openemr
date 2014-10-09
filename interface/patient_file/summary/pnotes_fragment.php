@@ -34,6 +34,7 @@ $fake_register_globals=false;
  require_once("$srcdir/classes/Document.class.php");
  require_once("$srcdir/formatting.inc.php");
 
+
  // form parameter docid can be passed to restrict the display to a document.
  $docid = empty($_REQUEST['docid']) ? 0 : 0 + $_REQUEST['docid'];
 ?>
@@ -67,7 +68,7 @@ $fake_register_globals=false;
     $pres = getPatientData($pid,"lname, fname");
     $patientname = $pres['lname'] . ", " . $pres['fname'];
     //retrieve all active notes
-    $result = getPnotesByDate("", 1, "id,date,body,user,title,assigned_to,message_status",
+    $result = getPnotesByDate("", 1, "id,date,body,user,title,assigned_to,message_status,is_msg_encrypted,portal_relation",
       $pid, "$N", 0, '', $docid);
 
     if ($result != null) {
@@ -83,6 +84,7 @@ $fake_register_globals=false;
         $has_note = 1;
 
         $body = $iter['body'];
+        $body =  getDecryptedPnote($iter['body'], $iter['is_msg_encrypted']);
         if (preg_match('/^\d\d\d\d-\d\d-\d\d \d\d\:\d\d /', $body)) {
           $body = nl2br(htmlspecialchars(oeFormatPatientNote($body),ENT_NOQUOTES));
         } else {
@@ -90,7 +92,7 @@ $fake_register_globals=false;
             ' (' . $iter['user'] . ') ',ENT_NOQUOTES) .
 	    nl2br(htmlspecialchars(oeFormatPatientNote($body),ENT_NOQUOTES));
         }
-        $body = preg_replace('/(\sto\s)-patient-(\))/','${1}'.$patientname.'${2}',$body);
+        $body = preg_replace('/(\sto\s)-patient-(\))/','${1}'.$patientname . (!empty ($iter['portal_relation']) ? "(" . $iter['portal_relation']  . ")" : '' ).'${2}',$body);
         $body = strlen($body) > 120 ? substr($body,0,120)."<b>.......</b>" : $body;
         echo " <tr class='text' id='".htmlspecialchars($iter['id'],ENT_QUOTES)."' style='border-bottom:1px dashed;height:30px;' >\n";
 
@@ -151,7 +153,7 @@ $fake_register_globals=false;
     <table width='100%' border='0' cellspacing='1' cellpadding='1' style='border-collapse:collapse;' >
     <?php
     //retrieve all active notes
-    $result_sent = getSentPnotesByDate("", 1, "id,date,body,user,title,assigned_to,pid",
+    $result_sent = getSentPnotesByDate("", 1, "id,date,body,user,title,assigned_to,pid,is_msg_encrypted,portal_relation",
       $pid, "$M", 0, '', $docid);
     if ($result_sent != null) {
       $notes_sent_count = 0;//number of notes so far displayed
@@ -164,6 +166,9 @@ $fake_register_globals=false;
       foreach ($result_sent as $iter) {
         $has_sent_note = 1;
         $body = $iter['body'];
+        
+        $body =  getDecryptedPnote($iter['body'], $iter['is_msg_encrypted']);
+        
         if (preg_match('/^\d\d\d\d-\d\d-\d\d \d\d\:\d\d /', $body)) {
           $body = nl2br(htmlspecialchars(oeFormatPatientNote($body),ENT_NOQUOTES));
         } else {
@@ -171,7 +176,7 @@ $fake_register_globals=false;
             ' (' . $iter['user'] . ') ',ENT_NOQUOTES) .
           nl2br(htmlspecialchars(oeFormatPatientNote($body),ENT_NOQUOTES));
         }
-        $body = preg_replace('/(:\d{2}\s\()'.$iter['pid'].'(\sto\s)/','${1}'.$patientname.'${2}',$body);
+        $body = preg_replace('/(:\d{2}\s\()'.$iter['pid'].'(\sto\s)/','${1}'.$patientname . (!empty ($iter['portal_relation']) ? "(" . $iter['portal_relation']  . ")" : '' ) .'${2}',$body);
         $body = strlen($body) > 120 ? substr($body,0,120)."<b>.......</b>" : $body;
         echo " <tr class='text' id='".htmlspecialchars($iter['id'],ENT_QUOTES)."' style='border-bottom:1px dashed;height:30px;' >\n";
         // Modified 6/2009 by BM to incorporate the patient notes into the list_options listings

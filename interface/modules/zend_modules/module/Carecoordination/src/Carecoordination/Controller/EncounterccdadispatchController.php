@@ -72,29 +72,26 @@ class EncounterccdadispatchController extends AbstractActionController
 			
 			//$request            = $this->getRequest();
 			$this->patient_id   = $this->getEncounterccdadispatchTable()->getPatientId($parameterArray[0][6]);//$this->getRequest()->getQuery('pid');
-			$this->encounter_id = isset($parameterArray['encounter']) ? $parameterArray['encounter'] : '';
+			$this->patient_username   = $parameterArray[0][6];
+            $this->encounter_id = isset($parameterArray['encounter']) ? $parameterArray['encounter'] : '';
 			$combination        = isset($parameterArray['combination']) ? $parameterArray['combination'] : '';
 			$this->sections     = isset($parameterArray['sections']) ? $parameterArray['sections'] : '';
 			$sent_by            = isset($parameterArray['sent_by']) ? $parameterArray['sent_by'] : '';
 			$send            	= isset($parameterArray['send']) ? $parameterArray['send'] : 0;
 			$view            	= isset($parameterArray['view']) ? $parameterArray['view'] : 0;
             $this->recipients	= isset($parameterArray['recipients']) ? $parameterArray['recipients'] : '';
+
             if ($this->recipients == 'patient') {
                 $this->params   = $this->patient_id;
             } else {
                 $this->params		= isset($parameterArray['param']) ? $parameterArray['param'] : '';
             }
               
-            $fh12 = fopen(sys_get_temp_dir() . '/scriptLog.txt', 'a');
-                fwrite($fh12, print_r($parameterArray, 1) . 'Control Here......:)' . $this->params . PHP_EOL);
-                fclose($fh12);
-
-			
 			try {
 				$event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
 				$menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
 			   
-				newEvent($event, 1, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item  );
+				newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item  );
 			}
 			catch (Exception $e) {
 				

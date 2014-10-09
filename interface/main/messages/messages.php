@@ -27,6 +27,7 @@ require_once("$srcdir/formdata.inc.php");
 require_once("$srcdir/classes/Document.class.php");
 require_once("$srcdir/gprelations.inc.php");
 require_once("$srcdir/formatting.inc.php");
+
 ?>
 <html>
 <head>
@@ -127,12 +128,12 @@ switch($task) {
         $reply_to = $_POST['reply_to'];
         $assigned_to_list = explode(';', $_POST['assigned_to']);
         foreach($assigned_to_list as $assigned_to){
-          if ($noteid && $assigned_to != '-patient-') {
-            updatePnote($noteid, $note, $form_note_type, $assigned_to, $form_message_status);
+          if ($noteid && $assigned_to != '-patient-' && substr($assigned_to, 0, 9) != '-patient-') {
+            updatePnote($noteid, $note, $form_note_type, $assigned_to, $form_message_status, $encrypt_pnote = 1);
             $noteid = '';
           }
           else {
-            if($noteid && $assigned_to == '-patient-'){
+            if($noteid && ($assigned_to == '-patient-' || substr($assigned_to, 0, 9) == '-patient-')){
               // When $assigned_to == '-patient-' we don't update the current note, but
               // instead create a new one with the current note's body prepended and
               // attributed to the patient.  This seems to be all for the patient portal.
@@ -140,14 +141,17 @@ switch($task) {
               if (! $row) die("getPnoteById() did not find id '".text($noteid)."'");
               $pres = sqlQuery("SELECT lname, fname " .
                 "FROM patient_data WHERE pid = ?", array($reply_to) );
-              $patientname = $pres['lname'] . ", " . $pres['fname'];
+              $patientname = $pres['lname'] . ", " . $pres['fname'] .  (!empty ($row['portal_relation']) ? "(" . $row['portal_relation']  . ")" : '' )  ;
               $note .= "\n\n$patientname on ".$row['date']." wrote:\n\n";
+              $row['body'] =  getDecryptedPnote($row['body'], $row['is_msg_encrypted']);
               $note .= $row['body'];
             }
+            $portal_relation = substr($assigned_to, 9, strlen($assigned_to));
+            $portal_relation = $portal_relation ==0 ? '' : $portal_relation;
             // There's no note ID, and/or it's assigned to the patient.
             // In these cases a new note is created.
-            addPnote($reply_to, $note, $userauthorized, '1', $form_note_type, $assigned_to, '', $form_message_status);
-          }
+            addPnote($reply_to, $note, $userauthorized, '1', $form_note_type, $assigned_to, '', $form_message_status, $background_user="", $encrypt_pnote = 1, $portal_relation);
+          } 
         }
     } break;
     case "savePatient":
@@ -266,7 +270,18 @@ $ures = sqlStatement("SELECT username, fname, lname FROM users " .
   echo ">" . htmlspecialchars( '-Patient-', ENT_NOQUOTES);
   echo "</option>\n";
 ?>
+       <?php
+  
+$ures = sqlStatement("SELECT id,pid,portal_username,portal_relation FROM patient_access_offsite WHERE pid = ? AND portal_relation IS NOT NULL" , array($reply_to));
+ while ($urow = sqlFetchArray($ures)) {
+  echo "    <option value='-patient-" . htmlspecialchars( $urow['portal_relation'], ENT_QUOTES) . "'";
+  echo ">-Patient- (" . htmlspecialchars( $urow['portal_relation'], ENT_NOQUOTES)  . ")";
+   echo "</option>\n";
+ }
+  echo "</option>\n";
+?>
    </select>
+   
   </td>
  </tr>
 
@@ -321,7 +336,11 @@ if ($noteid) {
 <?php
 
 if ($noteid) {
-    $body = preg_replace('/(:\d{2}\s\()'.$result['pid'].'(\sto\s)/','${1}'.$patientname.'${2}',$body);
+    
+      $body =  getDecryptedPnote($body, $result['is_msg_encrypted']);
+        
+        $body = preg_replace('/(:\d{2}\s\()'.$result['pid'].'(\sto\s)/','${1}'.$patientname . (!empty ($result['portal_relation']) ? "(" . $result['portal_relation']  . ")" : '' ) .'${2}',$body);
+    
     $body = nl2br(htmlspecialchars( $body, ENT_NOQUOTES));
     echo "<div class='text' style='background-color:white; color: gray; border:1px solid #999; padding: 5px; width: 640px;'>".$body."</div>";
 }
@@ -504,6 +523,9 @@ else {
             $name = $myrow['users_lname'];
             if ($myrow['users_fname']) {
                 $name .= ", " . $myrow['users_fname'];
+            }
+            if (!empty($myrow['portal_relation'])) {
+                $name .= "(" . $myrow['portal_relation'] . ")";
             }
             $patient = $myrow['pid'];
             if ($patient>0) {

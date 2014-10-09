@@ -128,11 +128,13 @@ if (isset($mode)) {
   elseif ($mode == "new") {
     $note = $_POST['note'];
     if ($noteid) {
-      updatePnote($noteid, $note, $_POST['form_note_type'], $_POST['assigned_to']);
+      updatePnote($noteid, $note, $_POST['form_note_type'], $_POST['assigned_to'], $message_status = "", $encrypt_pnote = 1);
     }
     else {
       $noteid = addPnote($patient_id, $note, $userauthorized, '1',
-        $_POST['form_note_type'], $_POST['assigned_to']);
+        $_POST['form_note_type'], $_POST['assigned_to'],$datetime = '',
+        $message_status = 'New', $background_user="", $encrypt_pnote = 1);
+      
     }
     if ($docid) {
       setGpRelation(1, $docid, 6, $noteid);
@@ -170,10 +172,11 @@ $pres = getPatientData($patient_id, "lname, fname");
 $patientname = $pres['lname'] . ", " . $pres['fname'];
 
 //retrieve all notes
-$result = getPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to,message_status',
+$result = getPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to,message_status,is_msg_encrypted,portal_relation',
   $patient_id, $N, $offset, '', $docid, '', $orderid);
-$result_sent = getSentPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to,message_status',
+$result_sent = getSentPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to,message_status,is_msg_encrypted,portal_relation',
   $patient_id, $M, $offset_sent, '', $docid, '', $orderid);
+
 ?>
 
 <html>
@@ -388,15 +391,16 @@ if ($result != "") {
         if ($form_doc_only) continue;
       }
     }
-
+    
     $body = $iter['body'];
+    $body =  getDecryptedPnote($iter['body'], $iter['is_msg_encrypted']);
     if (preg_match('/^\d\d\d\d-\d\d-\d\d \d\d\:\d\d /', $body)) {
       $body = nl2br(htmlspecialchars( oeFormatPatientNote($body), ENT_NOQUOTES));
     } else {
       $body = htmlspecialchars( oeFormatSDFT(strtotime($iter['date'])).date(' H:i', strtotime($iter['date'])), ENT_NOQUOTES) .
         ' (' . htmlspecialchars( $iter['user'], ENT_NOQUOTES) . ') ' . nl2br(htmlspecialchars( oeFormatPatientNote($body), ENT_NOQUOTES));
     }
-    $body = preg_replace('/(\sto\s)-patient-(\))/','${1}'.$patientname.'${2}',$body);
+    $body = preg_replace('/(\sto\s)-patient-(\))/','${1}'.$patientname . (!empty ($iter['portal_relation']) ? "(" . $iter['portal_relation']  . ")" : '' ) .'${2}',$body);
     if ( ($iter{"activity"}) && ($iter['message_status'] != "Done") ) {
       $checked = "checked";
     } else {
@@ -543,13 +547,17 @@ if ($result_sent != "") {
     }
 
     $body = $iter['body'];
+    
+    $body =  getDecryptedPnote($iter['body'], $iter['is_msg_encrypted']);
+   
+    
     if (preg_match('/^\d\d\d\d-\d\d-\d\d \d\d\:\d\d /', $body)) {
       $body = nl2br(htmlspecialchars( oeFormatPatientNote($body), ENT_NOQUOTES));
     } else {
       $body = htmlspecialchars( oeFormatSDFT(strtotime($iter['date'])).date(' H:i', strtotime($iter['date'])), ENT_NOQUOTES) .
         ' (' . htmlspecialchars( $iter['user'], ENT_NOQUOTES) . ') ' . nl2br(htmlspecialchars( oeFormatPatientNote($body), ENT_NOQUOTES));
     }
-    $body = preg_replace('/(:\d{2}\s\()' . $patient_id . '(\sto\s)/','${1}' . $patientname . '${2}', $body);
+    $body = preg_replace('/(:\d{2}\s\()' . $patient_id . '(\sto\s)/','${1}' . $patientname .(!empty ($iter['portal_relation']) ? "(" . $iter['portal_relation']  . ")" : '' ) . '${2}', $body);
     if (($iter{"activity"}) && ($iter['message_status'] != "Done") ) {
       $checked = "checked";
     } else {
