@@ -87,15 +87,7 @@ class EncounterccdadispatchController extends AbstractActionController
                 $this->params		= isset($parameterArray['param']) ? $parameterArray['param'] : '';
             }
               
-			try {
-				$event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
-				$menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
-			   
-				newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item  );
-			}
-			catch (Exception $e) {
-				
-            }
+			
 			
 			if($sent_by!= ''){
 				$_SESSION['authId'] = $sent_by;
@@ -132,7 +124,16 @@ class EncounterccdadispatchController extends AbstractActionController
 					xmlns:mif="urn:hl7-org:v3/mif">
 					<!--';
 					$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-					$this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);					
+					$ccdaDocumentId = $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);					
+                    try {
+                        $event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
+                        $menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
+
+                        newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item, $ccdaDocumentId  );
+                    }
+                    catch (Exception $e) {
+
+                    }
 				}
 				if(!$view)
 					return  "Queued for Transfer";
@@ -162,7 +163,16 @@ class EncounterccdadispatchController extends AbstractActionController
 				xmlns:mif="urn:hl7-org:v3/mif">
 				<!--';
 				$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-				$this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+				$ccdaDocumentId = $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+                try {
+                    $event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
+                    $menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
+
+                    newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item, $ccdaDocumentId  );
+                }
+                catch (Exception $e) {
+
+                }
 				return $content;
 				die;
 			}
@@ -194,6 +204,48 @@ class EncounterccdadispatchController extends AbstractActionController
         
     }
 	
+     public function downloadCcdaLogDoc()
+    {        
+        $validResult = $this->getEncounterccdadispatchTable()->valid($parameterArray[0]);
+		// validate credentials 
+		if ($validResult == 'existingpatient') {
+            $id         = $this->getRequest()->getQuery('id');
+            $dir        = sys_get_temp_dir()."/CCDA_$id/";
+            $filename   = "CCDA_$id.xml";
+            if(!is_dir($dir)){
+                mkdir($dir, true);
+                chmod($dir, 0777);
+            }
+
+            $zip_dir    = sys_get_temp_dir()."/";
+            $zip_name   = "CCDA_$id.zip";
+
+            $content    = $this->getEncountermanagerTable()->getFile($id);        
+            return $content;
+    //        $f          = fopen($dir.$filename, "w");
+    //        fwrite($f, $content);
+    //        fclose($f);
+    //        
+    //        copy(dirname(__FILE__)."/../../../../../public/css/CDA.xsl", $dir."CDA.xsl");
+    //        
+    //        $zip = new Zip();
+    //        $zip->setArchive($zip_dir.$zip_name);
+    //        $zip->compress($dir);
+    //        
+    //        ob_clean();
+    //        header("Cache-Control: public");
+    //        header("Content-Description: File Transfer");
+    //        header("Content-Disposition: attachment; filename=$zip_name");
+    //        header("Content-Type: application/download");
+    //        header("Content-Transfer-Encoding: binary");
+    //        readfile($zip_dir.$zip_name);
+    //        
+    //        $view = new ViewModel();
+    //        $view->setTerminal(true);
+    //        return $view;
+        }
+    }
+    
     public function indexAction()
     {
         

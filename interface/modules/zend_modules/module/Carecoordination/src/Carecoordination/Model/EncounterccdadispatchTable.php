@@ -1972,7 +1972,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         $query      = "insert into ccda (pid, encounter, ccda_data, time, status, user_id, couch_docid, couch_revid, view, transfer,emr_transfer) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)";
         $appTable   = new ApplicationTable();
         $result     = $appTable->zQuery($query, array($pid, $encounter, $file_path, $time, $status, $user_id, $couch_id[0], $couch_id[1], $view, $transfer,$emr_transfer));
-        return;
+        return $moduleInsertId = $result->getGeneratedValue();
     }
     
     /*
