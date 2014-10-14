@@ -26,9 +26,9 @@ $faxRecievers			= $this->faxRecievers;
 $required_buttons		= $this->required_butons;
 $download_format		= $this->download_format;
 ?>
- <!--<div class="header_wrap_left">-->
-		<!--<div class="send-to" title="<?php // echo $this->listenerObject->z_xlt('Send To');?>"><?php // echo $this->listenerObject->z_xlt('SEND TO');?></div>-->
- <!--</div>--><!-- header_wrap_left --> 
+ <div class="header_wrap_left">
+		<div class="send-to" title="<?php  echo $this->listenerObject->z_xlt('Send To');?>"><?php  echo $this->listenerObject->z_xlt('SEND TO');?></div>
+ </div><!-- header_wrap_left --> 
 <div class="ap-st-st-12">
 	<div class="ap-st-st-2">
 		<div class="ap-st-st-1" style="<?php if(!in_array('hie',$required_buttons)) echo "display:none;"?>"><input class="ap-st-st-3" type="radio" name="send_to" id="send_to_hie" value="<?php echo $this->escapeHtml('hie');?>" <?php if($this->send_via == "hie") echo "checked"; ?>>&nbsp;<span><?php echo $this->listenerObject->z_xlt('HIE')?></span></div>
