@@ -274,9 +274,13 @@ $ures = sqlStatement("SELECT username, fname, lname FROM users " .
   
 $ures = sqlStatement("SELECT id,pid,portal_username,portal_relation FROM patient_access_offsite WHERE pid = ? AND portal_relation IS NOT NULL" , array($reply_to));
  while ($urow = sqlFetchArray($ures)) {
-  echo "    <option value='-patient-" . htmlspecialchars( $urow['portal_relation'], ENT_QUOTES) . "'";
-  echo ">-Patient- (" . htmlspecialchars( $urow['portal_relation'], ENT_NOQUOTES)  . ")";
-   echo "</option>\n";
+  
+     if (!empty($urow['portal_relation'])) {
+         echo "    <option value='-patient-" . htmlspecialchars( $urow['portal_relation'], ENT_QUOTES) . "'";
+        echo ">-Patient- (" . htmlspecialchars( $urow['portal_relation'], ENT_NOQUOTES)  . ")";
+         echo "</option>\n";
+     }
+     
  }
   echo "</option>\n";
 ?>

@@ -16,6 +16,8 @@ require_once($GLOBALS['srcdir'].'/sql.inc');
 // for encryption 
 require_once($GLOBALS['srcdir'].'/phpseclib/Crypt/RSA.php');
 
+// adding to amc
+require_once($GLOBALS['srcdir'].'/amc.php');
 /**
  * Encrypt pnote
  * @param type $pnote_body
@@ -432,6 +434,9 @@ function addPnote($pid, $newtext, $authorized = '0', $activity = '1',
   if ($assigned_to) $body .= " to $assigned_to";
   $body = $body . ') ' . $newtext;
   $body = getEncryptedPnote($body, $encrypt_pnote);
+  if(substr($assigned_to, 0, 9) != '-patient-') {
+      processAmcCall('secure_message', 1, 'add_force', $pid, $object_category='', $object_id='0', $date_created='');
+  }
   return sqlInsert('INSERT INTO pnotes (date, body, pid, user, groupname, ' .
     'authorized, activity, title, assigned_to, message_status, is_msg_encrypted, portal_relation) VALUES ' .
     '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -453,7 +458,10 @@ function addMailboxPnote($pid, $newtext, $authorized = '0', $activity = '1',
   $body = date('Y-m-d H:i') . ' (' . $pid;
   if ($assigned_to) $body .= " to $assigned_to";
   $body = $body . ') ' . $newtext;
-     
+  
+  if(substr($assigned_to, 0, 9) != '-patient-') {
+      processAmcCall('secure_message', 1, 'add_force', $pid, $object_category='', $object_id='0', $date_created='');
+  }
   // encrypt full msg body 
   $body = getEncryptedPnote($body, $is_encrypted);
     return sqlInsert("INSERT INTO pnotes (date, body, pid, user, groupname, " .
