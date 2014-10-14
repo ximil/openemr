@@ -4427,6 +4427,7 @@ CREATE TABLE `patient_data` (
   `deceased_reason` varchar(255) NOT NULL default '',
   `soap_import_status` TINYINT(4) DEFAULT NULL COMMENT '1-Prescription Press 2-Prescription Import 3-Allergy Press 4-Allergy Import',
   `cmsportal_login` varchar(60) NOT NULL default '',
+  `industry` text NOT NULL,
   UNIQUE KEY `pid` (`pid`),
   KEY `id` (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -6980,6 +6981,27 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES (
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'date_val', 'Date', 10, 0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'post_to_date', 'Post To Date', 20, 0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('payment_date', 'deposit_date', 'Deposit Date', 30, 0);
+
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','Industry','Industry', '298','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'law_firm', 'Law Firm', 1, 0, '856');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'engineering_firm', 'Engineering Firm', 2, 0, '456');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'construction_firm', 'Construction Firm', 3, 0, '789');
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','Occupation','Occupation', '299','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'lawyer', 'Lawyer', 1, 0, '210');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'engineer', 'Engineer', 2, 0, '310');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'site_worker', 'Site Worker', 3, 0, '410');
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','Cancer_Diagnosis_Laterality','Cancer Diagnosis Laterality', '301','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Laterality', 'not_a_paired_site', 'Not a paired site', 1, 0, '11');
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','Cancer_Diagnosis_Behavior','Cancer Diagnosis Behavior', '302','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Behavior', 'malignant_primary', 'Malignant, primary', 0, 0, '3');
+
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','Cancer_Diagnosis_Confirmation','Cancer Diagnosis Confirmation', '300','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Confirmation', 'positive_histology', 'Positive histology', 1, 0, '1');
+
 -- --------------------------------------------------------
 
 -- 
@@ -7210,6 +7232,7 @@ CREATE TABLE ccda (
   couch_revid VARCHAR(100) NULL,
   `view` tinyint(4) NOT NULL DEFAULT '0',
   `transfer` tinyint(4) NOT NULL DEFAULT '0',
+  `type` VARCHAR(15),
   PRIMARY KEY (id),
   UNIQUE KEY unique_key (pid,encounter,time)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 ;

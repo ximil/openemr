@@ -362,10 +362,11 @@ foreach($this->status_details as $row_status){
           </div>
           </div><!-- Cancer Tab -->
           <div class="child-tab-2 child-all">
-           <div class="under_construction">
-                <span><?php echo $this->escapeHtml(1);?>) <a target="_blank" href="http://www.open-emr.org/wiki/index.php/Cancer_case_information_(MU2))"><?php echo $this->listenerObject->z_xlt('Cancer Care Information');?></a></span><br/><br/>
-                <span><?php echo $this->escapeHtml(2);?>) <a target="_blank" href="http://www.open-emr.org/wiki/index.php/Transmission_to_cancer_registries_(MU2))"><?php echo $this->listenerObject->z_xlt('Transmission to Cancer Registries');?></a></span>
-           </div>
+            <iframe id="cancercare_iframe" border="0" width="100%" src="<?php echo $GLOBALS['web_root']?>/interface/modules/zend_modules/public/cancercare/index"></iframe>
+<!--           <div class="under_construction">
+                <span><?php //echo $this->escapeHtml(1);?>) <a target="_blank" href="http://www.open-emr.org/wiki/index.php/Cancer_case_information_(MU2))"><?php //echo $this->listenerObject->z_xlt('Cancer Care Information');?></a></span><br/><br/>
+                <span><?php //echo $this->escapeHtml(2);?>) <a target="_blank" href="http://www.open-emr.org/wiki/index.php/Transmission_to_cancer_registries_(MU2))"><?php //echo $this->listenerObject->z_xlt('Transmission to Cancer Registries');?></a></span>
+           </div>-->
           </div><!-- Immunization Tab -->
           <div class="child-tab-3 child-all">
                 <iframe id="immunization_iframe" border="0" width="100%" src="<?php echo $GLOBALS['web_root']?>/interface/modules/zend_modules/public/immunization/index"></iframe>               
