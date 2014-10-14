@@ -204,12 +204,14 @@ class EncounterccdadispatchController extends AbstractActionController
         
     }
 	
-     public function downloadCcdaLogDoc()
-    {        
+     public function downloadCcdaLogDoc($parameterArray = array())
+    {    
+        // C:\Windows\Temp
         $validResult = $this->getEncounterccdadispatchTable()->valid($parameterArray[0]);
+        
 		// validate credentials 
-		if ($validResult == 'existingpatient') {
-            $id         = $this->getRequest()->getQuery('id');
+		if ($validResult == 'existingpatient' && isset($parameterArray['docid']) && $parameterArray['docid'] > 0) {
+            $id         = $parameterArray['docid'];
             $dir        = sys_get_temp_dir()."/CCDA_$id/";
             $filename   = "CCDA_$id.xml";
             if(!is_dir($dir)){
@@ -219,8 +221,19 @@ class EncounterccdadispatchController extends AbstractActionController
 
             $zip_dir    = sys_get_temp_dir()."/";
             $zip_name   = "CCDA_$id.zip";
+            
+            $content  = '';
+            // if document_storage_method is hard disk read file contents
+            
+// C:\Windows\Temp
 
-            $content    = $this->getEncountermanagerTable()->getFile($id);        
+            if ($GLOBALS['document_storage_method'] == 0) {
+                    //file_get_contents($dir . $filename)
+                $rowCcdaLog  = $this->getEncounterccdadispatchTable()->getCcdaLogDetails($parameterArray['docid']);
+                $content  = file_get_contents($rowCcdaLog['ccda_data']);
+            } elseif ($GLOBALS['document_storage_method'] == 1) {
+                $content    = $this->getEncountermanagerTable()->getFile($id);
+            }
             return $content;
     //        $f          = fopen($dir.$filename, "w");
     //        fwrite($f, $content);

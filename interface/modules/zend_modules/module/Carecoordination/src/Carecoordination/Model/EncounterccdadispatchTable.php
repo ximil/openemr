@@ -1975,6 +1975,14 @@ class EncounterccdadispatchTable extends AbstractTableGateway
         return $moduleInsertId = $result->getGeneratedValue();
     }
     
+    public function getCcdaLogDetails($logID = 0)
+    {
+        $query_ccda_log   = "SELECT pid, encounter, ccda_data, time, status, user_id, couch_docid, couch_revid, view, transfer,emr_transfer FROM ccda WHERE id = ?";
+        $appTable            = new ApplicationTable();
+        $res_ccda_log  = $appTable->zQuery($query_ccda_log, array($logID)); 
+        return $res_ccda_log->current();
+    }
+    
     /*
     * Convert date from database format to required format
     *
