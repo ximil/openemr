@@ -3947,6 +3947,8 @@ CREATE TABLE `log` (
   `success` tinyint(1) default 1,
   `checksum` longtext default NULL,
   `crt_user` varchar(255) default NULL,
+  `log_from` VARCHAR(20) DEFAULT 'open-emr',
+  `menu_item_id` INT(11) DEFAULT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
@@ -4473,8 +4475,8 @@ CREATE TABLE  `patient_access_offsite` (
   `portal_pwd` varchar(100) NOT NULL,
   `portal_pwd_status` tinyint(4) DEFAULT '1' COMMENT '0=>Password Created Through Demographics by The provider or staff. Patient Should Change it at first time it.1=>Pwd updated or created by patient itself',
   `authorize_net_id` VARCHAR(20) COMMENT 'authorize.net profile id',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `pid` (`pid`)
+  `portal_relation` VARCHAR(100) NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1;
 
 -- 
@@ -4692,6 +4694,8 @@ CREATE TABLE `pnotes` (
   `assigned_to` varchar(255) default NULL,
   `deleted` tinyint(4) default 0 COMMENT 'flag indicates note is deleted',
   `message_status` VARCHAR(20) NOT NULL DEFAULT 'New',
+  `portal_relation` VARCHAR(100) NULL,
+  `is_msg_encrypted` TINYINT(2) DEFAULT '0' COMMENT 'Whether messsage encrypted 0-Not encrypted, 1-Encrypted',
   PRIMARY KEY  (`id`),
   KEY `pid` (`pid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
@@ -7297,4 +7301,33 @@ CREATE TABLE `procedure_subtest_result` (
   PRIMARY KEY (`procedure_subtest_result_id`),
   KEY `procedure_report_id` (`procedure_report_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 ;
+-- --------------------------------------------------------
+
+
+-- --------------------------------------------------------
+--
+-- Table structure for table `patient_portal_menu`
+--
+CREATE TABLE `patient_portal_menu` (
+  `patient_portal_menu_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `patient_portal_menu_group_id` INT(11) DEFAULT NULL,
+  `menu_name` VARCHAR(40) DEFAULT NULL,
+  `menu_order` SMALLINT(4) DEFAULT NULL,
+  `menu_status` TINYINT(2) DEFAULT '1',
+  PRIMARY KEY (`patient_portal_menu_id`)
+) ENGINE=INNODB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (1,1,'Dashboard',3,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (2,1,'My Profile',6,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (3,1,'Appointments',9,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (4,1,'Documents',12,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (5,1,'Med Records',15,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (6,1,'My Account',18,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (7,1,'Mailbox',21,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (8,1,'Password',24,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (9,1,'View Log',27,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (10,1,'Logout',30,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (11,1,'View Health Information',33,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (12,1,'Download Health Information',36,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (13,1,'Transmit Health Information',39,1);
 -- --------------------------------------------------------
