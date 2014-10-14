@@ -156,7 +156,7 @@ if(isset($_REQUEST['form_save']) && $_REQUEST['form_save']=='SUBMIT'){
 
     $clear_pass=$_REQUEST['pwd'];
     $relationship = $_REQUEST['relationship'];
-    $res = sqlStatement("SELECT * FROM patient_access_" . add_escape_custom($portalsite) . "site WHERE pid=? AND portal_relation=?",array($pid,$relationship));
+    $res = sqlStatement("SELECT * FROM patient_access_" . add_escape_custom($portalsite) . "site WHERE pid=? AND portal_relation=?",array($pid,$relationship == 'self' ? "" : $relationship));
     $query_parameters=array($_REQUEST['uname']);
     $salt_clause="";
     if($portalsite=='on')
