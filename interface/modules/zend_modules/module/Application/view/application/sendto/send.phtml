@@ -27,7 +27,7 @@ $required_buttons		= $this->required_butons;
 $download_format		= $this->download_format;
 ?>
  <!--<div class="header_wrap_left">-->
-		<div class="send-to" title="<?php echo $this->listenerObject->z_xlt('Send To');?>"><?php echo $this->listenerObject->z_xlt('SEND TO');?></div>
+		<!--<div class="send-to" title="<?php // echo $this->listenerObject->z_xlt('Send To');?>"><?php // echo $this->listenerObject->z_xlt('SEND TO');?></div>-->
  <!--</div>--><!-- header_wrap_left --> 
 <div class="ap-st-st-12">
 	<div class="ap-st-st-2">
@@ -205,7 +205,7 @@ $download_format		= $this->download_format;
 						<label for="doc_format"><?php echo $this->listenerObject->z_xlt('DOC');?></label>
 					</td>
 					<td width="10px;">
-						<input <?php if(!in_array('hl7_format', $download_format)) echo "disabled"?> type="radio" name="download_format" id="hl7_format" style="margin: 0; clear: right; float: left;">
+						<input <?php if(!in_array('hl7_format', $download_format)) echo "disabled"?> type="radio" name="download_format" id="hl7_format" style="margin: 0; clear: right; float: left;" checked="true">
 						<label for="hl7_format"><?php echo $this->listenerObject->z_xlt('HL7');?></label>
 					</td>
 				</tr>

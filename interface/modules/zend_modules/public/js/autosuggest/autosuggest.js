@@ -344,11 +344,14 @@ $(document).on('click', '.close', function(e){
 $(document).on('change click keyup', '.lookup', function(e){
   var targetId = e.target.id;
   var arr = targetId.split('inputString');
+  var classname =e.target.classList[1];
   //$('#' + targetId).val("");
   if (e.type == 'change' || (e.type == 'keyup' && e.keyCode == 8)) {
     if (arr[1] != '') {
-      $('#string_value' + arr[1]).val("");
-      $('#string_id' + arr[1]).val("");
+        if (classname != 'multiple') {  //do not reset values if mode is multiple
+            $('#string_value' + arr[1]).val("");
+            $('#string_id' + arr[1]).val("");
+        }
     } else {
       $('#string_value').val("");
       $('#string_id').val("");

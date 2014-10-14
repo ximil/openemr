@@ -1,0 +1,288 @@
+<?php
+/* +-----------------------------------------------------------------------------+
+*    OpenEMR - Open Source Electronic Medical Record
+*    Copyright (C) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
+*
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Affero General Public License as
+*    published by the Free Software Foundation, either version 3 of the
+*    License, or (at your option) any later version.
+*
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Affero General Public License for more details.
+*
+*    You should have received a copy of the GNU Affero General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*    @author  Chandni Babu  <chandnib@zhservices.com>
+* +------------------------------------------------------------------------------+
+*/
+
+$status_title   = array('0' => 'Pending', '1' => 'Completed', '3' => 'View');
+$status_details = array();
+foreach($this->status_details as $row_status){
+  $status_details[$row_status['pid']][] = $row_status;
+}
+?>
+<script type="text/javascript">
+    $(document).ready(function(){
+        if (parent.document.getElementById('cancercare_iframe')) {
+            parent.iframeLoaded('745', 'cancercare_iframe');
+        }
+        $(".search_button2").click(function(e){
+          $(".ap-st-st-12").css("left",Number(e.pageX)+"px");
+          $(".ap-st-st-12").toggle();
+        });
+    });
+    $(document).mouseup(function (e){
+      var container = $(".ap-st-st-12");
+      button = $(".search_button2");
+      if(!container.is(e.target) && container.has(e.target).length === 0 && !button.is(e.target) )
+      {
+        $(container).css("display","none");
+      }
+    });
+    
+</script>
+<style>
+  .ap-st-st-12 {
+    display: none;
+    width: 550px;
+  }
+</style>
+<form method="post" name="theform" id="theform">
+<div class="body_inner_wrapper">
+    <div class="header_wrap">        
+        <div class="header_wrap_left">
+            <div class="search_button" id="searchbutton" title="Search"><?php echo $this->listenerObject->z_xlt('SEARCH'); ?></div>&nbsp;&nbsp;
+            <?php
+            if(count($this->details) > 0){
+            ?>
+            <div class="search_button2" id="" title="Send To"><?php echo $this->listenerObject->z_xlt('Send To'); ?></div>&nbsp;&nbsp;
+            <?php
+            $arr = $this->getVariables('Application\Controller\SendtoController','sendAction');
+//            $arr['required_butons'] = array('download');
+//            $arr['send_via']        = 'download';
+//            $arr['download_format'] = array('hl7_format');
+            $this->layout('cancercare/layout/layout');
+            echo $this->partial("application/sendto/send",$arr);
+            ?>
+            <div class="se_in_3" title="reload" onclick="clearCount();document.getElementById('theform').submit();"></div>
+            <?php
+            }
+            ?>
+        <div class="se_in_15 se_in_16">
+          <table>
+            <tr>
+              <td class="se_in_16_label"><label><?php echo $this->listenerObject->z_xlt('Date'); ?></label></td>
+              <td nowrap>
+                      <input readonly maxlength="10" style="width: 42%" type="text" name="form_date_from" id="form_date_from" class="dateClass"/>
+                      <input readonly maxlength="10" style="width: 42%" type="text" name="form_date_to" id="form_date_to" class="dateClass"/>
+                      <script type="text/javascript">
+                              $(document).ready(function(){
+                                      $( "#form_date_from" ).datepicker("setDate", '<?php echo $this->commonplugin->date_format($this->form_data['from_date'], $GLOBALS['date_display_format'], 'yyyy-mm-dd');?>' );
+                                      $( "#form_date_to" ).datepicker("setDate", '<?php echo $this->commonplugin->date_format($this->form_data['to_date'], $GLOBALS['date_display_format'], 'yyyy-mm-dd');?>');
+                              });
+                      </script>
+              </td> 
+            </tr>
+            <tr>
+              <td nowrap><label><?php echo $this->listenerObject->z_xlt('Patient Name/ID'); ?></label></td>
+              <td><input maxlength="25" type="text" name="form_pid" value="<?php echo htmlspecialchars($this->form_data['pid']);?>" /><br/></td>
+            </tr>
+            <tr>
+              <td><label><?php echo $this->listenerObject->z_xlt('Encounter'); ?></label></td>
+              <td><input maxlength="10" type="text" onkeypress="return isNumber(event)" name="form_encounter" value="<?php echo htmlspecialchars($this->form_data['encounter']);?>" /><br/></td>
+            </tr>
+            <tr>
+              <td><label><?php echo $this->listenerObject->z_xlt('Status'); ?></label></td>
+              <td>
+                  <select name="form_status" class="selectRight" <?php if($GLOBALS['encounter_summary_screen'] !=1) echo "disabled"; ?>>
+                          <option value=""><?php echo $this->listenerObject->z_xlt('Select'); ?></option>
+                          <option value="signed" <?php if($this->form_data['status'] == "signed") echo "selected"; ?>><?php echo $this->listenerObject->z_xlt('Signed'); ?></option>
+                          <option value="unsigned" <?php if($this->form_data['status'] == "unsigned") echo "selected"; ?>><?php echo $this->listenerObject->z_xlt('Unsigned'); ?></option>
+                  </select>
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" onclick="clearCount();return validate_search();"  value="<?php echo $this->listenerObject->z_xlt('SEARCH'); ?>" name="search" id="search_encounter" /></td>
+            </tr>
+          </table> <!-- table -->
+        </div><!-- se in 15 -->
+        </div>
+        <div class="header_wrap_right" style="">
+            <div class="se_in_4">
+                <?php
+                if(count($this->result) > 0){
+                ?>
+                <label><?php echo $this->listenerObject->z_xlt('Show');?>&nbsp;</label>&nbsp;
+                <input maxlength="3" type="text" onkeypress="return isNumber(event)" name="form_results" value="<?php echo htmlspecialchars($this->form_data['results']);?>" />&nbsp;
+                <label>&nbsp;<?php echo $this->listenerObject->z_xlt('Encounters'); ?></label>
+                <?php
+                }
+                ?>
+            </div>
+            <div class="se_in_6">
+                <?php
+                if(count($this->result) > 0){
+                ?>
+                <div class="se_in_5">
+                    <div class="se_in_5-1" onclick="pagination('first');"></div>
+                    <div class="se_in_5-2" onclick="<?php if($this->form_data['current_page']>1) {?>pagination('previous');<?php }?>"></div>
+                    <div class="se_in_5-3" onclick="<?php if($this->form_data['current_page']<$this->form_data['total_pages']) {?>pagination('next');<?php }?>"></div>
+                    <div class="se_in_5-4" onclick="pagination('last');"></div>
+                </div>
+                <div class="clear"></div>
+                <div class="se_in_7">
+                    <label>Page <?php echo htmlspecialchars($this->form_data['current_page']);?> - of <?php echo htmlspecialchars($this->form_data['total_pages']);?></label>
+                </div><!-- se_in_7 -->
+                <?php
+                }
+                ?>
+            </div><!-- se_in_6 -->
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div class="se_in_8">
+      <script>
+        $(document).ready(function(){
+                $('.expand_details').click(function(){
+                  var arr = (this.id).split('_');
+
+                  if($('#'+this.id).hasClass('se_in_23')){
+                    $('#'+this.id).addClass("se_in_24");
+                    $('#'+this.id).removeClass("se_in_23");
+                    $('#hide_'+arr[arr.length-1]).show('slow');
+                  }
+                  else if($('#'+this.id).hasClass('se_in_24')){
+                    $('#'+this.id).addClass("se_in_23");
+                    $('#'+this.id).removeClass("se_in_24");
+                    $('#hide_'+arr[arr.length-1]).hide('slow');
+                  }
+                });
+                $('#expand_all').click(function(){
+                  if($('#expand_all').hasClass('se_in_23')){                                        
+                    $('.expand_details').addClass("se_in_24");
+                    $('.expand_details').removeClass("se_in_23");                                        
+                    $('.expand_all').addClass("se_in_24");
+                    $('.expand_all').removeClass("se_in_23");                                        
+                    $('.ccda_details').show('slow');
+                  }
+                  else if($('#expand_all').hasClass('se_in_24')){
+                    $('.expand_details').addClass("se_in_23");
+                    $('.expand_details').removeClass("se_in_24");                                        
+                    $('.expand_all').addClass("se_in_23");
+                    $('.expand_all').removeClass("se_in_24");                                        
+                    $('.ccda_details').hide('slow');
+                  }
+                });
+              });
+      </script>
+        <?php
+        if(count($this->details) > 0){
+        ?>
+        <table class="responsive"> 
+            <tr class="se_in_9">
+                <th width="1%" id="expand_all" class="expand_all se_in_23">&nbsp;</th>
+                <th width="3%"><label><?php echo $this->listenerObject->z_xlt('#'); ?></label></th>
+                <th width="5%"><label><?php echo $this->listenerObject->z_xlt('PID'); ?></label></th>
+                <th><label><?php echo $this->listenerObject->z_xlt('Name'); ?></label></th>
+                <th><label><?php echo $this->listenerObject->z_xlt('Encounter Count'); ?></label></th>
+                <th><label><?php echo $this->listenerObject->z_xlt('Total Transfers'); ?></label></th>
+                <th><label><?php echo $this->listenerObject->z_xlt('Successful Transfers'); ?></label></th>
+                <th><label><?php echo $this->listenerObject->z_xlt('Last Visit'); ?></label></th>
+                <th width="3%"><input type="checkbox" value="1" name="form_select_all" id="form_select_all" <?php if($this->form_data['select_all'] == 1) echo "checked"; ?> /></th>
+                <th width="3%">&nbsp;</th>
+            </tr>
+            <?php
+            $slno = ($this->form_data['current_page'] - 1) * $this->form_data['results']; 
+            foreach($this->details as $row){
+                $slno++;
+            ?>
+            <tr>
+                    <td id="expand_details_<?php echo $row['pid'];?>" class="expand_details se_in_23" style="cursor: pointer;"></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($slno);?>)</label></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($row['pid']);?></label></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($row['fname']." ".$row['mname']." ".$row['lname']); ?></label></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($row['enc_count']);?></label></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($row['ccda_transfer_count']);?></label></td>
+                    <td><label><?php echo $this->listenerObject->z_xlt($row['ccda_successfull_transfer_count']);?></label></td>
+                    <td><label>
+                    <?php echo $this->listenerObject->z_xlt($this->commonplugin->date_format($row['last_visit_date'], $GLOBALS['date_display_format'], 'yyyy-mm-dd'));?></label></td>
+                    <td nowrap>                                        
+                            <input class="check_pid check_pid_<?php echo $row['pid'];?>" type="checkbox" name="ccda_pid[]" value="<?php echo $row['pid'];?>" <?php if($this->form_data['select_all'] ==1) echo "checked"; ?>>                                        
+                    </td>
+                    <td style="padding: 5px;">
+                            <a href="<?php echo $this->basePath();?>/cancercaredispatch/index?combination=<?php echo $row['pid'];?>&view=1" target="_blank" style="text-decoration: none;">
+                                    <img style="height:20px; cursor: pointer;" src="<?php echo $this->basePath();?>/css/icons/view.png" title="View Cancercare">
+                            </a>
+                    </td>
+            </tr>
+            <tr>
+                    <td colspan="9" id="hide_<?php echo $row['pid'];?>" class="ccda_details" style="display: none;">
+                      <table style="width: 85% !important; margin-left: auto !important; margin-right: auto !important;">
+                        <tr class="se_in_9">
+                          <th width="1%">#</th>
+                          <th><label><?php echo $this->listenerObject->z_xlt('Encounter'); ?></label></th>
+                          <th><label><?php echo $this->listenerObject->z_xlt('DOS'); ?></label></th>
+                          <th><label><?php echo $this->listenerObject->z_xlt('Transfered Date'); ?></label></th>
+                          <th><label><?php echo $this->listenerObject->z_xlt('Transfered By'); ?></label></th>
+                          <th><label><?php echo $this->listenerObject->z_xlt('Status'); ?></label></th>
+                          <th><label>&nbsp;</label></th>
+                        </tr>
+                        <?php
+                        $slno_sub   = 0;
+                        foreach($status_details[$row['pid']] as $row_status){
+                          $slno_sub++;
+                          ?>
+                          <tr>
+                            <td><?php echo $slno_sub;?>)</td>
+                            <td><?php echo $row_status['encounter'];?></td>
+                            <td><?php echo $this->commonplugin->date_format($row_status['dos'], $GLOBALS['date_display_format'], 'yyyy-mm-dd');?></td>
+                            <td><?php echo $this->commonplugin->date_format(date('Y-m-d H:i:s',$row_status['time']), $GLOBALS['date_display_format'], 'yyyy-mm-dd');?></td>
+                            <td><?php echo ($row_status['user_id'] == 'Scheduler' ? 'Auto Transfer' : $row_status['user_name']);?></td>
+                            <td>
+                              <?php
+                              if($row_status['view'] == 1)
+                                echo $this->listenerObject->z_xlt($status_title[3]);
+                              else
+                                echo $this->listenerObject->z_xlt($status_title[$row_status['status']]);
+                              ?>
+                            </td>
+                            <td title="Download Cancercare file">
+                              <a target="_blank" href="<?php echo $this->basePath();?>/cancercaredispatch/download?id=<?php echo $row_status['id'];?>">
+                                <img src="<?php echo $this->basePath();?>/css/icons/request.png" width="17px">
+                              </a>
+                            </td>
+                          </tr>
+                          <?php                                                        
+                        }
+                        ?>
+                      </table>
+                    </td>
+                  </tr>
+            <?php
+            }
+            ?>
+        </table>
+        <?php
+        }
+        else{
+        ?>
+            <div style="width: 60%; margin-left: auto; margin-right: auto; border: 1px solid #CCCCCC; text-align:center; padding: 30px; font-size: 15px; font-weight: bold; background: #f7f7f7;<?php if(count($this->details) > 0){ ?>display: none; <?php } ?>">
+                Nothing to display
+            </div>
+        <?php
+        }
+        ?>
+    </div>
+    
+    <input type="hidden" name="form_current_page" id="form_current_page" value="<?php echo htmlspecialchars($this->form_data['current_page']);?>" />
+    <input type="hidden" name="form_total_pages" id="form_total_pages" value="<?php echo htmlspecialchars($this->form_data['total_pages']);?>" />
+    <input type="hidden" name="form_count" id="form_count" value="<?php echo htmlspecialchars($this->form_data['res_count']);?>" />
+    <input type="hidden" name="form_sl_no" id="form_sl_no" value="<?php echo htmlspecialchars($slno);?>" />
+    <input type="hidden" name="form_new_search" id="form_new_search" value="" />
+</div>
+</form>

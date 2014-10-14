@@ -42,7 +42,6 @@ function addNewDocument($name,$type,$tmp_name,$error,$size,$owner='',$patient_id
     if (empty($owner)) {
       $owner = $_SESSION['authUserID'];
     }
-
     // Build the $_FILES array
     $TEMP_FILES = array();
     $TEMP_FILES['file']['name'][0]=$name;
