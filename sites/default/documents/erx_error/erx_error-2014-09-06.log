@@ -1,0 +1,104 @@
+2014-09-06 14:44:25 ==========> <?xml version='1.0'?>
+<NCScript xmlns='http://secure.newcropaccounts.com/interfaceV7' xmlns:NCStandard='http://secure.newcropaccounts.com/interfaceV7:NCStandard' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+  <Credentials>
+    <partnerName>ZHHealthCare</partnerName>
+    <name>demo</name>
+    <password>demo</password>
+    <productName>OpenEMR</productName>
+    <productVersion>4.1.3-dev</productVersion>
+  </Credentials>
+  <UserRole>
+    <user>LicensedPrescriber</user>
+    <role>doctor</role>
+  </UserRole>
+  <Destination>
+    <requestedPage>medentry</requestedPage>
+  </Destination>
+  <Account ID='1'>
+    <accountName>Your Clinic Name Here</accountName>
+    <siteID>1234567890</siteID>
+    <AccountAddress>
+      <address1>1004 Healthcare Dr</address1>
+      <city>Portland</city>
+      <state>OR</state>
+      <zip>97005</zip>
+      <country>US</country>
+    </AccountAddress>
+    <accountPrimaryPhoneNumber>5555551004</accountPrimaryPhoneNumber>
+    <accountPrimaryFaxNumber>1234567890</accountPrimaryFaxNumber>
+  </Account>
+  <Location ID='3'>
+    <locationName>Your Clinic Name Here</locationName>
+    <LocationAddress>
+      <address1>1004 Healthcare Dr</address1>
+      <city>Portland</city>
+      <state>OR</state>
+      <zip>97005</zip>
+      <country>US</country>
+    </LocationAddress>
+    <primaryPhoneNumber>5555551004</primaryPhoneNumber>
+    <primaryFaxNumber>1234567890</primaryFaxNumber>
+    <pharmacyContactNumber>5555551004</pharmacyContactNumber>
+  </Location>
+  <LicensedPrescriber ID='1234567890'>
+    <LicensedPrescriberName>
+      <last>Administrator</last>
+      <first>Administrator</first>
+      <middle></middle>
+    </LicensedPrescriberName>
+    <dea>1234567890</dea>
+    <upin>1234567890</upin>
+    <licenseNumber></licenseNumber>
+    <npi>1234567890</npi>
+  </LicensedPrescriber>
+  <Patient ID='1'>
+    <PatientName>
+      <last>Doe</last>
+      <first>John</first>
+      <middle></middle>
+    </PatientName>
+    <PatientAddress>
+      <address1>1004 Healthcare Dr.</address1>
+      <city>Portland</city>
+      <state>VA</state>
+      <zip>2104</zip>
+      <country>US</country>
+    </PatientAddress>
+    <PatientContact/>
+    <PatientCharacteristics>
+      <dob>19720822</dob>
+      <gender>M</gender>
+    </PatientCharacteristics>
+  </Patient>
+</NCScript>
+
+2014-09-06 14:44:25 ==========> 
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head><title>
+	RxEntry
+</title></head>
+    <body>
+        <form method="post" action="RxEntry.aspx" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="" />
+</div>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="MS/t887GeomHha8iWixuQEvm0r2T1GbZyTw706LH2Z7UsbCvRSQEasUDOwzU7ZvOO9/ozPV5/iYBoANCp5Q2Wt40H8Qxv06hz2Hdek9UWOFAdl9H" />
+</div>
+            <div>
+                <textarea name="TextBox1" rows="2" cols="20" id="TextBox1" style="height:472px;width:864px;">
+
+A technical error has been automatically reported to your EMR/PM vendor.  Contact them for more information. MSG 3 - RxInput XML parse error:
+Please check the specified element name and value below for unusual characters and leading or trailing spaces.
+Error The &#39;zip&#39; element is invalid - The value &#39;2104&#39; is invalid according to its datatype &#39;NCStandard:ZipCodeOptional&#39; - The Pattern constraint failed.
+
+
+</textarea>
+            </div>
+        </form>
+    </body>
+</html>

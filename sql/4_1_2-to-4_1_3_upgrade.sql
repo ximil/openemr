@@ -1729,12 +1729,12 @@ INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Confirmation', 'positive_histology', 'Positive histology', 1, 0, '1');
 #EndIf
 
-#IfMissingColumn ccda `type`
-ALTER TABLE ccda ADD COLUMN  `type` VARCHAR(15);
+#IfMissingColumn ccda type
+ALTER TABLE ccda ADD COLUMN `type` VARCHAR(15);
 #EndIf
 
 #IfMissingColumn patient_data industry
-SET @group_name = (SELECT group_name FROM layout_options WHERE field_id='industry' AND form_id='DEM');
+SET @group_name = (SELECT group_name FROM layout_options WHERE field_id='occupation' AND form_id='DEM');
 SET @seq = (SELECT MAX(seq) FROM layout_options WHERE group_name=@group_name AND form_id='DEM');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_name`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`) VALUES ('DEM', 'industry', @group_name, 'Industry', @seq+1, 1, 1, 0, 0, 'Industry', 1, 1, '', '', 'Industry' ) ;
 ALTER TABLE patient_data ADD COLUMN industry TEXT NOT NULL;
@@ -1758,7 +1758,7 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) V
 UPDATE layout_options SET list_id='Occupation', data_type='26' WHERE field_id='occupation' AND form_id='DEM';
 #EndIf
 
-#IfRow2D layout_options option_id lists option_id Portal_Relationship
+#IfRow2D list_options option_id lists option_id Portal_Relationship
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Portal_Relationship','Portal Relationship','303','1','0','','','','1');
 #EndIf
 

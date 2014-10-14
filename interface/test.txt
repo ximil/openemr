@@ -1,0 +1,264 @@
+Array
+(
+    [0] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 7370
+            [AllergySourceID] => F
+            [AllergyId] => 1550
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Codeine
+            [Status] => A
+            [AllergySeverityTypeId] => 1
+            [AllergySeverityName] => Mild
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 1550
+            [ConceptTypeId] => 6
+            [rxcui] => 2670
+            [DateTimeStamp] => 2014-09-10T03:51:00-05:00
+            [AllergyKeyID] => 110592
+        )
+
+    [1] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 6554
+            [AllergySourceID] => F
+            [AllergyId] => 1587
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Aspirin
+            [Status] => A
+            [AllergySeverityTypeId] => 2
+            [AllergySeverityName] => Moderate
+            [AllergyNotes] => test
+            [OnsetDateCCYYMMDD] => 20120101
+            [ConceptID] => 1587
+            [ConceptTypeId] => 6
+            [rxcui] => 1191
+            [DateTimeStamp] => 2014-09-30T04:21:00-05:00
+            [AllergyKeyID] => 113208
+        )
+
+    [2] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 10026
+            [AllergySourceID] => F
+            [AllergyId] => 4977
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Penicillin G
+            [Status] => A
+            [AllergySeverityTypeId] => 3
+            [AllergySeverityName] => Severe
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 4977
+            [ConceptTypeId] => 6
+            [rxcui] => 7980
+            [DateTimeStamp] => 2014-09-10T03:46:00-05:00
+            [AllergyKeyID] => 110591
+        )
+
+)
+Array
+(
+    [0] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 7370
+            [AllergySourceID] => F
+            [AllergyId] => 1550
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Codeine
+            [Status] => A
+            [AllergySeverityTypeId] => 1
+            [AllergySeverityName] => Mild
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 1550
+            [ConceptTypeId] => 6
+            [rxcui] => 2670
+            [DateTimeStamp] => 2014-09-10T03:51:00-05:00
+            [AllergyKeyID] => 110592
+        )
+
+    [1] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 6554
+            [AllergySourceID] => F
+            [AllergyId] => 1587
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Aspirin
+            [Status] => A
+            [AllergySeverityTypeId] => 2
+            [AllergySeverityName] => Moderate
+            [AllergyNotes] => test
+            [OnsetDateCCYYMMDD] => 20120101
+            [ConceptID] => 1587
+            [ConceptTypeId] => 6
+            [rxcui] => 1191
+            [DateTimeStamp] => 2014-09-30T04:21:00-05:00
+            [AllergyKeyID] => 113208
+        )
+
+    [2] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 10026
+            [AllergySourceID] => F
+            [AllergyId] => 4977
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Penicillin G
+            [Status] => A
+            [AllergySeverityTypeId] => 3
+            [AllergySeverityName] => Severe
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 4977
+            [ConceptTypeId] => 6
+            [rxcui] => 7980
+            [DateTimeStamp] => 2014-09-10T03:46:00-05:00
+            [AllergyKeyID] => 110591
+        )
+
+)
+Array
+(
+    [0] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 7370
+            [AllergySourceID] => F
+            [AllergyId] => 1550
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Codeine
+            [Status] => A
+            [AllergySeverityTypeId] => 1
+            [AllergySeverityName] => Mild
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 1550
+            [ConceptTypeId] => 6
+            [rxcui] => 2670
+            [DateTimeStamp] => 2014-09-10T03:51:00-05:00
+            [AllergyKeyID] => 110592
+        )
+
+    [1] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 6554
+            [AllergySourceID] => F
+            [AllergyId] => 1587
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Aspirin
+            [Status] => A
+            [AllergySeverityTypeId] => 2
+            [AllergySeverityName] => Moderate
+            [AllergyNotes] => test
+            [OnsetDateCCYYMMDD] => 20120101
+            [ConceptID] => 1587
+            [ConceptTypeId] => 6
+            [rxcui] => 1191
+            [DateTimeStamp] => 2014-09-30T04:21:00-05:00
+            [AllergyKeyID] => 113208
+        )
+
+    [2] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 10026
+            [AllergySourceID] => F
+            [AllergyId] => 4977
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Penicillin G
+            [Status] => A
+            [AllergySeverityTypeId] => 3
+            [AllergySeverityName] => Severe
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 4977
+            [ConceptTypeId] => 6
+            [rxcui] => 7980
+            [DateTimeStamp] => 2014-09-10T03:46:00-05:00
+            [AllergyKeyID] => 110591
+        )
+
+)
+Array
+(
+    [0] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 7370
+            [AllergySourceID] => F
+            [AllergyId] => 1550
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Codeine
+            [Status] => A
+            [AllergySeverityTypeId] => 1
+            [AllergySeverityName] => Mild
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 1550
+            [ConceptTypeId] => 6
+            [rxcui] => 2670
+            [DateTimeStamp] => 2014-09-10T03:51:00-05:00
+            [AllergyKeyID] => 110592
+        )
+
+    [1] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 6554
+            [AllergySourceID] => F
+            [AllergyId] => 1587
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Aspirin
+            [Status] => A
+            [AllergySeverityTypeId] => 2
+            [AllergySeverityName] => Moderate
+            [AllergyNotes] => test
+            [OnsetDateCCYYMMDD] => 20120101
+            [ConceptID] => 1587
+            [ConceptTypeId] => 6
+            [rxcui] => 1191
+            [DateTimeStamp] => 2014-09-30T04:21:00-05:00
+            [AllergyKeyID] => 113208
+        )
+
+    [2] => Array
+        (
+            [AllergyType] => 1
+            [CompositeAllergyID] => 10026
+            [AllergySourceID] => F
+            [AllergyId] => 4977
+            [AllergyConceptId] => 6
+            [ConceptType] => BASE
+            [AllergyName] => Penicillin G
+            [Status] => A
+            [AllergySeverityTypeId] => 3
+            [AllergySeverityName] => Severe
+            [AllergyNotes] => 
+            [OnsetDateCCYYMMDD] => 
+            [ConceptID] => 4977
+            [ConceptTypeId] => 6
+            [rxcui] => 7980
+            [DateTimeStamp] => 2014-09-10T03:46:00-05:00
+            [AllergyKeyID] => 110591
+        )
+
+)
