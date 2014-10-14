@@ -373,7 +373,7 @@ class eRxStore {
 		sqlQuery('INSERT INTO lists
 				(
 					date, type, erx_source, begdate,
-					title, external_allergyid, pid, user, outcome
+					title, external_allergyid, pid, user, severity_al
 				)
 			VALUES
 				(
@@ -401,7 +401,7 @@ class eRxStore {
 	 */
 	public function updateAllergyOutcomeExternalIdByPatientIdName($outcome, $externalId, $patientId, $name) {
 		sqlQuery('UPDATE lists
-			SET outcome = ?,
+			SET severity_al = ?,
 				erx_source = \'1\',
 				external_allergyid = ?
 			WHERE pid = ?
@@ -424,7 +424,7 @@ class eRxStore {
 	 */
 	public function updateAllergyOutcomeByPatientIdExternalIdName($outcome, $patientId, $externalId, $name) {
 		sqlQuery('UPDATE lists
-			SET outcome = ?
+			SET severity_al = ?
 			WHERE pid = ?
 				AND erx_source = \'1\'
 				AND external_allergyid = ?

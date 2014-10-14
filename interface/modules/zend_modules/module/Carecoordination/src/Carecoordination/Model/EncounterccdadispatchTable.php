@@ -524,7 +524,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
     {
 		require_once(dirname(__FILE__) . "/../../../../../../../../custom/code_types.inc.php");
         $allergies  = '';
-        $query      = "SELECT l.id, l.title, l.begdate, l.enddate, lo.title AS observation, lo.option_id AS observation_code,
+        $query      = "SELECT l.id, l.title, l.begdate, l.enddate, lo.title AS observation, SUBSTRING(lo.codes, LOCATE(':',lo.codes)+1, LENGTH(lo.codes)) AS observation_code,
 				lcode.list_code,SUBSTRING(lcode.list_code, 1, LOCATE(':',lcode.list_code)-1) AS code_type_real,
 				SUBSTRING(lcode.list_code, LOCATE(':',lcode.list_code)+1) AS code
                 from lists as l
@@ -553,7 +553,7 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 	    
             $active = '';
             if($row['enddate']){
-                $active 		= 'Inactive';
+                $active 		= 'Completed';
 				$status_code    = '73425007';
             }
             else{

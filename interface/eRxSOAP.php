@@ -520,7 +520,7 @@ class eRxSOAP {
 		if(is_array($allergyArray)) {
 			foreach($allergyArray as $allergy) {
 				$optionId = $this->insertMissingListOptions(
-					'outcome',
+					'severity_ccda',
 					$allergy['AllergySeverityName']
 				);
 
