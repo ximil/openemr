@@ -152,17 +152,17 @@ $download_format		= $this->download_format;
 					<div class="selected_search" id="selected_search1"></div><div class="clear"></div>
                                         <tr>
                                             <td>
-                                                <label style="padding-left: 0px!important;"><?php echo $this->listenerObject->z_xlt('Direct Address:'); ?></label>
+                                                <label style="padding-left:0px!important;"><?php echo $this->listenerObject->z_xlt('Direct Address:'); ?></label>
                                                 <input type="text" name="emr_to_phimail" class="lookup multiple" id="inputString1" onKeyDown="PreventIt(event)" onkeyup="lookup(this.value.trim(), 'emrdirect', '1', 'multiple');" autocomplete="off">
-                                                <label style="padding-left:0px !important;"><?php echo $this->listenerObject->z_xlt('Reason for Referral:'); ?></label>
-                                                <textarea id="referral_reason" class="referral_reason" name="referral_reason"></textarea>
                                             </td>
                                             <td><input type="radio" class="ap-st-st-3" name="phimail_format" value="xml" checked="true"><?php echo $this->listenerObject->z_xlt('XML'); ?></td>
                                             <td><input type="radio" class="ap-st-st-3" name="phimail_format" value="pdf"><?php echo $this->listenerObject->z_xlt('PDF'); ?></td>
                                             <td><input type="radio" class="ap-st-st-3" name="phimail_format" value="html"><?php echo $this->listenerObject->z_xlt('HTML'); ?></td>
                                         </tr>
 				</table>
-				<div class="suggestions" id="suggestions1" style="display: none; float: left; position: absolute; width: 450px;left:18px;z-index: 1;">
+        <label style="padding-left:10px !important;"><?php echo $this->listenerObject->z_xlt('Reason for Referral:'); ?></label>
+        <textarea id="referral_reason" class="referral_reason" name="referral_reason" style="max-width:500px!important;min-width:500px!important;margin-left:10px;"></textarea>
+				<div class="suggestions" id="suggestions1" style="display: none; float: left; position: absolute; width: 450px;left:18px;z-index: 1;top: 120px;">
 					<div class="autoSuggestionsList" id="autoSuggestionsList1">&nbsp;</div>
 				</div>
 			</div>
@@ -205,7 +205,7 @@ $download_format		= $this->download_format;
 						<label for="doc_format"><?php echo $this->listenerObject->z_xlt('DOC');?></label>
 					</td>
 					<td width="10px;">
-						<input <?php if(!in_array('hl7_format', $download_format)) echo "disabled"?> type="radio" name="download_format" id="hl7_format" style="margin: 0; clear: right; float: left;">
+						<input <?php if(!in_array('hl7_format', $download_format)) echo "disabled"?> type="radio" name="download_format" id="hl7_format" style="margin: 0; clear: right; float: left;" checked="true">
 						<label for="hl7_format"><?php echo $this->listenerObject->z_xlt('HL7');?></label>
 					</td>
 				</tr>

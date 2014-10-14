@@ -42,8 +42,20 @@ $fake_register_globals=false;
 $portalsite = isset($_GET['portalsite']) ? $_GET['portalsite'] : $portalsite = "off";
 if ($portalsite != "off" && $portalsite != "on") $portalsite = "off";
 
- $row = sqlQuery("SELECT pd.*,pao.portal_username,pao.portal_pwd,pao.portal_pwd_status FROM patient_data AS pd LEFT OUTER JOIN patient_access_" . add_escape_custom($portalsite) . "site AS pao ON pd.pid=pao.pid WHERE pd.pid=?",array($pid));
+ $row = sqlQuery("SELECT pd.*,pao.portal_username,pao.portal_pwd,pao.portal_pwd_status FROM patient_data AS pd LEFT OUTER JOIN 
+                  patient_access_" . add_escape_custom($portalsite) . "site AS pao ON pd.pid=pao.pid WHERE pd.pid=?",array($pid));
  
+$rel_list = getOptionList('Portal_Relationship');
+
+ function getOptionList($list_id) {
+    $lres = sqlStatement("SELECT option_id,is_default,title FROM list_options WHERE list_id = ? ORDER BY seq, title", array($list_id));
+    while ($lrow = sqlFetchArray($lres)) {
+        $rel_list[] = $lrow;
+        
+    }
+    return $rel_list;
+}
+
 function generatePassword($length=6, $strength=1) {
 	$consonants = 'bdghjmnpqrstvzacefiklowxy';
 	$numbers = '0234561789';
@@ -71,7 +83,7 @@ function validEmail($email){
     return false;
 }
 
-function messageCreate($uname,$pass,$site){
+function messageCreate($uname,$pass,$relationship,$site){
     $message = htmlspecialchars( xl("Patient Portal Web Address"),ENT_NOQUOTES) . ":<br>";
     if ($site == "on") {
         $message .= "<a href='" . htmlspecialchars($GLOBALS['portal_onsite_address'],ENT_QUOTES) . "'>" .
@@ -85,7 +97,9 @@ function messageCreate($uname,$pass,$site){
 		    htmlspecialchars($GLOBALS['portal_offsite_providerid'],ENT_NOQUOTES) . "<br><br>";		    
     }
     
-        $message .= htmlspecialchars(xl("User Name"),ENT_NOQUOTES) . ": " .
+        $message .= htmlspecialchars(xl("Created for"),ENT_NOQUOTES) . ": " .
+                    htmlspecialchars($relationship,ENT_NOQUOTES) . "<br><br>" .
+                    htmlspecialchars(xl("User Name"),ENT_NOQUOTES) . ": " .
                     htmlspecialchars($uname,ENT_NOQUOTES) . "<br><br>" .
                     htmlspecialchars(xl("Password"),ENT_NOQUOTES) . ": " .
                     htmlspecialchars($pass,ENT_NOQUOTES) . "<br><br>";
@@ -141,8 +155,8 @@ if(isset($_REQUEST['form_save']) && $_REQUEST['form_save']=='SUBMIT'){
     require_once("$srcdir/authentication/common_operations.php");    
 
     $clear_pass=$_REQUEST['pwd'];
-    
-    $res = sqlStatement("SELECT * FROM patient_access_" . add_escape_custom($portalsite) . "site WHERE pid=?",array($pid));
+    $relationship = $_REQUEST['relationship'];
+    $res = sqlStatement("SELECT * FROM patient_access_" . add_escape_custom($portalsite) . "site WHERE pid=? AND portal_relation=?",array($pid,$relationship));
     $query_parameters=array($_REQUEST['uname']);
     $salt_clause="";
     if($portalsite=='on')
@@ -158,16 +172,16 @@ if(isset($_REQUEST['form_save']) && $_REQUEST['form_save']=='SUBMIT'){
         // When offsite portal is updated to handle blowfish, then both portals can use the same execution path.
         array_push($query_parameters,SHA1($clear_pass));
     }
-    array_push($query_parameters,$pid);
+    array_push($query_parameters,$pid,$relationship);
     if(sqlNumRows($res)){
-    sqlStatement("UPDATE patient_access_" . add_escape_custom($portalsite) . "site SET portal_username=?,portal_pwd=?,portal_pwd_status=0 " . $salt_clause . " WHERE pid=?",$query_parameters);
+    sqlStatement("UPDATE patient_access_" . add_escape_custom($portalsite) . "site SET portal_username=?,portal_pwd=?,portal_pwd_status=0" . $salt_clause . " WHERE pid=? AND portal_relation=?",$query_parameters);
     }
     else{
-    sqlStatement("INSERT INTO patient_access_" . add_escape_custom($portalsite) . "site SET portal_username=?,portal_pwd=?,portal_pwd_status=0" . $salt_clause . " ,pid=?",$query_parameters);
+        sqlStatement("INSERT INTO patient_access_" . add_escape_custom($portalsite) . "site SET portal_username=?,portal_pwd=?,portal_pwd_status=0" . $salt_clause . " ,pid=?,portal_relation=?",$query_parameters);
     }
    
     // Create the message
-    $message = messageCreate($_REQUEST['uname'],$clear_pass,$portalsite);
+    $message = messageCreate($_REQUEST['uname'],$clear_pass,$relationship,$portalsite);
     // Email and display/print the message
     if ( emailLogin($pid,$message) ) {
         // email was sent
@@ -186,12 +200,25 @@ if(isset($_REQUEST['form_save']) && $_REQUEST['form_save']=='SUBMIT'){
 
 <script type="text/javascript" src="<?php echo $GLOBALS['webroot'] ?>/library/js/jquery-1.6.4.min.js"></script>
 <script type="text/javascript">
-function transmit(){
-    
-                // get a public key to encrypt the password info and send    
-                document.getElementById('form_save').value='SUBMIT';
-                document.forms[0].submit();
-}
+    window.onload=function(){
+        createUsername();
+    }
+    function createUsername()
+    {
+        var relationship = document.getElementById('relationship').value;
+        var username = document.getElementById('getuser').value;
+        if(relationship == 'self'){
+            document.getElementById('uname').value = username;
+        }
+        else{
+            document.getElementById('uname').value = username+'_'+relationship;
+        }
+    }
+    function transmit(){
+        // get a public key to encrypt the password info and send    
+        document.getElementById('form_save').value='SUBMIT';
+        document.forms[0].submit();
+    }
 </script>
 </head>
 <body class="body_top">
@@ -211,8 +238,21 @@ function transmit(){
 		}
 	?>
         <tr class="text">
+            <td><?php echo htmlspecialchars(xl('Relationship').':',ENT_QUOTES);?></td>
+            <td>
+                <select id="relationship" name="relationship" class="relationship" onchange="createUsername();" onload="createUsername();">
+                    <?php foreach ($rel_list as $key => $val): ?>
+                        <option <?php if ($val['is_default'] == 1) echo "selected='selected'" ?> value="<?php echo $val['option_id']; ?>"><?php echo $val['title']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+        <tr class="text">
             <td><?php echo htmlspecialchars(xl('User Name').':',ENT_QUOTES);?></td>
-            <td><input type="text" name="uname" value="<?php if($row['portal_username']) echo htmlspecialchars($row['portal_username'],ENT_QUOTES); else echo htmlspecialchars($row['fname'].$row['id'],ENT_QUOTES);?>" size="10" readonly></td>
+            <td>
+                <input type="text" name="uname" id="uname" value="<?php if($row['portal_username']) echo htmlspecialchars($row['portal_username'],ENT_QUOTES); else echo htmlspecialchars($row['fname'].$row['id'],ENT_QUOTES);?>" size="10" readonly>
+                <input type="hidden" name="getuser" id="getuser" value="<?php echo htmlspecialchars($row['fname'].$row['id'],ENT_QUOTES);?>" size="10">
+            </td>
         </tr>
         <tr class="text">
             <td><?php echo htmlspecialchars(xl('Password').':',ENT_QUOTES);?></td>

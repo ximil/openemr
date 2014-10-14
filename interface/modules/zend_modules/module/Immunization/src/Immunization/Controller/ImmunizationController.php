@@ -209,7 +209,7 @@ class ImmunizationController extends AbstractActionController
             }
 
             $D          =   "\r";
-            $nowdate    = date('Ymd');
+            $nowdate    = date('YmdHis');
             $now        = date('YmdGi');
             $now1       = date('Y-m-d G:i');
             $filename   = "imm_reg_". $now . ".hl7";
@@ -283,7 +283,7 @@ class ImmunizationController extends AbstractActionController
                         "999|" . // 6. Administered Amount. TODO: Immunization amt currently not captured in database, default to 999(not recorded)
                         "|" . // 7. Administered Units
                         "|" . // 8. Administered Dosage Form
-                        "|" . // 9. Administration Notes
+                        "00^".$r['note']."^NIP001|" . // 9. Administration Notes
                         "|" . // 10. Administering Provider
                         "|" . // 11. Administered-at Location
                         "|" . // 12. Administered Per (Time Unit)
