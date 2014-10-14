@@ -13,6 +13,61 @@
 /* for sqlQuery(), sqlStatement(), sqlNumRows(), sqlFetchArray(). */
 require_once($GLOBALS['srcdir'].'/sql.inc');
 
+// for encryption 
+require_once($GLOBALS['srcdir'].'/phpseclib/Crypt/RSA.php');
+
+// adding to amc
+require_once($GLOBALS['srcdir'].'/amc.php');
+/**
+ * Encrypt pnote
+ * @param type $pnote_body
+ * @return type
+ */
+function getEncryptedPnote($pnote_body = '', $is_msg_encrypted = 0)
+{
+    $key = file_get_contents($GLOBALS['srcdir'] . "/../myportal/soap_service/emrphp.pub");
+    if (isset($is_msg_encrypted) && $is_msg_encrypted == 1) {
+        try {
+            $rsa = new Crypt_RSA(); 
+            $rsa->loadKey($key);
+            $rsa->loadKey($rsa->getPublicKey());
+            $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+            $pnote_body = base64_encode($rsa->encrypt($pnote_body)); 
+
+        } catch (Exception $e)  {
+
+       }
+   }
+   return $pnote_body;
+}
+
+/**
+ * Get decrypted pnote body 
+ * @param type $body
+ * @param type $is_msg_encrypted
+ * @return type
+ */
+function getDecryptedPnote($pnote_body = '', $is_msg_encrypted = 0)
+{
+    // descrypt if message is encrypted
+    $key = file_get_contents($GLOBALS['srcdir'] . "/../myportal/soap_service/emrphp.key");//echo $key;die;
+    
+    if (isset($is_msg_encrypted) && $is_msg_encrypted == 1) {
+        
+        try {
+            $rsa = new Crypt_RSA(); 
+            $rsa->loadKey($key);
+            //$rsa->loadKey($rsa->getPublicKey());
+
+            $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+            $pnote_body = $rsa->decrypt(base64_decode($pnote_body)); 
+        } catch (Exception $e)  {
+
+       }
+    }
+    return $pnote_body;
+}
+
 /**
  * Retrieve a note, given its ID
  *
@@ -70,7 +125,7 @@ function getPnotesByUser($activity="1",$show_all="no",$user='',$count=false,$sor
   $sql = "SELECT pnotes.id, pnotes.user, pnotes.pid, pnotes.title, pnotes.date, pnotes.message_status,
           IF(pnotes.pid = 0 OR pnotes.user != pnotes.pid,users.fname,patient_data.fname) as users_fname,
           IF(pnotes.pid = 0 OR pnotes.user != pnotes.pid,users.lname,patient_data.lname) as users_lname,
-          patient_data.fname as patient_data_fname, patient_data.lname as patient_data_lname
+          patient_data.fname as patient_data_fname, patient_data.lname as patient_data_lname, pnotes.portal_relation, pnotes.is_msg_encrypted
           FROM ((pnotes LEFT JOIN users ON pnotes.user = users.username)
           LEFT JOIN patient_data ON pnotes.pid = patient_data.pid) WHERE $activity_query
           pnotes.deleted != '1' AND pnotes.assigned_to LIKE ?";
@@ -197,8 +252,13 @@ $sqlParameterArray = array();
   return $all;
 }
 
-function getPatientNotes($pid = '', $limit = '', $offset = 0, $search = '')
+function getPatientNotes($pid = '', $limit = '', $offset = 0, $search = '', $portal_relation = '', $port_rel_bas = 0)
 {
+    $assigned_to = "-patient-";
+  if ($port_rel_bas && !empty($portal_relation)) {
+      $assigned_to = '-patient-' . $portal_relation;
+  }
+  
   if($limit){
     $limit = "LIMIT ".escape_limit($offset).", ".escape_limit($limit);
   }
@@ -214,18 +274,21 @@ function getPatientNotes($pid = '', $limit = '', $offset = 0, $search = '')
         CONCAT(pd.fname, ' ', pd.lname)
       ) AS body,
       p.message_status,
-      'Message' as `type`
+      'Message' as `type`,
+      p.is_msg_encrypted,
+      p.portal_relation
     FROM
       pnotes AS p 
       LEFT JOIN patient_data AS pd 
         ON pd.id = p.pid 
-    WHERE assigned_to = '-patient-' 
+    WHERE assigned_to = '$assigned_to'
       AND p.deleted != 1 
       AND p.pid = ?
       $search
     ORDER BY `date` desc
     $limit
   ";
+
   $res = sqlStatement($sql, array($pid));
   for($iter = 0;$row = sqlFetchArray($res);$iter++){
     $all[$iter] = $row;
@@ -269,8 +332,12 @@ function getPatientNotifications($pid = '', $limit = '', $offset = 0, $search = 
   return $all;
 }
 
-function getPatientSentNotes($pid = '', $limit = '', $offset = 0, $search = '')
+function getPatientSentNotes($pid = '', $limit = '', $offset = 0, $search = '', $portal_relation = '', $port_rel_bas = 0)
 {
+    $qry_port_rel = "";
+    if ($port_rel_bas && !empty($portal_relation)) {
+        $qry_port_rel = " AND portal_relation = '$portal_relation'";
+    }
   if($limit){
     $limit = "LIMIT ".escape_limit($offset).", ".escape_limit($limit);
   }
@@ -287,7 +354,9 @@ function getPatientSentNotes($pid = '', $limit = '', $offset = 0, $search = '')
       ) AS body,
       p.activity,
       p.message_status,
-      'Message' as `type`
+      'Message' as `type`, 
+      p.is_msg_encrypted,
+      p.portal_relation
     FROM
       pnotes AS p 
       LEFT JOIN patient_data AS pd 
@@ -296,6 +365,7 @@ function getPatientSentNotes($pid = '', $limit = '', $offset = 0, $search = '')
       AND p.deleted != 1 
       AND p.pid = ?
       AND p.message_status != 'Done'
+      $qry_port_rel
       $search
     ORDER BY `date` desc
     $limit
@@ -352,7 +422,7 @@ function getPnotesByPid ($pid, $activity = "1", $cols = "*", $limit=10, $start=0
  */
 function addPnote($pid, $newtext, $authorized = '0', $activity = '1',
   $title= 'Unassigned', $assigned_to = '', $datetime = '',
-  $message_status = 'New', $background_user="")
+  $message_status = 'New', $background_user="", $encrypt_pnote = 0, $portal_relation = '' )
 {
   if (empty($datetime)) $datetime = date('Y-m-d H:i:s');
 
@@ -363,16 +433,23 @@ function addPnote($pid, $newtext, $authorized = '0', $activity = '1',
   $body = date('Y-m-d H:i') . ' (' . $user;
   if ($assigned_to) $body .= " to $assigned_to";
   $body = $body . ') ' . $newtext;
-
+  $body = getEncryptedPnote($body, $encrypt_pnote);
+  if(substr($assigned_to, 0, 9) != '-patient-') {
+      processAmcCall('secure_message', 1, 'add_force', $pid, $object_category='', $object_id='0', $date_created='');
+  }
   return sqlInsert('INSERT INTO pnotes (date, body, pid, user, groupname, ' .
-    'authorized, activity, title, assigned_to, message_status) VALUES ' .
-    '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    array($datetime, $body, $pid, $user, $_SESSION['authProvider'], $authorized, $activity, $title, $assigned_to, $message_status) );
+    'authorized, activity, title, assigned_to, message_status, is_msg_encrypted, portal_relation) VALUES ' .
+    '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    array($datetime, $body, $pid, $user, $_SESSION['authProvider'], $authorized, $activity, $title, $assigned_to, $message_status, $encrypt_pnote, $portal_relation) );
 }
 
 function addMailboxPnote($pid, $newtext, $authorized = '0', $activity = '1',
-  $title='Unassigned', $assigned_to = '', $datetime = '', $message_status = "New")
+  $title='Unassigned', $assigned_to = '', $datetime = '', $message_status = "New", $portal_relation = '', $is_encrypted = 0)
 {
+    
+    // decrypt message text
+  $newtext = getDecryptedPnote($newtext, $is_encrypted);
+  
   if (empty($datetime)) $datetime = date('Y-m-d H:i:s');
 
   // make inactive if set as Done
@@ -381,13 +458,18 @@ function addMailboxPnote($pid, $newtext, $authorized = '0', $activity = '1',
   $body = date('Y-m-d H:i') . ' (' . $pid;
   if ($assigned_to) $body .= " to $assigned_to";
   $body = $body . ') ' . $newtext;
-
-  return sqlInsert("INSERT INTO pnotes (date, body, pid, user, groupname, " .
-    "authorized, activity, title, assigned_to, message_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    array($datetime, $body, $pid, $pid, 'Default', $authorized, $activity, $title, $assigned_to, $message_status) );
+  
+  if(substr($assigned_to, 0, 9) != '-patient-') {
+      processAmcCall('secure_message', 1, 'add_force', $pid, $object_category='', $object_id='0', $date_created='');
+  }
+  // encrypt full msg body 
+  $body = getEncryptedPnote($body, $is_encrypted);
+    return sqlInsert("INSERT INTO pnotes (date, body, pid, user, groupname, " .
+    "authorized, activity, title, assigned_to, message_status, portal_relation, is_msg_encrypted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    array($datetime, $body, $pid, $pid, 'Default', $authorized, $activity, $title, $assigned_to, $message_status, $portal_relation, $is_encrypted) );
 }
 
-function updatePnote($id, $newtext, $title, $assigned_to, $message_status = "")
+function updatePnote($id, $newtext, $title, $assigned_to, $message_status = "", $encrypt_pnote = 0)
 {
   $row = getPnoteById($id);
   if (! $row) die("updatePnote() did not find id '".text($id)."'");
@@ -395,17 +477,18 @@ function updatePnote($id, $newtext, $title, $assigned_to, $message_status = "")
 
   // make inactive if set as Done
   if ($message_status == "Done") $activity = 0;
-
+    $row['body'] = getDecryptedPnote($row['body'], $row['is_msg_encrypted']);
   $body = $row['body'] . "\n" . date('Y-m-d H:i') .
     ' (' . $_SESSION['authUser'];
   if ($assigned_to) $body .= " to $assigned_to";
   $body = $body . ') ' . $newtext;
-
+  // encrypt full msg body 
+  $body = getEncryptedPnote($body, $encrypt_pnote);
   if ($message_status) {
     sqlStatement("UPDATE pnotes SET " .
       "body = ?, activity = ?, title= ?, " .
-      "assigned_to = ?, message_status = ? WHERE id = ?",
-      array($body, $activity, $title, $assigned_to, $message_status, $id) );
+      "assigned_to = ?, message_status = ?, is_msg_encrypted = ? WHERE id = ?",
+      array($body, $activity, $title, $assigned_to, $message_status, $id, $encrypt_pnote) );
   }
   else {
     sqlStatement("UPDATE pnotes SET " .

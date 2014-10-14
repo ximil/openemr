@@ -967,7 +967,7 @@ static  public function batch_despatch($var,$func,$data_credentials){
     
   public function loginchecking($data){
       if($this->valid($data[0])=='existingpatient' || $this->valid($data[0])=='newpatient'){
-				$res = sqlStatement("SELECT portal_pwd_status, 'yes' AS patient_status FROM patient_access_offsite WHERE BINARY portal_username=? AND  BINARY portal_pwd=?",$data[1]);
+				$res = sqlStatement("SELECT portal_pwd_status, 'yes' AS patient_status, portal_relation  FROM patient_access_offsite WHERE BINARY portal_username=? AND  BINARY portal_pwd=?",$data[1]);
 				return $this->resourcetoxml($res);
       }elseif($this->valid($data[0])=='newpatienttoapprove'){
 				$res = sqlStatement("

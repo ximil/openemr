@@ -72,33 +72,22 @@ class EncounterccdadispatchController extends AbstractActionController
 			
 			//$request            = $this->getRequest();
 			$this->patient_id   = $this->getEncounterccdadispatchTable()->getPatientId($parameterArray[0][6]);//$this->getRequest()->getQuery('pid');
-			$this->encounter_id = isset($parameterArray['encounter']) ? $parameterArray['encounter'] : '';
+			$this->patient_username   = $parameterArray[0][6];
+            $this->encounter_id = isset($parameterArray['encounter']) ? $parameterArray['encounter'] : '';
 			$combination        = isset($parameterArray['combination']) ? $parameterArray['combination'] : '';
 			$this->sections     = isset($parameterArray['sections']) ? $parameterArray['sections'] : '';
 			$sent_by            = isset($parameterArray['sent_by']) ? $parameterArray['sent_by'] : '';
 			$send            	= isset($parameterArray['send']) ? $parameterArray['send'] : 0;
 			$view            	= isset($parameterArray['view']) ? $parameterArray['view'] : 0;
             $this->recipients	= isset($parameterArray['recipients']) ? $parameterArray['recipients'] : '';
+
             if ($this->recipients == 'patient') {
                 $this->params   = $this->patient_id;
             } else {
                 $this->params		= isset($parameterArray['param']) ? $parameterArray['param'] : '';
             }
               
-            $fh12 = fopen(sys_get_temp_dir() . '/scriptLog.txt', 'a');
-                fwrite($fh12, print_r($parameterArray, 1) . 'Control Here......:)' . $this->params . PHP_EOL);
-                fclose($fh12);
-
 			
-			try {
-				$event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
-				$menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
-			   
-				newEvent($event, 1, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item  );
-			}
-			catch (Exception $e) {
-				
-            }
 			
 			if($sent_by!= ''){
 				$_SESSION['authId'] = $sent_by;
@@ -135,7 +124,16 @@ class EncounterccdadispatchController extends AbstractActionController
 					xmlns:mif="urn:hl7-org:v3/mif">
 					<!--';
 					$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-					$this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);					
+					$ccdaDocumentId = $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);					
+                    try {
+                        $event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
+                        $menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
+
+                        newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item, $ccdaDocumentId  );
+                    }
+                    catch (Exception $e) {
+
+                    }
 				}
 				if(!$view)
 					return  "Queued for Transfer";
@@ -165,7 +163,16 @@ class EncounterccdadispatchController extends AbstractActionController
 				xmlns:mif="urn:hl7-org:v3/mif">
 				<!--';
 				$content = preg_replace('/<ClinicalDocument.*><!--/', $to_replace, trim($content));
-				$this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+				$ccdaDocumentId = $this->getEncounterccdadispatchTable()->logCCDA($this->patient_id, $this->encounter_id, base64_encode($content), $this->createdtime, 0, $_SESSION['authId'], $view, $send);
+                try {
+                    $event = isset ($parameterArray['event']) ? $parameterArray['event'] : 'patient-record';
+                    $menu_item = isset($parameterArray['menu_item']) ? $parameterArray['menu_item'] : 'Dashboard';
+
+                    newEvent($event, $this->patient_username, '', 1, '', $this->patient_id, $log_from = 'patient-portal', $menu_item, $ccdaDocumentId  );
+                }
+                catch (Exception $e) {
+
+                }
 				return $content;
 				die;
 			}
@@ -197,6 +204,61 @@ class EncounterccdadispatchController extends AbstractActionController
         
     }
 	
+     public function downloadCcdaLogDoc($parameterArray = array())
+    {    
+        // C:\Windows\Temp
+        $validResult = $this->getEncounterccdadispatchTable()->valid($parameterArray[0]);
+        
+		// validate credentials 
+		if ($validResult == 'existingpatient' && isset($parameterArray['docid']) && $parameterArray['docid'] > 0) {
+            $id         = $parameterArray['docid'];
+            $dir        = sys_get_temp_dir()."/CCDA_$id/";
+            $filename   = "CCDA_$id.xml";
+            if(!is_dir($dir)){
+                mkdir($dir, true);
+                chmod($dir, 0777);
+            }
+
+            $zip_dir    = sys_get_temp_dir()."/";
+            $zip_name   = "CCDA_$id.zip";
+            
+            $content  = '';
+            // if document_storage_method is hard disk read file contents
+            
+// C:\Windows\Temp
+
+            if ($GLOBALS['document_storage_method'] == 0) {
+                    //file_get_contents($dir . $filename)
+                $rowCcdaLog  = $this->getEncounterccdadispatchTable()->getCcdaLogDetails($parameterArray['docid']);
+                $content  = file_get_contents($rowCcdaLog['ccda_data']);
+            } elseif ($GLOBALS['document_storage_method'] == 1) {
+                $content    = $this->getEncountermanagerTable()->getFile($id);
+            }
+            return $content;
+    //        $f          = fopen($dir.$filename, "w");
+    //        fwrite($f, $content);
+    //        fclose($f);
+    //        
+    //        copy(dirname(__FILE__)."/../../../../../public/css/CDA.xsl", $dir."CDA.xsl");
+    //        
+    //        $zip = new Zip();
+    //        $zip->setArchive($zip_dir.$zip_name);
+    //        $zip->compress($dir);
+    //        
+    //        ob_clean();
+    //        header("Cache-Control: public");
+    //        header("Content-Description: File Transfer");
+    //        header("Content-Disposition: attachment; filename=$zip_name");
+    //        header("Content-Type: application/download");
+    //        header("Content-Transfer-Encoding: binary");
+    //        readfile($zip_dir.$zip_name);
+    //        
+    //        $view = new ViewModel();
+    //        $view->setTerminal(true);
+    //        return $view;
+        }
+    }
+    
     public function indexAction()
     {
         

@@ -20,6 +20,7 @@ require_once("$srcdir/log.inc");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/classes/Document.class.php");
 require_once("$srcdir/gprelations.inc.php");
+require_once("$srcdir/phpseclib/Crypt/RSA.php");
 
 if ($GLOBALS['concurrent_layout'] && $_GET['set_pid']) {
     require_once("$srcdir/pid.inc");
@@ -98,12 +99,13 @@ if (isset($mode)) {
   elseif ($mode == "new") {
     $note = $_POST['note'];
     if ($noteid) {
-      updatePnote($noteid, $note, $_POST['form_note_type'], $_POST['assigned_to']);
+      updatePnote($noteid, $note, $_POST['form_note_type'], $_POST['assigned_to'], $message_status = "", $encrypt_pnote = 1);
       $noteid = '';
     }
     else {
       $noteid = addPnote($patient_id, $note, $userauthorized, '1', $_POST['form_note_type'],
-        $_POST['assigned_to']);
+        $_POST['assigned_to'], $datetime = '',
+        $message_status = 'New', $background_user="", $encrypt_pnote = 1);
     }
     if ($docid) {
       setGpRelation(1, $docid, 6, $noteid);
@@ -125,7 +127,7 @@ if (isset($mode)) {
 $title = '';
 $assigned_to = $_SESSION['authUser'];
 if ($noteid) {
-  $prow = getPnoteById($noteid, 'title,assigned_to,body');
+  $prow = getPnoteById($noteid, 'title,assigned_to,body,is_msg_encrypted,portal_relation');
   $title = $prow['title'];
   $assigned_to = $prow['assigned_to'];
 }
@@ -141,7 +143,7 @@ $pres = getPatientData($patient_id, "lname, fname");
 $patientname = $pres['lname'] . ", " . $pres['fname'];
 
 //retrieve all notes
-$result = getPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to',
+$result = getPnotesByDate("", $active, 'id,date,body,user,activity,title,assigned_to, is_msg_encrypted',
   $patient_id, $N, $offset);
 ?>
 
@@ -254,7 +256,9 @@ $urlparms = "docid=$docid&orderid=$orderid";
 <?php
 if ($noteid) {
     $body = $prow['body'];
-    $body = preg_replace(array('/(\sto\s)-patient-(\))/', '/(:\d{2}\s\()' . $patient_id . '(\sto\s)/'), '${1}' . $patientname . '${2}', $body);
+    $body =  getDecryptedPnote($prow['body'], $prow['is_msg_encrypted']);
+    
+    $body = preg_replace(array('/(\sto\s)-patient-(\))/', '/(:\d{2}\s\()' . $patient_id . '(\sto\s)/'), '${1}' . $patientname . (!empty ($prow['portal_relation']) ? "(" . $prow['portal_relation']  . ")" : '' ). '${2}', $body);
     $body = nl2br(htmlspecialchars( $body, ENT_NOQUOTES));
     echo "<div class='text'>".$body."</div>";
 }

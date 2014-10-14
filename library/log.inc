@@ -3,7 +3,7 @@
 require_once(dirname(__FILE__). "/sql.inc");
 require_once(dirname(__FILE__). "/formdata.inc.php");
 
-function newEvent($event, $user, $groupname, $success, $comments="", $patient_id=null, $log_from = 'open-emr', $menu_item = 'dashboard') {
+function newEvent($event, $user, $groupname, $success, $comments="", $patient_id=null, $log_from = 'open-emr', $menu_item = 'dashboard', $ccda_doc_id = 0) {
     $adodb = $GLOBALS['adodb']['db'];
     $crt_user=isset($_SERVER['SSL_CLIENT_S_DN_CN']) ?  $_SERVER['SSL_CLIENT_S_DN_CN'] : null;
     
@@ -20,9 +20,9 @@ function newEvent($event, $user, $groupname, $success, $comments="", $patient_id
         $sql = "insert into log ( date, event, user, patient_id, groupname, success, comments, 
 
             log_from, menu_item_id, 
-            crt_user) " .
-            "values ( NOW(), ?, ?, ?, ?, ?, ?, ?, ?,?)";
-        $ret = sqlQueryNoLog($sql, array($event, $user, $patient_id, $groupname, $success, $comments,$log_from, $menuItemId,$crt_user));
+            crt_user, ccda_doc_id) " .
+            "values ( NOW(), ?, ?, ?, ?, ?, ?, ?, ?,?, ?)";
+        $ret = sqlQueryNoLog($sql, array($event, $user, $patient_id, $groupname, $success, $comments,$log_from, $menuItemId,$crt_user, $ccda_doc_id));
     } else {    
         /* More details added to the log */
         $sql = "insert into log ( date, event, user, groupname, success, comments, crt_user, patient_id) " .

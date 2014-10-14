@@ -172,7 +172,7 @@ if(isset($_REQUEST['form_save']) && $_REQUEST['form_save']=='SUBMIT'){
         // When offsite portal is updated to handle blowfish, then both portals can use the same execution path.
         array_push($query_parameters,SHA1($clear_pass));
     }
-    array_push($query_parameters,$pid,$relationship);
+    array_push($query_parameters,$pid,$relationship == 'self' ? "" : $relationship);
     if(sqlNumRows($res)){
     sqlStatement("UPDATE patient_access_" . add_escape_custom($portalsite) . "site SET portal_username=?,portal_pwd=?,portal_pwd_status=0" . $salt_clause . " WHERE pid=? AND portal_relation=?",$query_parameters);
     }

@@ -1757,3 +1757,54 @@ INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) V
 #IfRow2D layout_options field_id occupation form_id DEM
 UPDATE layout_options SET list_id='Occupation', data_type='26' WHERE field_id='occupation' AND form_id='DEM';
 #EndIf
+
+#IfRow2D layout_options option_id lists option_id Portal_Relationship
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Portal_Relationship','Portal Relationship','303','1','0','','','','1');
+#EndIf
+
+#IfMissingColumn patient_access_offsite portal_relation
+ALTER TABLE patient_access_offsite ADD COLUMN portal_relation VARCHAR(100) NULL;
+ALTER TABLE patient_access_offsite DROP INDEX pid;
+#EndIf
+
+#IfMissingColumn pnotes portal_relation
+ALTER TABLE pnotes ADD COLUMN `portal_relation` VARCHAR(100) NULL;
+#EndIf
+
+#IfMissingColumn pnotes is_msg_encrypted
+ALTER TABLE pnotes ADD is_msg_encrypted TINYINT(2) DEFAULT '0' COMMENT 'Whether messsage encrypted 0-Not encrypted, 1-Encrypted'; 
+#EndIf
+
+#IfMissingColumn log log_from
+ALTER TABLE `log` ADD `log_from` VARCHAR(20) DEFAULT 'open-emr'; 
+#EndIf
+
+#IfMissingColumn log menu_item_id
+ALTER TABLE `log` ADD `menu_item_id` INT(11) DEFAULT NULL;
+#EndIf
+
+#IfNotTable patient_portal_menu
+CREATE TABLE `patient_portal_menu` (
+  `patient_portal_menu_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `patient_portal_menu_group_id` INT(11) DEFAULT NULL,
+  `menu_name` VARCHAR(40) DEFAULT NULL,
+  `menu_order` SMALLINT(4) DEFAULT NULL,
+  `menu_status` TINYINT(2) DEFAULT '1',
+  PRIMARY KEY (`patient_portal_menu_id`)
+) ENGINE=INNODB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (1,1,'Dashboard',3,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (2,1,'My Profile',6,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (3,1,'Appointments',9,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (4,1,'Documents',12,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (5,1,'Med Records',15,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (6,1,'My Account',18,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (7,1,'Mailbox',21,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (8,1,'Password',24,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (9,1,'View Log',27,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (10,1,'Logout',30,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (11,1,'View Health Information',33,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (12,1,'Download Health Information',36,1);
+INSERT  INTO `patient_portal_menu`(`patient_portal_menu_id`,`patient_portal_menu_group_id`,`menu_name`,`menu_order`,`menu_status`) VALUES (13,1,'Transmit Health Information',39,1);
+
+#Endif
