@@ -697,8 +697,8 @@ class EncounterccdadispatchTable extends AbstractTableGateway
 				<extension>".htmlspecialchars(base64_encode($_SESSION['site_id'].$row['id']), ENT_QUOTES)."</extension>
 				<sha_extension>".htmlspecialchars("ec8a6ff8-ed4b-4f7e-82c3-e98e58b45de7", ENT_QUOTES)."</sha_extension>
                 <title>".htmlspecialchars($row['title'],ENT_QUOTES)."</title>
-                <code>".$code."</code>
-				<code_text>".$code_text."</code_text>
+                <code>".($code ? $code : 0)."</code>
+				<code_text>".htmlspecialchars(($code_text ? $code_text : 'NULL'),ENT_QUOTES)."</code_text>
                 <age>".$age."</age>
                 <start_date>".$start_date."</start_date>
                 <end_date>".$end_date."</end_date>
