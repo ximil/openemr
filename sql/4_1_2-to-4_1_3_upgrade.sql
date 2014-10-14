@@ -383,6 +383,7 @@ CREATE TABLE ccda (
   couch_revid VARCHAR(100) NULL,
   `view` tinyint(4) NOT NULL DEFAULT '0',
   `transfer` tinyint(4) NOT NULL DEFAULT '0',
+  `type` VARCHAR(15),
   PRIMARY KEY (id),
   UNIQUE KEY unique_key (pid,encounter,time)
 ) ENGINE=InnoDB;
@@ -1714,13 +1715,45 @@ ALTER TABLE `ccda` ADD COLUMN `emr_transfer` tinyint(4) NOT NULL DEFAULT '0';
 #EndIf
 
 #IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Laterality
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Laterality','Cancer Diagnosis Laterality','301','1','0','','','','1');
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`) VALUES('lists','Cancer_Diagnosis_Laterality','Cancer Diagnosis Laterality','301','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Laterality', 'not_a_paired_site', 'Not a paired site', 1, 0, '11');
 #EndIf
 
 #IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Behavior
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Behavior','Cancer Diagnosis Behavior','302','1','0','','','','1');
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`) VALUES('lists','Cancer_Diagnosis_Behavior','Cancer Diagnosis Behavior','302','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Behavior', 'malignant_primary', 'Malignant, primary', 0, 0, '3');
 #EndIf
 
 #IfNotRow2D list_options list_id lists option_id Cancer_Diagnosis_Confirmation
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES('lists','Cancer_Diagnosis_Confirmation','Cancer Diagnosis Confirmation','300','1','0','','','','1');
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`) VALUES('lists','Cancer_Diagnosis_Confirmation','Cancer Diagnosis Confirmation','300','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Cancer_Diagnosis_Confirmation', 'positive_histology', 'Positive histology', 1, 0, '1');
+#EndIf
+
+#IfMissingColumn ccda `type`
+ALTER TABLE ccda ADD COLUMN  `type` VARCHAR(15);
+#EndIf
+
+#IfMissingColumn patient_data industry
+SET @group_name = (SELECT group_name FROM layout_options WHERE field_id='industry' AND form_id='DEM');
+SET @seq = (SELECT MAX(seq) FROM layout_options WHERE group_name=@group_name AND form_id='DEM');
+INSERT INTO `layout_options` (`form_id`, `field_id`, `group_name`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`) VALUES ('DEM', 'industry', @group_name, 'Industry', @seq+1, 1, 1, 0, 0, 'Industry', 1, 1, '', '', 'Industry' ) ;
+ALTER TABLE patient_data ADD COLUMN industry TEXT NOT NULL;
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id Industry
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`) VALUES('lists','Industry','Industry','298','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'law_firm', 'Law Firm', 1, 0, '856');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'engineering_firm', 'Engineering Firm', 2, 0, '456');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Industry', 'construction_firm', 'Construction Firm', 3, 0, '789');
+#EndIf
+
+#IfNotRow2D list_options list_id lists option_id Occupation
+INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`) VALUES('lists','Occupation','Occupation','299','1');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'lawyer', 'Lawyer', 1, 0, '210');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'engineer', 'Engineer', 2, 0, '310');
+INSERT INTO list_options ( list_id, option_id, title, seq, is_default, notes ) VALUES ('Occupation', 'site_worker', 'Site Worker', 3, 0, '410');
+#EndIf
+
+#IfRow2D layout_options field_id occupation form_id DEM
+UPDATE layout_options SET list_id='Occupation', data_type='26' WHERE field_id='occupation' AND form_id='DEM';
 #EndIf
