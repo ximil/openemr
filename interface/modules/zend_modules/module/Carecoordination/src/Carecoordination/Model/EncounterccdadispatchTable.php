@@ -2113,8 +2113,8 @@ class EncounterccdadispatchTable extends AbstractTableGateway
           $status_code = '73425007';
         }
         $functional_cognitive .= '<item>
-        <code>'.htmlspecialchars($row['code'],ENT_QUOTES).'</code>
-        <code_text>'.htmlspecialchars($row['codetext'],ENT_QUOTES).'</code_text>
+        <code>'.htmlspecialchars(($row['code'] ? $row['code'] : 0),ENT_QUOTES).'</code>
+        <code_text>'.htmlspecialchars(($row['codetext'] ? $row['codetext'] : 'NULL'),ENT_QUOTES).'</code_text>
         <description>'.htmlspecialchars($row['description'],ENT_QUOTES).'</description>
         <date>'.htmlspecialchars($row['date'],ENT_QUOTES).'</date>
 	<date_formatted>'.htmlspecialchars(preg_replace('/-/','',$row['date']),ENT_QUOTES).'</date_formatted>
